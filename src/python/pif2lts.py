@@ -104,7 +104,7 @@ def dumpSucc(f,alpha,succ,semic,syncSet = []):
            # we need only the intersecting synchronization labels in the signature
            # i.e., those which are in the split and the caller process of that split
            alphaSync = list(set(map (lambda x : x.ident, succ[0].getSyncSet())) & set(syncSet))
-           print alpha, alphaSync
+           # print alpha, alphaSync
            dumpAlphabet(alphaSync, f, False, True, True)
            f.write("]\n")
        else:
@@ -519,7 +519,7 @@ class GatewaySplitState(GatewayState):
     pCone(PS,L) :- findall(Y,inCone(PS,Y),L1), uniq(L1,[],L).
 
     """
-    def computeConeSet(self, edgeSet, states):
+    def computeConeSet(self, edgeSet, states, debug=False):
         #if self.coneSetComputedP:
         #    return self.coneSet
         coneSet = set()
@@ -533,10 +533,11 @@ class GatewaySplitState(GatewayState):
                 coneSet.add(state)
             elif existsPath(self, state, edgeSet, set()) and existsMergeSuccessor(state, edgeSet, set()):
                 coneSet.add(state)
-        print self.ident, "has cone set - ",
-        for state in coneSet:
-            print state.ident, " - ",
-        print ""
+        if debug:
+            print self.ident, "has cone set - ",
+            for state in coneSet:
+                print state.ident, " - ",
+            print ""
         return coneSet
 
     # emit synchro messages from syncSet for parallel composition
@@ -912,6 +913,7 @@ class Choreography:
     must be called after choreography construction
     will create cone sets for splits and sync sets for all states
     """
+
     def computeSyncSets(self, debug=False):
 
         # compute the set of edges
@@ -921,7 +923,7 @@ class Choreography:
         # computeConeSets
         for s in self.states:
             if isSynchroSelect(s): #isinstance (s, GatewaySplitState):
-                coneSet = s.computeConeSet(edgeSet, self.states)
+                coneSet = s.computeConeSet(edgeSet, self.states, debug)
                 s.setConeSet(coneSet)
 
         # compute sync sets for all states
@@ -1269,7 +1271,7 @@ class Checker:
 
         choreoName = choreo.getName()
         initial = choreo.getInitialState()
-        conditions = initial.checkConditionsFromSpec("", [], [], True)
+        conditions = initial.checkConditionsFromSpec("", [], [], False)
         
         choreo.genLNT()
         choreo.genSVL(smartReduction)
@@ -1292,6 +1294,6 @@ if __name__ == '__main__':
 
     print "current file is: " + infile
     choreo = Choreography()
-    choreo.buildChoreoFromFile(infile, True)
-    choreo.computeSyncSets(True)
+    choreo.buildChoreoFromFile(infile)
+    choreo.computeSyncSets()
     checker.checkChoreo(choreo)
