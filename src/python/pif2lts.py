@@ -1156,49 +1156,6 @@ class Choreography:
                res.append(aux)
         return res
 
-    # Generates an LNT process for each peer (synchronous communication)
-    def generatePeer(self,pid,alpha,f):
-        hiding=self.computeHidingActions(pid,alpha)
-        f.write("process peer_"+pid+" [")
-        dumpAlphabet(alpha,f,True)
-        f.write("] is\n")
-        if (hiding!=[]):
-           f.write(" hide ")
-           dumpAlphabet(hiding,f,True)
-           f.write(" in\n")
-        f.write("   MAIN [")
-        dumpAlphabet(alpha,f,False)
-        f.write("]\n")
-        if (hiding!=[]):
-           f.write(" end hide\n")
-        f.write("end process\n\n")
-
-    # Generates an LNT process for each peer (asynchronous communication)
-    def generateAPeer(self,pid,alpha,f):
-        hiding=self.computeHidingActions(pid,alpha)
-        alphap=self.alphaPeer(pid,alpha)
-        alphapdir=self.alphaDir(pid,alphap)
-        f.write("process apeer_"+pid+" [")
-        dumpAlphabet(alphapdir,f,True)
-        f.write("] is\n")
-        f.write("  apeer_"+pid+"_aux [")
-        dumpAlphabet(alphapdir,f,False)
-        f.write("]\n")
-        f.write("end process\n")
-        f.write("process apeer_"+pid+"_aux [")
-        dumpAlphabet(alphap,f,True)
-        f.write("] is\n")
-        if (hiding!=[]):
-           f.write(" hide ")
-           dumpAlphabet(hiding,f,True)
-           f.write(" in\n")
-        f.write("   MAIN [")
-        dumpAlphabet(alpha,f,False)
-        f.write("]\n")
-        if (hiding!=[]):
-           f.write(" end hide\n")
-        f.write("end process\n\n")
-
     ##
     # Computes a synchronisation set given a peer and a list of peers
     def computeSynchro(self,pid,peers,alpha):
@@ -1209,73 +1166,6 @@ class Choreography:
             alphas=union(alphas,ak)
         return intersection(alphap,alphas)
 
-
-    ##
-    # Generates an LNT process for the composition of peers (synchronous comm)
-    def generateComposition(self,alpha,peers,f):
-        f.write("process synchronous_composition")
-        f.write(" [")
-        dumpAlphabet(alpha,f,True)
-        f.write("] is\n")
-        i=0
-        max=len(peers)
-        for p in peers:
-           if (i+1)<max:
-              f.write("par ")
-              # synchro set computation
-              synchro=self.computeSynchro(p,peers[i+1:],alpha)
-              if synchro!=[]:
-                 dumpAlphabet(synchro,f,False)
-                 f.write(" in")
-              f.write("\n")
-           f.write("peer_"+p)
-           f.write(" [")
-           dumpAlphabet(alpha,f,False)
-           f.write("]\n")
-           i=i+1
-           if (i<max):
-              f.write("||\n")
-        i=1
-        while (i<max):
-           f.write("end par\n")
-           i=i+1
-        f.write("end process\n\n")
-
-
-    ##
-    # Generates an LNT process for a peer FIFO buffer
-    def generateBuffer(self,pid,alpha,f):
-            f.write("process ")
-            pname="buffer_"+pid
-            f.write(pname)
-            alphab=self.alphaBuffer(pid,alpha)
-            alphabdir=self.alphaBothDir(alphab)
-            if (alphabdir!=[]):
-               f.write(" [")
-               dumpAlphabet(alphabdir,f,True)
-               f.write("]")
-            f.write(" (bq: BoundedBuffer) is\n ")
-            f.write(" select\n")
-            for m in alphab:
-                f.write("    if not(bisfull(bq)) then ")
-                f.write(m+" ; "+pname)
-                f.write(" [")
-                dumpAlphabet(alphabdir,f,False)
-                f.write("]")
-                f.write(" (binsert("+m+",bq)) else stop end if\n")
-                f.write("    []\n")
-                gaterec=m+"_REC"
-                f.write("    if bishead("+m+",bq) then "+gaterec+" ; "+pname)
-                f.write(" [")
-                dumpAlphabet(alphabdir,f,False)
-                f.write("]")
-                f.write(" (bremove(bq)) else stop end if\n")
-                f.write("    []\n")
-
-            f.write("    null\n ")
-            f.write(" end select\n ")
-
-            f.write("end process\n\n")
 
     # Dumps alphabet with REC suffixing each message
     def dumpAlphabetWithREC(self,alpha,f,any):
@@ -1289,81 +1179,6 @@ class Choreography:
             l=l+1
             if l<max:
                f.write(",")
-
-    ##
-    # Generates an LNT process for a couple (peer,buffer)
-    def generatePeerBuffer(self,pid,alpha,f):
-        f.write("process ")
-        pname="peer_buffer_"+pid
-        f.write(pname)
-        alphap=self.alphaPeer(pid,alpha)
-        alphapdir=self.alphaDir(pid,alphap)
-        alphab=self.alphaBuffer(pid,alpha)
-        alphabdir=self.alphaBothDir(alphab)
-        f.write(" [")
-        dumpAlphabet(union(alphabdir,alphapdir),f,True)
-        f.write("] is\n")
-        f.write("  par ")
-        if alphab!=[]:
-           self.dumpAlphabetWithREC(alphab,f,False)
-           f.write(" in\n")
-        f.write("    apeer_"+pid+" [")
-        dumpAlphabet(alphapdir,f,False)
-        f.write("]\n")
-        f.write("    ||\n")
-        f.write("    buffer_"+pid+" ")
-        if (alphabdir!=[]):
-           f.write("[")
-           dumpAlphabet(alphabdir,f,False)
-           f.write("] ")
-        f.write("(bbuffer(nil,1))\n")
-        f.write("  end par\n")
-        f.write("end process\n\n")
-
-    ##
-    # Generates an LNT process for the composition of peers (asynchronous comm)
-    def generateAsynchronousComposition(self,alpha,peers,f,hide):
-        f.write("process asynchronous_composition")
-        f.write(" [")
-        alphabdir=self.alphaBothDir(alpha)
-        dumpAlphabet(alphabdir,f,True)
-        f.write("] is\n")
-        i=0
-        max=len(peers)
-        for p in peers:
-           if (i+1)<max:
-              f.write("par ")
-              # synchro set computation
-              synchro=self.computeSynchro(p,peers[i+1:],alpha)
-              if synchro!=[]:
-                 dumpAlphabet(synchro,f,False)
-                 f.write(" in")
-              f.write("\n")
-           if hide:
-               alphap=self.alphaPeer(p,alpha)
-               if alphap!=[]:
-                    f.write("hide ")
-                    self.dumpAlphabetWithREC(alphap,f,True)
-                    f.write(" in\n")
-           f.write("peer_buffer_"+p)
-           alphap=self.alphaPeer(p,alpha)
-           alphapdir=self.alphaDir(p,alphap)
-           alphab=self.alphaBuffer(p,alpha)
-           alphabdir=self.alphaBothDir(alphab)
-           f.write(" [")
-           dumpAlphabet(union(alphabdir,alphapdir),f,False)
-           f.write("]\n")
-           if hide:
-              if alphap!=[]:
-                 f.write("end hide\n")
-           i=i+1
-           if (i<max):
-              f.write("||\n")
-        i=1
-        while (i<max):
-           f.write("end par\n")
-           i=i+1
-        f.write("end process\n\n")
 
 
     # Generates an LNT module and process for a BPMN 2.0 choreography
@@ -1445,27 +1260,6 @@ class Choreography:
             if len(alphaSync) > 0:
                 f.write("end hide\n")
             f.write("end process\n\n")
-
-        # generations of one process per peer (synchronous communication)
-        f.write("\n\n (* peers (synchronous communication) *)\n\n")
-        peers=self.getPeers()
-        for p in peers:
-            self.generatePeer(p,alpha,f)
-        # for checking realizability (synchronous communication)
-        f.write("\n\n (* composition of peers (synchronous communication) *)\n\n")
-        self.generateComposition(alpha,peers,f)
-        # generations of one process per peer (asynchronous communication)
-        f.write("\n\n (* peers (asynchronous communication) *)\n\n")
-        for p in peers:
-            self.generateAPeer(p,alpha,f)
-        # Generation of FIFO buffers for each peer
-        for p in peers:
-           self.generateBuffer(p,alpha,f)
-        # Generation of couples (peer,buffer)
-        for p in peers:
-           self.generatePeerBuffer(p,alpha,f)
-        f.write("\n\n (* composition of peers (asynchronous communication) *)\n\n")
-        self.generateAsynchronousComposition(alpha,peers,f,True)
 
         f.write("\nend module\n")
 
@@ -1605,40 +1399,6 @@ class Choreography:
                     print "state", state.ident, "has successors", map(lambda x: x.ident, succStates)
                 map(lambda succ: state.addSucc(succ), succStates)
 
-
-            # queuelen = 0
-            # while (len(queue) != queuelen):
-            #     print queue
-            #     # if no element is removed -> terminate, else infinite loop!
-            #     queuelen = len(queue)
-            #     for elem in queue:
-            #         successors = []
-            #                  # TODO: did not work with initial state. Why?
-            #                  # hm, sounds like a predicate but has surprising side-effects ...
-            #         if (hasSuccInList(elem[2], stateTab, successors)):
-            #             # add to stateTab list
-            #             if (elem[0] == 'interaction'):
-            #                 stateTab.append(InteractionState(elem[1], successors, elem[3], elem[4], elem[5]))
-            #             elif (elem[0] == 'choice'):
-            #                 stateTab.append(ChoiceState(elem[1], successors))
-            #             elif (elem[0] == 'dominated'):
-            #                 stateTab.append(DominatedChoiceState(elem[1], successors, elem[3]))
-            #             elif (elem[0] == 'simpleJoin'):
-            #                 stateTab.append(SimpleJoinState(elem[1], successors))
-            #             elif (elem[0] == 'subsetSelect'):
-            #                 stateTab.append(SubsetSelectState(elem[1], successors)) #, elem[3]))
-            #             elif (elem[0] == 'subsetJoin'):
-            #                 stateTab.append(SubsetJoinState(elem[1], successors))
-            #             elif (elem[0] == 'allSelect'):
-            #                 stateTab.append(AllSelectState(elem[1], successors))
-            #             elif (elem[0] == 'allJoin'):
-            #                 stateTab.append(AllJoinState(elem[1], successors))
-            #             elif (elem[0] == 'initial'):
-            #                 stateTab.append(InitialState(elem[1], successors))
-            #             # remove from working queue
-            #             queue.remove(elem)
-
-
             # dumps resulting tab
             if debug:
                 for e in stateTab:
@@ -1703,18 +1463,10 @@ if __name__ == '__main__':
 
     checker = Checker()
 
-    path = 'TMP/'
-
-#    for infile in glob.glob( os.path.join(path, '*.xml') ):
-#    for infile in glob.glob( os.path.join(path, 'online*v1.xml') ):
-#    for infile in ['test/c0003a.xml', 'test/c0004ter.xml', 'test/c0004bis.xml']:
-#    for infile in ['test/TravelAgency.xml']:
-
     infile=sys.argv[1]
 
     print "current file is: " + infile
     choreo = Choreography()
     choreo.buildChoreoFromFile(infile, True)
     choreo.computeSyncSets(True)
-    # print choreo.name, "is faulty: ", choreo.simpleFaultyP()
     checker.checkChoreo(choreo)
