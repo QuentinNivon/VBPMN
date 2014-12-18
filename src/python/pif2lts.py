@@ -1480,7 +1480,7 @@ class Choreography:
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n") #\"% CADP_TIME=\"memtime\"\n\n")
         f.write ("% DEFAULT_PROCESS_FILE=" + name + ".lnt\n\n")
         # choreography generation (LTS)
-        f.write("\"" + name + "_bpmnlts_min.bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN [")
+        f.write("\"" + name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN [")
         alpha=self.alpha()
         dumpAlphabet(alpha,f,False)
         f.write("]\";\n\n")
