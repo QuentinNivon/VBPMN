@@ -139,25 +139,6 @@ def existDefaultBranch(lstates):
     return res
 
 ##
-# Computes the union of 2 lists
-def union(l1,l2):
-    l=[]
-    for e in l1:
-        if not(e in l2):
-           l.append(e)
-    l.extend(l2)
-    return l
-
-##
-# Computes the intersection of 2 lists
-def intersection(l1,l2):
-    l=[]
-    for e in l1:
-        if e in l2:
-           l.append(e)
-    return l
-
-##
 # Abstract class for State
 # Should not be directly used. Use child classes instead.
 class State:
@@ -927,18 +908,6 @@ class Choreography:
     def getStates(self):
         return self.states
 
-
-    def simpleFaultyP(self):
-
-        choices = filter(lambda state: isinstance(state, ChoiceState), self.states)
-
-        for choice in choices:
-            interactions = filter(lambda successor: isinstance(successor, InteractionState), choice.succ)
-            if len(interactions) > 0:
-                if not reduce(lambda x, y: x and (interactions[0].initiating == y.initiating), interactions, True):
-                    return True
-        return False
-
     """
     must be called after choreography construction
     will create cone sets for splits and sync sets for all states
@@ -1038,149 +1007,6 @@ class Choreography:
         # the necessary ones are computed in the syncSet attribute
         return removeDoubles(alpha,alpha)
 
-    # Generates a few types (string, fifo) and functions
-    def generateDatatypes(self,alpha,f):
-        f.write("type Message is\n")
-        dumpAlphabet(alpha,f,False)
-        f.write("\n")
-        f.write("with \"==\", \"!=\"\n")
-        f.write("end type\n\n")
-        f.write("type Buffer is list of Message\n")
-        f.write("with \"==\", \"!=\"\n")
-        f.write("end type\n\n")
-        f.write("type BoundedBuffer is bbuffer (buffer: Buffer, bound: Nat)\n")
-        f.write("with \"==\", \"!=\"\n")
-        f.write("end type\n\n")
-        f.write("function insert (m: Message, q: Buffer): Buffer is\n")
-        f.write("         case q in\n")
-        f.write("         var hd: Message, tl: Buffer in\n")
-        f.write("             nil         -> return cons(m,nil)\n")
-        f.write("           | cons(hd,tl) -> return insert(m,tl)\n")
-        f.write("         end case\n")
-        f.write("end function\n\n")
-        f.write("function ishead (m: Message, q: Buffer): Bool is\n")
-        f.write("         case q in\n")
-        f.write("         var hd: Message, tl: Buffer in\n")
-        f.write("             nil         -> return false\n")
-        f.write("           | cons(hd,tl) -> return (m==hd)\n")
-        f.write("         end case\n")
-        f.write("end function\n\n")
-        f.write("function remove (q: Buffer): Buffer is\n")
-        f.write("         case q in\n")
-        f.write("         var hd: Message, tl: Buffer in\n")
-        f.write("             nil         -> return nil\n")
-        f.write("           | cons(hd,tl) -> return tl\n")
-        f.write("         end case\n")
-        f.write("end function\n\n")
-        f.write("function count (q: Buffer): Nat is\n")
-        f.write("         case q in\n")
-        f.write("         var hd: Message, tl: Buffer in\n")
-        f.write("             nil         -> return 0\n")
-        f.write("           | cons(hd,tl) -> return (1+count(tl))\n")
-        f.write("         end case\n")
-        f.write("end function\n\n")
-        f.write("function bisfull (bq: BoundedBuffer): Bool is\n")
-        f.write("  return ((count(bq.buffer))==bq.bound)\n")
-        f.write("end function\n\n")
-        f.write("function binsert (m: Message, bq: BoundedBuffer): BoundedBuffer is\n")
-        f.write("  if bisfull(bq) then\n")
-        f.write("     return bq\n")
-        f.write("  else\n")
-        f.write("     return bbuffer(insert(m,bq.buffer),bq.bound)\n")
-        f.write("  end if\n")
-        f.write("end function\n\n")
-        f.write("function bishead (m: Message, bq: BoundedBuffer): Bool is\n")
-        f.write("  return ishead(m,bq.buffer)\n")
-        f.write("end function\n\n")
-        f.write("function bremove (bq: BoundedBuffer): BoundedBuffer is\n")
-        f.write("  return bbuffer(remove(bq.buffer),bq.bound)\n")
-        f.write("end function\n\n")
-        f.write("function bcount (bq: BoundedBuffer): Nat is\n")
-        f.write("  return count(bq.buffer)\n")
-        f.write("end function\n\n")
-
-
-    # Computes the set of actions to be hidden for peer projection purposes
-    #  -> we return actions in which the current peer is NOT involved
-    def computeHidingActions(self,pid,alpha):
-        res=[]
-        for act in alpha:
-            l3=act.split("_")
-            if (l3[0]!=pid) and (l3[1]!=pid):
-               res.append(act)
-        return res
-
-    # Computes the set of actions used by a specific peer
-    def alphaPeer(self,pid,alpha):
-        res=[]
-        for act in alpha:
-            l3=act.split("_")
-            if (l3[0]==pid) or (l3[1]==pid):
-               res.append(act)
-        return res
-
-    # Computes the set of actions used by a specific Buffer
-    def alphaBuffer(self,pid,alpha):
-        res=[]
-        for act in alpha:
-            l3=act.split("_")
-            if (l3[1]==pid):
-               res.append(act)
-        return res
-
-
-    # Adds one direction to an alphabet (string list)
-    def alphaDir(self,pid,alpha):
-        res=[]
-        for act in alpha:
-            l3=act.split("_")
-            if (l3[0]==pid):
-               aux=act # +"_EM"
-               if not(aux in res):
-                  res.append(aux)
-            if (l3[1]==pid):
-               aux=act+"_REC"
-               if not(aux in res):
-                  res.append(aux)
-        return res
-
-    # Adds systematically both directions to an alphabet (string list)
-    def alphaBothDir(self,alpha):
-        res=[]
-        for act in alpha:
-            aux=act # +"_EM"
-            if not(aux in res):
-               res.append(aux)
-            aux=act+"_REC"
-            if not(aux in res):
-               res.append(aux)
-        return res
-
-    ##
-    # Computes a synchronisation set given a peer and a list of peers
-    def computeSynchro(self,pid,peers,alpha):
-        alphap=self.alphaPeer(pid,alpha)
-        alphas=[]
-        for k in peers:
-            ak=self.alphaPeer(k,alpha)
-            alphas=union(alphas,ak)
-        return intersection(alphap,alphas)
-
-
-    # Dumps alphabet with REC suffixing each message
-    def dumpAlphabetWithREC(self,alpha,f,any):
-        l=0
-        max=len(alpha)
-        for e in alpha:
-            f.write(e)
-            f.write("_REC")
-            if any:
-               f.write(":any")
-            l=l+1
-            if l<max:
-               f.write(",")
-
-
     # Generates an LNT module and process for a BPMN 2.0 choreography
     def genLNT(self,name=""):
         if name=="":
@@ -1190,7 +1016,6 @@ class Choreography:
         f=open(filename, 'w')
         f.write("module "+self.name+" with \"get\" is\n\n")
         alpha=self.alpha()
-        self.generateDatatypes(alpha,f)
         # the process MAIN corresponds to the initial state
         # otherwise, we generate one process per state
         for s in self.states:
