@@ -1,13 +1,8 @@
 #
-# Name:   xml2python.py - Classes for describing xml encoded choreographies
-# Author: Alexandre Dumont, Gwen Salaun, Matthias Gudemann
+# Name:   pif2lts.py - Classes for generating an LTS given a PIF model 
+#                      via an encoding to LNT
+# Author: Matthias Gudemann, Gwen Salaun, Pascal Poizat
 # Date:   03-04-2012
-###############################################################################
-# > no more looptype definitions (noLoop, standardLoop, sequentialMultiInstance,
-# parallelMultiinstance) -> every Interaction is encoded as a noLoop construct.
-##
-# > event based gateways and complex gateways removed (not taken into
-# consideration in the intermediate format)
 ###############################################################################
 
 from subprocess import *
@@ -1489,58 +1484,8 @@ class Choreography:
         alpha=self.alpha()
         dumpAlphabet(alpha,f,False)
         f.write("]\";\n\n")
-
-       # if not(asynch): (Matthias version, with such parameters, we cannot check synchronizability since we have no both _compo_sync_min.bcg and _acompo_min.bcg)
-            # realizability for synchronous communication
-            # peer composition generation (LTS)
-        if smartReduction:
-                f.write ("\"" + name + "_compo_sync.bcg\" = smart branching reduction of\n")
-        else:
-                f.write ("\"" + name + "_compo_sync.bcg\" = root leaf branching reduction of\n")
-        peers = self.getPeers()
-        self.generate_svl_sync_red_compositional(alpha, peers, f)
-            #f.write ("\"" + name + "_compo_sync_min.bcg\"= safety reduction of tau*.a reduction of branching reduction of \"" + name + "_compo_sync.bcg\";")
-        f.write ("\"" + name + "_compo_sync_min.bcg\"= weak trace reduction of safety reduction of tau*.a reduction of branching reduction of \"" + name + "_compo_sync.bcg\";")
-      #  else:  (with if not (asynch), Matthias version, with such parameters, we cannot check synchronizability since we have no both _compo_sync_min.bcg and _acompo_min.bcg)
-            # realizability for asynchronous communication
-            # peer composition generation (LTS)
-        if smartReduction:
-                f.write ("\"" + name + "_acompo.bcg\" = smart branching reduction of\n")
-        else:
-                f.write ("\"" + name + "_acompo.bcg\" = root leaf branching reduction of\n")
-        peers = self.getPeers()
-        self.generate_svl_async_red_compositional(alpha, peers, f, True)
-        f.write ("\"" + name + "_acompo_min.bcg\"= safety reduction of tau*.a reduction of branching reduction of \"" + name + "_acompo.bcg\";\n\n")
-
-        if generatePeers:
-            # peer generation (synchronous communication - no directions)
-            peers=self.getPeers()
-            for p in peers:
-                f.write("\"" + name + "_peer_" + p + ".bcg\" = safety reduction of tau*.a reduction of \"peer_"+p+" [")
-                dumpAlphabet(alpha,f,False)
-                f.write("]\";\n")
-                # peer generation (asynchronous communication - directions)
-                #  - no direction means an emission
-                #  - receptions made explicit with the _REC suffix
-                f.write("\"" + name + "_apeer_" + p + ".bcg\" = safety reduction of tau*.a reduction of \"apeer_"+p+" [")
-                alphap=self.alphaPeer(p,alpha)
-                alphapdir=self.alphaDir(p,alphap)
-                dumpAlphabet(alphapdir,f,False)
-                f.write("]\";\n")
-
         f.close()
 
-        f=open(name + "_synchronizability.svl", 'w')
-        # equivalence between the choreography LTS and the distributed system LTS (async)
-        #  -> here we only consider emissions in the distributed system
-        f.write("\"" + name + "_synchronizability.bcg\" = strong comparison using bfs with bisimulator \"" + name + "_compo_sync_min.bcg\" ==  \"" + name + "_acompo_min.bcg\";\n\n")
-        f.close()
-
-        f=open(name + "_realizability.svl", 'w')
-        # synchronizability check (WWW 2011) using trace equivalence between the synchronous composition
-        #  and the 1-bounded asynchronous composition
-        f.write("\"" + name + "_realizability.bcg\" = strong comparison using bfs with bisimulator \"" + name + "_bpmnlts_min.bcg\" ==  \"" + name + "_acompo_min.bcg\";\n\n")
-        f.close()
 
     def generate_svl_async_red_compositional(self, alpha, peers, f, hide = True):
 
@@ -2030,16 +1975,18 @@ if __name__ == '__main__':
 
     checker = Checker()
 
-    path = 'test/'
+    path = 'TMP/'
 
 #    for infile in glob.glob( os.path.join(path, '*.xml') ):
-    for infile in glob.glob( os.path.join(path, 'online*v1.xml') ):
+#    for infile in glob.glob( os.path.join(path, 'online*v1.xml') ):
 #    for infile in ['test/c0003a.xml', 'test/c0004ter.xml', 'test/c0004bis.xml']:
 #    for infile in ['test/TravelAgency.xml']:
 
-        print "current file is: " + infile
-        choreo = Choreography()
-        choreo.buildChoreoFromFile(infile, True)
-        choreo.computeSyncSets(True)
-        print choreo.name, "is faulty: ", choreo.simpleFaultyP()
-        checker.checkChoreo(choreo)
+    infile=sys.argv[1]
+
+    print "current file is: " + infile
+    choreo = Choreography()
+    choreo.buildChoreoFromFile(infile, True)
+    choreo.computeSyncSets(True)
+    # print choreo.name, "is faulty: ", choreo.simpleFaultyP()
+    checker.checkChoreo(choreo)
