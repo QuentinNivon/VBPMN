@@ -1472,129 +1472,17 @@ class Choreography:
         f.close()
 
     # Generates an SVL file
-    def genSVL(self, smartReduction = True, generatePeers = False, name="", asynch=True):
-        if name=="":
-            name = self.name
-        filename=name+".svl"
+    def genSVL(self, smartReduction = True):
+        filename=self.name+".svl"
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n") #\"% CADP_TIME=\"memtime\"\n\n")
-        f.write ("% DEFAULT_PROCESS_FILE=" + name + ".lnt\n\n")
+        f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
         # choreography generation (LTS)
-        f.write("\"" + name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN [")
+        f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN [")
         alpha=self.alpha()
         dumpAlphabet(alpha,f,False)
         f.write("]\";\n\n")
         f.close()
-
-
-    def generate_svl_async_red_compositional(self, alpha, peers, f, hide = True):
-
-        alphabdir=self.alphaBothDir(alpha)
-
-        i = 0
-        max = len (peers)
-        for p in peers:
-            if i < max - 1:
-                f.write("par ")
-                synchro = self.computeSynchro(p, peers[i+1:],alpha) # why synchro? TODO
-                if synchro != []:
-                    dumpAlphabet(synchro, f, False)
-                f.write (" in\n")
-            if hide:
-                alphap = self.alphaPeer(p, alpha)
-                if alphap != []:
-                    f.write("(total hide ")
-                    self.dumpAlphabetWithREC(alphap, f, False)
-                    f.write ("  in\n")
-
-                f.write("peer_buffer_"+p)
-            alphap=self.alphaPeer(p,alpha)
-            alphapdir=self.alphaDir(p,alphap)
-            alphab=self.alphaBuffer(p,alpha)
-            alphabdir=self.alphaBothDir(alphab)
-            f.write(" [")
-            dumpAlphabet(union(alphabdir,alphapdir),f,False)
-            f.write("]\n")
-            if hide:
-               f.write(")\n")
-            i = i + 1
-            if i < max:
-                f.write("||\n")
-        i = 1
-        while i < max - 1:
-            f.write("end par\n")
-            i = i + 1
-        f.write("end par;\n\n")
-
-    def generate_svl_sync_red_compositional(self, alpha, peers, f):
-
-        alphabdir=self.alphaBothDir(alpha)
-
-        i = 0
-        max = len (peers)
-        for p in peers:
-            if i < max - 1:
-                f.write("par ")
-                synchro = self.computeSynchro(p, peers[i+1:],alpha) # why synchro? TODO
-                if synchro != []:
-                    dumpAlphabet(synchro, f, False)
-                f.write (" in\n")
-
-            f.write(" peer_"+p)
-            f.write(" [")
-            dumpAlphabet(alpha,f,False)
-            f.write("]\n")
-            i = i + 1
-            if i < max:
-                f.write("||\n")
-        i = 1
-        while i < max - 1:
-            f.write("end par\n")
-            i = i + 1
-        f.write("end par;\n\n")
-
-    def parallelMergeMapCreatedP(self):
-        return len(self.parallelMergeMap) != 0
-
-    def computeReachableParallelMerges(self):
-
-        # create map: parallel split -> possible parallel merges
-        self.parallelMergeMap = {}
-        tempMap = {}
-        for state in self.states:
-            if isinstance(state, AllSelectState):
-                mergeSetRaw = state.reachableParallelMerge([],-1)
-                mergeSetZeros = keepZeroDepthStrings(mergeSetRaw)
-                mergeSetUnique = removeDoubles(mergeSetZeros, mergeSetZeros)
-                print "found a parallel split named", state.getId()
-                print "reachable merges are", mergeSetUnique
-                tempMap[state.getId()] = mergeSetUnique
-
-        # create mapping from parallel merges to list of splits
-        inv_map = {}
-        for k, v in tempMap.iteritems():
-            for merge in v:
-                inv_map[merge] = inv_map.get(merge, [])
-                inv_map[merge].append(k)
-
-        liste = tempMap.items()
-        while len(liste)>0:
-            # sort for smallest closingSet
-            liste.sort(key = lambda (split, mergeList) : len(mergeList))
-            [split, mergeList] = liste[0]
-            merger = mergeList[0]
-            self.parallelMergeMap[split] = [merger]
-            print split, merger, liste
-            liste = liste[1:len(liste)]
-            for s, ml in liste:
-                print "s / ml", s, ml
-                if ml.count(merger) > 0:
-                    ml.remove(merger)
-
-        print self.parallelMergeMap
-
-    def getParallelMerges(self, state):
-        return self.parallelMergeMap[state.getId()]
 
 
     def buildChoreoFromFile(self, fileName, debug = False):
@@ -1773,52 +1661,11 @@ class Choreography:
 
 class Checker:
 
-    def cleanResults(self, choreo):
-        name = choreo.getName()
-        print "removing old result files"
-        process = Popen (["svl","-clean",name + "_synchronizability"], shell = False, stdout=PIPE)
-        #process = Popen (["rm","compo.bcg","compo_sync.bcg","cp.bcg"], stderr=PIPE, stdout=PIPE)
-        process.communicate()
-        #process.wait()
-        #process.stdout.flush()
-        
-        process = Popen (["svl","-clean",name + "_realizability"], shell = False, stdout=PIPE)
-        #process = Popen (["rm","synchronizability.bcg","realizability.bcg"], stderr=PIPE, stdout=PIPE)
-        process.communicate()
-        #process.wait()
-        #process.stdout.flush()
-        
-
-    # remove all files generated by the svl execution
-    def cleanUp(self, choreo):
-        name = choreo.getName()
-        print "removing old bcg files"
-        process = Popen (["svl","-clean",name], shell = False, stdout=PIPE)
-        output = process.communicate()
-        #process.wait()
-       
-        
-        process = Popen (["svl","-clean",name + "_synchronizability"], shell = False, stdout=PIPE)
-        #process = Popen (["rm","compo.bcg","compo_sync.bcg","cp.bcg"], stderr=PIPE, stdout=PIPE)
-        output=process.communicate()
-        #process.wait()
-        
-        print "removing old diagnostics"
-        process = Popen (["svl","-clean",name + "_realizability"], shell = False, stdout=PIPE)
-        #process = Popen (["rm","synchronizability.bcg","realizability.bcg"], stderr=PIPE, stdout=PIPE)
-        output=process.communicate()
-        #process.wait()
-        
 
     def generateLTS(self, choreo, debugOutput = False):
         import sys
         name = choreo.getName()
         
-        # process = Popen (["svl",name], shell = False, stdout=PIPE)
-        # output = process.communicate()
-        # if debugOutput:
-        #     print output[0]
-        #     print output[1]
         if debugOutput:
              process = Popen (["svl",name], shell = False, stdout=sys.stdout)
 	     #process = Popen (["svl",name], shell = False, stdout=PIPE)
@@ -1826,142 +1673,23 @@ class Checker:
             process = Popen (["svl",name], shell = False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
             #process = Popen (["svl",name], shell = False, stdin=PIPE, stdout=PIPE)
         process.communicate()
-        #process.wait()
-        #
-        #
-        
             
         if process.returncode != 0:
             return False
         else:
             return True
 
-    def isSynchronizableP(self, choreo, debugOutput = False):
-        name = choreo.getName()
-        process = Popen (["svl",name+"_synchronizability"], shell = False, stdout=PIPE)
-        process.communicate()
-        process.wait()
-        
-        if debugOutput:
-            if os.path.isfile ("synchronizability.bcg"):
-                process = Popen (["bcg_info","-labels",name + "_synchronizability.bcg"], shell = False, stdout=PIPE)
-                print process.communicate()[0]
-                #process.wait()
-        return not (os.path.isfile (name+"_synchronizability.bcg"))
-
-    def isRealizableP(self, choreo, debugOutput = False):
-        name = choreo.getName()
-        process = Popen (["svl",name+"_realizability"], shell = False, stdout=PIPE)
-        process.communicate()
-        #process.wait()
-        if debugOutput:
-            if os.path.isfile ("realizability.bcg"):
-                process = Popen (["bcg_info","-labels",name + "_realizability.bcg"], shell = False, stdout=PIPE)
-                print process.communicate()[0]
-                #process.wait()
-        return not (os.path.isfile (name + "_realizability.bcg"))
-
-    def readCounterEx(self, choreo, diagFile = "synchronizability.bcg"):
-        name = choreo.getName()
-        process = Popen (["bcg_info","-labels", diagFile], shell = False, stdout=PIPE)
-        output = process.communicate()[0]
-        #process.wait()
-        lines = output.split('\n')
-        counterList = filter (lambda line: line.find("Present in " + name + "_acompo_min.bcg: ") != -1, lines)
-        if len (counterList) == 0:
-            print "Error, did not find useable counterexample in choreo!"
-            return
-        counterExFull = counterList[0]
-        counterEx = counterExFull[len ("Present in " + name + "_acompo_min.bcg: "):(len (counterExFull))]
-        #print "the last message of the diagnostic was ", counterEx
-        return counterEx
-
-
-    # def extendChoreo(self, cp, sender, receiver, msg):
-    #     """ extends a choreography given a transition that was a diagnostics in the
-    #         synchronizability check
-
-    #     cp -- the choreography to extend
-    #     sender -- the sending peer
-    #     receiver -- the receiving peer
-    #     msg -- the message of the transition in the diagnostic
-    #     """
-
-    #     print "extending choreo because of ", sender, receiver, msg, " transition"
-    #     offendingLabel = cp.createLabel (sender, receiver, msg)
-    #     transitionsToFix = cp.findOffendingTransitions (offendingLabel)
-    #     if len(transitionsToFix) > 1:
-    #         print "more than one possible transition give more information!"
-    #         return False
-    #     else:
-    #         print "transitions needed to fix ", map (lambda trans: trans.printTransition(), transitionsToFix)
-    #         synchroState = transitionsToFix[0].getSource()
-    #         print "synchro State is ", synchroState.printState()
-    #         return cp.insertSynchroMessage(transitionsToFix[0])
-
 
     def checkChoreo(self, choreo, smartReduction = True, debugInfoMonitors = False):
 
         choreoName = choreo.getName()
-        synchronizabilityLoop = True
         initial = choreo.getInitialState()
         conditions = initial.checkConditionsFromSpec("", [], [], True)
-        if False: #not cp.checkAllConditions():
-            print "choreography is faulty"
-        else:
-            while True:
-                print "checking the choreography "
-                #choreo.printing()
+        
+        choreo.genLNT()
+        choreo.genSVL(smartReduction)
+        self.generateLTS(choreo)
 
-                print "generate LNT file"
-                choreo.genLNT()
-                if not smartReduction:
-                    print "generate SVL with compositional verification"
-                else:
-                    print "generate SVL file with smart reduction"
-                choreo.genSVL(smartReduction, debugInfoMonitors)
-                break
-
-                self.cleanUp(choreo)
-                if not self.generateLTS(choreo, False):
-                    print "error in LTS generation, rerun svl manually to see the errors\n"
-                    print "===\n"
-                    break
-
-                if synchronizabilityLoop:
-                    if self.isSynchronizableP(choreo, True):
-                        print "choreography " + choreoName + " is synchronizable in this form"
-                        print "===\n"
-                        synchronizabilityLoop = False
-                    else:
-                        print "choreography is not synchronizable in this form"
-                        print "===\n"
-                        self.isRealizableP(choreo, True)
-                        counterex = self.readCounterEx(choreo, choreoName + "_realizability.bcg")
-                        # FIXME: CADP changes to upper case!
-                        # currently the examples are lower case, but this is not guaranteed
-                if not synchronizabilityLoop:
-                    if self.isRealizableP(choreo, True):
-                        self.isSynchronizableP(choreo, True)
-                        print "the choreography is realizable in this form"
-                        print "conditions check says:", conditions
-                        print "===\n"
-                        break
-                    else:
-                        counterex = self.readCounterEx(choreo, choreoName + "_realizability.bcg")
-                if counterex == "exit":
-                    print "found exit in bcg, unclear what to do\n"
-                    print "conditions check says:", conditions
-                    print "===\n"
-                    break
-                [sender, receiver, msg] = counterex.lower().split('_')
-                print "counterexample:", sender, receiver, msg
-                print "conditions check says:", conditions
-                break
-
-                # if not self.extendChoreo(cp, sender, receiver, msg):
-                #     print "===\n"
-                #     break
 
 ##############################################################################################
 if __name__ == '__main__':

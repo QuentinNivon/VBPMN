@@ -1,4 +1,6 @@
 ##### How to generate an LTS from a CIF file?
 
-$ python pif2lnt myfile.cif      -> generates myfile.lnt and myfile.svl
-$ svl myfile.svl                 -> generates myfile.bcg
+$ python pif2lnt myfile.cif      
+
+-> This command generates myfile.lnt and myfile.svl, calls svl on
+   myfile.svl, which generates myfile.bcg
