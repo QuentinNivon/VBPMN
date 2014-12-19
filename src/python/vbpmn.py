@@ -1,9 +1,8 @@
 #
 # Name:   pif2lts.py - Classes for comparing two PIF models 
 #                      using CADP verification tools
-#                      via an encoding to LNT
 # Author: Matthias Gudemann, Gwen Salaun, Pascal Poizat
-# Date:   03-04-2012
+# Date:   late 2014
 ###############################################################################
 
 from subprocess import *
@@ -1267,7 +1266,6 @@ class Checker:
         else:
             return True
 
-
     def checkChoreo(self, choreo, smartReduction = True, debugInfoMonitors = False):
 
         choreoName = choreo.getName()
@@ -1277,6 +1275,46 @@ class Checker:
         choreo.genLNT()
         choreo.genSVL(smartReduction)
         self.generateLTS(choreo)
+
+class Comparator:
+
+    # two names corresponding to the LTSs to be compared and one comparison operation
+    def __init__(self,n1,n2,op):
+        self.name1=n1
+        self.name2=n2
+        self.operation=op
+
+    # generates SVL code to check the given operation
+    def genSVL(self,filename):
+        filename="compare.svl"
+        f=open(filename, 'w')
+        f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
+        #f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
+        if (self.operation=="="):
+            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator \""+self.name2+".bcg\" \n\n")
+        else:
+            print self.operation + " is not yet implemented"
+        f.write("\n\n")
+        f.close()
+
+    # generates and calls the generated SVL file
+    def compare(self, fname, debugOutput = False):
+        import sys
+        
+        self.genSVL(fname)
+        if debugOutput:
+             process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
+	     #process = Popen (["svl",fname], shell = False, stdout=PIPE)
+        else:
+            process = Popen (["svl",fname], shell = False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            #process = Popen (["svl",fname], shell = False, stdin=PIPE, stdout=PIPE)
+        process.communicate()
+            
+        if process.returncode != 0:
+            return False
+        else:
+            return True
+
 
 
 ##############################################################################################
@@ -1291,11 +1329,21 @@ if __name__ == '__main__':
 
     checker = Checker()
 
-    infile=sys.argv[1]
+    infile1=sys.argv[1]
+    infile2=sys.argv[2]
+    operation=sys.argv[3]
 
-    print "current file is: " + infile
-    choreo = Choreography()
-    choreo.buildChoreoFromFile(infile)
-    choreo.computeSyncSets()
-    checker.checkChoreo(choreo)
+    print "converting " + infile1 + " to LTS.."
+    c1 = Choreography()
+    c1.buildChoreoFromFile(infile1)
+    c1.computeSyncSets()
+    checker.checkChoreo(c1)
 
+    print "converting " + infile2 + " to LTS.."
+    c2 = Choreography()
+    c2.buildChoreoFromFile(infile2)
+    c2.computeSyncSets()
+    checker.checkChoreo(c2)
+
+    comp = Comparator(c1.name,c2.name,operation)
+    comp.compare("compare.svl")
