@@ -1,5 +1,6 @@
 #
-# Name:   pif2lts.py - Classes for generating an LTS given a PIF model 
+# Name:   pif2lts.py - Classes for comparing two PIF models 
+#                      using CADP verification tools
 #                      via an encoding to LNT
 # Author: Matthias Gudemann, Gwen Salaun, Pascal Poizat
 # Date:   03-04-2012
