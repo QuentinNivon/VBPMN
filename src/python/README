@@ -1,6 +1,14 @@
-##### How to generate an LTS from a CIF file?
+##### How to compare two CIF files? #####
 
-$ python pif2lnt myfile.cif      
+$ python pif2lnt file1.cif file2.cif operation
 
--> This command generates myfile.lnt and myfile.svl, calls svl on
-   myfile.svl, which generates myfile.bcg
+-> This command converts each file into an LTS and compares them
+   wrt. the operation
+
+-> Operations supported so far:
+
+   ">" the first LTS simulates the second LTS
+
+   "<" the second LTS simulates the first LTS
+
+   "=" both LTSs are trace equivalent
