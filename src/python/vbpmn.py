@@ -1,8 +1,8 @@
 #
-# Name:   pif2lts.py - Classes for comparing two PIF models 
-#                      using CADP verification tools
-# Author: Matthias Gudemann, Gwen Salaun, Pascal Poizat
-# Date:   late 2014
+# Name:    pif2lts.py - Classes for comparing two PIF models 
+#                       using CADP verification tools
+# Authors: Pascal Poizat, Gwen Salaun
+# Date:    late 2014
 ###############################################################################
 
 from subprocess import *
@@ -1291,7 +1291,13 @@ class Comparator:
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
         #f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
         if (self.operation=="="):
-            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator \""+self.name2+".bcg\" \n\n")
+            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -strong \""+self.name2+".bcg\" \n\n")
+        # the first LTS simulates (is greater than) the second LTS
+        elif (self.operation==">"):
+            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -greater -strong \""+self.name2+".bcg\" \n\n")
+        # the first LTS is simulated by (is smaller than) the second LTS
+        elif (self.operation=="<"):
+            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -smaller -strong \""+self.name2+".bcg\" \n\n")
         else:
             print self.operation + " is not yet implemented"
         f.write("\n\n")
@@ -1306,7 +1312,7 @@ class Comparator:
              process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
 	     #process = Popen (["svl",fname], shell = False, stdout=PIPE)
         else:
-            process = Popen (["svl",fname], shell = False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+            process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
             #process = Popen (["svl",fname], shell = False, stdin=PIPE, stdout=PIPE)
         process.communicate()
             
@@ -1345,5 +1351,6 @@ if __name__ == '__main__':
     c2.computeSyncSets()
     checker.checkChoreo(c2)
 
+    print "comparing " + infile1 + " and " + infile2 + " wrt. " + operation
     comp = Comparator(c1.name,c2.name,operation)
     comp.compare("compare.svl")

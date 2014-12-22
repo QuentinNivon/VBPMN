@@ -2,8 +2,9 @@
 
 $ python pif2lnt file1.cif file2.cif operation
 
--> This command converts each file into an LTS and compares them
-   wrt. the operation
+-> This command converts each file into an LTS (internal behavior
+   removed), and compares them wrt. the given operation (strong
+   equivalence/preorder)
 
 -> Operations supported so far:
 
