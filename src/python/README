@@ -12,4 +12,4 @@ $ python pif2lnt file1.cif file2.cif operation
 
    "<" the second LTS simulates the first LTS
 
-   "=" both LTSs are trace equivalent
+   "=" both LTSs are equivalent
