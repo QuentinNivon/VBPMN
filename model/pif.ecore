@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="pif" nsURI="http://www.example.org/pif" nsPrefix="pif">
+  <eClassifiers xsi:type="ecore:EClass" name="Process">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="peers" upperBound="-1"
+        eType="#//Peer" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="messages" upperBound="-1"
+        eType="#//Message" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="behaviour" lowerBound="1"
+        eType="#//Workflow" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Peer">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Message">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Interaction" eSuperTypes="#//Communication">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="initiatingPeer" lowerBound="1"
+        eType="#//Peer"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="receivingPeers" lowerBound="1"
+        upperBound="-1" eType="#//Peer"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InitialEvent" eSuperTypes="#//WorkflowNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Workflow">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="nodes" lowerBound="1" upperBound="-1"
+        eType="#//WorkflowNode" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="initialNode" lowerBound="1"
+        eType="#//InitialEvent"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="finalNodes" upperBound="-1"
+        eType="#//EndEvent"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sequenceFlows" upperBound="-1"
+        eType="#//SequenceFlow" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="WorkflowNode" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="outgoingFlows" upperBound="-1"
+        eType="#//SequenceFlow" eOpposite="#//SequenceFlow/source"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="incomingFlows" upperBound="-1"
+        eType="#//SequenceFlow" eOpposite="#//SequenceFlow/target"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EndEvent" eSuperTypes="#//WorkflowNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Communication" abstract="true" eSuperTypes="#//WorkflowNode">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="message" lowerBound="1"
+        eType="#//Message"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MessageCommunication" abstract="true"
+      eSuperTypes="#//Communication"/>
+  <eClassifiers xsi:type="ecore:EClass" name="MessageSending" eSuperTypes="#//MessageCommunication"/>
+  <eClassifiers xsi:type="ecore:EClass" name="MessageReception" eSuperTypes="#//MessageCommunication"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Gateway" abstract="true" eSuperTypes="#//WorkflowNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Task" eSuperTypes="#//WorkflowNode"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SplitGateway" abstract="true" eSuperTypes="#//Gateway"/>
+  <eClassifiers xsi:type="ecore:EClass" name="JoinGateway" abstract="true" eSuperTypes="#//Gateway"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OrSplitGateway" eSuperTypes="#//SplitGateway"/>
+  <eClassifiers xsi:type="ecore:EClass" name="XOrSplitGateway" eSuperTypes="#//SplitGateway"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AndSplitGateway" eSuperTypes="#//SplitGateway"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AndJoinGateway" eSuperTypes="#//JoinGateway"/>
+  <eClassifiers xsi:type="ecore:EClass" name="XOrJoinGateway" eSuperTypes="#//JoinGateway"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OrJoinGateway" eSuperTypes="#//JoinGateway"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SequenceFlow">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
+        eType="#//WorkflowNode" eOpposite="#//WorkflowNode/outgoingFlows"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" lowerBound="1"
+        eType="#//WorkflowNode" eOpposite="#//WorkflowNode/incomingFlows"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ConditionalSequenceFlow" eSuperTypes="#//SequenceFlow">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="condition" lowerBound="1"
+        eType="#//Condition" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Condition"/>
+</ecore:EPackage>
