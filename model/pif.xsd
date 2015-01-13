@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:pif="http://www.example.org/pif" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ecore:nsPrefix="pif" ecore:package="pif" targetNamespace="http://www.example.org/pif">
+  <xsd:import namespace="http://www.eclipse.org/emf/2002/Ecore" schemaLocation="platform:/plugin/org.eclipse.emf.ecore/model/Ecore.xsd"/>
+  <xsd:element ecore:ignore="true" name="Process" type="pif:Process"/>
+  <xsd:element ecore:ignore="true" name="Peer" type="pif:Peer"/>
+  <xsd:element ecore:ignore="true" name="Message" type="pif:Message"/>
+  <xsd:element ecore:ignore="true" name="Interaction" type="pif:Interaction"/>
+  <xsd:element ecore:ignore="true" name="InitialEvent" type="pif:InitialEvent"/>
+  <xsd:element ecore:ignore="true" name="Workflow" type="pif:Workflow"/>
+  <xsd:element ecore:ignore="true" name="WorkflowNode" type="pif:WorkflowNode"/>
+  <xsd:element ecore:ignore="true" name="EndEvent" type="pif:EndEvent"/>
+  <xsd:element ecore:ignore="true" name="Communication" type="pif:Communication"/>
+  <xsd:element ecore:ignore="true" name="MessageCommunication" type="pif:MessageCommunication"/>
+  <xsd:element ecore:ignore="true" name="MessageSending" type="pif:MessageSending"/>
+  <xsd:element ecore:ignore="true" name="MessageReception" type="pif:MessageReception"/>
+  <xsd:element ecore:ignore="true" name="Gateway" type="pif:Gateway"/>
+  <xsd:element ecore:ignore="true" name="Task" type="pif:Task"/>
+  <xsd:element ecore:ignore="true" name="SplitGateway" type="pif:SplitGateway"/>
+  <xsd:element ecore:ignore="true" name="JoinGateway" type="pif:JoinGateway"/>
+  <xsd:element ecore:ignore="true" name="OrSplitGateway" type="pif:OrSplitGateway"/>
+  <xsd:element ecore:ignore="true" name="XOrSplitGateway" type="pif:XOrSplitGateway"/>
+  <xsd:element ecore:ignore="true" name="AndSplitGateway" type="pif:AndSplitGateway"/>
+  <xsd:element ecore:ignore="true" name="AndJoinGateway" type="pif:AndJoinGateway"/>
+  <xsd:element ecore:ignore="true" name="XOrJoinGateway" type="pif:XOrJoinGateway"/>
+  <xsd:element ecore:ignore="true" name="OrJoinGateway" type="pif:OrJoinGateway"/>
+  <xsd:element ecore:ignore="true" name="SequenceFlow" type="pif:SequenceFlow"/>
+  <xsd:element ecore:ignore="true" name="ConditionalSequenceFlow" type="pif:ConditionalSequenceFlow"/>
+  <xsd:element ecore:ignore="true" name="Condition" type="pif:Condition"/>
+  <xsd:complexType name="Process">
+    <xsd:sequence>
+      <xsd:element ecore:resolveProxies="true" maxOccurs="unbounded" minOccurs="0" name="peers" type="pif:Peer"/>
+      <xsd:element ecore:resolveProxies="true" maxOccurs="unbounded" minOccurs="0" name="messages" type="pif:Message"/>
+      <xsd:element ecore:resolveProxies="true" name="behaviour" type="pif:Workflow"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="ecore:EString" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="Peer">
+    <xsd:attribute name="name" type="ecore:EString" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="Message">
+    <xsd:attribute name="name" type="ecore:EString" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="Interaction">
+    <xsd:complexContent>
+      <xsd:extension base="pif:Communication">
+        <xsd:attribute ecore:reference="pif:Peer" name="initiatingPeer" type="xsd:anyURI" use="required"/>
+        <xsd:attribute ecore:reference="pif:Peer" name="receivingPeers" use="required">
+          <xsd:simpleType>
+            <xsd:list itemType="xsd:anyURI"/>
+          </xsd:simpleType>
+        </xsd:attribute>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="InitialEvent">
+    <xsd:complexContent>
+      <xsd:extension base="pif:WorkflowNode"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="Workflow">
+    <xsd:sequence>
+      <xsd:element ecore:resolveProxies="true" maxOccurs="unbounded" name="nodes" type="pif:WorkflowNode"/>
+      <xsd:element ecore:resolveProxies="true" maxOccurs="unbounded" minOccurs="0" name="sequenceFlows" type="pif:SequenceFlow"/>
+    </xsd:sequence>
+    <xsd:attribute ecore:reference="pif:InitialEvent" name="initialNode" type="xsd:anyURI" use="required"/>
+    <xsd:attribute ecore:reference="pif:EndEvent" name="finalNodes">
+      <xsd:simpleType>
+        <xsd:list itemType="xsd:anyURI"/>
+      </xsd:simpleType>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType abstract="true" name="WorkflowNode">
+    <xsd:attribute name="name" type="ecore:EString" use="required"/>
+    <xsd:attribute ecore:opposite="source" ecore:reference="pif:SequenceFlow" name="outgoingFlows">
+      <xsd:simpleType>
+        <xsd:list itemType="xsd:anyURI"/>
+      </xsd:simpleType>
+    </xsd:attribute>
+    <xsd:attribute ecore:opposite="target" ecore:reference="pif:SequenceFlow" name="incomingFlows">
+      <xsd:simpleType>
+        <xsd:list itemType="xsd:anyURI"/>
+      </xsd:simpleType>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="EndEvent">
+    <xsd:complexContent>
+      <xsd:extension base="pif:WorkflowNode"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType abstract="true" name="Communication">
+    <xsd:complexContent>
+      <xsd:extension base="pif:WorkflowNode">
+        <xsd:attribute ecore:reference="pif:Message" name="message" type="xsd:anyURI" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType abstract="true" name="MessageCommunication">
+    <xsd:complexContent>
+      <xsd:extension base="pif:Communication"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="MessageSending">
+    <xsd:complexContent>
+      <xsd:extension base="pif:MessageCommunication"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="MessageReception">
+    <xsd:complexContent>
+      <xsd:extension base="pif:MessageCommunication"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType abstract="true" name="Gateway">
+    <xsd:complexContent>
+      <xsd:extension base="pif:WorkflowNode"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="Task">
+    <xsd:complexContent>
+      <xsd:extension base="pif:WorkflowNode"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType abstract="true" name="SplitGateway">
+    <xsd:complexContent>
+      <xsd:extension base="pif:Gateway"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType abstract="true" name="JoinGateway">
+    <xsd:complexContent>
+      <xsd:extension base="pif:Gateway"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="OrSplitGateway">
+    <xsd:complexContent>
+      <xsd:extension base="pif:SplitGateway"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="XOrSplitGateway">
+    <xsd:complexContent>
+      <xsd:extension base="pif:SplitGateway"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="AndSplitGateway">
+    <xsd:complexContent>
+      <xsd:extension base="pif:SplitGateway"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="AndJoinGateway">
+    <xsd:complexContent>
+      <xsd:extension base="pif:JoinGateway"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="XOrJoinGateway">
+    <xsd:complexContent>
+      <xsd:extension base="pif:JoinGateway"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="OrJoinGateway">
+    <xsd:complexContent>
+      <xsd:extension base="pif:JoinGateway"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="SequenceFlow">
+    <xsd:attribute ecore:opposite="outgoingFlows" ecore:reference="pif:WorkflowNode" name="source" type="xsd:anyURI" use="required"/>
+    <xsd:attribute ecore:opposite="incomingFlows" ecore:reference="pif:WorkflowNode" name="target" type="xsd:anyURI" use="required"/>
+  </xsd:complexType>
+  <xsd:complexType name="ConditionalSequenceFlow">
+    <xsd:complexContent>
+      <xsd:extension base="pif:SequenceFlow">
+        <xsd:sequence>
+          <xsd:element ecore:resolveProxies="true" name="condition" type="pif:Condition"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="Condition"/>
+</xsd:schema>
