@@ -1,6 +1,6 @@
 ##### How to compare two CIF files? #####
 
-$ python pif2lnt file1.cif file2.cif operation
+$ python vbpmn.py file1.cif file2.cif operation
 
 -> This command converts each file into an LTS (internal behavior
    removed), and compares them wrt. the given operation (strong
