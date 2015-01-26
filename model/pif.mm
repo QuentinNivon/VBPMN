@@ -1,6 +1,7 @@
 
 class pif.Process  {
     name : String
+    documentation : String
     @contained
     peers : pif.Peer[0,*]
     @contained

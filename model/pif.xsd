@@ -33,6 +33,7 @@
       <xsd:element ecore:resolveProxies="true" name="behaviour" type="pif:Workflow"/>
     </xsd:sequence>
     <xsd:attribute name="name" type="ecore:EString" use="required"/>
+    <xsd:attribute name="documentation" type="ecore:EString" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="Peer">
     <xsd:attribute name="name" type="ecore:EString" use="required"/>
