@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pif:Process xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pif="http://www.example.org/pif" name="e0000" documentation="very simple process with several initial event instances (one not being used), demonstrates the possible need for added constraints (eg OCL)">
+  <behaviour initialNode="//@behaviour/@nodes.0" finalNodes="//@behaviour/@nodes.1">
+    <nodes xsi:type="pif:InitialEvent" name="initial"/>
+    <nodes xsi:type="pif:EndEvent" name="final"/>
+    <nodes xsi:type="pif:InitialEvent" name="initial2"/>
+  </behaviour>
+</pif:Process>
