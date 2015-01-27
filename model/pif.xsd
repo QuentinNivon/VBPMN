@@ -6,8 +6,9 @@
 			collectionType = "indexed"
 		</appinfo>
 	</annotation>
-
-    <complexType name="Process">
+	
+	<element name="Process">
+    <complexType>
     	<sequence>
     	    <element name="name" type="string" minOccurs="1"
     			maxOccurs="1">
@@ -19,8 +20,8 @@
     		<element name="messages" type="pif:Message" minOccurs="0" maxOccurs="unbounded"></element>
     		<element name="behaviour" type="pif:Workflow" minOccurs="1" maxOccurs="1"></element>
     	</sequence>
-
     </complexType>
+    </element>
 
     <complexType name="Peer">
     	<attribute name="id" type="ID" use="required"></attribute>
@@ -120,15 +121,6 @@
     		<extension base="pif:WorkflowNode"></extension>
     	</complexContent>
     </complexType>
-
-
-
-
-
-
-
-
-    <element name="Process" type="pif:Process"></element>
 
     <complexType name="Communication" abstract="true">
     	<complexContent>

@@ -49,20 +49,20 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
     Gateway.class,
     Communication.class
 })
-@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:19:59+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
 public abstract class WorkflowNode {
 
     @XmlElementRef(name = "incomingFlows", namespace = "http://www.example.org/PIF", type = JAXBElement.class, required = false)
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:19:59+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     protected List<SequenceFlow> incomingFlows;
     @XmlElementRef(name = "outgoingFlows", namespace = "http://www.example.org/PIF", type = JAXBElement.class, required = false)
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:19:59+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     protected List<SequenceFlow> outgoingFlows;
     @XmlAttribute(name = "id", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlID
     @XmlSchemaType(name = "ID")
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:19:59+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     protected String id;
 
     /**
@@ -87,7 +87,7 @@ public abstract class WorkflowNode {
      * 
      * 
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:19:59+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     public List<SequenceFlow> getIncomingFlows() {
         if (incomingFlows == null) {
             incomingFlows = new ArrayList<SequenceFlow>();
@@ -117,7 +117,7 @@ public abstract class WorkflowNode {
      * 
      * 
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:19:59+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     public List<SequenceFlow> getOutgoingFlows() {
         if (outgoingFlows == null) {
             outgoingFlows = new ArrayList<SequenceFlow>();
@@ -133,7 +133,7 @@ public abstract class WorkflowNode {
      *     {@link String }
      *     
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:19:59+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     public String getId() {
         return id;
     }
@@ -146,7 +146,7 @@ public abstract class WorkflowNode {
      *     {@link String }
      *     
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:19:59+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     public void setId(String value) {
         this.id = value;
     }

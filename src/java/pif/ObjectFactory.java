@@ -25,11 +25,10 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _Process_QNAME = new QName("http://www.example.org/PIF", "Process");
     private final static QName _WorkflowNodeOutgoingFlows_QNAME = new QName("http://www.example.org/PIF", "outgoingFlows");
     private final static QName _WorkflowNodeIncomingFlows_QNAME = new QName("http://www.example.org/PIF", "incomingFlows");
-    private final static QName _WorkflowFinalNodes_QNAME = new QName("http://www.example.org/PIF", "finalNodes");
     private final static QName _InteractionReceivingPeers_QNAME = new QName("http://www.example.org/PIF", "receivingPeers");
+    private final static QName _WorkflowFinalNodes_QNAME = new QName("http://www.example.org/PIF", "finalNodes");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: pif
@@ -44,6 +43,30 @@ public class ObjectFactory {
      */
     public Process createProcess() {
         return new Process();
+    }
+
+    /**
+     * Create an instance of {@link Peer }
+     * 
+     */
+    public Peer createPeer() {
+        return new Peer();
+    }
+
+    /**
+     * Create an instance of {@link Message }
+     * 
+     */
+    public Message createMessage() {
+        return new Message();
+    }
+
+    /**
+     * Create an instance of {@link Workflow }
+     * 
+     */
+    public Workflow createWorkflow() {
+        return new Workflow();
     }
 
     /**
@@ -79,14 +102,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Message }
-     * 
-     */
-    public Message createMessage() {
-        return new Message();
-    }
-
-    /**
      * Create an instance of {@link ConditionalSequenceFlow }
      * 
      */
@@ -111,27 +126,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Peer }
-     * 
-     */
-    public Peer createPeer() {
-        return new Peer();
-    }
-
-    /**
      * Create an instance of {@link MessageReception }
      * 
      */
     public MessageReception createMessageReception() {
         return new MessageReception();
-    }
-
-    /**
-     * Create an instance of {@link Workflow }
-     * 
-     */
-    public Workflow createWorkflow() {
-        return new Workflow();
     }
 
     /**
@@ -183,15 +182,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Process }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "Process")
-    public JAXBElement<Process> createProcess(Process value) {
-        return new JAXBElement<Process>(_Process_QNAME, Process.class, null, value);
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
      * 
      */
@@ -215,20 +205,20 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "finalNodes", scope = Workflow.class)
+    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "receivingPeers", scope = Interaction.class)
     @XmlIDREF
-    public JAXBElement<Object> createWorkflowFinalNodes(Object value) {
-        return new JAXBElement<Object>(_WorkflowFinalNodes_QNAME, Object.class, Workflow.class, value);
+    public JAXBElement<Object> createInteractionReceivingPeers(Object value) {
+        return new JAXBElement<Object>(_InteractionReceivingPeers_QNAME, Object.class, Interaction.class, value);
     }
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "receivingPeers", scope = Interaction.class)
+    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "finalNodes", scope = Workflow.class)
     @XmlIDREF
-    public JAXBElement<Object> createInteractionReceivingPeers(Object value) {
-        return new JAXBElement<Object>(_InteractionReceivingPeers_QNAME, Object.class, Interaction.class, value);
+    public JAXBElement<Object> createWorkflowFinalNodes(Object value) {
+        return new JAXBElement<Object>(_WorkflowFinalNodes_QNAME, Object.class, Workflow.class, value);
     }
 
 }

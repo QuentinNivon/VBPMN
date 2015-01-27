@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlType;
     AndSplitGateway.class,
     OrSplitGateway.class
 })
-@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:19:59+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
 public abstract class SplitGateway
     extends Gateway
 {
