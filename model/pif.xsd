@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/PIF" xmlns:tns="http://www.example.org/PIF" elementFormDefault="qualified">
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/PIF" xmlns:pif="http://www.example.org/PIF" elementFormDefault="qualified">
 
     <complexType name="Process">
     	<sequence>
@@ -7,11 +7,11 @@
     			maxOccurs="1">
     		</element>
     		<element name="documentation" type="string" minOccurs="1" maxOccurs="1"></element>
-    		<element name="peers" type="tns:Peer" minOccurs="0"
+    		<element name="peers" type="pif:Peer" minOccurs="0"
     			maxOccurs="unbounded">
     		</element>
-    		<element name="messages" type="tns:Message" minOccurs="0" maxOccurs="unbounded"></element>
-    		<element name="behaviour" type="tns:Workflow" minOccurs="1" maxOccurs="1"></element>
+    		<element name="messages" type="pif:Message" minOccurs="0" maxOccurs="unbounded"></element>
+    		<element name="behaviour" type="pif:Workflow" minOccurs="1" maxOccurs="1"></element>
     	</sequence>
 
     </complexType>
@@ -26,10 +26,10 @@
 
     <complexType name="Workflow">
     	<sequence>
-    		<element name="nodes" type="tns:WorkflowNode" minOccurs="1"
+    		<element name="nodes" type="pif:WorkflowNode" minOccurs="1"
     			maxOccurs="unbounded">
     		</element>
-    		<element name="sequenceFlows" type="tns:SequenceFlow"
+    		<element name="sequenceFlows" type="pif:SequenceFlow"
     			minOccurs="0" maxOccurs="unbounded">
     		</element>
     		<element name="initialNode" type="IDREF" minOccurs="1" maxOccurs="1"></element>
@@ -41,10 +41,10 @@
 
     <complexType name="WorkflowNode" abstract="true">
     	<sequence>
-    		<element name="outgoingFlows" type="tns:SequenceFlow"
+    		<element name="incomingFlows" type="IDREF"
     			minOccurs="0" maxOccurs="unbounded">
     		</element>
-    		<element name="incomingFlows" type="tns:SequenceFlow"
+    		<element name="outgoingFlows" type="IDREF"
     			minOccurs="0" maxOccurs="unbounded">
     		</element>
     	</sequence>
@@ -52,19 +52,20 @@
     </complexType>
 
     <complexType name="SequenceFlow">
+    	<attribute name="id" type="ID" use="required"></attribute>
     	<attribute name="source" type="IDREF" use="required"></attribute>
     	<attribute name="target" type="IDREF" use="required"></attribute>
     </complexType>
 
     <complexType name="InitialEvent">
     	<complexContent>
-    		<extension base="tns:WorkflowNode"></extension>
+    		<extension base="pif:WorkflowNode"></extension>
     	</complexContent>
     </complexType>
     
     <complexType name="EndEvent">
     	<complexContent>
-    		<extension base="tns:WorkflowNode"></extension>
+    		<extension base="pif:WorkflowNode"></extension>
     	</complexContent>
     </complexType>
 
@@ -75,11 +76,11 @@
 
 
 
-    <element name="Process" type="tns:Process"></element>
+    <element name="Process" type="pif:Process"></element>
 
     <complexType name="Communication" abstract="true">
     	<complexContent>
-    		<extension base="tns:WorkflowNode">
+    		<extension base="pif:WorkflowNode">
     			<attribute name="message" type="IDREF" use="required"></attribute>
 
     		</extension>
@@ -88,7 +89,7 @@
 
     <complexType name="Interaction">
     	<complexContent>
-    		<extension base="tns:Communication">
+    		<extension base="pif:Communication">
     			<sequence>
     				<element name="initiatingPeer" type="IDREF" minOccurs="1" maxOccurs="1"></element>
     				<element name="receivingPeers" type="IDREF" minOccurs="1" maxOccurs="unbounded"></element>
@@ -99,25 +100,87 @@
 
     <complexType name="MessageCommunication" abstract="true">
     	<complexContent>
-    		<extension base="tns:Communication"></extension>
+    		<extension base="pif:Communication"></extension>
     	</complexContent>
     </complexType>
 
     <complexType name="MessageSending">
     	<complexContent>
-    		<extension base="tns:MessageCommunication"></extension>
+    		<extension base="pif:MessageCommunication"></extension>
     	</complexContent>
     </complexType>
 
     <complexType name="MessageReception">
     	<complexContent>
-    		<extension base="tns:MessageCommunication"></extension>
+    		<extension base="pif:MessageCommunication"></extension>
     	</complexContent>
     </complexType>
 
     <complexType name="Gateway" abstract="true">
     	<complexContent>
-    		<extension base="tns:WorkflowNode"></extension>
+    		<extension base="pif:WorkflowNode"></extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="SplitGateway" abstract="true">
+    	<complexContent>
+    		<extension base="pif:Gateway"></extension>
+    	</complexContent>
+    </complexType>
+    
+    <complexType name="JoinGateway" abstract="true">
+    	<complexContent>
+    		<extension base="pif:Gateway"></extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="ConditionalSequenceFlow">
+    	<complexContent>
+    		<extension base="pif:SequenceFlow">
+    			<sequence>
+    				<element name="condition" type="pif:Condition" minOccurs="1" maxOccurs="1"></element>
+    			</sequence>
+    		</extension>
+    	</complexContent>
+    </complexType>
+    
+    <complexType name="Condition">
+    	<attribute name="value" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="OrJoinGateway">
+    	<complexContent>
+    		<extension base="pif:JoinGateway"></extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="XOrJoinGateway">
+    	<complexContent>
+    		<extension base="pif:JoinGateway"></extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="AndJoinGateway">
+    	<complexContent>
+    		<extension base="pif:JoinGateway"></extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="OrSplitGateway">
+    	<complexContent>
+    		<extension base="pif:SplitGateway"></extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="XOrSplitGateway">
+    	<complexContent>
+    		<extension base="pif:SplitGateway"></extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="AndSplitGateway">
+    	<complexContent>
+    		<extension base="pif:SplitGateway"></extension>
     	</complexContent>
     </complexType>
 </schema>

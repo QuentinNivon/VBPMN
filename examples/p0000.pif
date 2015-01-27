@@ -1,34 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tns:Process xmlns:tns="http://www.example.org/PIF" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.example.org/PIF pif.xsd ">
-  <tns:name>p0000</tns:name>
-  <tns:documentation>a simple process to check the XSD concepts</tns:documentation>
+<pif:Process xmlns:pif="http://www.example.org/PIF" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.example.org/PIF pif.xsd ">
+  <pif:name>p0000</pif:name>
+  <pif:documentation>
+  A simple process to check the XSD concepts.
+  
+  P = PAR { m1! -> m2? ; m2! -> m1? }
+  </pif:documentation>
   
   <!--  PEERS -->
-  <tns:peers id="peer1" />
-  <tns:peers id="peer2" />
+  <pif:peers id="peer1" /> <!--  NOT USED IN THIS EXAMPLE -->
+  <pif:peers id="peer2" /> <!--  NOT USED IN THIS EXAMPLE -->
     
   <!--  MESSAGES -->
-  <tns:messages id="message1" />
-  <tns:messages id="message2" />
+  <pif:messages id="message1" />
+  <pif:messages id="message2" />
 
 <!--  WORKFLOW -->
-  <tns:behaviour>
+  <pif:behaviour>
   
   	<!--  NODES -->
-    <tns:nodes id="initial" xsi:type="tns:InitialEvent" />
-    <tns:nodes id="final1" xsi:type="tns:EndEvent" />
-    <tns:nodes id="mtask1" xsi:type="tns:MessageSending" message="message1"></tns:nodes>
-    <tns:nodes id="mtask2" xsi:type="tns:MessageReception" message="message2"></tns:nodes>
+    <pif:nodes id="initial" xsi:type="pif:InitialEvent">
+    <pif:outgoingFlows>sf1</pif:outgoingFlows>
+    </pif:nodes>
+    <pif:nodes id="final1" xsi:type="pif:EndEvent">
+    <pif:incomingFlows>sf5</pif:incomingFlows>
+    </pif:nodes>
+    <pif:nodes id="split1" xsi:type="pif:AndSplitGateway">
+    <pif:incomingFlows>sf1</pif:incomingFlows>
+    <pif:outgoingFlows>sf2a</pif:outgoingFlows>
+    <pif:outgoingFlows>sf2b</pif:outgoingFlows>
+    </pif:nodes>
+    <pif:nodes id="join1" xsi:type="pif:AndJoinGateway">
+    <pif:incomingFlows>sf4a</pif:incomingFlows>
+    <pif:incomingFlows>sf4b</pif:incomingFlows>
+    <pif:outgoingFlows>sf5</pif:outgoingFlows>
+    </pif:nodes>
+    <pif:nodes id="mtask1a" xsi:type="pif:MessageSending" message="message1">
+    <pif:incomingFlows>sf2a</pif:incomingFlows>
+    <pif:outgoingFlows>sf3a</pif:outgoingFlows>
+    </pif:nodes>
+    <pif:nodes id="mtask2a" xsi:type="pif:MessageReception" message="message2">
+    <pif:incomingFlows>sf3a</pif:incomingFlows>
+    <pif:outgoingFlows>sf4a</pif:outgoingFlows>
+    </pif:nodes>
+    <pif:nodes id="mtask1b" xsi:type="pif:MessageSending" message="message2">
+    <pif:incomingFlows>sf2b</pif:incomingFlows>
+    <pif:outgoingFlows>sf3b</pif:outgoingFlows>
+    </pif:nodes>
+    <pif:nodes id="mtask2b" xsi:type="pif:MessageReception" message="message1">
+    <pif:incomingFlows>sf3b</pif:incomingFlows>
+    <pif:outgoingFlows>sf4b</pif:outgoingFlows>
+    </pif:nodes>
     
     <!--  SEQUENCE FLOWS -->
-    <tns:sequenceFlows source="initial" target="mtask1"/>
-    <tns:sequenceFlows source="mtask1" target="mtask2"/>
-    <tns:sequenceFlows source="mtask2" target="final1"/>
+    <pif:sequenceFlows id="sf1" source="initial" target="split1"/>
+    
+    <pif:sequenceFlows id="sf2a" source="split1" target="mtask1a"/>
+    <pif:sequenceFlows id="sf3a"  source="mtask1a" target="mtask2a"/>
+    <pif:sequenceFlows id="sf4a" source="mtask2a" target="join1"/>
+    
+    <pif:sequenceFlows id="sf2b" source="split1" target="mtask1b"/>
+    <pif:sequenceFlows id="sf3b"  source="mtask1b" target="mtask2b"/>
+    <pif:sequenceFlows id="sf4b"  source="mtask2b" target="join1"/>
+    
+    <pif:sequenceFlows id="sf5" source="join1" target="final1"/>    
     
     <!--  INITIAL AND FINAL NODES -->
-    <tns:initialNode>initial</tns:initialNode>
-    <tns:finalNodes>final1</tns:finalNodes>
+    <pif:initialNode>initial</pif:initialNode>
+    <pif:finalNodes>final1</pif:finalNodes>
     
-  </tns:behaviour>
+  </pif:behaviour>
   
-</tns:Process>
+</pif:Process>
