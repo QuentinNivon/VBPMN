@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
     Interaction.class,
     MessageCommunication.class
 })
-@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
 public abstract class Communication
     extends WorkflowNode
 {
@@ -42,8 +42,8 @@ public abstract class Communication
     @XmlAttribute(name = "message", required = true)
     @XmlIDREF
     @XmlSchemaType(name = "IDREF")
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
-    protected Object message;
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    protected Message message;
 
     /**
      * Obtient la valeur de la propriété message.
@@ -53,8 +53,8 @@ public abstract class Communication
      *     {@link Object }
      *     
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
-    public Object getMessage() {
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public Message getMessage() {
         return message;
     }
 
@@ -66,8 +66,8 @@ public abstract class Communication
      *     {@link Object }
      *     
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
-    public void setMessage(Object value) {
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public void setMessage(Message value) {
         this.message = value;
     }
 

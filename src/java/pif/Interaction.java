@@ -39,19 +39,19 @@ import javax.xml.bind.annotation.XmlType;
     "initiatingPeer",
     "receivingPeers"
 })
-@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
 public class Interaction
     extends Communication
 {
 
-    @XmlElement(namespace = "http://www.example.org/PIF", required = true)
+    @XmlElement(namespace = "http://www.example.org/PIF", required = true, type = Object.class)
     @XmlIDREF
     @XmlSchemaType(name = "IDREF")
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
-    protected Object initiatingPeer;
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    protected Peer initiatingPeer;
     @XmlElementRef(name = "receivingPeers", namespace = "http://www.example.org/PIF", type = JAXBElement.class)
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
-    protected List<JAXBElement<Object>> receivingPeers;
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    protected List<Peer> receivingPeers;
 
     /**
      * Obtient la valeur de la propriété initiatingPeer.
@@ -61,8 +61,8 @@ public class Interaction
      *     {@link Object }
      *     
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
-    public Object getInitiatingPeer() {
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public Peer getInitiatingPeer() {
         return initiatingPeer;
     }
 
@@ -74,8 +74,8 @@ public class Interaction
      *     {@link Object }
      *     
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
-    public void setInitiatingPeer(Object value) {
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public void setInitiatingPeer(Peer value) {
         this.initiatingPeer = value;
     }
 
@@ -101,10 +101,10 @@ public class Interaction
      * 
      * 
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
-    public List<JAXBElement<Object>> getReceivingPeers() {
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public List<Peer> getReceivingPeers() {
         if (receivingPeers == null) {
-            receivingPeers = new ArrayList<JAXBElement<Object>>();
+            receivingPeers = new ArrayList<Peer>();
         }
         return this.receivingPeers;
     }

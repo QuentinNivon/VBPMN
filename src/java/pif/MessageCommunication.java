@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlType;
     MessageReception.class,
     MessageSending.class
 })
-@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T06:03:22+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
 public abstract class MessageCommunication
     extends Communication
 {

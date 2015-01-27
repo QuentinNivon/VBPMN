@@ -26,10 +26,10 @@ import javax.xml.namespace.QName;
 public class ObjectFactory {
 
     private final static QName _Process_QNAME = new QName("http://www.example.org/PIF", "Process");
-    private final static QName _WorkflowFinalNodes_QNAME = new QName("http://www.example.org/PIF", "finalNodes");
-    private final static QName _InteractionReceivingPeers_QNAME = new QName("http://www.example.org/PIF", "receivingPeers");
     private final static QName _WorkflowNodeOutgoingFlows_QNAME = new QName("http://www.example.org/PIF", "outgoingFlows");
     private final static QName _WorkflowNodeIncomingFlows_QNAME = new QName("http://www.example.org/PIF", "incomingFlows");
+    private final static QName _WorkflowFinalNodes_QNAME = new QName("http://www.example.org/PIF", "finalNodes");
+    private final static QName _InteractionReceivingPeers_QNAME = new QName("http://www.example.org/PIF", "receivingPeers");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: pif
@@ -195,26 +195,6 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "finalNodes", scope = Workflow.class)
-    @XmlIDREF
-    public JAXBElement<Object> createWorkflowFinalNodes(Object value) {
-        return new JAXBElement<Object>(_WorkflowFinalNodes_QNAME, Object.class, Workflow.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "receivingPeers", scope = Interaction.class)
-    @XmlIDREF
-    public JAXBElement<Object> createInteractionReceivingPeers(Object value) {
-        return new JAXBElement<Object>(_InteractionReceivingPeers_QNAME, Object.class, Interaction.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
-     * 
-     */
     @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "outgoingFlows", scope = WorkflowNode.class)
     @XmlIDREF
     public JAXBElement<Object> createWorkflowNodeOutgoingFlows(Object value) {
@@ -229,6 +209,26 @@ public class ObjectFactory {
     @XmlIDREF
     public JAXBElement<Object> createWorkflowNodeIncomingFlows(Object value) {
         return new JAXBElement<Object>(_WorkflowNodeIncomingFlows_QNAME, Object.class, WorkflowNode.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "finalNodes", scope = Workflow.class)
+    @XmlIDREF
+    public JAXBElement<Object> createWorkflowFinalNodes(Object value) {
+        return new JAXBElement<Object>(_WorkflowFinalNodes_QNAME, Object.class, Workflow.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "receivingPeers", scope = Interaction.class)
+    @XmlIDREF
+    public JAXBElement<Object> createInteractionReceivingPeers(Object value) {
+        return new JAXBElement<Object>(_InteractionReceivingPeers_QNAME, Object.class, Interaction.class, value);
     }
 
 }

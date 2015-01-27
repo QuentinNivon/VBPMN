@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/PIF" xmlns:pif="http://www.example.org/PIF" elementFormDefault="qualified">
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/PIF" xmlns:pif="http://www.example.org/PIF" jaxb:version="2.1" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" elementFormDefault="qualified">
+
+	<annotation>
+		<appinfo>
+			collectionType = "indexed"
+		</appinfo>
+	</annotation>
 
     <complexType name="Process">
     	<sequence>
@@ -32,8 +38,24 @@
     		<element name="sequenceFlows" type="pif:SequenceFlow"
     			minOccurs="0" maxOccurs="unbounded">
     		</element>
-    		<element name="initialNode" type="IDREF" minOccurs="1" maxOccurs="1"></element>
-    		<element name="finalNodes" type="IDREF" minOccurs="0" maxOccurs="unbounded"></element>
+    		<element name="initialNode" type="IDREF" minOccurs="1" maxOccurs="1">
+                <annotation>
+                    <appinfo>
+                    	<jaxb:property>                   
+                              <jaxb:baseType name="InitialEvent"/>
+						 </jaxb:property>                      
+                    </appinfo>
+               </annotation>  
+            </element>
+    		<element name="finalNodes" type="IDREF" minOccurs="0" maxOccurs="unbounded">
+                <annotation>
+                    <appinfo>
+                    	<jaxb:property>
+                              <jaxb:baseType name="EndEvent"/>
+                        </jaxb:property>
+                    </appinfo>
+               </annotation>  
+    		</element>
     	</sequence>
 
     </complexType>
@@ -43,9 +65,23 @@
     	<sequence>
     		<element name="incomingFlows" type="IDREF"
     			minOccurs="0" maxOccurs="unbounded">
-    		</element>
+                <annotation>
+                    <appinfo>
+                    	<jaxb:property>                   
+                              <jaxb:baseType name="SequenceFlow"/>
+						 </jaxb:property>                      
+                    </appinfo>
+               </annotation> 
+            </element>
     		<element name="outgoingFlows" type="IDREF"
     			minOccurs="0" maxOccurs="unbounded">
+                <annotation>
+                    <appinfo>
+                    	<jaxb:property>                   
+                              <jaxb:baseType name="SequenceFlow"/>
+						 </jaxb:property>                      
+                    </appinfo>
+               </annotation>     			
     		</element>
     	</sequence>
     	<attribute name="id" type="ID" use="required"></attribute>
@@ -53,8 +89,24 @@
 
     <complexType name="SequenceFlow">
     	<attribute name="id" type="ID" use="required"></attribute>
-    	<attribute name="source" type="IDREF" use="required"></attribute>
-    	<attribute name="target" type="IDREF" use="required"></attribute>
+    	<attribute name="source" type="IDREF" use="required">
+                <annotation>
+                    <appinfo>
+                    	<jaxb:property>                   
+                              <jaxb:baseType name="WorkflowNode"/>
+						 </jaxb:property>                      
+                    </appinfo>
+               </annotation> 
+    	</attribute>
+    	<attribute name="target" type="IDREF" use="required">
+                <annotation>
+                    <appinfo>
+                    	<jaxb:property>                   
+                              <jaxb:baseType name="WorkflowNode"/>
+						 </jaxb:property>                      
+                    </appinfo>
+               </annotation> 
+    	</attribute>
     </complexType>
 
     <complexType name="InitialEvent">
@@ -81,7 +133,15 @@
     <complexType name="Communication" abstract="true">
     	<complexContent>
     		<extension base="pif:WorkflowNode">
-    			<attribute name="message" type="IDREF" use="required"></attribute>
+    			<attribute name="message" type="IDREF" use="required">
+                <annotation>
+                    <appinfo>
+                    	<jaxb:property>                   
+                              <jaxb:baseType name="Message"/>
+						 </jaxb:property>                      
+                    </appinfo>
+               </annotation>     			
+    			</attribute>
 
     		</extension>
     	</complexContent>
@@ -91,8 +151,24 @@
     	<complexContent>
     		<extension base="pif:Communication">
     			<sequence>
-    				<element name="initiatingPeer" type="IDREF" minOccurs="1" maxOccurs="1"></element>
-    				<element name="receivingPeers" type="IDREF" minOccurs="1" maxOccurs="unbounded"></element>
+    				<element name="initiatingPeer" type="IDREF" minOccurs="1" maxOccurs="1">
+                <annotation>
+                    <appinfo>
+                    	<jaxb:property>                   
+                              <jaxb:baseType name="Peer"/>
+						 </jaxb:property>                      
+                    </appinfo>
+               </annotation> 
+    				</element>
+    				<element name="receivingPeers" type="IDREF" minOccurs="1" maxOccurs="unbounded">
+                <annotation>
+                    <appinfo>
+                    	<jaxb:property>                   
+                              <jaxb:baseType name="Peer"/>
+						 </jaxb:property>                      
+                    </appinfo>
+               </annotation> 
+    				</element>
     			</sequence>
     		</extension>
     	</complexContent>
