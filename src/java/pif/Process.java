@@ -1,0 +1,201 @@
+
+package pif;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Generated;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
+
+
+/**
+ * <p>Classe Java pour Process complex type.
+ * 
+ * <p>Le fragment de schéma suivant indique le contenu attendu figurant dans cette classe.
+ * 
+ * <pre>
+ * &lt;complexType name="Process">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="name" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="documentation" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="peers" type="{http://www.example.org/PIF}Peer" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="messages" type="{http://www.example.org/PIF}Message" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="behaviour" type="{http://www.example.org/PIF}Workflow"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "Process", namespace = "http://www.example.org/PIF", propOrder = {
+    "name",
+    "documentation",
+    "peers",
+    "messages",
+    "behaviour"
+})
+@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+public class Process {
+
+    @XmlElement(namespace = "http://www.example.org/PIF", required = true)
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    protected String name;
+    @XmlElement(namespace = "http://www.example.org/PIF", required = true)
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    protected String documentation;
+    @XmlElement(namespace = "http://www.example.org/PIF")
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    protected List<Peer> peers;
+    @XmlElement(namespace = "http://www.example.org/PIF")
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    protected List<Message> messages;
+    @XmlElement(namespace = "http://www.example.org/PIF", required = true)
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    protected Workflow behaviour;
+
+    /**
+     * Obtient la valeur de la propriété name.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Définit la valeur de la propriété name.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public void setName(String value) {
+        this.name = value;
+    }
+
+    /**
+     * Obtient la valeur de la propriété documentation.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public String getDocumentation() {
+        return documentation;
+    }
+
+    /**
+     * Définit la valeur de la propriété documentation.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public void setDocumentation(String value) {
+        this.documentation = value;
+    }
+
+    /**
+     * Gets the value of the peers property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the peers property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getPeers().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link Peer }
+     * 
+     * 
+     */
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public List<Peer> getPeers() {
+        if (peers == null) {
+            peers = new ArrayList<Peer>();
+        }
+        return this.peers;
+    }
+
+    /**
+     * Gets the value of the messages property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the messages property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getMessages().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link Message }
+     * 
+     * 
+     */
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public List<Message> getMessages() {
+        if (messages == null) {
+            messages = new ArrayList<Message>();
+        }
+        return this.messages;
+    }
+
+    /**
+     * Obtient la valeur de la propriété behaviour.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Workflow }
+     *     
+     */
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public Workflow getBehaviour() {
+        return behaviour;
+    }
+
+    /**
+     * Définit la valeur de la propriété behaviour.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Workflow }
+     *     
+     */
+    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-27T04:47:27+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
+    public void setBehaviour(Workflow value) {
+        this.behaviour = value;
+    }
+
+}
