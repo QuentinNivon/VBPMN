@@ -1,176 +1,123 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xsd:schema xmlns:pif="http://www.example.org/pif" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/pif">
-  <xsd:element name="Process" type="pif:Process"/>
-  <xsd:element name="Peer" type="pif:Peer"/>
-  <xsd:element name="Message" type="pif:Message"/>
-  <xsd:element name="Interaction" type="pif:Interaction"/>
-  <xsd:element name="InitialEvent" type="pif:InitialEvent"/>
-  <xsd:element name="Workflow" type="pif:Workflow"/>
-  <xsd:element name="WorkflowNode" type="pif:WorkflowNode"/>
-  <xsd:element name="EndEvent" type="pif:EndEvent"/>
-  <xsd:element name="Communication" type="pif:Communication"/>
-  <xsd:element name="MessageCommunication" type="pif:MessageCommunication"/>
-  <xsd:element name="MessageSending" type="pif:MessageSending"/>
-  <xsd:element name="MessageReception" type="pif:MessageReception"/>
-  <xsd:element name="Gateway" type="pif:Gateway"/>
-  <xsd:element name="Task" type="pif:Task"/>
-  <xsd:element name="SplitGateway" type="pif:SplitGateway"/>
-  <xsd:element name="JoinGateway" type="pif:JoinGateway"/>
-  <xsd:element name="OrSplitGateway" type="pif:OrSplitGateway"/>
-  <xsd:element name="XOrSplitGateway" type="pif:XOrSplitGateway"/>
-  <xsd:element name="AndSplitGateway" type="pif:AndSplitGateway"/>
-  <xsd:element name="AndJoinGateway" type="pif:AndJoinGateway"/>
-  <xsd:element name="XOrJoinGateway" type="pif:XOrJoinGateway"/>
-  <xsd:element name="OrJoinGateway" type="pif:OrJoinGateway"/>
-  <xsd:element name="SequenceFlow" type="pif:SequenceFlow"/>
-  <xsd:element name="ConditionalSequenceFlow" type="pif:ConditionalSequenceFlow"/>
-  <xsd:element name="Condition" type="pif:Condition"/>
-  <xsd:complexType name="Process">
-    <xsd:sequence>
-      <xsd:element maxOccurs="unbounded" minOccurs="0" name="peers" type="pif:Peer"/>
-      <xsd:element maxOccurs="unbounded" minOccurs="0" name="messages" type="pif:Message"/>
-      <xsd:element name="behaviour" type="pif:Workflow"/>
-    </xsd:sequence>
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
-    <xsd:attribute name="documentation" type="xsd:string" use="required"/>
-  </xsd:complexType>
-  <xsd:complexType name="Peer">
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
-  </xsd:complexType>
-  <xsd:complexType name="Message">
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
-  </xsd:complexType>
-  <xsd:complexType name="Interaction">
-    <xsd:complexContent>
-      <xsd:extension base="pif:Communication">
-        <xsd:attribute name="initiatingPeer" type="pif:Peer" use="required"/>
-        <xsd:attribute name="receivingPeers" type="pif:Peer" use="required">
-          <xsd:simpleType>
-            <xsd:list itemType="xsd:anyURI"/>
-          </xsd:simpleType>
-        </xsd:attribute>
-      </xsd:extension>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="InitialEvent">
-    <xsd:complexContent>
-      <xsd:extension base="pif:WorkflowNode"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="Workflow">
-    <xsd:sequence>
-      <xsd:element maxOccurs="unbounded" name="nodes" type="pif:WorkflowNode"/>
-      <xsd:element maxOccurs="unbounded" minOccurs="0" name="sequenceFlows" type="pif:SequenceFlow"/>
-    </xsd:sequence>
-    <xsd:attribute name="initialNode" type="pif:InitialEvent" use="required"/>
-    <xsd:attribute type="pif:EndEvent" name="finalNodes">
-      <xsd:simpleType>
-        <xsd:list itemType="xsd:anyURI"/>
-      </xsd:simpleType>
-    </xsd:attribute>
-  </xsd:complexType>
-  <xsd:complexType abstract="true" name="WorkflowNode">
-    <xsd:attribute name="name" type="xsd:string" use="required"/>
-    <xsd:attribute type="pif:SequenceFlow" name="outgoingFlows">
-      <xsd:simpleType>
-        <xsd:list itemType="xsd:anyURI"/>
-      </xsd:simpleType>
-    </xsd:attribute>
-    <xsd:attribute type="pif:SequenceFlow" name="incomingFlows">
-      <xsd:simpleType>
-        <xsd:list itemType="xsd:anyURI"/>
-      </xsd:simpleType>
-    </xsd:attribute>
-  </xsd:complexType>
-  <xsd:complexType name="EndEvent">
-    <xsd:complexContent>
-      <xsd:extension base="pif:WorkflowNode"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType abstract="true" name="Communication">
-    <xsd:complexContent>
-      <xsd:extension base="pif:WorkflowNode">
-        <xsd:attribute name="message" type="pif:Message" use="required"/>
-      </xsd:extension>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType abstract="true" name="MessageCommunication">
-    <xsd:complexContent>
-      <xsd:extension base="pif:Communication"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="MessageSending">
-    <xsd:complexContent>
-      <xsd:extension base="pif:MessageCommunication"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="MessageReception">
-    <xsd:complexContent>
-      <xsd:extension base="pif:MessageCommunication"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType abstract="true" name="Gateway">
-    <xsd:complexContent>
-      <xsd:extension base="pif:WorkflowNode"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="Task">
-    <xsd:complexContent>
-      <xsd:extension base="pif:WorkflowNode"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType abstract="true" name="SplitGateway">
-    <xsd:complexContent>
-      <xsd:extension base="pif:Gateway"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType abstract="true" name="JoinGateway">
-    <xsd:complexContent>
-      <xsd:extension base="pif:Gateway"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="OrSplitGateway">
-    <xsd:complexContent>
-      <xsd:extension base="pif:SplitGateway"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="XOrSplitGateway">
-    <xsd:complexContent>
-      <xsd:extension base="pif:SplitGateway"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="AndSplitGateway">
-    <xsd:complexContent>
-      <xsd:extension base="pif:SplitGateway"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="AndJoinGateway">
-    <xsd:complexContent>
-      <xsd:extension base="pif:JoinGateway"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="XOrJoinGateway">
-    <xsd:complexContent>
-      <xsd:extension base="pif:JoinGateway"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="OrJoinGateway">
-    <xsd:complexContent>
-      <xsd:extension base="pif:JoinGateway"/>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="SequenceFlow">
-    <xsd:attribute type="pif:WorkflowNode" name="source" use="required"/>
-    <xsd:attribute type="pif:WorkflowNode" name="target" use="required"/>
-  </xsd:complexType>
-  <xsd:complexType name="ConditionalSequenceFlow">
-    <xsd:complexContent>
-      <xsd:extension base="pif:SequenceFlow">
-        <xsd:sequence>
-          <xsd:element  name="condition" type="pif:Condition"/>
-        </xsd:sequence>
-      </xsd:extension>
-    </xsd:complexContent>
-  </xsd:complexType>
-  <xsd:complexType name="Condition"/>
-</xsd:schema>
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/PIF" xmlns:tns="http://www.example.org/PIF" elementFormDefault="qualified">
+
+    <complexType name="Process">
+    	<sequence>
+    	    <element name="name" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="documentation" type="string" minOccurs="1" maxOccurs="1"></element>
+    		<element name="peers" type="tns:Peer" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    		<element name="messages" type="tns:Message" minOccurs="0" maxOccurs="unbounded"></element>
+    		<element name="behaviour" type="tns:Workflow" minOccurs="1" maxOccurs="1"></element>
+    	</sequence>
+
+    </complexType>
+
+    <complexType name="Peer">
+    	<attribute name="id" type="ID" use="required"></attribute>
+    </complexType>
+
+    <complexType name="Message">
+    	<attribute name="id" type="ID" use="required"></attribute>
+    </complexType>
+
+    <complexType name="Workflow">
+    	<sequence>
+    		<element name="nodes" type="tns:WorkflowNode" minOccurs="1"
+    			maxOccurs="unbounded">
+    		</element>
+    		<element name="sequenceFlows" type="tns:SequenceFlow"
+    			minOccurs="0" maxOccurs="unbounded">
+    		</element>
+    		<element name="initialNode" type="IDREF" minOccurs="1" maxOccurs="1"></element>
+    		<element name="finalNodes" type="IDREF" minOccurs="0" maxOccurs="unbounded"></element>
+    	</sequence>
+
+    </complexType>
+
+
+    <complexType name="WorkflowNode" abstract="true">
+    	<sequence>
+    		<element name="outgoingFlows" type="tns:SequenceFlow"
+    			minOccurs="0" maxOccurs="unbounded">
+    		</element>
+    		<element name="incomingFlows" type="tns:SequenceFlow"
+    			minOccurs="0" maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    	<attribute name="id" type="ID" use="required"></attribute>
+    </complexType>
+
+    <complexType name="SequenceFlow">
+    	<attribute name="source" type="IDREF" use="required"></attribute>
+    	<attribute name="target" type="IDREF" use="required"></attribute>
+    </complexType>
+
+    <complexType name="InitialEvent">
+    	<complexContent>
+    		<extension base="tns:WorkflowNode"></extension>
+    	</complexContent>
+    </complexType>
+    
+    <complexType name="EndEvent">
+    	<complexContent>
+    		<extension base="tns:WorkflowNode"></extension>
+    	</complexContent>
+    </complexType>
+
+
+
+
+
+
+
+
+    <element name="Process" type="tns:Process"></element>
+
+    <complexType name="Communication" abstract="true">
+    	<complexContent>
+    		<extension base="tns:WorkflowNode">
+    			<attribute name="message" type="IDREF" use="required"></attribute>
+
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="Interaction">
+    	<complexContent>
+    		<extension base="tns:Communication">
+    			<sequence>
+    				<element name="initiatingPeer" type="IDREF" minOccurs="1" maxOccurs="1"></element>
+    				<element name="receivingPeers" type="IDREF" minOccurs="1" maxOccurs="unbounded"></element>
+    			</sequence>
+    		</extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="MessageCommunication" abstract="true">
+    	<complexContent>
+    		<extension base="tns:Communication"></extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="MessageSending">
+    	<complexContent>
+    		<extension base="tns:MessageCommunication"></extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="MessageReception">
+    	<complexContent>
+    		<extension base="tns:MessageCommunication"></extension>
+    	</complexContent>
+    </complexType>
+
+    <complexType name="Gateway" abstract="true">
+    	<complexContent>
+    		<extension base="tns:WorkflowNode"></extension>
+    	</complexContent>
+    </complexType>
+</schema>

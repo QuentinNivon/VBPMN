@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<pif:Process xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pif="http://www.example.org/pif" name="p0001" documentation="very simple process with a simple initial event -> end event workflow (no peers, no messages)">
-  <behaviour initialNode="//@behaviour/@nodes.0" finalNodes="//@behaviour/@nodes.1">
-    <nodes xsi:type="pif:InitialEvent" name="initial" outgoingFlows="//@behaviour/@sequenceFlows.0"/>
-    <nodes xsi:type="pif:EndEvent" name="final" incomingFlows="//@behaviour/@sequenceFlows.0"/>
-    <sequenceFlows source="//@behaviour/@nodes.0" target="//@behaviour/@nodes.1"/>
-  </behaviour>
-</pif:Process>

@@ -1,6 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pif:Process xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pif="http://www.example.org/pif" name="p0000" documentation="very simple process with only an initial event">
-  <behaviour initialNode="//@behaviour/@nodes.0">
-    <nodes xsi:type="pif:InitialEvent" name="initial"/>
-  </behaviour>
-</pif:Process>
+<tns:Process xmlns:tns="http://www.example.org/PIF" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.example.org/PIF pif.xsd ">
+  <tns:name>p0000</tns:name>
+  <tns:documentation>a simple process to check the XSD concepts</tns:documentation>
+  
+  <!--  PEERS -->
+  <tns:peers id="peer1" />
+  <tns:peers id="peer2" />
+    
+  <!--  MESSAGES -->
+  <tns:messages id="message1" />
+  <tns:messages id="message2" />
+
+<!--  WORKFLOW -->
+  <tns:behaviour>
+  
+  	<!--  NODES -->
+    <tns:nodes id="initial" xsi:type="tns:InitialEvent" />
+    <tns:nodes id="final1" xsi:type="tns:EndEvent" />
+    <tns:nodes id="mtask1" xsi:type="tns:MessageSending" message="message1"></tns:nodes>
+    <tns:nodes id="mtask2" xsi:type="tns:MessageReception" message="message2"></tns:nodes>
+    
+    <!--  SEQUENCE FLOWS -->
+    <tns:sequenceFlows source="initial" target="mtask1"/>
+    <tns:sequenceFlows source="mtask1" target="mtask2"/>
+    <tns:sequenceFlows source="mtask2" target="final1"/>
+    
+    <!--  INITIAL AND FINAL NODES -->
+    <tns:initialNode>initial</tns:initialNode>
+    <tns:finalNodes>final1</tns:finalNodes>
+    
+  </tns:behaviour>
+  
+</tns:Process>
