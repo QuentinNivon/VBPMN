@@ -2,10 +2,7 @@ package pif;
 
 import org.testng.annotations.Test;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -59,7 +56,7 @@ public class ProcessTest {
         Process p;
         FileInputStream fis;
         try {
-            fis = new FileInputStream("../../examples/p0000.pif");
+            fis = new FileInputStream("examples/p0000.pif");
             JAXBContext ctx = JAXBContext.newInstance(Process.class);
             Unmarshaller unmarshaller = ctx.createUnmarshaller();
             p = (Process) unmarshaller.unmarshal(fis);

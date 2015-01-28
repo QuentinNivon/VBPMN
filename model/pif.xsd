@@ -10,7 +10,6 @@
   <element name="Process" type="pif:Process"/>
   <element name="Peer" type="pif:Peer"/>
   <element name="Message" type="pif:Message"/>
-  <element name="Interaction" type="pif:Interaction"/>
   <element name="InitialEvent" type="pif:InitialEvent"/>
   <element name="Workflow" type="pif:Workflow"/>
   <element name="WorkflowNode" type="pif:WorkflowNode"/>

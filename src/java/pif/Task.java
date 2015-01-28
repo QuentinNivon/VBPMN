@@ -8,14 +8,14 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Classe Java pour OrSplitGateway complex type.
+ * <p>Classe Java pour Task complex type.
  * 
  * <p>Le fragment de schéma suivant indique le contenu attendu figurant dans cette classe.
  * 
  * <pre>
- * &lt;complexType name="OrSplitGateway">
+ * &lt;complexType name="Task">
  *   &lt;complexContent>
- *     &lt;extension base="{http://www.example.org/PIF}SplitGateway">
+ *     &lt;extension base="{http://www.example.org/PIF}WorkflowNode">
  *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -24,10 +24,10 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "OrSplitGateway", namespace = "http://www.example.org/PIF")
+@XmlType(name = "Task", namespace = "http://www.example.org/PIF")
 @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
-public class OrSplitGateway
-    extends SplitGateway
+public class Task
+    extends WorkflowNode
 {
 
 
