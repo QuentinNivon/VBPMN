@@ -59,7 +59,7 @@ public class ProcessTest {
         Process p;
         FileInputStream fis;
         try {
-            fis = new FileInputStream("/Users/pascalpoizat/IdeaProjects/vbpmn/examples/p0000.pif");
+            fis = new FileInputStream("../../examples/p0000.pif");
             JAXBContext ctx = JAXBContext.newInstance(Process.class);
             Unmarshaller unmarshaller = ctx.createUnmarshaller();
             p = (Process) unmarshaller.unmarshal(fis);
