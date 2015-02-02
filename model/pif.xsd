@@ -1,50 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/PIF" xmlns:pif="http://www.example.org/PIF" jaxb:version="2.1" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" elementFormDefault="qualified">
-
-	<annotation>
-		<appinfo>
-			collectionType = "indexed"
-		</appinfo>
-	</annotation>
-
-  <element name="Process" type="pif:Process"/>
-  <element name="Peer" type="pif:Peer"/>
-  <element name="Message" type="pif:Message"/>
-  <element name="InitialEvent" type="pif:InitialEvent"/>
-  <element name="Workflow" type="pif:Workflow"/>
-  <element name="WorkflowNode" type="pif:WorkflowNode"/>
-  <element name="EndEvent" type="pif:EndEvent"/>
-  <element name="Communication" type="pif:Communication"/>
-  <element name="MessageCommunication" type="pif:MessageCommunication"/>
-  <element name="MessageSending" type="pif:MessageSending"/>
-  <element name="MessageReception" type="pif:MessageReception"/>
-  <element name="Gateway" type="pif:Gateway"/>
-  <element name="Task" type="pif:Task"/>
-  <element name="SplitGateway" type="pif:SplitGateway"/>
-  <element name="JoinGateway" type="pif:JoinGateway"/>
-  <element name="OrSplitGateway" type="pif:OrSplitGateway"/>
-  <element name="XOrSplitGateway" type="pif:XOrSplitGateway"/>
-  <element name="AndSplitGateway" type="pif:AndSplitGateway"/>
-  <element name="AndJoinGateway" type="pif:AndJoinGateway"/>
-  <element name="XOrJoinGateway" type="pif:XOrJoinGateway"/>
-  <element name="OrJoinGateway" type="pif:OrJoinGateway"/>
-  <element name="SequenceFlow" type="pif:SequenceFlow"/>
-  <element name="ConditionalSequenceFlow" type="pif:ConditionalSequenceFlow"/>
-  <element name="Condition" type="pif:Condition"/>
-	
-    <complexType name="Process">
-    	<sequence>
-    	    <element name="name" type="string" minOccurs="1"
-    			maxOccurs="1">
-    		</element>
-    		<element name="documentation" type="string" minOccurs="1" maxOccurs="1"></element>
-    		<element name="peers" type="pif:Peer" minOccurs="0"
-    			maxOccurs="unbounded">
-    		</element>
-    		<element name="messages" type="pif:Message" minOccurs="0" maxOccurs="unbounded"></element>
-    		<element name="behaviour" type="pif:Workflow" minOccurs="1" maxOccurs="1"></element>
-    	</sequence>
-    </complexType>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+		targetNamespace="http://www.example.org/PIF"
+		xmlns:pif="http://www.example.org/PIF"
+		xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        jaxb:version="2.1"
+		elementFormDefault="qualified">
 
     <complexType name="Peer">
     	<attribute name="id" type="ID" use="required"></attribute>
@@ -280,4 +240,21 @@
     		<extension base="pif:WorkflowNode"></extension>
     	</complexContent>
     </complexType>
+
+    <element name="Process">
+        <complexType>
+            <sequence>
+                <element name="name" type="string" minOccurs="1"
+                         maxOccurs="1">
+                </element>
+                <element name="documentation" type="string" minOccurs="1" maxOccurs="1"></element>
+                <element name="peers" type="pif:Peer" minOccurs="0"
+                         maxOccurs="unbounded">
+                </element>
+                <element name="messages" type="pif:Message" minOccurs="0" maxOccurs="unbounded"></element>
+                <element name="behaviour" type="pif:Workflow" minOccurs="1" maxOccurs="1"></element>
+            </sequence>
+        </complexType>
+    </element>
+
 </schema>

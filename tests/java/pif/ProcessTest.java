@@ -14,6 +14,8 @@ public class ProcessTest {
 
     @Test
     public void test_writeToFile() {
+        ObjectFactory factory = new ObjectFactory();
+        //
         WorkflowNode n1 = new InitialEvent();
         n1.setId("initial");
         WorkflowNode n2 = new EndEvent();
@@ -39,15 +41,22 @@ public class ProcessTest {
         //
         final JAXBContext ctx;
         try {
-            FileOutputStream fos = new FileOutputStream(p.getName()+".pif");
+            FileOutputStream fos = new FileOutputStream("tests/examples/"+p.getName()+".pif");
             ctx = JAXBContext.newInstance(Process.class);
             final Marshaller marshaller = ctx.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.marshal(p, fos);
+            fos.close();
+            assertEquals(true, true);
         } catch (JAXBException e) {
             e.printStackTrace();
+            fail();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            fail();
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
         }
     }
 
@@ -56,7 +65,7 @@ public class ProcessTest {
         Process p;
         FileInputStream fis;
         try {
-            fis = new FileInputStream("examples/p0000.pif");
+            fis = new FileInputStream("tests/examples/p0000.pif");
             JAXBContext ctx = JAXBContext.newInstance(Process.class);
             Unmarshaller unmarshaller = ctx.createUnmarshaller();
             p = (Process) unmarshaller.unmarshal(fis);
@@ -65,12 +74,58 @@ public class ProcessTest {
             assertEquals(p.getBehaviour().getNodes().size(),8);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            fail();
         } catch (JAXBException e) {
             e.printStackTrace();
+            fail();
         } catch (IOException e) {
             e.printStackTrace();
+            fail();
         }
 
+    }
+
+    @Test
+    public void test_readWrite() {
+        Process p;
+        FileInputStream fis;
+        FileOutputStream fos;
+        try {
+            fis = new FileInputStream("tests/examples/p0000.pif");
+            JAXBContext ctx = JAXBContext.newInstance(Process.class);
+            Unmarshaller unmarshaller = ctx.createUnmarshaller();
+            p = (Process) unmarshaller.unmarshal(fis);
+            fis.close();
+            //
+            fos = new FileOutputStream("tests/examples/t0000.pif");
+            Marshaller marshaller = ctx.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.marshal(p, fos);
+            fos.close();
+            //
+            fis = new FileInputStream("tests/examples/t0000.pif");
+            ctx = JAXBContext.newInstance(Process.class);
+            unmarshaller = ctx.createUnmarshaller();
+            p = (Process) unmarshaller.unmarshal(fis);
+            fis.close();
+            assertEquals(p.getName(),"p0000");
+            assertEquals(p.getBehaviour().getNodes().size(), 8);
+            //
+            fos = new FileOutputStream("tests/examples/r0000.pif");
+            marshaller = ctx.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.marshal(p, fos);
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            fail();
+        } catch (JAXBException e) {
+            e.printStackTrace();
+            fail();
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
     }
 
 }

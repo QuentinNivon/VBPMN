@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Process xmlns="http://www.example.org/PIF">
+    <name>p0000</name>
+    <documentation>
+  A simple process to check the XSD concepts.
+  
+  P = PAR { m1! -&gt; m2? ; m2! -&gt; m1? }
+  </documentation>
+    <peers id="peer1"/>
+    <peers id="peer2"/>
+    <messages id="message1"/>
+    <messages id="message2"/>
+    <behaviour>
+        <nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="InitialEvent" id="initial">
+            <outgoingFlows>sf1</outgoingFlows>
+        </nodes>
+        <nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="EndEvent" id="final1">
+            <incomingFlows>sf5</incomingFlows>
+        </nodes>
+        <nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="AndSplitGateway" id="split1">
+            <incomingFlows>sf1</incomingFlows>
+            <outgoingFlows>sf2a</outgoingFlows>
+            <outgoingFlows>sf2b</outgoingFlows>
+        </nodes>
+        <nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="AndJoinGateway" id="join1">
+            <incomingFlows>sf4a</incomingFlows>
+            <incomingFlows>sf4b</incomingFlows>
+            <outgoingFlows>sf5</outgoingFlows>
+        </nodes>
+        <nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="MessageSending" message="message1" id="mtask1a">
+            <incomingFlows>sf2a</incomingFlows>
+            <outgoingFlows>sf3a</outgoingFlows>
+        </nodes>
+        <nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="MessageReception" message="message2" id="mtask2a">
+            <incomingFlows>sf3a</incomingFlows>
+            <outgoingFlows>sf4a</outgoingFlows>
+        </nodes>
+        <nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="MessageSending" message="message2" id="mtask1b">
+            <incomingFlows>sf2b</incomingFlows>
+            <outgoingFlows>sf3b</outgoingFlows>
+        </nodes>
+        <nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="MessageReception" message="message1" id="mtask2b">
+            <incomingFlows>sf3b</incomingFlows>
+            <outgoingFlows>sf4b</outgoingFlows>
+        </nodes>
+        <sequenceFlows id="sf1" source="initial" target="split1"/>
+        <sequenceFlows id="sf2a" source="split1" target="mtask1a"/>
+        <sequenceFlows id="sf3a" source="mtask1a" target="mtask2a"/>
+        <sequenceFlows id="sf4a" source="mtask2a" target="join1"/>
+        <sequenceFlows id="sf2b" source="split1" target="mtask1b"/>
+        <sequenceFlows id="sf3b" source="mtask1b" target="mtask2b"/>
+        <sequenceFlows id="sf4b" source="mtask2b" target="join1"/>
+        <sequenceFlows id="sf5" source="join1" target="final1"/>
+        <initialNode>initial</initialNode>
+        <finalNodes>final1</finalNodes>
+    </behaviour>
+</Process>

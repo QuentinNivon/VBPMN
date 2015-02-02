@@ -3,7 +3,6 @@ package pif;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Generated;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -39,7 +38,6 @@ import javax.xml.bind.annotation.XmlType;
     "initiatingPeer",
     "receivingPeers"
 })
-@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
 public class Interaction
     extends Communication
 {
@@ -47,10 +45,8 @@ public class Interaction
     @XmlElement(namespace = "http://www.example.org/PIF", required = true, type = Object.class)
     @XmlIDREF
     @XmlSchemaType(name = "IDREF")
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     protected Peer initiatingPeer;
     @XmlElementRef(name = "receivingPeers", namespace = "http://www.example.org/PIF", type = JAXBElement.class)
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     protected List<Peer> receivingPeers;
 
     /**
@@ -61,7 +57,6 @@ public class Interaction
      *     {@link Object }
      *     
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     public Peer getInitiatingPeer() {
         return initiatingPeer;
     }
@@ -74,7 +69,6 @@ public class Interaction
      *     {@link Object }
      *     
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     public void setInitiatingPeer(Peer value) {
         this.initiatingPeer = value;
     }
@@ -101,7 +95,6 @@ public class Interaction
      * 
      * 
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     public List<Peer> getReceivingPeers() {
         if (receivingPeers == null) {
             receivingPeers = new ArrayList<Peer>();

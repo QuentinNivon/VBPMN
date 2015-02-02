@@ -1,7 +1,6 @@
 
 package pif;
 
-import javax.annotation.Generated;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -31,10 +30,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Communication", namespace = "http://www.example.org/PIF")
 @XmlSeeAlso({
-    MessageCommunication.class,
-    Interaction.class
+    Interaction.class,
+    MessageCommunication.class
 })
-@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
 public abstract class Communication
     extends WorkflowNode
 {
@@ -42,7 +40,6 @@ public abstract class Communication
     @XmlAttribute(name = "message", required = true)
     @XmlIDREF
     @XmlSchemaType(name = "IDREF")
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     protected Message message;
 
     /**
@@ -53,7 +50,6 @@ public abstract class Communication
      *     {@link Object }
      *     
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     public Message getMessage() {
         return message;
     }
@@ -66,7 +62,6 @@ public abstract class Communication
      *     {@link Object }
      *     
      */
-    @Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
     public void setMessage(Message value) {
         this.message = value;
     }

@@ -1,7 +1,6 @@
 
 package pif;
 
-import javax.annotation.Generated;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -31,7 +30,6 @@ import javax.xml.bind.annotation.XmlType;
     AndJoinGateway.class,
     XOrJoinGateway.class
 })
-@Generated(value = "com.sun.tools.internal.xjc.Driver", date = "2015-01-28T09:42:36+01:00", comments = "JAXB RI v2.2.8-b130911.1802")
 public abstract class JoinGateway
     extends Gateway
 {
