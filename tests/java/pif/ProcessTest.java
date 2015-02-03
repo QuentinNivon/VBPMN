@@ -43,7 +43,7 @@ public class ProcessTest {
         //
         final JAXBContext ctx;
         try {
-            FileOutputStream fos = new FileOutputStream("tests/examples/"+p.getName()+".pif");
+            FileOutputStream fos = new FileOutputStream("tests/examples/gen_"+p.getName()+".pif");
             ctx = JAXBContext.newInstance(Process.class);
             final Marshaller marshaller = ctx.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -99,13 +99,13 @@ public class ProcessTest {
             p = (Process) unmarshaller.unmarshal(fis);
             fis.close();
             //
-            fos = new FileOutputStream("tests/examples/t0000.pif");
+            fos = new FileOutputStream("tests/examples/gen_t0000.pif");
             Marshaller marshaller = ctx.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.marshal(p, fos);
             fos.close();
             //
-            fis = new FileInputStream("tests/examples/t0000.pif");
+            fis = new FileInputStream("tests/examples/gen_t0000.pif");
             ctx = JAXBContext.newInstance(Process.class);
             unmarshaller = ctx.createUnmarshaller();
             p = (Process) unmarshaller.unmarshal(fis);
@@ -113,7 +113,7 @@ public class ProcessTest {
             assertEquals(p.getName(),"p0000");
             assertEquals(p.getBehaviour().getNodes().size(), 8);
             //
-            fos = new FileOutputStream("tests/examples/r0000.pif");
+            fos = new FileOutputStream("tests/examples/gen_r0000.pif");
             marshaller = ctx.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.marshal(p, fos);
