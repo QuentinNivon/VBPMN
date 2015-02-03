@@ -1,6 +1,8 @@
 package pif;
 
 import org.testng.annotations.Test;
+import models.process.pif.generated.*;
+import models.process.pif.generated.Process;
 
 import javax.xml.bind.*;
 import java.io.FileInputStream;
@@ -34,7 +36,7 @@ public class ProcessTest {
         w.setInitialNode((InitialEvent)n1);
         w.getFinalNodes().add((EndEvent)n2);
         //
-        Process p = new Process();
+        models.process.pif.generated.Process p = new Process();
         p.setName("t0000");
         p.setDocumentation("A simple process");
         p.setBehaviour(w);
