@@ -13,6 +13,8 @@ import pyxb
 import choreo_xml_model
 import time
 
+import pif
+
 # Second attempt where choreographies are encoded as a graph.
 
 syncPrefix = "synchro_"
@@ -1106,6 +1108,42 @@ class Choreography:
         f.close()
 
 
+    # this method takes as input a file.pif and generates a PIF Python object
+    def buildProcessFromFile(self, fileName, debug = False):
+        # open xml document specified in fileName
+        xml = file(fileName).read()
+        try:
+            proc = pif.CreateFromDocument(xml)
+            self.name = proc.name
+
+            if debug:
+                print "choreo name: ", self.name
+
+            stateTab = [] # python encoded states
+            queue = [] # states waiting to be encoded
+
+            # init :
+            # -> fill stateTab with final states
+            # -> fill queue with any other state in order to sort them according to their dependancies
+            for fin in proc.behaviour.finalNodes:
+                print fin
+                if debug:
+                    print "final state: ", fin
+                stateTab.append(FinalState(fin))
+
+            for msg in proc.messages:
+                if debug:
+                        print "interaction ID", msg
+                print msg ## TODO : reprendre a partir d'ici
+
+
+
+        except pyxb.UnrecognizedContentError, e:
+            print 'An error occured while parsing xml document ' + fileName
+            print 'Unrecognized element, the message was "%s"' % (e.message)
+
+
+
     def buildChoreoFromFile(self, fileName, debug = False):
         # open xml document specified in fileName
         xml = file(fileName).read()
@@ -1333,24 +1371,29 @@ if __name__ == '__main__':
     import os
     import glob
 
-    checker = Checker()
+    c = Choreography()
+    c.buildProcessFromFile(sys.argv[1])
 
-    infile1=sys.argv[1]
-    infile2=sys.argv[2]
-    operation=sys.argv[3]
+    # temporarily un-executed
+    if False:
+        checker = Checker()
 
-    print "converting " + infile1 + " to LTS.."
-    c1 = Choreography()
-    c1.buildChoreoFromFile(infile1)
-    c1.computeSyncSets()
-    checker.checkChoreo(c1)
+        infile1=sys.argv[1]
+        infile2=sys.argv[2]
+        operation=sys.argv[3]
 
-    print "converting " + infile2 + " to LTS.."
-    c2 = Choreography()
-    c2.buildChoreoFromFile(infile2)
-    c2.computeSyncSets()
-    checker.checkChoreo(c2)
+        print "converting " + infile1 + " to LTS.."
+        c1 = Choreography()
+        c1.buildChoreoFromFile(infile1)
+        c1.computeSyncSets()
+        checker.checkChoreo(c1)
 
-    print "comparing " + infile1 + " and " + infile2 + " wrt. " + operation
-    comp = Comparator(c1.name,c2.name,operation)
-    comp.compare("compare.svl")
+        print "converting " + infile2 + " to LTS.."
+        c2 = Choreography()
+        c2.buildChoreoFromFile(infile2)
+        c2.computeSyncSets()
+        checker.checkChoreo(c2)
+
+        print "comparing " + infile1 + " and " + infile2 + " wrt. " + operation
+        comp = Comparator(c1.name,c2.name,operation)
+        comp.compare("compare.svl")
