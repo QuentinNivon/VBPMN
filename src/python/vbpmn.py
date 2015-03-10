@@ -381,7 +381,8 @@ class InteractionState(IntermediateState):
         partner=self.getPartner(self.initiating,self.participants)
         # now : only one message exchanged for each interaction state
         m=self.messageflows[0].getMessage()
-        f.write(self.initiating+"_"+partner+"_"+m)
+        # f.write(self.initiating+"_"+partner+"_"+m)
+        f.write(m)
 
         # if len(self.messageflows)==1:
         #     m=self.messageflows[0].getMessage()
@@ -1116,27 +1117,98 @@ class Choreography:
             proc = pif.CreateFromDocument(xml)
             self.name = proc.name
 
-            if debug:
-                print "choreo name: ", self.name
-
             stateTab = [] # python encoded states
-            queue = [] # states waiting to be encoded
+            queue = []    # states waiting to be encoded
 
-            # init :
-            # -> fill stateTab with final states
-            # -> fill queue with any other state in order to sort them according to their dependancies
             for fin in proc.behaviour.finalNodes:
-                print fin
-                if debug:
-                    print "final state: ", fin
                 stateTab.append(FinalState(fin))
 
-            for msg in proc.messages:
+            # useful ? information will be handled directly in nodes..
+            #for msg in proc.messages:
+            #    peers = []
+            #    initiator = ""
+            #    queue.append(['interaction', msg.id, [], peers, initiator, [MessageFlow(msg)]])
+
+            # iterates and stores the nodes information 
+            for n in proc.behaviour.nodes:
+                print n
+                # initial event
+                if isinstance(n, pif.InitialEvent_):
+                    queue.append(['initial', n.id, n.outgoingFlows])
+                # end event
+                #if isinstance(n, pif.EndEvent_):
+                #    queue.append(['final', n.id, n.outgoingFlows])
+
+                # communications / messages
+                if isinstance(n, pif.Message_):
+                    queue.append(['message', n.id, n.message, n.outgoingFlows])
+                if isinstance(n, pif.MessageSending_):
+                    queue.append(['messageSending', n.id, n.message, n.outgoingFlows])
+                if isinstance(n, pif.MessageReception_):
+                    queue.append(['messageReception', n.id, n.message, n.outgoingFlows])
+                if isinstance(n, pif.Interaction_):
+                    queue.append(['interaction', n.id, n.message, n.initiatingPeer, n.receivingPeers, n.outgoingFlows])
+
+                # split gateways
+                if isinstance(n, pif.AndSplitGateway_):
+                    queue.append(['andSplitGateway', n.id, n.outgoingFlows])
+                if isinstance(n, pif.OrSplitGateway_):
+                    queue.append(['orSplitGateway', n.id, n.outgoingFlows])
+                if isinstance(n, pif.XOrSplitGateway_):
+                    queue.append(['xorSplitGateway', n.id, n.outgoingFlows])
+
+                # join gateways
+                if isinstance(n, pif.AndJoinGateway_):
+                    queue.append(['andJoinGateway', n.id, n.outgoingFlows])
+                if isinstance(n, pif.OrJoinGateway_):
+                    queue.append(['orJoinGateway', n.id, n.outgoingFlows])
+                if isinstance(n, pif.XOrJoinGateway_):
+                    queue.append(['xorJoinGateway', n.id, n.outgoingFlows])
+
+            # create all states
+            successors = []
+            for elem in queue:
+                if (elem[0] == 'initial'):
+                    stateTab.append(InitialState(elem[1], []))
+
+                elif (elem[0] == 'message'):
+                    stateTab.append(InteractionState(elem[1], [], [], [], elem[2]))
+                elif (elem[0] == 'messageSending'):
+                    stateTab.append(InteractionState(elem[1], [], [], [], elem[2]))
+                elif (elem[0] == 'messageReception'):
+                    stateTab.append(InteractionState(elem[1], [], [], [], elem[2]))
+                elif (elem[0] == 'interaction'):
+                    stateTab.append(InteractionState(elem[1], [], elem[4], elem[3], elem[2])) # TODO: refine here
+
+                elif (elem[0] == 'andSplitGateway'):
+                    stateTab.append(ChoiceState(elem[1], []))
+                elif (elem[0] == 'orSplitGateway'):
+                    stateTab.append(AllSelectState(elem[1], []))
+                elif (elem[0] == 'xorSplitGateway'):
+                    stateTab.append(SubsetJoinState(elem[1], []))
+
+                elif (elem[0] == 'andJoinGateway'):
+                    stateTab.append(SimpleJoinState(elem[1], []))
+                elif (elem[0] == 'orJoinGateway'):
+                    stateTab.append(AllJoinState(elem[1], []))
+                elif (elem[0] == 'xorJoinGateway'):
+                    stateTab.append(SubsetJoinState(elem[1], []))
+
+            # add successors to states
+            for elem in queue:
+                stateList = filter(lambda x: x.ident == elem[1], stateTab)
+                if len(stateList) > 1:
+                    print "more than one state with same ID found!"
+                state = stateList[0]
+                successorList = elem[2]
+                succStates = filter(lambda x:  x.ident in successorList, stateTab)
                 if debug:
-                        print "interaction ID", msg
-                print msg ## TODO : reprendre a partir d'ici
+                    print "state", state.ident, "has successors", map(lambda x: x.ident, succStates)
+                map(lambda succ: state.addSucc(succ), succStates)
 
-
+            # add all states in the choreography
+            for element in stateTab:
+                self.addState(element)
 
         except pyxb.UnrecognizedContentError, e:
             print 'An error occured while parsing xml document ' + fileName
@@ -1371,8 +1443,11 @@ if __name__ == '__main__':
     import os
     import glob
 
+    checker = Checker()
     c = Choreography()
     c.buildProcessFromFile(sys.argv[1])
+    c.computeSyncSets()
+    #checker.checkChoreo(c)  -> bug gen. LNT ?
 
     # temporarily un-executed
     if False:
