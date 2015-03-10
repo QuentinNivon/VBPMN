@@ -381,8 +381,8 @@ class InteractionState(IntermediateState):
         partner=self.getPartner(self.initiating,self.participants)
         # now : only one message exchanged for each interaction state
         m=self.messageflows[0].getMessage()
-        # f.write(self.initiating+"_"+partner+"_"+m)
-        f.write(m)
+        f.write(self.initiating+"_"+partner+"_"+m)
+        #f.write(m)
 
         # if len(self.messageflows)==1:
         #     m=self.messageflows[0].getMessage()
@@ -1172,11 +1172,11 @@ class Choreography:
                     stateTab.append(InitialState(elem[1], []))
 
                 elif (elem[0] == 'message'):
-                    stateTab.append(InteractionState(elem[1], [], [], [], elem[2]))
+                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[2]))
                 elif (elem[0] == 'messageSending'):
-                    stateTab.append(InteractionState(elem[1], [], [], [], elem[2]))
+                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[2]))
                 elif (elem[0] == 'messageReception'):
-                    stateTab.append(InteractionState(elem[1], [], [], [], elem[2]))
+                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[2]))
                 elif (elem[0] == 'interaction'):
                     stateTab.append(InteractionState(elem[1], [], elem[4], elem[3], elem[2])) # TODO: refine here
 
@@ -1447,7 +1447,7 @@ if __name__ == '__main__':
     c = Choreography()
     c.buildProcessFromFile(sys.argv[1])
     c.computeSyncSets()
-    #checker.checkChoreo(c)  -> bug gen. LNT ?
+    #checker.checkChoreo(c) # -> bug gen. LNT ?
 
     # temporarily un-executed
     if False:
