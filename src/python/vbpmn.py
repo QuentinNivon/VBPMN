@@ -1131,9 +1131,11 @@ class Choreography:
 
             # iterates and stores the nodes information 
             for n in proc.behaviour.nodes:
-                print n
+                # print n
                 # initial event
                 if isinstance(n, pif.InitialEvent_):
+                    if debug:
+                        print "initial state: ", n.id
                     queue.append(['initial', n.id, n.outgoingFlows])
                 # end event
                 #if isinstance(n, pif.EndEvent_):
@@ -1141,28 +1143,48 @@ class Choreography:
 
                 # communications / messages
                 if isinstance(n, pif.Message_):
+                    if debug:
+                        print "message: ", n.id
                     queue.append(['message', n.id, n.message, n.outgoingFlows])
                 if isinstance(n, pif.MessageSending_):
+                    if debug:
+                        print "message sending: ", n.id
                     queue.append(['messageSending', n.id, n.message, n.outgoingFlows])
                 if isinstance(n, pif.MessageReception_):
+                    if debug:
+                        print "message reception: ", n.id
                     queue.append(['messageReception', n.id, n.message, n.outgoingFlows])
                 if isinstance(n, pif.Interaction_):
+                    if debug:
+                        print "interaction: ", n.id
                     queue.append(['interaction', n.id, n.message, n.initiatingPeer, n.receivingPeers, n.outgoingFlows])
 
                 # split gateways
                 if isinstance(n, pif.AndSplitGateway_):
+                    if debug:
+                        print "and split gateway: ", n.id
                     queue.append(['andSplitGateway', n.id, n.outgoingFlows])
                 if isinstance(n, pif.OrSplitGateway_):
+                    if debug:
+                        print "or split gateway: ", n.id
                     queue.append(['orSplitGateway', n.id, n.outgoingFlows])
                 if isinstance(n, pif.XOrSplitGateway_):
+                    if debug:
+                        print "xor split gateway: ", n.id
                     queue.append(['xorSplitGateway', n.id, n.outgoingFlows])
 
                 # join gateways
                 if isinstance(n, pif.AndJoinGateway_):
+                    if debug:
+                        print "and join gateway: ", n.id
                     queue.append(['andJoinGateway', n.id, n.outgoingFlows])
                 if isinstance(n, pif.OrJoinGateway_):
+                    if debug:
+                        print "or join gateway: ", n.id
                     queue.append(['orJoinGateway', n.id, n.outgoingFlows])
                 if isinstance(n, pif.XOrJoinGateway_):
+                    if debug:
+                        print "xor join gateway: ", n.id
                     queue.append(['xorJoinGateway', n.id, n.outgoingFlows])
 
             # create all states
@@ -1194,17 +1216,25 @@ class Choreography:
                 elif (elem[0] == 'xorJoinGateway'):
                     stateTab.append(SubsetJoinState(elem[1], []))
 
-            # add successors to states
+            # add successors to states -> TODO : correct this part of the code
             for elem in queue:
                 stateList = filter(lambda x: x.ident == elem[1], stateTab)
+                print stateList
                 if len(stateList) > 1:
                     print "more than one state with same ID found!"
                 state = stateList[0]
+                print state
                 successorList = elem[2]
+                print "succlist", successorList
                 succStates = filter(lambda x:  x.ident in successorList, stateTab)
+                print succStates
                 if debug:
                     print "state", state.ident, "has successors", map(lambda x: x.ident, succStates)
                 map(lambda succ: state.addSucc(succ), succStates)
+
+            if debug:
+                print "\nstateTab: length ", len(stateTab), stateTab
+                print map(lambda x: x.ident, stateTab)
 
             # add all states in the choreography
             for element in stateTab:
@@ -1445,7 +1475,7 @@ if __name__ == '__main__':
 
     checker = Checker()
     c = Choreography()
-    c.buildProcessFromFile(sys.argv[1])
+    c.buildProcessFromFile(sys.argv[1],True)
     c.computeSyncSets()
     #checker.checkChoreo(c) # -> bug gen. LNT ?
 
