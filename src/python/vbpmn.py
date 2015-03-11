@@ -1218,7 +1218,6 @@ class Choreography:
 
             # add successors to states -> TODO : correct this part of the code
 
-            print "CAREFUL",proc.behaviour.sequenceFlows
             for elem in queue:
                 stateList = filter(lambda x: x.ident == elem[1], stateTab)
                 print stateList
@@ -1228,11 +1227,11 @@ class Choreography:
                 print state
                 successorList = elem[2]
                 print "succlist", successorList
-                 # computes succ by searching in sequenceflows TODO
+                # computes succ by searching in sequenceflows 
                 succ=[]
                 for sf in proc.behaviour.sequenceFlows:
                     for ident in successorList:
-                        print ident, "==", sf.id
+                        #print ident, "==", sf.id
                         if (ident==sf.id):
                             succ.append(sf.target)
                 if debug:
