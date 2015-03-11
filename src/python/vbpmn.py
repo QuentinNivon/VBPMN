@@ -1145,19 +1145,19 @@ class Choreography:
                 if isinstance(n, pif.Message_):
                     if debug:
                         print "message: ", n.id
-                    queue.append(['message', n.id, n.outgoingFlows, n.message])
+                    queue.append(['message', n.id, n.outgoingFlows, [MessageFlow(n.message)]])
                 if isinstance(n, pif.MessageSending_):
                     if debug:
                         print "message sending: ", n.id
-                    queue.append(['messageSending', n.id, n.outgoingFlows, n.message])
+                    queue.append(['messageSending', n.id, n.outgoingFlows, [MessageFlow(n.message)]])
                 if isinstance(n, pif.MessageReception_):
                     if debug:
                         print "message reception: ", n.id
-                    queue.append(['messageReception', n.id, n.outgoingFlows, n.message])
+                    queue.append(['messageReception', n.id, n.outgoingFlows, [MessageFlow(n.message)]])
                 if isinstance(n, pif.Interaction_):
                     if debug:
                         print "interaction: ", n.id
-                    queue.append(['interaction', n.id, n.outgoingFlows, n.message, n.initiatingPeer, n.receivingPeers])
+                    queue.append(['interaction', n.id, n.outgoingFlows, [MessageFlow(n.message)], n.initiatingPeer, n.receivingPeers])
 
                 # split gateways
                 if isinstance(n, pif.AndSplitGateway_):
@@ -1220,22 +1220,34 @@ class Choreography:
 
             for elem in queue:
                 stateList = filter(lambda x: x.ident == elem[1], stateTab)
-                print stateList
+                #print stateList
                 if len(stateList) > 1:
                     print "more than one state with same ID found!"
                 state = stateList[0]
-                print state
+                #print state
                 successorList = elem[2]
-                print "succlist", successorList
+                #print "succlist", successorList
                 # computes succ by searching in sequenceflows 
-                succ=[]
+                succtmp=[]
                 for sf in proc.behaviour.sequenceFlows:
                     for ident in successorList:
                         #print ident, "==", sf.id
                         if (ident==sf.id):
-                            succ.append(sf.target)
+                            succtmp.append(sf.target)
+                succStates = filter(lambda x:  x.ident in succtmp, stateTab)
+                map(lambda succ: state.addSucc(succ), succStates)
+
+                #succStates=[]
+                #for s in succ:
+                #    for st in stateTab:
+                #        if (s==st.ident):
+                #            print st.ident
+                #            succStates.append(st)
+                #state.addSucc(succStates)
+                #print succ
+
                 if debug:
-                    print "state", state.ident, "has successors", succ
+                    print "state", state.ident, "has successors", succtmp
 
             if debug:
                 print "\nstateTab: length ", len(stateTab), stateTab
@@ -1482,7 +1494,7 @@ if __name__ == '__main__':
     c = Choreography()
     c.buildProcessFromFile(sys.argv[1],True)
     c.computeSyncSets()
-    #checker.checkChoreo(c) # -> bug gen. LNT ?
+    checker.checkChoreo(c) 
 
     # temporarily un-executed
     if False:
