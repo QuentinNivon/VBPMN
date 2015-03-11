@@ -1145,19 +1145,19 @@ class Choreography:
                 if isinstance(n, pif.Message_):
                     if debug:
                         print "message: ", n.id
-                    queue.append(['message', n.id, n.message, n.outgoingFlows])
+                    queue.append(['message', n.id, n.outgoingFlows, n.message])
                 if isinstance(n, pif.MessageSending_):
                     if debug:
                         print "message sending: ", n.id
-                    queue.append(['messageSending', n.id, n.message, n.outgoingFlows])
+                    queue.append(['messageSending', n.id, n.outgoingFlows, n.message])
                 if isinstance(n, pif.MessageReception_):
                     if debug:
                         print "message reception: ", n.id
-                    queue.append(['messageReception', n.id, n.message, n.outgoingFlows])
+                    queue.append(['messageReception', n.id, n.outgoingFlows, n.message])
                 if isinstance(n, pif.Interaction_):
                     if debug:
                         print "interaction: ", n.id
-                    queue.append(['interaction', n.id, n.message, n.initiatingPeer, n.receivingPeers, n.outgoingFlows])
+                    queue.append(['interaction', n.id, n.outgoingFlows, n.message, n.initiatingPeer, n.receivingPeers])
 
                 # split gateways
                 if isinstance(n, pif.AndSplitGateway_):
@@ -1194,13 +1194,13 @@ class Choreography:
                     stateTab.append(InitialState(elem[1], []))
 
                 elif (elem[0] == 'message'):
-                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[2]))
+                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
                 elif (elem[0] == 'messageSending'):
-                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[2]))
+                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
                 elif (elem[0] == 'messageReception'):
-                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[2]))
+                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
                 elif (elem[0] == 'interaction'):
-                    stateTab.append(InteractionState(elem[1], [], elem[4], elem[3], elem[2])) # TODO: refine here
+                    stateTab.append(InteractionState(elem[1], [], elem[5], elem[4], elem[3])) # TODO: refine here
 
                 elif (elem[0] == 'andSplitGateway'):
                     stateTab.append(ChoiceState(elem[1], []))
@@ -1217,6 +1217,8 @@ class Choreography:
                     stateTab.append(SubsetJoinState(elem[1], []))
 
             # add successors to states -> TODO : correct this part of the code
+
+            print "CAREFUL",proc.behaviour.sequenceFlows
             for elem in queue:
                 stateList = filter(lambda x: x.ident == elem[1], stateTab)
                 print stateList
@@ -1226,11 +1228,15 @@ class Choreography:
                 print state
                 successorList = elem[2]
                 print "succlist", successorList
-                succStates = filter(lambda x:  x.ident in successorList, stateTab)
-                print succStates
+                 # computes succ by searching in sequenceflows TODO
+                succ=[]
+                for sf in proc.behaviour.sequenceFlows:
+                    for ident in successorList:
+                        print ident, "==", sf.id
+                        if (ident==sf.id):
+                            succ.append(sf.target)
                 if debug:
-                    print "state", state.ident, "has successors", map(lambda x: x.ident, succStates)
-                map(lambda succ: state.addSucc(succ), succStates)
+                    print "state", state.ident, "has successors", succ
 
             if debug:
                 print "\nstateTab: length ", len(stateTab), stateTab
