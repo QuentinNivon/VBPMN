@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pif:Process xmlns:pif="http://www.example.org/PIF"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
+    <pif:name>p0000</pif:name>
+    <pif:documentation>
+        start - end process with useless information
+    </pif:documentation>
+
+    <!--  PEERS -->
+
+    <!--  MESSAGES -->
+
+    <!--  WORKFLOW -->
+    <pif:behaviour>
+
+        <!--  NODES -->
+        <pif:nodes id="initial" xsi:type="pif:InitialEvent">
+            <pif:outgoingFlows>sf1</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="final" xsi:type="pif:EndEvent">
+            <pif:incomingFlows>sf1</pif:incomingFlows>
+        </pif:nodes>
+
+        <!--  SEQUENCE FLOWS -->
+        <pif:sequenceFlows id="sf1" source="initial" target="final"/>
+
+        <!--  INITIAL AND FINAL NODES -->
+        <pif:initialNode>initial</pif:initialNode>
+        <pif:finalNodes>final</pif:finalNodes>
+
+    </pif:behaviour>
+
+</pif:Process>
