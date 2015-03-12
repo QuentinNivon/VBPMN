@@ -28,6 +28,8 @@
         <pif:nodes id="task1" xsi:type="pif:Interaction" message="message1">
             <pif:incomingFlows>sf1</pif:incomingFlows>
             <pif:outgoingFlows>sf2</pif:outgoingFlows>
+            <pif:initiatingPeer>peer1</pif:initiatingPeer>
+            <pif:receivingPeers>peer2</pif:receivingPeers>
         </pif:nodes>
 
         <!--  SEQUENCE FLOWS -->
