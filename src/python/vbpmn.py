@@ -1263,41 +1263,30 @@ class Process:
             print 'Unrecognized element, the message was "%s"' % (e.message)
 
 
-class Checker:
-
-    # call the SVL script to generate the LTS from the Python process object
-    def callSVL(self, proc, debugOutput = False):
-        import sys
-        name = proc.getName()
-        
-        if debugOutput:
-             process = Popen (["svl",name], shell = False, stdout=sys.stdout)
-	     #process = Popen (["svl",name], shell = False, stdout=PIPE)
-        else:
-            process = Popen (["svl",name], shell = False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-            #process = Popen (["svl",name], shell = False, stdin=PIPE, stdout=PIPE)
-        process.communicate()
-            
-        if process.returncode != 0:
-            return False
-        else:
-            return True
+# This classe generates LTS (bcg) from processes (PIF format)
+class Generator:
 
     # generates LNT, SVL, and finally call the method above to obtain the LTS
-    def generateLTS(self, filename, smartReduction = True, debugInfoMonitors = False):
-
+    def generateLTS(self, filename, smartReduction = True, debug = False):
+        import sys
         proc = Process()
         proc.buildProcessFromFile(filename)
         proc.computeSyncSets()
 
-        procName = proc.getName()
+        name = proc.getName()
         initial = proc.getInitialState()
         conditions = initial.checkConditionsFromSpec("", [], [], False)
         
         proc.genLNT()
         proc.genSVL(smartReduction)
-        self.callSVL(proc)
-        return procName
+
+        if debug:
+             process = Popen (["svl",name], shell = False, stdout=sys.stdout)
+        else:
+            process = Popen (["svl",name], shell = False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        process.communicate()
+            
+        return name
 
 class Comparator:
 
@@ -1327,16 +1316,14 @@ class Comparator:
         f.close()
 
     # generates and calls the generated SVL file
-    def compare(self, fname, debugOutput = False):
+    def compare(self, fname, debug = False):
         import sys
         
         self.genSVL(fname)
-        if debugOutput:
+        if debug:
              process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
-	     #process = Popen (["svl",fname], shell = False, stdout=PIPE)
         else:
             process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
-            #process = Popen (["svl",fname], shell = False, stdin=PIPE, stdout=PIPE)
         process.communicate()
             
         if process.returncode != 0:
@@ -1358,10 +1345,10 @@ if __name__ == '__main__':
     operation=sys.argv[3]
 
     print "converting " + file1 + " to LTS.."
-    name1=Checker().generateLTS(file1)
+    name1=Generator().generateLTS(file1)
 
     print "converting " + file2 + " to LTS.."
-    name2=Checker().generateLTS(file2)
+    name2=Generator().generateLTS(file2)
 
     print "comparing " + file1 + " and " + file2 + " wrt. " + operation
     res=Comparator(name1,name2,operation).compare("compare.svl")
