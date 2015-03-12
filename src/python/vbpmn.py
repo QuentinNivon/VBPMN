@@ -1491,31 +1491,23 @@ if __name__ == '__main__':
     import glob
 
     checker = Checker()
-    c = Choreography()
-    c.buildProcessFromFile(sys.argv[1],True)
-    c.computeSyncSets()
-    checker.checkChoreo(c) 
 
-    # temporarily un-executed
-    if False:
-        checker = Checker()
+    infile1=sys.argv[1]
+    infile2=sys.argv[2]
+    operation=sys.argv[3]
 
-        infile1=sys.argv[1]
-        infile2=sys.argv[2]
-        operation=sys.argv[3]
+    print "converting " + infile1 + " to LTS.."
+    c1 = Choreography()
+    c1.buildProcessFromFile(infile1)
+    c1.computeSyncSets()
+    checker.checkChoreo(c1)
 
-        print "converting " + infile1 + " to LTS.."
-        c1 = Choreography()
-        c1.buildChoreoFromFile(infile1)
-        c1.computeSyncSets()
-        checker.checkChoreo(c1)
+    print "converting " + infile2 + " to LTS.."
+    c2 = Choreography()
+    c2.buildProcessFromFile(infile2)
+    c2.computeSyncSets()
+    checker.checkChoreo(c2)
 
-        print "converting " + infile2 + " to LTS.."
-        c2 = Choreography()
-        c2.buildChoreoFromFile(infile2)
-        c2.computeSyncSets()
-        checker.checkChoreo(c2)
-
-        print "comparing " + infile1 + " and " + infile2 + " wrt. " + operation
-        comp = Comparator(c1.name,c2.name,operation)
-        comp.compare("compare.svl")
+    print "comparing " + infile1 + " and " + infile2 + " wrt. " + operation
+    comp = Comparator(c1.name,c2.name,operation)
+    comp.compare("compare.svl")
