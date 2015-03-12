@@ -1141,7 +1141,11 @@ class Choreography:
                 #if isinstance(n, pif.EndEvent_):
                 #    queue.append(['final', n.id, n.outgoingFlows])
 
-                # communications / messages
+                # communications / messages / tasks
+                if isinstance(n, pif.Task_):
+                    if debug:
+                        print "task: ", n.id
+                    queue.append(['task', n.id, n.outgoingFlows, [MessageFlow(n.id)]])
                 if isinstance(n, pif.Message_):
                     if debug:
                         print "message: ", n.id
@@ -1193,6 +1197,8 @@ class Choreography:
                 if (elem[0] == 'initial'):
                     stateTab.append(InitialState(elem[1], []))
 
+                elif (elem[0] == 'task'):   # TODO: enlever sender/receiver bidons ? 
+                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
                 elif (elem[0] == 'message'):
                     stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
                 elif (elem[0] == 'messageSending'):
