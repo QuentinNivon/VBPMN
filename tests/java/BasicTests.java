@@ -19,6 +19,7 @@
  */
 
 import models.process.pif.generated.Process;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
 
@@ -36,6 +37,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +47,7 @@ public class BasicTests {
 
     public static final String FILES_PATH = "examples/basic";
     public static final String TESTFILE_PATH = "tests/examples/basic/tests.txt";
-    public static final String SCHEMA_PATH = "examples/pif.xsd";
+    public static final String SCHEMA_PATH = "model/pif.xsd";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
     public static final String REGEX_TEST = "^(\\w*)\\h([=<>])\\h(\\w*)\\h([+-])$";
     public static final String REGEX_EMPTYLINE = "^\\h*$";
@@ -52,12 +56,12 @@ public class BasicTests {
     /**
      * Reads on process to check if it is ok
      */
+    @Test(dataProvider = "reads_all_tests")
     private void read_test(Path filePath) {
         try {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
             if (filePath.toFile().getName().endsWith(SUFFIX)) {
-                System.out.println("reading " + filePath);
                 FileInputStream fis = new FileInputStream(filePath.toFile().getCanonicalPath());
                 JAXBContext ctx = null;
                 ctx = JAXBContext.newInstance(Process.class);
@@ -84,16 +88,23 @@ public class BasicTests {
     /**
      * Reads all processes to check if they are ok
      */
-    @Test
-    public void reads_all_tests() {
+    @DataProvider(name = "reads_all_tests")
+    public Object[][] reads_all_tests() {
+        Object[][] o = null;
         try {
-            Files.walk(Paths.get(FILES_PATH)).forEach(filePath -> {
-                read_test(filePath);
-            });
+            Object[] paths = Files.walk(Paths.get(FILES_PATH))
+                    .filter(x -> x.toFile().getName().endsWith(SUFFIX))
+                    .toArray();
+            int i = paths.length;
+            o = new Object[i][];
+            for (int j = 0; j < i; j++) {
+                o[j] = new Object[1];
+                o[j][0] = paths[j];
+            }
         } catch (IOException e) {
-            e.printStackTrace();
             fail();
         }
+        return o;
     }
 
     /**
@@ -120,7 +131,7 @@ public class BasicTests {
                         String process2 = FILES_PATH + m_test.group(3) + SUFFIX;
                         String operator = m_test.group(2);
                         String expected_result = m_test.group(4);
-                        System.out.println(process1+operator+process2+expected_result);
+                        System.out.println(process1 + operator + process2 + expected_result);
                         // TODO : call python, get result, and compare to the expected one
                     } else {
                         fail();
