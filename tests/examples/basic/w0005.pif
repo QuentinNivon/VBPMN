@@ -4,7 +4,7 @@
              xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
     <pif:name>p0000</pif:name>
     <pif:documentation>
-        simple process with a single communication task
+        simple process with a single communication task (inconsistent since interaction is between peer1 and itself)
     </pif:documentation>
 
     <!--  PEERS -->
@@ -29,7 +29,7 @@
             <pif:incomingFlows>sf1</pif:incomingFlows>
             <pif:outgoingFlows>sf2</pif:outgoingFlows>
             <pif:initiatingPeer>peer1</pif:initiatingPeer>
-            <pif:receivingPeers>peer2</pif:receivingPeers>
+            <pif:receivingPeers>peer1</pif:receivingPeers>
         </pif:nodes>
 
         <!--  SEQUENCE FLOWS -->
