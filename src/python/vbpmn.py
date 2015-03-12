@@ -1353,18 +1353,15 @@ if __name__ == '__main__':
     import os
     import glob
 
-    checker = Checker()
-
-    infile1=sys.argv[1]
-    infile2=sys.argv[2]
+    file1=sys.argv[1]
+    file2=sys.argv[2]
     operation=sys.argv[3]
 
-    print "converting " + infile1 + " to LTS.."
-    name1=checker.generateLTS(infile1)
+    print "converting " + file1 + " to LTS.."
+    name1=Checker().generateLTS(file1)
 
-    print "converting " + infile2 + " to LTS.."
-    name2=checker.generateLTS(infile2)
+    print "converting " + file2 + " to LTS.."
+    name2=Checker().generateLTS(file2)
 
-    print "comparing " + infile1 + " and " + infile2 + " wrt. " + operation
-    comp = Comparator(name1,name2,operation)
-    comp.compare("compare.svl")
+    print "comparing " + file1 + " and " + file2 + " wrt. " + operation
+    res=Comparator(name1,name2,operation).compare("compare.svl")
