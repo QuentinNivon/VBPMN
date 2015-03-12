@@ -4,6 +4,8 @@
 p0000 = p0000 +
 p0001 = p0001 +
 p0002 = p0002 +
+p0003 = p0003 +
+p0004 = p0004 +
 
 // preorders x/x
 p0000 < p0000 -
@@ -14,6 +16,9 @@ p0001 > p0001 -
 // same process with different sets of peers/messages
 p0000 = p0001 +
 p0000 = p0002 -
+p0002 = p0003 -
+p0002 = p0004 -
+p0003 = p0004 -
 
 
 
