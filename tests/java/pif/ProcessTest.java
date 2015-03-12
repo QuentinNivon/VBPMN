@@ -67,7 +67,7 @@ public class ProcessTest {
         Process p;
         FileInputStream fis;
         try {
-            fis = new FileInputStream("tests/examples/p0000.pif");
+            fis = new FileInputStream("tests/examples/p0001.pif");
             JAXBContext ctx = JAXBContext.newInstance(Process.class);
             Unmarshaller unmarshaller = ctx.createUnmarshaller();
             p = (Process) unmarshaller.unmarshal(fis);
@@ -93,7 +93,7 @@ public class ProcessTest {
         FileInputStream fis;
         FileOutputStream fos;
         try {
-            fis = new FileInputStream("tests/examples/p0000.pif");
+            fis = new FileInputStream("tests/examples/p0001.pif");
             JAXBContext ctx = JAXBContext.newInstance(Process.class);
             Unmarshaller unmarshaller = ctx.createUnmarshaller();
             p = (Process) unmarshaller.unmarshal(fis);

@@ -20,10 +20,24 @@
 
 package pif;
 
+import models.process.pif.generated.Process;
 import org.testng.annotations.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+
 import static org.testng.Assert.*;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,42 +45,89 @@ public class BasicTests {
 
     public static final String path = "tests/examples/basic/";
     public static final String filetestname = "tests.txt";
+    public static final String SCHEMA_PATH = "tests/examples/pif.xsd";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
     public static final String REGEX_TEST = "^(\\w*)\\h([=<>])\\h(\\w*)\\h([+-])$";
     public static final String REGEX_EMPTYLINE = "^\\h*$";
+    public static final String SUFFIX = ".pif";
 
+    /**
+     * Reads on process to check if it is ok
+     */
+    private void read_test(Path filePath) {
+        try {
+            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
+            if (filePath.toFile().getName().endsWith(SUFFIX)) {
+                FileInputStream fis = new FileInputStream(filePath.toFile().getCanonicalPath());
+                JAXBContext ctx = null;
+                ctx = JAXBContext.newInstance(Process.class);
+                Unmarshaller unmarshaller = ctx.createUnmarshaller();
+                unmarshaller.setSchema(schema);
+                Process p = (Process) unmarshaller.unmarshal(fis);
+                fis.close();
+            }
+        } catch (JAXBException e) {
+            e.printStackTrace();
+            fail();
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+            fail();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            fail();
+        } catch (SAXException e1) {
+            e1.printStackTrace();
+            fail();
+        }
+    }
+
+    /**
+     * Reads all processes to check if they are ok
+     */
+    @Test
+    public void reads_all_tests() {
+        try {
+            Files.walk(Paths.get(path)).forEach(filePath -> {
+                read_test(filePath);
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    /**
+     * Performs equivalence/preoder checking following the tests described in a file
+     */
     @Test
     public void run_all_tests() {
         String line;
         FileInputStream filetests = null;
         Pattern p_test = Pattern.compile(REGEX_TEST);
         try {
-            filetests = new FileInputStream(path+filetestname);
+            filetests = new FileInputStream(path + filetestname);
             BufferedReader fin = new BufferedReader(new InputStreamReader(filetests));
             line = fin.readLine();
-            while(line != null) {
-                if(line.matches(REGEX_EMPTYLINE)) {
+            while (line != null) {
+                if (line.matches(REGEX_EMPTYLINE)) {
                     // nothing
-                }
-                else if(line.matches(REGEX_COMMENT)) {
+                } else if (line.matches(REGEX_COMMENT)) {
                     System.out.println(line);
-                }
-                else if(line.matches(REGEX_TEST)) {
+                } else if (line.matches(REGEX_TEST)) {
                     System.out.println(line);
                     Matcher m_test = p_test.matcher(line);
-                    if(m_test.matches()) {
+                    if (m_test.matches()) {
                         String process1 = path + m_test.group(1) + ".pif";
                         String process2 = path + m_test.group(3) + ".pif";
                         String operator = m_test.group(2);
                         String expected_result = m_test.group(4);
-                        // TODO : call python
-                        System.out.println(String.format("%s and %s are %s (%s): %s",process1,process2,operator,expected_result,"XXX"));
-                    }
-                    else {
+                        // TODO : call python, get result, and compare to the expected one
+                        System.out.println(String.format("%s and %s are %s (%s): %s", process1, process2, operator, expected_result, "XXX"));
+                    } else {
                         fail();
                     }
-                }
-                else {
+                } else {
                     System.out.println(String.format("cannot parse line: ", line));
                     fail();
                 }

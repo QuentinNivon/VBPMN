@@ -4,12 +4,16 @@
              xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
     <pif:name>p0000</pif:name>
     <pif:documentation>
-        start - end process with useless information
+        start - end process with useless information (peers and messages)
     </pif:documentation>
 
     <!--  PEERS -->
+    <pif:peers id="peer1" /> <!--  NOT USED IN THIS EXAMPLE -->
+    <pif:peers id="peer2" /> <!--  NOT USED IN THIS EXAMPLE -->
 
     <!--  MESSAGES -->
+    <pif:messages id="message1" />
+    <pif:messages id="message2" />
 
     <!--  WORKFLOW -->
     <pif:behaviour>
