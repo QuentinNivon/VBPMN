@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pif:Process xmlns:pif="http://www.example.org/PIF"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
+    <pif:name>p0000</pif:name>
+    <pif:documentation>
+        simple process with a single emission task
+    </pif:documentation>
+
+    <!--  PEERS -->
+    <pif:peers id="peer1" /> <!--  NOT USED IN THIS EXAMPLE -->
+    <pif:peers id="peer2" /> <!--  NOT USED IN THIS EXAMPLE -->
+
+    <!--  MESSAGES -->
+    <pif:messages id="message1" />
+    <pif:messages id="message2" />
+
+    <!--  WORKFLOW -->
+    <pif:behaviour>
+
+        <!--  NODES -->
+        <pif:nodes id="initial" xsi:type="pif:InitialEvent">
+            <pif:outgoingFlows>sf1</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="final" xsi:type="pif:EndEvent">
+            <pif:incomingFlows>sf2</pif:incomingFlows>
+        </pif:nodes>
+        <pif:nodes id="task1" xsi:type="pif:MessageSending" message="message1">
+            <pif:incomingFlows>sf1</pif:incomingFlows>
+            <pif:outgoingFlows>sf2</pif:outgoingFlows>
+        </pif:nodes>
+
+        <!--  SEQUENCE FLOWS -->
+        <pif:sequenceFlows id="sf1" source="initial" target="task1"/>
+        <pif:sequenceFlows id="sf2" source="task1" target="final"/>
+
+        <!--  INITIAL AND FINAL NODES -->
+        <pif:initialNode>initial</pif:initialNode>
+        <pif:finalNodes>final</pif:finalNodes>
+
+    </pif:behaviour>
+
+</pif:Process>

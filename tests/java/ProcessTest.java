@@ -1,5 +1,3 @@
-package pif;
-
 import org.testng.annotations.Test;
 import models.process.pif.generated.*;
 import models.process.pif.generated.Process;

@@ -18,8 +18,6 @@
  * emails: pascal.poizat@lip6.fr
  */
 
-package pif;
-
 import models.process.pif.generated.Process;
 import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
@@ -43,9 +41,9 @@ import java.util.regex.Pattern;
 
 public class BasicTests {
 
-    public static final String path = "tests/examples/basic/";
-    public static final String filetestname = "tests.txt";
-    public static final String SCHEMA_PATH = "tests/examples/pif.xsd";
+    public static final String FILES_PATH = "examples/basic";
+    public static final String TESTFILE_PATH = "tests/examples/basic/tests.txt";
+    public static final String SCHEMA_PATH = "examples/pif.xsd";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
     public static final String REGEX_TEST = "^(\\w*)\\h([=<>])\\h(\\w*)\\h([+-])$";
     public static final String REGEX_EMPTYLINE = "^\\h*$";
@@ -59,6 +57,7 @@ public class BasicTests {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
             if (filePath.toFile().getName().endsWith(SUFFIX)) {
+                System.out.println("reading " + filePath);
                 FileInputStream fis = new FileInputStream(filePath.toFile().getCanonicalPath());
                 JAXBContext ctx = null;
                 ctx = JAXBContext.newInstance(Process.class);
@@ -88,7 +87,7 @@ public class BasicTests {
     @Test
     public void reads_all_tests() {
         try {
-            Files.walk(Paths.get(path)).forEach(filePath -> {
+            Files.walk(Paths.get(FILES_PATH)).forEach(filePath -> {
                 read_test(filePath);
             });
         } catch (IOException e) {
@@ -106,7 +105,7 @@ public class BasicTests {
         FileInputStream filetests = null;
         Pattern p_test = Pattern.compile(REGEX_TEST);
         try {
-            filetests = new FileInputStream(path + filetestname);
+            filetests = new FileInputStream(TESTFILE_PATH);
             BufferedReader fin = new BufferedReader(new InputStreamReader(filetests));
             line = fin.readLine();
             while (line != null) {
@@ -115,15 +114,14 @@ public class BasicTests {
                 } else if (line.matches(REGEX_COMMENT)) {
                     System.out.println(line);
                 } else if (line.matches(REGEX_TEST)) {
-                    System.out.println(line);
                     Matcher m_test = p_test.matcher(line);
                     if (m_test.matches()) {
-                        String process1 = path + m_test.group(1) + ".pif";
-                        String process2 = path + m_test.group(3) + ".pif";
+                        String process1 = FILES_PATH + m_test.group(1) + SUFFIX;
+                        String process2 = FILES_PATH + m_test.group(3) + SUFFIX;
                         String operator = m_test.group(2);
                         String expected_result = m_test.group(4);
+                        System.out.println(process1+operator+process2+expected_result);
                         // TODO : call python, get result, and compare to the expected one
-                        System.out.println(String.format("%s and %s are %s (%s): %s", process1, process2, operator, expected_result, "XXX"));
                     } else {
                         fail();
                     }
