@@ -1263,11 +1263,10 @@ class Process:
             print 'Unrecognized element, the message was "%s"' % (e.message)
 
 
-
 class Checker:
 
-
-    def generateLTS(self, proc, debugOutput = False):
+    # call the SVL script to generate the LTS from the Python process object
+    def callSVL(self, proc, debugOutput = False):
         import sys
         name = proc.getName()
         
@@ -1284,7 +1283,12 @@ class Checker:
         else:
             return True
 
-    def checkProcess(self, proc, smartReduction = True, debugInfoMonitors = False):
+    # generates LNT, SVL, and finally call the method above to obtain the LTS
+    def generateLTS(self, filename, smartReduction = True, debugInfoMonitors = False):
+
+        proc = Process()
+        proc.buildProcessFromFile(filename)
+        proc.computeSyncSets()
 
         procName = proc.getName()
         initial = proc.getInitialState()
@@ -1292,7 +1296,8 @@ class Checker:
         
         proc.genLNT()
         proc.genSVL(smartReduction)
-        self.generateLTS(proc)
+        self.callSVL(proc)
+        return procName
 
 class Comparator:
 
@@ -1340,7 +1345,6 @@ class Comparator:
             return True
 
 
-
 ##############################################################################################
 if __name__ == '__main__':
 
@@ -1356,17 +1360,11 @@ if __name__ == '__main__':
     operation=sys.argv[3]
 
     print "converting " + infile1 + " to LTS.."
-    c1 = Process()
-    c1.buildProcessFromFile(infile1)
-    c1.computeSyncSets()
-    checker.checkProcess(c1)
+    name1=checker.generateLTS(infile1)
 
     print "converting " + infile2 + " to LTS.."
-    c2 = Process()
-    c2.buildProcessFromFile(infile2)
-    c2.computeSyncSets()
-    checker.checkProcess(c2)
+    name2=checker.generateLTS(infile2)
 
     print "comparing " + infile1 + " and " + infile2 + " wrt. " + operation
-    comp = Comparator(c1.name,c2.name,operation)
+    comp = Comparator(name1,name2,operation)
     comp.compare("compare.svl")
