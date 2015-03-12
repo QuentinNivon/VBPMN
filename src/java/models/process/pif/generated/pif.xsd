@@ -2,23 +2,10 @@
 <schema xmlns="http://www.w3.org/2001/XMLSchema"
 		targetNamespace="http://www.example.org/PIF"
 		xmlns:pif="http://www.example.org/PIF"
-		jaxb:version="2.1"
 		xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-		elementFormDefault="qualified">
-
-	<complexType name="Process">
-    	<sequence>
-    	    <element name="name" type="string" minOccurs="1"
-    			maxOccurs="1">
-    		</element>
-    		<element name="documentation" type="string" minOccurs="1" maxOccurs="1"></element>
-    		<element name="peers" type="pif:Peer" minOccurs="0"
-    			maxOccurs="unbounded">
-    		</element>
-    		<element name="messages" type="pif:Message" minOccurs="0" maxOccurs="unbounded"></element>
-    		<element name="behaviour" type="pif:Workflow" minOccurs="1" maxOccurs="1"></element>
-    	</sequence>
-    </complexType>
+        jaxb:version="2.1"
+		elementFormDefault="qualified"
+        version="0.1">
 
     <complexType name="Peer">
     	<attribute name="id" type="ID" use="required"></attribute>
@@ -254,4 +241,21 @@
     		<extension base="pif:WorkflowNode"></extension>
     	</complexContent>
     </complexType>
+
+    <element name="Process">
+        <complexType>
+            <sequence>
+                <element name="name" type="string" minOccurs="1"
+                         maxOccurs="1">
+                </element>
+                <element name="documentation" type="string" minOccurs="1" maxOccurs="1"></element>
+                <element name="peers" type="pif:Peer" minOccurs="0"
+                         maxOccurs="unbounded">
+                </element>
+                <element name="messages" type="pif:Message" minOccurs="0" maxOccurs="unbounded"></element>
+                <element name="behaviour" type="pif:Workflow" minOccurs="1" maxOccurs="1"></element>
+            </sequence>
+        </complexType>
+    </element>
+
 </schema>
