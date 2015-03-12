@@ -382,6 +382,7 @@ class InteractionState(IntermediateState):
         # now : only one message exchanged for each interaction state
         m=self.messageflows[0].getMessage()
         f.write(self.initiating+"_"+partner+"_"+m)
+        #f.write(m)
 
         # if len(self.messageflows)==1:
         #     m=self.messageflows[0].getMessage()
@@ -1116,27 +1117,145 @@ class Choreography:
             proc = pif.CreateFromDocument(xml)
             self.name = proc.name
 
-            if debug:
-                print "choreo name: ", self.name
-
             stateTab = [] # python encoded states
-            queue = [] # states waiting to be encoded
+            queue = []    # states waiting to be encoded
 
-            # init :
-            # -> fill stateTab with final states
-            # -> fill queue with any other state in order to sort them according to their dependancies
             for fin in proc.behaviour.finalNodes:
-                print fin
-                if debug:
-                    print "final state: ", fin
                 stateTab.append(FinalState(fin))
 
-            for msg in proc.messages:
+            # useful ? information will be handled directly in nodes..
+            #for msg in proc.messages:
+            #    peers = []
+            #    initiator = ""
+            #    queue.append(['interaction', msg.id, [], peers, initiator, [MessageFlow(msg)]])
+
+            # iterates and stores the nodes information 
+            for n in proc.behaviour.nodes:
+                # print n
+                # initial event
+                if isinstance(n, pif.InitialEvent_):
+                    if debug:
+                        print "initial state: ", n.id
+                    queue.append(['initial', n.id, n.outgoingFlows])
+                # end event
+                #if isinstance(n, pif.EndEvent_):
+                #    queue.append(['final', n.id, n.outgoingFlows])
+
+                # communications / messages
+                if isinstance(n, pif.Message_):
+                    if debug:
+                        print "message: ", n.id
+                    queue.append(['message', n.id, n.outgoingFlows, [MessageFlow(n.message)]])
+                if isinstance(n, pif.MessageSending_):
+                    if debug:
+                        print "message sending: ", n.id
+                    queue.append(['messageSending', n.id, n.outgoingFlows, [MessageFlow(n.message)]])
+                if isinstance(n, pif.MessageReception_):
+                    if debug:
+                        print "message reception: ", n.id
+                    queue.append(['messageReception', n.id, n.outgoingFlows, [MessageFlow(n.message)]])
+                if isinstance(n, pif.Interaction_):
+                    if debug:
+                        print "interaction: ", n.id
+                    queue.append(['interaction', n.id, n.outgoingFlows, [MessageFlow(n.message)], n.initiatingPeer, n.receivingPeers])
+
+                # split gateways
+                if isinstance(n, pif.AndSplitGateway_):
+                    if debug:
+                        print "and split gateway: ", n.id
+                    queue.append(['andSplitGateway', n.id, n.outgoingFlows])
+                if isinstance(n, pif.OrSplitGateway_):
+                    if debug:
+                        print "or split gateway: ", n.id
+                    queue.append(['orSplitGateway', n.id, n.outgoingFlows])
+                if isinstance(n, pif.XOrSplitGateway_):
+                    if debug:
+                        print "xor split gateway: ", n.id
+                    queue.append(['xorSplitGateway', n.id, n.outgoingFlows])
+
+                # join gateways
+                if isinstance(n, pif.AndJoinGateway_):
+                    if debug:
+                        print "and join gateway: ", n.id
+                    queue.append(['andJoinGateway', n.id, n.outgoingFlows])
+                if isinstance(n, pif.OrJoinGateway_):
+                    if debug:
+                        print "or join gateway: ", n.id
+                    queue.append(['orJoinGateway', n.id, n.outgoingFlows])
+                if isinstance(n, pif.XOrJoinGateway_):
+                    if debug:
+                        print "xor join gateway: ", n.id
+                    queue.append(['xorJoinGateway', n.id, n.outgoingFlows])
+
+            # create all states
+            successors = []
+            for elem in queue:
+                if (elem[0] == 'initial'):
+                    stateTab.append(InitialState(elem[1], []))
+
+                elif (elem[0] == 'message'):
+                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
+                elif (elem[0] == 'messageSending'):
+                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
+                elif (elem[0] == 'messageReception'):
+                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
+                elif (elem[0] == 'interaction'):
+                    stateTab.append(InteractionState(elem[1], [], elem[5], elem[4], elem[3])) # TODO: refine here
+
+                elif (elem[0] == 'andSplitGateway'):
+                    stateTab.append(ChoiceState(elem[1], []))
+                elif (elem[0] == 'orSplitGateway'):
+                    stateTab.append(AllSelectState(elem[1], []))
+                elif (elem[0] == 'xorSplitGateway'):
+                    stateTab.append(SubsetJoinState(elem[1], []))
+
+                elif (elem[0] == 'andJoinGateway'):
+                    stateTab.append(SimpleJoinState(elem[1], []))
+                elif (elem[0] == 'orJoinGateway'):
+                    stateTab.append(AllJoinState(elem[1], []))
+                elif (elem[0] == 'xorJoinGateway'):
+                    stateTab.append(SubsetJoinState(elem[1], []))
+
+            # add successors to states -> TODO : correct this part of the code
+
+            for elem in queue:
+                stateList = filter(lambda x: x.ident == elem[1], stateTab)
+                #print stateList
+                if len(stateList) > 1:
+                    print "more than one state with same ID found!"
+                state = stateList[0]
+                #print state
+                successorList = elem[2]
+                #print "succlist", successorList
+                # computes succ by searching in sequenceflows 
+                succtmp=[]
+                for sf in proc.behaviour.sequenceFlows:
+                    for ident in successorList:
+                        #print ident, "==", sf.id
+                        if (ident==sf.id):
+                            succtmp.append(sf.target)
+                succStates = filter(lambda x:  x.ident in succtmp, stateTab)
+                map(lambda succ: state.addSucc(succ), succStates)
+
+                #succStates=[]
+                #for s in succ:
+                #    for st in stateTab:
+                #        if (s==st.ident):
+                #            print st.ident
+                #            succStates.append(st)
+                #state.addSucc(succStates)
+                #print succ
+
                 if debug:
-                        print "interaction ID", msg
-                print msg ## TODO : reprendre a partir d'ici
+                    print "state", state.ident, "has successors", succtmp
 
+            if debug:
+                print "\nstateTab: length ", len(stateTab), stateTab
+                print map(lambda x: x.ident, stateTab)
 
+            # add all states in the choreography
+            for element in stateTab:
+                self.addState(element)
 
         except pyxb.UnrecognizedContentError, e:
             print 'An error occured while parsing xml document ' + fileName
@@ -1371,8 +1490,11 @@ if __name__ == '__main__':
     import os
     import glob
 
+    checker = Checker()
     c = Choreography()
-    c.buildProcessFromFile(sys.argv[1])
+    c.buildProcessFromFile(sys.argv[1],True)
+    c.computeSyncSets()
+    checker.checkChoreo(c) 
 
     # temporarily un-executed
     if False:
