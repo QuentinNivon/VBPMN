@@ -9,13 +9,8 @@ from subprocess import *
 import os.path
 
 import pyxb
-
-import choreo_xml_model
 import time
-
 import pif
-
-# Second attempt where choreographies are encoded as a graph.
 
 syncPrefix = "synchro_"
 
@@ -48,7 +43,7 @@ def isInList(elem,l):
 
 ###
 # Checks whether a list is included to another list.
-# Used only in buildChoreoFromFile to sort states
+# Used only in buildProcessFromFile to sort states
 # PostCondition :
 #   'return false' and 'successors is not relevant'
 #   'return true' and 'successors contains the list of states in dst which matches with ids in src'
@@ -97,7 +92,7 @@ def dumpSucc(f,alpha,succ,semic,syncSet = []):
        elif isinstance(succ[0],SubsetJoinState):
           f.write(" synchro_"+succ[0].getId()+";null\n")
        elif isinstance (succ[0], AllSelectState) or isinstance(succ[0], SubsetSelectState):
-           if succ[0].myChoreo.splitInOtherSplitCone(succ[0]):
+           if succ[0].myProc.splitInOtherSplitCone(succ[0]):
                f.write(succ[0].ident + " [")
            else:
                f.write("split_" + succ[0].ident + " [")
@@ -149,7 +144,7 @@ class State:
         self.ident=ident
         self.checked = False # to mark visited states
         self.space = " " # offset to print tree
-        self.predecessors = [] # store predecessors for bi-directionial navigation on choreos
+        self.predecessors = [] # store predecessors for bi-directionial navigation on processes
         self.syncSet = set()
 
     def getSyncSet(self):
@@ -638,7 +633,7 @@ class ChoiceState(GatewaySplitState):
         f.write(" select\n")
         nb=len(self.succ)
         for s in self.succ:
-            if (isinstance(s, AllSelectState) or isinstance(s, SubsetSelectState)) and not self.myChoreo.splitInOtherSplitCone(s):
+            if (isinstance(s, AllSelectState) or isinstance(s, SubsetSelectState)) and not self.myProc.splitInOtherSplitCone(s):
                 f.write("split_")
             f.write(s.ident)
             f.write(" [")
@@ -648,7 +643,7 @@ class ChoiceState(GatewaySplitState):
             #            over its own SyncSet, i.e., only the synchro messages in the current state need to be considered
             # why not using dumpSucc here?
             #
-            if (isinstance(s, AllSelectState) or isinstance(s, SubsetSelectState)) and not self.myChoreo.splitInOtherSplitCone(s):
+            if (isinstance(s, AllSelectState) or isinstance(s, SubsetSelectState)) and not self.myProc.splitInOtherSplitCone(s):
                 alphaSync = map(lambda x : x.ident, self.getSyncSet())
             else:
                 alphaSync = map(lambda x : x.ident, s.getSyncSet())
@@ -900,9 +895,9 @@ class AllJoinState(GatewayMergeState):
         return GatewayMergeState.reachableInclusiveMerge(self,visited,depth)
 
 ##
-# Class for Choreographies described with Intermediate Format
+# Class for Processes / Worflows described with Intermediate Format
 # Attributes: a name and a list of states
-class Choreography:
+class Process:
 
     def __init__(self):
         self.name=""
@@ -913,7 +908,7 @@ class Choreography:
         return self.states
 
     """
-    must be called after choreography construction
+    must be called after process construction
     will create cone sets for splits and sync sets for all states
     """
 
@@ -976,7 +971,7 @@ class Choreography:
         return self.name
 
     def printing(self):
-        print "Choreography name: "+self.name
+        print "Process name: "+self.name
         for s in self.states:
             print s,
             print "",
@@ -985,7 +980,7 @@ class Choreography:
 
     def addState(self,state):
         self.states.append(state)
-        state.myChoreo = self
+        state.myProc = self
 
     def getPeers(self):
         peers=[]
@@ -1012,7 +1007,7 @@ class Choreography:
         # the necessary ones are computed in the syncSet attribute
         return removeDoubles(alpha,alpha)
 
-    # Generates an LNT module and process for a BPMN 2.0 choreography
+    # Generates an LNT module and process for a BPMN 2.0 process
     def genLNT(self,name=""):
         if name=="":
             filename=self.name+".lnt"
@@ -1101,7 +1096,7 @@ class Choreography:
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n") #\"% CADP_TIME=\"memtime\"\n\n")
         f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
-        # choreography generation (LTS)
+        # process generation (LTS)
         f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN [")
         alpha=self.alpha()
         dumpAlphabet(alpha,f,False)
@@ -1259,7 +1254,7 @@ class Choreography:
                 print "\nstateTab: length ", len(stateTab), stateTab
                 print map(lambda x: x.ident, stateTab)
 
-            # add all states in the choreography
+            # add all states in the process
             for element in stateTab:
                 self.addState(element)
 
@@ -1268,153 +1263,13 @@ class Choreography:
             print 'Unrecognized element, the message was "%s"' % (e.message)
 
 
-
-    def buildChoreoFromFile(self, fileName, debug = False):
-        # open xml document specified in fileName
-        xml = file(fileName).read()
-        try:
-            choreo = choreo_xml_model.CreateFromDocument(xml)
-            self.name = choreo.choreoID
-
-            if debug:
-                print "choreo name: ", self.name
-
-            stateTab = [] # python encoded states
-            queue = [] # states waiting to be encoded
-
-            # init :
-            # -> fill stateTab with final states
-            # -> fill queue with any other state in order to sort them according to their dependancies
-            for fin in choreo.stateMachine.final:
-                if debug:
-                    print "final state: ", fin.stateID
-                stateTab.append(FinalState(fin.stateID))
-
-            for inter in choreo.stateMachine.interaction:
-                if debug:
-                        print "interaction ID", inter.stateID
-                for e in choreo.alphabet.message:
-                    if debug:
-                            print "  message ID:", e.msgID
-                    # msgId is unique to each message in the choreography
-                    if (e.msgID == inter.msgID):
-                        msg = e.messageContent
-                        peers = [e.sender, e.receiver]
-                        initiator = e.sender
-                        queue.append(['interaction', inter.stateID, inter.successors, peers, initiator, [MessageFlow(msg)]])
-
-            for ch in choreo.stateMachine.choice:
-                if debug:
-                    print "choice state: ", ch.stateID
-                queue.append(['choice', ch.stateID, ch.successors])
-            for domch in choreo.stateMachine.dominatedChoice:
-                if debug:
-                    print "dominated choide state: ", domch.stateID
-                queue.append(['dominated', domch.stateID, domch.successors, domch.dominantPeer])
-            for simple in choreo.stateMachine.simpleJoin:
-                if debug:
-                    print "simple join: ", simple.stateID
-                queue.append(['simpleJoin', simple.stateID, simple.successors])
-            for sub in choreo.stateMachine.subsetSelect:
-                if debug:
-                    print "simple join: ", sub.stateID
-                queue.append(['subsetSelect', sub.stateID, sub.successors, sub.default])
-            for join in choreo.stateMachine.subsetJoin:
-                if debug:
-                    print "subset join: ", join.stateID
-                queue.append(['subsetJoin', join.stateID, join.successors])
-            for alls in choreo.stateMachine.allSelect:
-                if debug:
-                    print "all select: ", alls.stateID
-                queue.append(['allSelect', alls.stateID, alls.successors])
-            for allj in choreo.stateMachine.allJoin:
-                if debug:
-                    print "all join: ", allj.stateID
-                queue.append(['allJoin', allj.stateID, allj.successors])
-            init = choreo.stateMachine.initial
-            if debug:
-                print "initial state: ", init.stateID
-            queue.append(['initial', init.stateID, init.successors])
-
-            if debug:
-                print "\nqueue: length ", len(queue), queue
-                print map(lambda x: x[1], queue)
-
-
-            # # make states in stateTab unique
-            # uniqStateTab = []
-            # for s in stateTab:
-            #     if not s.ident in map(lambda x: x.ident, uniqStateTab):
-            #         uniqStateTab.append(s)
-
-            # main body
-
-            # create all states
-            successors = []
-            for elem in queue:
-                if (elem[0] == 'interaction'):
-                    stateTab.append(InteractionState(elem[1], [], elem[3], elem[4], elem[5]))
-                elif (elem[0] == 'choice'):
-                    stateTab.append(ChoiceState(elem[1], []))
-                elif (elem[0] == 'dominated'):
-                    stateTab.append(DominatedChoiceState(elem[1], [], elem[3]))
-                elif (elem[0] == 'simpleJoin'):
-                    stateTab.append(SimpleJoinState(elem[1], []))
-                elif (elem[0] == 'subsetSelect'):
-                    stateTab.append(SubsetSelectState(elem[1], [])) #, elem[3]))
-                elif (elem[0] == 'subsetJoin'):
-                    stateTab.append(SubsetJoinState(elem[1], []))
-                elif (elem[0] == 'allSelect'):
-                    stateTab.append(AllSelectState(elem[1], []))
-                elif (elem[0] == 'allJoin'):
-                    stateTab.append(AllJoinState(elem[1], []))
-                elif (elem[0] == 'initial'):
-                    stateTab.append(InitialState(elem[1], []))
-
-            if debug:
-                print "\nstateTab: length ", len(stateTab), stateTab
-                print map(lambda x: x.ident, stateTab)
-
-
-
-            # add successors to states
-            for elem in queue:
-                stateList = filter(lambda x: x.ident == elem[1], stateTab)
-                if len(stateList) > 1:
-                    print "more than one state with same ID found!"
-                state = stateList[0]
-                successorList = elem[2]
-                succStates = filter(lambda x:  x.ident in successorList, stateTab)
-                if debug:
-                    print "state", state.ident, "has successors", map(lambda x: x.ident, succStates)
-                map(lambda succ: state.addSucc(succ), succStates)
-
-            # dumps resulting tab
-            if debug:
-                for e in stateTab:
-                    print '####'
-                    print e.getId()
-                    if (not isinstance(e, FinalState)):
-                        print 'successors :'
-                        for succ in e.getSucc():
-                            print succ.getId()
-                    print '####'
-
-            # add all states in the choreography
-            for element in stateTab:
-                self.addState(element)
-
-        except pyxb.UnrecognizedContentError, e:
-            print 'An error occured while parsing xml document ' + fileName
-#            print 'Unrecognized element "%s" at %s' % (e.content.expanded_name, e.content.location)
-            print 'Unrecognized element, the message was "%s"' % (e.message)
 
 class Checker:
 
 
-    def generateLTS(self, choreo, debugOutput = False):
+    def generateLTS(self, proc, debugOutput = False):
         import sys
-        name = choreo.getName()
+        name = proc.getName()
         
         if debugOutput:
              process = Popen (["svl",name], shell = False, stdout=sys.stdout)
@@ -1429,15 +1284,15 @@ class Checker:
         else:
             return True
 
-    def checkChoreo(self, choreo, smartReduction = True, debugInfoMonitors = False):
+    def checkProcess(self, proc, smartReduction = True, debugInfoMonitors = False):
 
-        choreoName = choreo.getName()
-        initial = choreo.getInitialState()
+        procName = proc.getName()
+        initial = proc.getInitialState()
         conditions = initial.checkConditionsFromSpec("", [], [], False)
         
-        choreo.genLNT()
-        choreo.genSVL(smartReduction)
-        self.generateLTS(choreo)
+        proc.genLNT()
+        proc.genSVL(smartReduction)
+        self.generateLTS(proc)
 
 class Comparator:
 
@@ -1490,9 +1345,7 @@ class Comparator:
 if __name__ == '__main__':
 
     import sys
-    import choreo_xml_model
     import pyxb
-
     import os
     import glob
 
@@ -1503,16 +1356,16 @@ if __name__ == '__main__':
     operation=sys.argv[3]
 
     print "converting " + infile1 + " to LTS.."
-    c1 = Choreography()
+    c1 = Process()
     c1.buildProcessFromFile(infile1)
     c1.computeSyncSets()
-    checker.checkChoreo(c1)
+    checker.checkProcess(c1)
 
     print "converting " + infile2 + " to LTS.."
-    c2 = Choreography()
+    c2 = Process()
     c2.buildProcessFromFile(infile2)
     c2.computeSyncSets()
-    checker.checkChoreo(c2)
+    checker.checkProcess(c2)
 
     print "comparing " + infile1 + " and " + infile2 + " wrt. " + operation
     comp = Comparator(c1.name,c2.name,operation)
