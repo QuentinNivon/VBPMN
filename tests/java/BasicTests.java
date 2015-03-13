@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
 
 public class BasicTests {
 
-    public static final String FILES_PATH = "examples/basic";
-    public static final String TESTFILE_PATH = "tests/examples/basic/tests.txt";
+    public static final String FILES_PATH = "examples/pif.basic";
+    public static final String TESTFILE_PATH = "tests/examples/pif.basic/tests.txt";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
     public static final String REGEX_TEST = "^(\\w*)\\h([=<>])\\h(\\w*)\\h([+-])$";
     public static final String REGEX_EMPTYLINE = "^\\h*$";

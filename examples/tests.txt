@@ -1,0 +1,30 @@
+// TESTS PARAMETERS
+
+// equivalences x/x
+pif/basic/p0000 = pif/basic/p0000 +
+pif/basic/p0001 = pif/basic/p0001 +
+pif/basic/p0002 = pif/basic/p0002 +
+pif/basic/p0003 = pif/basic/p0003 +
+pif/basic/p0004 = pif/basic/p0004 +
+pif/basic/p0005 = pif/basic/p0005 +
+
+// preorders x/x
+pif/basic/p0000 < pif/basic/p0000 -
+pif/basic/p0000 > pif/basic/p0000 -
+pif/basic/p0001 < pif/basic/p0001 -
+pif/basic/p0001 > pif/basic/p0001 -
+pif/basic/p0002 < pif/basic/p0002 -
+pif/basic/p0002 > pif/basic/p0002 -
+
+// same process with different sets of peers/messages
+pif/basic/p0000 = pif/basic/p0001 +
+pif/basic/p0000 = pif/basic/p0002 -
+pif/basic/p0002 = pif/basic/p0003 -
+pif/basic/p0002 = pif/basic/p0004 -
+pif/basic/p0002 = pif/basic/p0005 -
+pif/basic/p0003 = pif/basic/p0004 -
+pif/basic/p0003 = pif/basic/p0005 -
+pif/basic/p0004 = pif/basic/p0005 -
+
+
+
