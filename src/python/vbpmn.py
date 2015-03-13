@@ -1263,7 +1263,7 @@ class Process:
             print 'Unrecognized element, the message was "%s"' % (e.message)
 
 
-# This classe generates LTS (bcg) from processes (PIF format)
+# This class generates LTS (bcg) from processes (PIF format)
 class Generator:
 
     # generates LNT, SVL, and finally call the method above to obtain the LTS
@@ -1288,6 +1288,7 @@ class Generator:
             
         return name
 
+# This class compares two LTSs wrt. a certain operation
 class Comparator:
 
     # two names corresponding to the LTSs to be compared and one comparison operation
@@ -1298,7 +1299,6 @@ class Comparator:
 
     # generates SVL code to check the given operation
     def genSVL(self,filename):
-        filename="compare.svl"
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
         #f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
@@ -1316,7 +1316,41 @@ class Comparator:
         f.close()
 
     # generates and calls the generated SVL file
-    def compare(self, fname, debug = False):
+    def compare(self, fname="compare.svl", debug = False):
+        import sys
+        
+        self.genSVL(fname)
+        if debug:
+             process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
+        else:
+            process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
+        process.communicate()
+            
+        if process.returncode != 0:
+            return False
+        else:
+            return True
+
+# This class checks both process LTSs wrt. a certain MCL property
+class Checker:
+
+    # two names corresponding to the LTSs to be compared and a property in an MCL file
+    def __init__(self,n1,n2,f):
+        self.name1=n1
+        self.name2=n2
+        self.f=f
+
+    # generates SVL code to check the property on both LTSs
+    def genSVL(self,filename):
+        f=open(filename, 'w')
+        f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
+        f.write("% bcg_open \""+self.name1+".bcg\" evaluator \""+self.f+"\" \n\n")
+        f.write("% bcg_open \""+self.name2+".bcg\" evaluator \""+self.f+"\" \n\n")
+        f.write("\n\n")
+        f.close()
+
+    # generates and calls the generated SVL file
+    def check(self, fname="check.svl", debug = False):
         import sys
         
         self.genSVL(fname)
@@ -1350,5 +1384,11 @@ if __name__ == '__main__':
     print "converting " + file2 + " to LTS.."
     name2=Generator().generateLTS(file2)
 
-    print "comparing " + file1 + " and " + file2 + " wrt. " + operation
-    res=Comparator(name1,name2,operation).compare("compare.svl")
+    if (operation=="=") or (operation=="<") or (operation==">"):
+        print "comparing " + file1 + " and " + file2 + " wrt. " + operation
+        res=Comparator(name1,name2,operation).compare()
+    elif (operation=="p"):
+        prop=sys.argv[4]
+        res=Checker(name1,name2,prop).check()
+    else:
+        print "what the hell ! ... "
