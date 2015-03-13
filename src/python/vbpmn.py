@@ -1276,7 +1276,7 @@ class Generator:
         name = proc.getName()
         initial = proc.getInitialState()
         conditions = initial.checkConditionsFromSpec("", [], [], False)
-        
+
         proc.genLNT()
         proc.genSVL(smartReduction)
 
@@ -1292,22 +1292,22 @@ class Generator:
 class Comparator:
 
     # two names corresponding to the LTSs to be compared and one comparison operation
-    def __init__(self,n1,n2,op):
+    def __init__(self,n1,n2,op,f):
         self.name1=n1
         self.name2=n2
         self.operation=op
+        self.f=f # file.hid
 
     # generates SVL code to check the given operation
-    def genSVL(self,filename):
+    def genSVL(self,filename, hide):
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
-        #f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
+        if hide:
+            f.write("% total hide ") # TODO TODO TODO 
         if (self.operation=="="):
             f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -strong \""+self.name2+".bcg\" \n\n")
-        # the first LTS simulates (is greater than) the second LTS
         elif (self.operation==">"):
             f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -greater -strong \""+self.name2+".bcg\" \n\n")
-        # the first LTS is simulated by (is smaller than) the second LTS
         elif (self.operation=="<"):
             f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -smaller -strong \""+self.name2+".bcg\" \n\n")
         else:
@@ -1316,16 +1316,14 @@ class Comparator:
         f.close()
 
     # generates and calls the generated SVL file
-    def compare(self, fname="compare.svl", debug = False):
+    def compare(self, hide):
         import sys
-        
-        self.genSVL(fname)
-        if debug:
-             process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
-        else:
-            process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
+
+        fname="compare.svl"
+        self.genSVL(fname, hide)
+        process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
         process.communicate()
-            
+
         if process.returncode != 0:
             return False
         else:
@@ -1350,9 +1348,10 @@ class Checker:
         f.close()
 
     # generates and calls the generated SVL file
-    def check(self, fname="check.svl", debug = False):
+    def check(self, debug = False):
         import sys
         
+        fname="check.svl"
         self.genSVL(fname)
         if debug:
              process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
@@ -1386,9 +1385,13 @@ if __name__ == '__main__':
 
     if (operation=="=") or (operation=="<") or (operation==">"):
         print "comparing " + file1 + " and " + file2 + " wrt. " + operation
-        res=Comparator(name1,name2,operation).compare()
+        res=Comparator(name1,name2,operation,"").compare(False)
     elif (operation=="p"):
         prop=sys.argv[4]
         res=Checker(name1,name2,prop).check()
+    elif (operation=="h"):
+        operation=sys.argv[4]
+        fhid=sys.argv[5]
+        res=Comparator(name1,name2,operation,fhid).compare(True)
     else:
         print "what the hell ! ... "
