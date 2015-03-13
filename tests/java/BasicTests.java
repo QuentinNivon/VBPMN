@@ -18,28 +18,10 @@
  * emails: pascal.poizat@lip6.fr
  */
 
-import models.process.pif.generated.Process;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.xml.sax.SAXException;
-
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-
 import static org.testng.Assert.*;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,65 +29,10 @@ public class BasicTests {
 
     public static final String FILES_PATH = "examples/basic";
     public static final String TESTFILE_PATH = "tests/examples/basic/tests.txt";
-    public static final String SCHEMA_PATH = "model/pif.xsd";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
     public static final String REGEX_TEST = "^(\\w*)\\h([=<>])\\h(\\w*)\\h([+-])$";
     public static final String REGEX_EMPTYLINE = "^\\h*$";
     public static final String SUFFIX = ".pif";
-
-    /**
-     * Reads on process to check if it is ok
-     */
-    @Test(dataProvider = "reads_all_tests")
-    private void read_test(Path filePath) {
-        try {
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
-            if (filePath.toFile().getName().endsWith(SUFFIX)) {
-                FileInputStream fis = new FileInputStream(filePath.toFile().getCanonicalPath());
-                JAXBContext ctx = null;
-                ctx = JAXBContext.newInstance(Process.class);
-                Unmarshaller unmarshaller = ctx.createUnmarshaller();
-                unmarshaller.setSchema(schema);
-                Process p = (Process) unmarshaller.unmarshal(fis);
-                fis.close();
-            }
-        } catch (JAXBException e) {
-            e.printStackTrace();
-            fail();
-        } catch (FileNotFoundException e1) {
-            e1.printStackTrace();
-            fail();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            fail();
-        } catch (SAXException e1) {
-            e1.printStackTrace();
-            fail();
-        }
-    }
-
-    /**
-     * Reads all processes to check if they are ok
-     */
-    @DataProvider(name = "reads_all_tests")
-    public Object[][] reads_all_tests() {
-        Object[][] o = null;
-        try {
-            Object[] paths = Files.walk(Paths.get(FILES_PATH))
-                    .filter(x -> x.toFile().getName().endsWith(SUFFIX))
-                    .toArray();
-            int i = paths.length;
-            o = new Object[i][];
-            for (int j = 0; j < i; j++) {
-                o[j] = new Object[1];
-                o[j][0] = paths[j];
-            }
-        } catch (IOException e) {
-            fail();
-        }
-        return o;
-    }
 
     /**
      * Performs equivalence/preoder checking following the tests described in a file
