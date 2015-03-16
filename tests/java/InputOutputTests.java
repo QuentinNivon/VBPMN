@@ -18,6 +18,11 @@
  * emails: pascal.poizat@lip6.fr
  */
 
+import models.base.*;
+import models.choreography.cif.CifCifReader;
+import models.process.pif.PifFactory;
+import models.process.pif.PifPifReader;
+import models.process.pif.PifPifWriter;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import models.process.pif.generated.*;
@@ -65,7 +70,31 @@ public class InputOutputTests {
     }
 
     /**
-     * Reads all examples
+     * Reads all examples (using PifPifReader)
+     */
+    @Test(dataProvider = "directory_walker_provider")
+    public void test_read_all_files_with_Reader(Path filePath) {
+        AbstractModelReader reader = new PifPifReader();
+        AbstractModelFactory factory = PifFactory.getInstance();
+        AbstractModel model = factory.create();
+        try {
+            model.setResource(filePath.toFile());
+            model.modelFromFile(reader);
+        } catch (IllegalResourceException e) {
+            e.printStackTrace();
+            fail();
+        } catch (IllegalModelException e) {
+            e.printStackTrace();
+            fail();
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
+
+    }
+
+    /**
+     * Reads all examples (ad-hoc)
      */
     @Test(dataProvider = "directory_walker_provider")
     public void test_read_all_files(Path filePath) {
