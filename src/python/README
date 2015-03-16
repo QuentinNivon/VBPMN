@@ -19,3 +19,5 @@ Operations supported so far:
    "h" op "file.hide" -> where op is ">" or "<" or "=", both processes
        	  	      	 are compared up-to-alphabet
 
+   "r" op "file.ren"  -> where op is ">" or "<" or "=", both processes
+       	  	      	 are compared after renaming
