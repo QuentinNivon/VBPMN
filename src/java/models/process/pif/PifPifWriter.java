@@ -25,28 +25,44 @@ import models.base.AbstractModelWriter;
 import models.base.IllegalModelException;
 import models.base.IllegalResourceException;
 import models.choreography.cif.generated.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class PifPifWriter extends AbstractModelWriter {
+    public static final String SCHEMA_PATH = "model/pif.xsd";
+
     @Override
     public String getSuffix() {
         return "pif";
     }
+
     @Override
     public void modelToFile(AbstractModel model) throws IOException, IllegalResourceException, IllegalModelException {
-        checkModel(model, PifModel.class);
-        PifModel cifModel = (PifModel) model;
-        try (FileOutputStream fos = new FileOutputStream(cifModel.getResource())) {
+        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        try {
+            Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
+            checkModel(model, PifModel.class);
+            PifModel cifModel = (PifModel) model;
+            FileOutputStream fos = new FileOutputStream(cifModel.getResource());
             final JAXBContext ctx = JAXBContext.newInstance(Choreography.class);
             final Marshaller marshaller = ctx.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.setSchema(schema);
             marshaller.marshal(cifModel.getModel(), fos);
         } catch (JAXBException e) {
             throw new IllegalModelException(e.getMessage());
+        } catch (SAXException e) {
+            throw new IllegalResourceException(e.getMessage());
         }
     }
 }

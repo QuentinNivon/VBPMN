@@ -26,15 +26,22 @@ import models.base.IllegalModelException;
 import models.base.IllegalResourceException;
 
 import models.process.pif.generated.Process;
+import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class PifPifReader extends AbstractModelReader {
+    public static final String SCHEMA_PATH = "model/pif.xsd";
     @Override
     public String getSuffix() {
         return "pif";
@@ -46,14 +53,19 @@ public class PifPifReader extends AbstractModelReader {
         // load model using JAXB
         FileInputStream fis;
         try {
+            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
             fis = new FileInputStream(cifModel.getResource());
             JAXBContext ctx = JAXBContext.newInstance(Process.class);
             Unmarshaller unmarshaller = ctx.createUnmarshaller();
+            unmarshaller.setSchema(schema);
             cifModel.setModel((Process) unmarshaller.unmarshal(fis));
             fis.close();
         } catch (FileNotFoundException e) {
             throw new IOException(e.getMessage());
         } catch (JAXBException e) {
+            throw new IllegalModelException(e.getMessage());
+        } catch (SAXException e) {
             throw new IllegalModelException(e.getMessage());
         }
     }

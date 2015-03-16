@@ -18,6 +18,9 @@
  * emails: pascal.poizat@lip6.fr
  */
 
+import models.base.*;
+import models.process.pif.PifFactory;
+import models.process.pif.PifPifReader;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import models.process.pif.generated.*;
@@ -65,35 +68,27 @@ public class InputOutputTests {
     }
 
     /**
-     * Reads all examples
+     * Reads all examples (using PifPifReader)
      */
     @Test(dataProvider = "directory_walker_provider")
-    public void test_read_all_files(Path filePath) {
+    public void test_read_all_files_with_Reader(Path filePath) {
+        AbstractModelReader reader = new PifPifReader();
+        AbstractModelFactory factory = PifFactory.getInstance();
+        AbstractModel model = factory.create();
         try {
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
-            if (filePath.toFile().getName().endsWith(SUFFIX)) {
-                FileInputStream fis = new FileInputStream(filePath.toFile().getCanonicalPath());
-                JAXBContext ctx = null;
-                ctx = JAXBContext.newInstance(Process.class);
-                Unmarshaller unmarshaller = ctx.createUnmarshaller();
-                unmarshaller.setSchema(schema);
-                Process p = (Process) unmarshaller.unmarshal(fis);
-                fis.close();
-            }
-        } catch (JAXBException e) {
+            model.setResource(filePath.toFile());
+            model.modelFromFile(reader);
+        } catch (IllegalResourceException e) {
             e.printStackTrace();
             fail();
-        } catch (FileNotFoundException e1) {
-            e1.printStackTrace();
+        } catch (IllegalModelException e) {
+            e.printStackTrace();
             fail();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            fail();
-        } catch (SAXException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
             fail();
         }
+
     }
 
     @Test
