@@ -1178,7 +1178,7 @@ class Process:
                 if (elem[0] == 'initial'):
                     stateTab.append(InitialState(elem[1], []))
 
-                elif (elem[0] == 'task'):   # TODO: enlever sender/receiver bidons ? 
+                elif (elem[0] == 'task'):   # TODO GWEN : enlever sender/receiver bidons ? 
                     stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
                 elif (elem[0] == 'message'):
                     stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
@@ -1187,7 +1187,7 @@ class Process:
                 elif (elem[0] == 'messageReception'):
                     stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
                 elif (elem[0] == 'interaction'):
-                    stateTab.append(InteractionState(elem[1], [], elem[5], elem[4], elem[3])) # TODO: refine here
+                    stateTab.append(InteractionState(elem[1], [], elem[5], elem[4], elem[3])) # TODO GWEN : refine here
 
                 elif (elem[0] == 'andSplitGateway'):
                     stateTab.append(ChoiceState(elem[1], []))
@@ -1270,19 +1270,22 @@ class Generator:
             process = Popen (["svl",name], shell = False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
         process.communicate()
             
-        return name
+        return (name,proc.alpha())
 
 # This class compares two LTSs wrt. a certain operation
 class Comparator:
 
     # two names corresponding to the LTSs to be compared, one comparison operation, hide/rename/context files
-    def __init__(self, n1, n2, op, fhide, fren, fbcg):
+    def __init__(self, n1, n2, op, fhide, fren, fbcg, sync1=[], sync2=[]):
         self.name1=n1
         self.name2=n2
         self.operation=op
-        self.fhide=fhide # file.hid
-        self.fren=fren   # file.ren
-        self.fbcg=fbcg   # file.bcg
+        self.fhide=fhide  # file.hid
+        self.fren=fren    # file.ren
+        self.fbcg=fbcg    # file.bcg
+        self.sync1=sync1  # first synchronization set, useful for context-dependent check
+        self.sync2=sync2  # second synchronization set, useful for context-dependent check
+
 
     # generates SVL code to check the given operation
     def genSVL(self, filename, hide, ren, cont):
@@ -1295,8 +1298,23 @@ class Comparator:
             f.write("\""+self.name1+".bcg\" = total rename using \""+self.fren+"\" in \""+self.name1+".bcg\" ; \n") 
             f.write("\""+self.name2+".bcg\" = total rename using \""+self.fren+"\" in \""+self.name2+".bcg\" ; \n\n") 
         if cont:
-            f.write("\""+self.name1+".bcg\" = \""+self.fbcg+"\" ||| \""+self.name1+".bcg\" ; \n") 
-            f.write("\""+self.name2+".bcg\" = \""+self.fbcg+"\" ||| \""+self.name2+".bcg\" ; \n") 
+            f.write("\""+self.name1+".bcg\" = \""+self.fbcg+".bcg\""),
+            if (self.sync1==[]):
+                f.write(" ||| ")
+            else:
+                f.write(" |[")
+                dumpAlphabet(sync1,f,False)
+                f.write("]| ")
+            f.write("\""+self.name1+".bcg\" ; \n") 
+            f.write("\""+self.name2+".bcg\" = \""+self.fbcg+".bcg\""),
+            if (self.sync2==[]):
+                f.write(" ||| ")
+            else:
+                f.write(" |[")
+                dumpAlphabet(sync2,f,False)
+                f.write("]| ")
+            f.write("\""+self.name2+".bcg\" ; \n\n")
+
         if (self.operation=="="):
             f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -strong \""+self.name2+".bcg\" \n\n")
         elif (self.operation==">"):
@@ -1314,10 +1332,10 @@ class Comparator:
 
         fname="compare.svl"
         self.genSVL(fname, hide, ren, cont)
-        process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
-        process.communicate()
+        call('svl '+fname+ ' > res.txt', shell=True)
+        res=call('grep TRUE res.txt', shell=True)
 
-        if process.returncode != 0:
+        if (res==1):
             return False
         else:
             return True
@@ -1346,16 +1364,14 @@ class Checker:
         
         fname="check.svl"
         self.genSVL(fname)
-        if debug:
-             process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
-        else:
-            process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
-        process.communicate()
-            
-        if process.returncode != 0:
-            return False
-        else:
+        call('svl '+fname+ ' > res.txt', shell=True, stdout=sys.stdout)
+        res=call('grep FALSE res.txt', shell=True, stdout=sys.stdout)
+
+        # we return False if at least one FALSE in res.txt
+        if (res==1):
             return True
+        else:
+            return False
 
 
 ##############################################################################################
@@ -1371,29 +1387,38 @@ if __name__ == '__main__':
     operation=sys.argv[3]
 
     print "converting " + file1 + " to LTS.."
-    name1=Generator().generateLTS(file1)
+    (name1,alpha1)=Generator().generateLTS(file1)
 
     print "converting " + file2 + " to LTS.."
-    name2=Generator().generateLTS(file2)
+    (name2,alpha2)=Generator().generateLTS(file2)
 
     # comparison with respect to equivalence / simulation
     if (operation=="=") or (operation=="<") or (operation==">"):
         print "comparing " + file1 + " and " + file2 + " wrt. " + operation
-        res=Comparator(name1,name2,operation,"").compare(False,False,False)
+        res=Comparator(name1,name2,operation,"","","",[],[]).compare(False,False,False)
     elif (operation=="p"): # property
         prop=sys.argv[4]
         res=Checker(name1,name2,prop).check()
     elif (operation=="h"): # up-to-alphabet
         operation=sys.argv[4]
         fhid=sys.argv[5]
-        res=Comparator(name1,name2,operation,fhid,"","").compare(True,False,False)
+        res=Comparator(name1,name2,operation,fhid,"","",[],[]).compare(True,False,False)
     elif (operation=="r"): # up-to-renaming
         operation=sys.argv[4]
         fren=sys.argv[5]
-        res=Comparator(name1,name2,operation,"",fren,"").compare(False,True,False)
+        res=Comparator(name1,name2,operation,"",fren,"",[],[]).compare(False,True,False)
     elif (operation=="c"): # context-dependent
         operation=sys.argv[4]
-        fbcg=sys.argv[5]
-        res=Comparator(name1,name2,operation,"","",fbcg).compare(False,False,True)
+        fpif=sys.argv[5]
+        print "converting " + fpif + " to LTS.."
+        (fbcg,alpha)=Generator().generateLTS(fpif)
+        sync1=filter(lambda itm:itm in alpha1,alpha)  # TODO GWEN : refine synchronization sets
+        sync2=filter(lambda itm:itm in alpha2,alpha)  #       computation..
+        print sync1, sync2
+        res=Comparator(name1,name2,operation,"","",fbcg,sync1,sync2).compare(False,False,True)
     else:
-        print "what the hell ! ... "
+        res=False
+        print "Error: wrong format, please look at the README file."
+
+    print res
+    sys.exit(res)
