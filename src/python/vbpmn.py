@@ -218,12 +218,6 @@ class State:
                 print prefix, "Subset Select State ", self.ident, "-> treat all branches"
             return self.doCheckForAllSuccessors (prefix + self.space, prePeerList, self.getSucc(), preMesseageFlows, debug)
 
-        #################################
-        # TODO : Dominated Choice State #
-        #################################
-
-        # elif (isinstance (self, DominatedChoiceState)):
-
         elif (isinstance (self, SimpleJoinState)):
             if debug:
                 print prefix, "Simple Join State -> treat leaving branch"
@@ -661,14 +655,6 @@ class ChoiceState(GatewaySplitState):
     def reachableInclusiveMerge(self,visited,depth):
         return GatewaySplitState.reachableInclusiveMerge(self,visited,depth)
 
-################################
-## TODO : Complete this class ##
-################################
-class DominatedChoiceState(GatewaySplitState):
-
-    def __init__(self,ident,succ,dominant):
-        IntermediateState.__init__(self, ident, succ)
-        self.dominant = dominant
 
 ##
 # Class for SimpleJoinState
@@ -1217,8 +1203,6 @@ class Process:
                 elif (elem[0] == 'xorJoinGateway'):
                     stateTab.append(SubsetJoinState(elem[1], []))
 
-            # add successors to states -> TODO : correct this part of the code
-
             for elem in queue:
                 stateList = filter(lambda x: x.ident == elem[1], stateTab)
                 #print stateList
@@ -1291,21 +1275,24 @@ class Generator:
 # This class compares two LTSs wrt. a certain operation
 class Comparator:
 
-    # two names corresponding to the LTSs to be compared and one comparison operation
-    def __init__(self,n1,n2,op,f):
+    # two names corresponding to the LTSs to be compared, one comparison operation, hide/rename files
+    def __init__(self,n1,n2,op,fhide,fren):
         self.name1=n1
         self.name2=n2
         self.operation=op
-        self.f=f # file.hid / file.hide
+        self.fhide=fhide # file.hid
+        self.fren=fren   # file.ren
 
     # generates SVL code to check the given operation
-    def genSVL(self,filename, hide):
+    def genSVL(self, filename, hide, ren):
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
         if hide:
-            f.write("\""+self.name1+".bcg\" = total hide using \""+self.f+"\" in \""+self.name1+".bcg\" ; \n") 
-            f.write("\""+self.name2+".bcg\" = total hide using \""+self.f+"\" in \""+self.name2+".bcg\" ; \n\n") 
-
+            f.write("\""+self.name1+".bcg\" = total hide using \""+self.fhide+"\" in \""+self.name1+".bcg\" ; \n") 
+            f.write("\""+self.name2+".bcg\" = total hide using \""+self.fhide+"\" in \""+self.name2+".bcg\" ; \n\n") 
+        if ren:
+            f.write("\""+self.name1+".bcg\" = total rename using \""+self.fren+"\" in \""+self.name1+".bcg\" ; \n") 
+            f.write("\""+self.name2+".bcg\" = total rename using \""+self.fren+"\" in \""+self.name2+".bcg\" ; \n\n") 
         if (self.operation=="="):
             f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -strong \""+self.name2+".bcg\" \n\n")
         elif (self.operation==">"):
@@ -1318,11 +1305,11 @@ class Comparator:
         f.close()
 
     # generates and calls the generated SVL file
-    def compare(self, hide):
+    def compare(self, hide, ren):
         import sys
 
         fname="compare.svl"
-        self.genSVL(fname, hide)
+        self.genSVL(fname, hide, ren)
         process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
         process.communicate()
 
@@ -1387,13 +1374,17 @@ if __name__ == '__main__':
 
     if (operation=="=") or (operation=="<") or (operation==">"):
         print "comparing " + file1 + " and " + file2 + " wrt. " + operation
-        res=Comparator(name1,name2,operation,"").compare(False)
+        res=Comparator(name1,name2,operation,"").compare(False,False)
     elif (operation=="p"):
         prop=sys.argv[4]
         res=Checker(name1,name2,prop).check()
     elif (operation=="h"):
         operation=sys.argv[4]
         fhid=sys.argv[5]
-        res=Comparator(name1,name2,operation,fhid).compare(True)
+        res=Comparator(name1,name2,operation,fhid,"").compare(True,False)
+    elif (operation=="r"):
+        operation=sys.argv[4]
+        fren=sys.argv[5]
+        res=Comparator(name1,name2,operation,"",fren).compare(False,True)
     else:
         print "what the hell ! ... "
