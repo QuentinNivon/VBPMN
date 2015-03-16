@@ -1,15 +1,21 @@
 ##### How to compare two PIF files #####
 
-$ python vbpmn.py file1.pif file2.pif operation
+$ python vbpmn.py file1.pif file2.pif operation [files]
 
--> This command converts each file into an LTS (internal behavior
-   removed), and compares them wrt. the given operation (strong
-   equivalence/preorder)
+This command converts each file into an LTS (internal behavior
+removed), and compares them wrt. the given operation (strong
+equivalence/preorder)
 
--> Operations supported so far:
+Operations supported so far:
 
-   ">" the first LTS simulates the second LTS
+   ">" -> the first LTS simulates the second LTS
 
-   "<" the second LTS simulates the first LTS
+   "<" -> the second LTS simulates the first LTS
 
-   "=" both LTSs are equivalent
+   "=" -> both LTSs are equivalent
+
+   "p" "file.mcl" -> both process LTSs respect the property specified in file.mcl
+
+   "h" op "file.hide" -> where op is ">" or "<" or "=", both processes
+       	  	      	 are compared up-to-alphabet
+
