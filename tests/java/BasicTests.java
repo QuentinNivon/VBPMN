@@ -18,10 +18,15 @@
  * emails: pascal.poizat@lip6.fr
  */
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
 import static org.testng.Assert.*;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,14 +40,26 @@ public class BasicTests {
 
     /**
      * Performs equivalence/preoder checking following the tests described in a file
+     * TODO
      */
-    @Test
-    public void run_all_tests() {
+    @Test(dataProvider = "get_data_from_test_file")
+    public void run_all_tests(String filepath1, String filepath2, String operator, String expected_result) {
+        // call python
+        // get result
+        // compare wrt. expected result
+    }
+
+    /**
+     * Data provider from a test file
+     */
+    @DataProvider(name = "get_data_from_test_file")
+    public Iterator<Object[]> get_data_from_test_file() {
+        List<Object[]> data = new ArrayList<>();
         String line;
         FileInputStream filetests = null;
         Pattern p_test = Pattern.compile(REGEX_TEST);
         try {
-            filetests = new FileInputStream(FILES_PATH+TESTFILE);
+            filetests = new FileInputStream(FILES_PATH + TESTFILE);
             BufferedReader fin = new BufferedReader(new InputStreamReader(filetests));
             line = fin.readLine();
             while (line != null) {
@@ -57,8 +74,12 @@ public class BasicTests {
                         String process2 = FILES_PATH + m_test.group(3);
                         String operator = m_test.group(2);
                         String expected_result = m_test.group(4);
-                        System.out.println(process1 + operator + process2 + expected_result);
-                        // TODO : call python, get result, and compare to the expected one
+                        Object[] line_elements = new Object[4];
+                        line_elements[0] = process1;
+                        line_elements[1] = process2;
+                        line_elements[2] = operator;
+                        line_elements[3] = expected_result;
+                        data.add(line_elements);
                     } else {
                         fail();
                     }
@@ -75,6 +96,7 @@ public class BasicTests {
             e.printStackTrace();
             fail();
         }
+        return data.iterator();
     }
 
 }

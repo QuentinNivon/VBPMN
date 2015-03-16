@@ -31,6 +31,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import static org.testng.Assert.*;
 
@@ -43,22 +46,21 @@ public class InputOutputTests {
      * Provides data for tests based on the list of all .pif files in the example directory
      */
     @DataProvider(name = "directory_walker_provider")
-    public Object[][] directory_walker_provider() {
-        Object[][] o = null;
+    public Iterator<Object[]> directory_walker_provider() {
+        List<Object[]> data = new ArrayList<>();
         try {
-            Object[] paths = Files.walk(Paths.get(FILES_PATH))
+            Object[] files = Files.walk(Paths.get(FILES_PATH))
                     .filter(x -> x.toFile().getName().endsWith(SUFFIX))
                     .toArray();
-            int i = paths.length;
-            o = new Object[i][];
-            for (int j = 0; j < i; j++) {
-                o[j] = new Object[1];
-                o[j][0] = paths[j];
+            for(Object file : files) {
+                Object[] value = new Object[1];
+                value[0] = file;
+                data.add(value);
             }
         } catch (IOException e) {
             fail();
         }
-        return o;
+        return data.iterator();
     }
 
     /**
