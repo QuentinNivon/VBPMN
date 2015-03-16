@@ -18,6 +18,9 @@
  * emails: pascal.poizat@lip6.fr
  */
 
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.Executor;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -30,23 +33,51 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BasicTests {
+public class ComparisonTests {
 
     public static final String FILES_PATH = "out/test/vbpmn/";
     public static final String TESTFILE = "tests.txt";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
     public static final String REGEX_TEST = "^([\\w/.]*)\\h([=<>])\\h([\\w/.]*)\\h([+-])$";
     public static final String REGEX_EMPTYLINE = "^\\h*$";
+    public static final String CMD = "python";
+    public static final String PROGRAM = "vbpmn.py";
+    public static final String WORKINGDIR = "out/production/vbpmn";
+    public static final String OK = "+";
+    public static final String NOK = "-";
+    public static final int RETURN_OK = 1;
+    public static final int RETURN_NOK = 0;
 
     /**
-     * Performs equivalence/preoder checking following the tests described in a file
-     * TODO
+     * Performs equivalence/pre-order checking following the tests described in a file
+     * <p>
+     * note : there are issues with Process/ProcessBuilder for some contexts of use
+     * see http://docs.oracle.com/javase/8/docs/api/java/lang/Process.html, http://docs.oracle.com/javase/8/docs/api/java/lang/ProcessBuilder.html
+     * hence, we use Apache Commons Exec
      */
     @Test(dataProvider = "get_data_from_test_file")
     public void run_all_tests(String filepath1, String filepath2, String operator, String expected_result) {
-        // call python
-        // get result
-        // compare wrt. expected result
+        int exitValue;
+        CommandLine cmd = new CommandLine(CMD);
+        cmd.addArgument(PROGRAM);
+        cmd.addArgument(filepath1);
+        cmd.addArgument(filepath2);
+        cmd.addArgument(operator);
+        Executor executor = new DefaultExecutor();
+        executor.setWorkingDirectory(new File(WORKINGDIR));
+        executor.setExitValue(RETURN_OK);
+        try {
+            exitValue = executor.execute(cmd);
+            if(expected_result.equals(OK))
+                assertEquals(RETURN_OK, exitValue);
+            else if(expected_result.equals(NOK))
+                assertEquals(RETURN_NOK, exitValue);
+            else
+                fail();
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
     }
 
     /**
