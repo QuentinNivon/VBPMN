@@ -1275,16 +1275,17 @@ class Generator:
 # This class compares two LTSs wrt. a certain operation
 class Comparator:
 
-    # two names corresponding to the LTSs to be compared, one comparison operation, hide/rename files
-    def __init__(self,n1,n2,op,fhide,fren):
+    # two names corresponding to the LTSs to be compared, one comparison operation, hide/rename/context files
+    def __init__(self, n1, n2, op, fhide, fren, fbcg):
         self.name1=n1
         self.name2=n2
         self.operation=op
         self.fhide=fhide # file.hid
         self.fren=fren   # file.ren
+        self.fbcg=fbcg   # file.bcg
 
     # generates SVL code to check the given operation
-    def genSVL(self, filename, hide, ren):
+    def genSVL(self, filename, hide, ren, cont):
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
         if hide:
@@ -1293,6 +1294,9 @@ class Comparator:
         if ren:
             f.write("\""+self.name1+".bcg\" = total rename using \""+self.fren+"\" in \""+self.name1+".bcg\" ; \n") 
             f.write("\""+self.name2+".bcg\" = total rename using \""+self.fren+"\" in \""+self.name2+".bcg\" ; \n\n") 
+        if cont:
+            f.write("\""+self.name1+".bcg\" = \""+self.fbcg+"\" ||| \""+self.name1+".bcg\" ; \n") 
+            f.write("\""+self.name2+".bcg\" = \""+self.fbcg+"\" ||| \""+self.name2+".bcg\" ; \n") 
         if (self.operation=="="):
             f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -strong \""+self.name2+".bcg\" \n\n")
         elif (self.operation==">"):
@@ -1305,11 +1309,11 @@ class Comparator:
         f.close()
 
     # generates and calls the generated SVL file
-    def compare(self, hide, ren):
+    def compare(self, hide, ren, cont):
         import sys
 
         fname="compare.svl"
-        self.genSVL(fname, hide, ren)
+        self.genSVL(fname, hide, ren, cont)
         process = Popen (["svl",fname], shell = False, stdout=sys.stdout)
         process.communicate()
 
@@ -1372,19 +1376,24 @@ if __name__ == '__main__':
     print "converting " + file2 + " to LTS.."
     name2=Generator().generateLTS(file2)
 
+    # comparison with respect to equivalence / simulation
     if (operation=="=") or (operation=="<") or (operation==">"):
         print "comparing " + file1 + " and " + file2 + " wrt. " + operation
-        res=Comparator(name1,name2,operation,"").compare(False,False)
-    elif (operation=="p"):
+        res=Comparator(name1,name2,operation,"").compare(False,False,False)
+    elif (operation=="p"): # property
         prop=sys.argv[4]
         res=Checker(name1,name2,prop).check()
-    elif (operation=="h"):
+    elif (operation=="h"): # up-to-alphabet
         operation=sys.argv[4]
         fhid=sys.argv[5]
-        res=Comparator(name1,name2,operation,fhid,"").compare(True,False)
-    elif (operation=="r"):
+        res=Comparator(name1,name2,operation,fhid,"","").compare(True,False,False)
+    elif (operation=="r"): # up-to-renaming
         operation=sys.argv[4]
         fren=sys.argv[5]
-        res=Comparator(name1,name2,operation,"",fren).compare(False,True)
+        res=Comparator(name1,name2,operation,"",fren,"").compare(False,True,False)
+    elif (operation=="c"): # context-dependent
+        operation=sys.argv[4]
+        fbcg=sys.argv[5]
+        res=Comparator(name1,name2,operation,"","",fbcg).compare(False,False,True)
     else:
         print "what the hell ! ... "

@@ -21,3 +21,8 @@ Operations supported so far:
 
    "r" op "file.ren"  -> where op is ">" or "<" or "=", both processes
        	  	      	 are compared after renaming
+
+   "c" op "file.bcg"  -> where op is ">" or "<" or "=", both processes
+       	  	      	 are compared after (synchronous) composition
+       	  	      	 with file.bcg
+
