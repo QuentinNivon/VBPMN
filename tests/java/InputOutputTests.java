@@ -25,13 +25,8 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import models.process.pif.generated.*;
 import models.process.pif.generated.Process;
-import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
 import javax.xml.bind.*;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,8 +36,7 @@ import static org.testng.Assert.*;
 
 public class InputOutputTests {
 
-    public static final String SCHEMA_PATH = "model/pif.xsd";
-    public static final String FILES_PATH = "examples";
+    public static final String FILES_PATH = "out/test/vbpmn/pif/";
     public static final String SUFFIX = ".pif";
 
     /**
