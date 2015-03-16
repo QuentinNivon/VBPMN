@@ -19,10 +19,8 @@
  */
 
 import models.base.*;
-import models.choreography.cif.CifCifReader;
 import models.process.pif.PifFactory;
 import models.process.pif.PifPifReader;
-import models.process.pif.PifPifWriter;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import models.process.pif.generated.*;
@@ -91,38 +89,6 @@ public class InputOutputTests {
             fail();
         }
 
-    }
-
-    /**
-     * Reads all examples (ad-hoc)
-     */
-    @Test(dataProvider = "directory_walker_provider")
-    public void test_read_all_files(Path filePath) {
-        try {
-            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
-            if (filePath.toFile().getName().endsWith(SUFFIX)) {
-                FileInputStream fis = new FileInputStream(filePath.toFile().getCanonicalPath());
-                JAXBContext ctx = null;
-                ctx = JAXBContext.newInstance(Process.class);
-                Unmarshaller unmarshaller = ctx.createUnmarshaller();
-                unmarshaller.setSchema(schema);
-                Process p = (Process) unmarshaller.unmarshal(fis);
-                fis.close();
-            }
-        } catch (JAXBException e) {
-            e.printStackTrace();
-            fail();
-        } catch (FileNotFoundException e1) {
-            e1.printStackTrace();
-            fail();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            fail();
-        } catch (SAXException e1) {
-            e1.printStackTrace();
-            fail();
-        }
     }
 
     @Test
