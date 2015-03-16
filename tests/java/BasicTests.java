@@ -27,12 +27,11 @@ import java.util.regex.Pattern;
 
 public class BasicTests {
 
-    public static final String FILES_PATH = "examples/pif.basic";
-    public static final String TESTFILE_PATH = "tests/examples/pif.basic/tests.txt";
+    public static final String FILES_PATH = "out/test/vbpmn/";
+    public static final String TESTFILE = "tests.txt";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
-    public static final String REGEX_TEST = "^(\\w*)\\h([=<>])\\h(\\w*)\\h([+-])$";
+    public static final String REGEX_TEST = "^([\\w/.]*)\\h([=<>])\\h([\\w/.]*)\\h([+-])$";
     public static final String REGEX_EMPTYLINE = "^\\h*$";
-    public static final String SUFFIX = ".pif";
 
     /**
      * Performs equivalence/preoder checking following the tests described in a file
@@ -43,7 +42,7 @@ public class BasicTests {
         FileInputStream filetests = null;
         Pattern p_test = Pattern.compile(REGEX_TEST);
         try {
-            filetests = new FileInputStream(TESTFILE_PATH);
+            filetests = new FileInputStream(FILES_PATH+TESTFILE);
             BufferedReader fin = new BufferedReader(new InputStreamReader(filetests));
             line = fin.readLine();
             while (line != null) {
@@ -54,8 +53,8 @@ public class BasicTests {
                 } else if (line.matches(REGEX_TEST)) {
                     Matcher m_test = p_test.matcher(line);
                     if (m_test.matches()) {
-                        String process1 = FILES_PATH + m_test.group(1) + SUFFIX;
-                        String process2 = FILES_PATH + m_test.group(3) + SUFFIX;
+                        String process1 = FILES_PATH + m_test.group(1);
+                        String process2 = FILES_PATH + m_test.group(3);
                         String operator = m_test.group(2);
                         String expected_result = m_test.group(4);
                         System.out.println(process1 + operator + process2 + expected_result);

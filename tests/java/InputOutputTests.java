@@ -36,7 +36,7 @@ import static org.testng.Assert.*;
 
 public class InputOutputTests {
 
-    public static final String FILES_PATH = "out/test";
+    public static final String FILES_PATH = "out/test/vbpmn/pif/";
     public static final String SUFFIX = ".pif";
 
     /**
