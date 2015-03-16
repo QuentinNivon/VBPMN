@@ -14,4 +14,8 @@ Operations supported so far:
 
    "=" -> both LTSs are equivalent
 
-   "p" file.mcl -> both process LTSs respect the property specified in file.mcl
+   "p" "file.mcl" -> both process LTSs respect the property specified in file.mcl
+
+   "h" op "file.hide" -> where op is ">" or "<" or "=", both processes
+       	  	      	 are compared up-to-alphabet
+

@@ -1296,14 +1296,16 @@ class Comparator:
         self.name1=n1
         self.name2=n2
         self.operation=op
-        self.f=f # file.hid
+        self.f=f # file.hid / file.hide
 
     # generates SVL code to check the given operation
     def genSVL(self,filename, hide):
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
         if hide:
-            f.write("% total hide ") # TODO TODO TODO 
+            f.write("\""+self.name1+".bcg\" = total hide using \""+self.f+"\" in \""+self.name1+".bcg\" ; \n") 
+            f.write("\""+self.name2+".bcg\" = total hide using \""+self.f+"\" in \""+self.name2+".bcg\" ; \n\n") 
+
         if (self.operation=="="):
             f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -strong \""+self.name2+".bcg\" \n\n")
         elif (self.operation==">"):
