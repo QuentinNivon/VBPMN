@@ -399,6 +399,69 @@ class InteractionState(IntermediateState):
         return self.participants
 
 ##
+# Class for CommState (tasks, messages, sendind/receiving messages)
+# Attributes: a messageflow and a direction (facultative)
+class CommState(IntermediateState):
+
+    def getMsgID(self):
+        return self.messageflows[0].getMessage()
+
+    def __init__(self,ident,succ,messageflows,direction):
+        IntermediateState.__init__(self,ident,succ)
+        self.messageflows=messageflows
+        self.direction=direction
+
+    def alpha(self):
+        return self.buildList(self.messageflows)
+
+    def buildList(self,mf):
+        if len(mf)==1:
+           m=mf[0].getMessage()
+           if (self.direction!=""):
+               m=m+"_"+self.direction
+           return [m]
+        else: # TODO GWEN : What is this case ?
+           m1=mf[0].getMessage()
+           m2=mf[1].getMessage()
+           if (self.direction!=""):
+               m1=m1+"_"+self.direction
+               m2=m2+"_"+self.direction
+           return [m1,m2]
+
+    def lnt(self,f,alpha):
+        self.dumpMessage(f)
+        # if successor is a merge, we have to emit the according
+        # synchronization message
+
+        # dumps succ state process call
+
+        alphaSync = map(lambda x: x.ident, self.getSyncSet())
+        # print "interaction for", self.ident, alphaSync
+        dumpSucc(f,alpha,self.succ,True,alphaSync)
+
+    def dumpMessage(self,f):
+        m=self.messageflows[0].getMessage()
+        if (self.direction!=""):
+            m=m+"_"+self.direction
+        f.write(m)
+
+    def reachableParallelMerge(self,visited,depth):
+        if isInList(self.ident,visited):
+           return []
+        else:
+           return self.succ[0].reachableParallelMerge(visited+[self.ident],depth)
+
+    def reachableInclusiveMerge(self,visited,depth):
+        if isInList(self.ident,visited):
+           return []
+        else:
+           return self.succ[0].reachableInclusiveMerge(visited+[self.ident],depth)
+
+    #def getPeers(self):
+    #    return self.participants
+
+
+##
 # Class for MessageFlow
 # Attributes: a message
 class MessageFlow():
@@ -1178,16 +1241,16 @@ class Process:
                 if (elem[0] == 'initial'):
                     stateTab.append(InitialState(elem[1], []))
 
-                elif (elem[0] == 'task'):   # TODO GWEN : enlever sender/receiver bidons ? 
-                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
+                elif (elem[0] == 'task'):
+                    stateTab.append(CommState(elem[1], [], elem[3], ""))
                 elif (elem[0] == 'message'):
-                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
+                    stateTab.append(CommState(elem[1], [], elem[3], ""))
                 elif (elem[0] == 'messageSending'):
-                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
+                    stateTab.append(CommState(elem[1], [], elem[3], "EM"))
                 elif (elem[0] == 'messageReception'):
-                    stateTab.append(InteractionState(elem[1], [], ["e"], "p", elem[3]))
+                    stateTab.append(CommState(elem[1], [], elem[3], "REC"))
                 elif (elem[0] == 'interaction'):
-                    stateTab.append(InteractionState(elem[1], [], elem[5], elem[4], elem[3])) # TODO GWEN : refine here
+                    stateTab.append(InteractionState(elem[1], [], elem[5], elem[4], elem[3]))
 
                 elif (elem[0] == 'andSplitGateway'):
                     stateTab.append(ChoiceState(elem[1], []))
