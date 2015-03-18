@@ -48,11 +48,15 @@ public class Workflow {
     protected List<WorkflowNode> nodes;
     @XmlElement(namespace = "http://www.example.org/PIF")
     protected List<SequenceFlow> sequenceFlows;
-    @XmlElement(namespace = "http://www.example.org/PIF", required = true, type = Object.class)
+//    @XmlElement(namespace = "http://www.example.org/PIF", required = true, type = Object.class)
+    @XmlElement(namespace = "http://www.example.org/PIF", required = true, type = InitialEvent.class)
     @XmlIDREF
     @XmlSchemaType(name = "IDREF")
     protected InitialEvent initialNode;
-    @XmlElementRef(name = "finalNodes", namespace = "http://www.example.org/PIF", type = JAXBElement.class, required = false)
+//    @XmlElementRef(name = "finalNodes", namespace = "http://www.example.org/PIF", type = JAXBElement.class, required = false)
+    @XmlElement(namespace = "http://www.example.org/PIF", required = true, type = EndEvent.class)
+    @XmlIDREF
+    @XmlSchemaType(name = "IDREF")
     protected List<EndEvent> finalNodes;
 
     /**
