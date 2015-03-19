@@ -35,10 +35,16 @@
     <pif:messages id="purchaseInfo" />
     <pif:messages id="totalValue" />
 
-    <!--  WORKFLOW -->
+    <!--  WORKFLOW TODO -->
     <pif:behaviour>
 
         <!--  NODES -->
+        <pif:nodes xsi:type="pif:InitialEvent" id="initial">
+
+        </pif:nodes>
+        <pif:nodes xsi:type="pif:EndEvent" id="final">
+
+        </pif:nodes>
 
         <!--  SEQUENCE FLOWS -->
 

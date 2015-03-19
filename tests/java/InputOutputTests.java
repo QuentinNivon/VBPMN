@@ -19,12 +19,11 @@
  */
 
 import models.base.*;
-import models.process.pif.PifFactory;
-import models.process.pif.PifPifReader;
+import models.process.pif.*;
+import models.process.pif.generated.Process;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import models.process.pif.generated.*;
-import models.process.pif.generated.Process;
 
 import javax.xml.bind.*;
 import java.io.*;
@@ -40,7 +39,10 @@ import static org.testng.Assert.*;
 public class InputOutputTests {
 
     public static final String FILES_PATH = "out/test/vbpmn/pif/";
+    public static final String OUTFILES_PATH = "out/test/vbpmn/pif/";
     public static final String SUFFIX = ".pif";
+    public static final String GENPREFIX = "gen_";
+    public static final String SCHEMA_PATH = "model/pif.xsd";
 
     /**
      * Provides data for tests based on the list of all .pif files in the example directory
@@ -52,7 +54,7 @@ public class InputOutputTests {
             Object[] files = Files.walk(Paths.get(FILES_PATH))
                     .filter(x -> x.toFile().getName().endsWith(SUFFIX))
                     .toArray();
-            for(Object file : files) {
+            for (Object file : files) {
                 Object[] value = new Object[1];
                 value[0] = file;
                 data.add(value);
@@ -66,7 +68,7 @@ public class InputOutputTests {
     /**
      * Reads all examples (using PifPifReader)
      */
-    @Test(dataProvider = "directory_walker_provider")
+    @Test(dataProvider = "directory_walker_provider", groups = "file_reading")
     public void test_read_all_files_with_Reader(Path filePath) {
         AbstractModelReader reader = new PifPifReader();
         AbstractModelFactory factory = PifFactory.getInstance();
@@ -84,49 +86,66 @@ public class InputOutputTests {
             e.printStackTrace();
             fail();
         }
-
     }
 
-    @Test
+    @Test(groups = "file_writing")
     public void test_writeToFile() {
+        //
         ObjectFactory factory = new ObjectFactory();
         //
-        WorkflowNode n1 = new InitialEvent();
-        n1.setId("initial");
-        WorkflowNode n2 = new EndEvent();
-        n2.setId("final");
-        SequenceFlow s1 = new SequenceFlow();
-        s1.setId("s");
+        Workflow w = factory.createWorkflow();
+        InitialEvent n1 = factory.createInitialEvent();
+        n1.setId("n1");
+        EndEvent n2 = factory.createEndEvent();
+        n2.setId("n2");
+        Task t = factory.createTask();
+        t.setId("t");
         //
-        s1.setSource(n1);
-        s1.setTarget(n2);
-        n1.getOutgoingFlows().add(s1);
-        n2.getIncomingFlows().add(s1);
+        SequenceFlow sf1 = factory.createSequenceFlow();
+        sf1.setId("sf1");
+        SequenceFlow sf2 = factory.createSequenceFlow();
+        sf2.setId("sf2");
+        sf1.setSource(n1);
+        sf1.setTarget(t);
+        sf2.setSource(t);
+        sf2.setTarget(n2);
+        n1.getOutgoingFlows().add(sf1);
+        t.getIncomingFlows().add(sf1);
+        t.getOutgoingFlows().add(sf2);
+        n2.getIncomingFlows().add(sf2);
         //
-        Workflow w = new Workflow();
         w.getNodes().add(n1);
+        w.setInitialNode(n1);
         w.getNodes().add(n2);
-        w.setInitialNode((InitialEvent) n1);
-        w.getFinalNodes().add((EndEvent) n2);
+        w.getFinalNodes().add(n2);
+        w.getNodes().add(t);
+        w.getSequenceFlows().add(sf1);
+        w.getSequenceFlows().add(sf2);
         //
-        models.process.pif.generated.Process p = new Process();
+        Peer p1 = factory.createPeer();
+        p1.setId("p1");
+        Message m1 = factory.createMessage();
+        m1.setId("m1");
+        //
+        models.process.pif.generated.Process p = factory.createProcess();
         p.setName("t0000");
         p.setDocumentation("A simple process");
         p.setBehaviour(w);
+        p.getPeers().add(p1);
         //
-        final JAXBContext ctx;
+        AbstractModelWriter writer = new PifPifWriter();
+        AbstractModelFactory mfactory = PifFactory.getInstance();
+        PifModel model = (PifModel) mfactory.create();
+        model.setModel(p);
         try {
-            FileOutputStream fos = new FileOutputStream("tests/examples/gen_" + p.getName() + ".pif");
-            ctx = JAXBContext.newInstance(Process.class);
-            final Marshaller marshaller = ctx.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.marshal(p, fos);
-            fos.close();
+            model.setResource(new File(String.format("%s%s%s%s", OUTFILES_PATH, GENPREFIX, p.getName(), SUFFIX)));
+            model.modelToFile(writer);
+            final JAXBContext ctx;
             assertEquals(true, true);
-        } catch (JAXBException e) {
+        } catch (IllegalResourceException e) {
             e.printStackTrace();
             fail();
-        } catch (FileNotFoundException e) {
+        } catch (IllegalModelException e) {
             e.printStackTrace();
             fail();
         } catch (IOException e) {
@@ -135,47 +154,30 @@ public class InputOutputTests {
         }
     }
 
-    @Test
+    @Test(dependsOnGroups = {"file_reading", "file_writing"})
     public void test_readWrite() {
-        Process p;
-        FileInputStream fis;
-        FileOutputStream fos;
+        AbstractModelReader reader = new PifPifReader();
+        AbstractModelWriter writer = new PifPifWriter();
+        AbstractModel model = PifFactory.getInstance().create();
+        String file1 = String.format("%s%s%s%s", OUTFILES_PATH, GENPREFIX, "t0000", SUFFIX);
+        String file2 = String.format("%s%s%s%s", OUTFILES_PATH, GENPREFIX, "t0000_copy", SUFFIX);
         try {
-            fis = new FileInputStream("tests/examples/p0001.pif");
-            JAXBContext ctx = JAXBContext.newInstance(Process.class);
-            Unmarshaller unmarshaller = ctx.createUnmarshaller();
-            p = (Process) unmarshaller.unmarshal(fis);
-            fis.close();
-            //
-            fos = new FileOutputStream("tests/examples/gen_t0000.pif");
-            Marshaller marshaller = ctx.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.marshal(p, fos);
-            fos.close();
-            //
-            fis = new FileInputStream("tests/examples/gen_t0000.pif");
-            ctx = JAXBContext.newInstance(Process.class);
-            unmarshaller = ctx.createUnmarshaller();
-            p = (Process) unmarshaller.unmarshal(fis);
-            fis.close();
-            assertEquals(p.getName(), "p0000");
-            assertEquals(p.getBehaviour().getNodes().size(), 8);
-            //
-            fos = new FileOutputStream("tests/examples/gen_r0000.pif");
-            marshaller = ctx.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.marshal(p, fos);
-            fos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            fail();
-        } catch (JAXBException e) {
-            e.printStackTrace();
-            fail();
+            model.setResource(new File(file1));
+            model.modelFromFile(reader);
+            model.setResource(new File(file2));
+            model.modelToFile(writer);
+            assertEquals(true,true);
         } catch (IOException e) {
             e.printStackTrace();
             fail();
+        } catch (IllegalResourceException e) {
+            e.printStackTrace();
+            fail();
+        } catch (IllegalModelException e) {
+            e.printStackTrace();
+            fail();
         }
+
     }
 
 }
