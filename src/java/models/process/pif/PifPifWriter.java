@@ -24,7 +24,7 @@ import models.base.AbstractModel;
 import models.base.AbstractModelWriter;
 import models.base.IllegalModelException;
 import models.base.IllegalResourceException;
-import models.choreography.cif.generated.*;
+import models.process.pif.generated.Process;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -48,13 +48,13 @@ public class PifPifWriter extends AbstractModelWriter {
 
     @Override
     public void modelToFile(AbstractModel model) throws IOException, IllegalResourceException, IllegalModelException {
-        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         try {
+            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
             checkModel(model, PifModel.class);
             PifModel cifModel = (PifModel) model;
             FileOutputStream fos = new FileOutputStream(cifModel.getResource());
-            final JAXBContext ctx = JAXBContext.newInstance(Choreography.class);
+            final JAXBContext ctx = JAXBContext.newInstance(Process.class);
             final Marshaller marshaller = ctx.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.setSchema(schema);
