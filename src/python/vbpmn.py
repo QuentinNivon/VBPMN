@@ -1448,6 +1448,7 @@ if __name__ == '__main__':
     file1=sys.argv[1]
     file2=sys.argv[2]
     operation=sys.argv[3]
+    val=0 # return value (0 -> true, 1 -> false, 2 -> wrong format)
 
     print "converting " + file1 + " to LTS.."
     (name1,alpha1)=Generator().generateLTS(file1)
@@ -1481,7 +1482,10 @@ if __name__ == '__main__':
         res=Comparator(name1,name2,operation,"","",fbcg,sync1,sync2).compare(False,False,True)
     else:
         res=False
+        val=2
         print "Error: wrong format, please look at the README file."
 
+    if not(res):
+        val=1
     print res
-    sys.exit(res)
+    sys.exit(val)
