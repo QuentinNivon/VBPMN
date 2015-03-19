@@ -7,6 +7,10 @@ pif/basic/p0002.pif = pif/basic/p0002.pif +
 pif/basic/p0003.pif = pif/basic/p0003.pif +
 pif/basic/p0004.pif = pif/basic/p0004.pif +
 pif/basic/p0005.pif = pif/basic/p0005.pif +
+pif/basic/p0006.pif = pif/basic/p0006.pif +
+pif/basic/p0007.pif = pif/basic/p0007.pif +
+pif/basic/p0008.pif = pif/basic/p0008.pif +
+pif/basic/p0009.pif = pif/basic/p0009.pif +
 
 // preorders x/x
 pif/basic/p0000.pif < pif/basic/p0000.pif -
@@ -25,6 +29,10 @@ pif/basic/p0002.pif = pif/basic/p0005.pif -
 pif/basic/p0003.pif = pif/basic/p0004.pif -
 pif/basic/p0003.pif = pif/basic/p0005.pif -
 pif/basic/p0004.pif = pif/basic/p0005.pif -
+pif/basic/p0006.pif = pif/basic/p0003.pif -
+pif/basic/p0007.pif = pif/basic/p0004.pif -
+pif/basic/p0008.pif = pif/basic/p0005.pif -
+pif/basic/p0009.pif = pif/basic/p0005.pif -
 
 
 
