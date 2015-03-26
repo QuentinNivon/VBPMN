@@ -45,8 +45,9 @@ public class ComparisonTests {
     public static final String WORKINGDIR = "out/production/vbpmn";
     public static final String OK = "+";
     public static final String NOK = "-";
-    public static final int RETURN_OK = 1;
-    public static final int RETURN_NOK = 0;
+    public static final int RETURN_ERROR = 2;
+    public static final int RETURN_NOT_AS_EXPECTED = 1;
+    public static final int RETURN_AS_EXPECTED = 0;
 
     /**
      * Performs equivalence/pre-order checking following the tests described in a file
@@ -65,13 +66,13 @@ public class ComparisonTests {
         cmd.addArgument(operator);
         Executor executor = new DefaultExecutor();
         executor.setWorkingDirectory(new File(WORKINGDIR));
-        executor.setExitValue(RETURN_OK);
+        executor.setExitValue(RETURN_AS_EXPECTED);
         try {
             exitValue = executor.execute(cmd);
             if(expected_result.equals(OK))
-                assertEquals(RETURN_OK, exitValue);
+                assertEquals(RETURN_AS_EXPECTED, exitValue);
             else if(expected_result.equals(NOK))
-                assertEquals(RETURN_NOK, exitValue);
+                assertEquals(RETURN_NOT_AS_EXPECTED, exitValue);
             else
                 fail();
         } catch (IOException e) {
