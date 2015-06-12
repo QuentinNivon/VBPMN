@@ -5,28 +5,19 @@
 # Date:    2014-2015
 ###############################################################################
 
-#from subprocess import *
-#import os.path
-
-#import pyxb
-#import time
-#import pif
 from vbpmn import *
+import sys
 
 ##############################################################################################
 if __name__ == '__main__':
-
-    import sys
-#    import pyxb
-#    import os
-#    import glob
 
     if len(sys.argv)!=4:
         res=False
         val=2
         print "Error: wrong format, please look at the README file."
-        # TODO GWEN: verifier le format des parametres
+
     else:
+        # TODO Gwen: verifier le format des parametres ?
         file1=sys.argv[1]
         file2=sys.argv[2]
         val=0 # return value (0 -> true, 1 -> false, 2 -> wrong format)

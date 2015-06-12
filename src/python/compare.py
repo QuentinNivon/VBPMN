@@ -5,21 +5,13 @@
 # Date:    2014-2015
 ###############################################################################
 
-#from subprocess import *
-#import os.path
-
-#import pyxb
-#import time
-#import pif
+import sys
 from vbpmn import *
 
 ##############################################################################################
 if __name__ == '__main__':
 
-    import sys
-#    import pyxb
-#    import os
-#    import glob
+    # TODO Gwen: verifier le nombre et format des parametres ?
 
     file1=sys.argv[1]
     file2=sys.argv[2]
@@ -36,26 +28,27 @@ if __name__ == '__main__':
     if (operation=="=") or (operation=="<") or (operation==">"):
         print "comparing " + file1 + " and " + file2 + " wrt. " + operation
         res=Comparator(name1,name2,operation,"","","",[],[]).compare(False,False,False)
-#    elif (operation=="p"): # property
-#        prop=sys.argv[4]
-#        res=Checker(name1,name2,prop).check()
+
     elif (operation=="h"): # up-to-alphabet
         operation=sys.argv[4]
         fhid=sys.argv[5]
         res=Comparator(name1,name2,operation,fhid,"","",[],[]).compare(True,False,False)
+
     elif (operation=="r"): # up-to-renaming
         operation=sys.argv[4]
         fren=sys.argv[5]
         res=Comparator(name1,name2,operation,"",fren,"",[],[]).compare(False,True,False)
+
     elif (operation=="c"): # context-dependent
         operation=sys.argv[4]
         fpif=sys.argv[5]
         print "converting " + fpif + " to LTS.."
         (fbcg,alpha)=Generator().generateLTS(fpif)
-        sync1=filter(lambda itm:itm in alpha1,alpha)  # TODO GWEN : refine synchronization sets
+        sync1=filter(lambda itm:itm in alpha1,alpha)  # TODO Gwen : refine synchronization sets
         sync2=filter(lambda itm:itm in alpha2,alpha)  #       computation.. _EM vs _REC :(
         print sync1, sync2
         res=Comparator(name1,name2,operation,"","",fbcg,sync1,sync2).compare(False,False,True)
+
     else:
         res=False
         val=2

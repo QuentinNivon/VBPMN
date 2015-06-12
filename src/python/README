@@ -5,7 +5,7 @@ There are two scripts: compare.py and checkprop.py.
 
 $ python compare.py file1.pif file2.pif operation [options]
 
-This command converts each file into an LTS (internal behavior
+This command converts each PIF file into an LTS (internal behavior
 removed), and compares them wrt. the given operation (strong
 equivalence/preorder). Options can be used for hiding/renaming
 purposes.
