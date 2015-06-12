@@ -36,3 +36,4 @@ $ python checkprop.py file1.pif file2.pif file.mcl
 This command converts each PIF file into an LTS (internal behavior
 removed), and checks that both process LTSs respect the property
 specified in file.mcl. 
+

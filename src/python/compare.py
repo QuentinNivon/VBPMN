@@ -45,7 +45,7 @@ if __name__ == '__main__':
         print "converting " + fpif + " to LTS.."
         (fbcg,alpha)=Generator().generateLTS(fpif)
         sync1=filter(lambda itm:itm in alpha1,alpha)  # TODO Gwen : refine synchronization sets
-        sync2=filter(lambda itm:itm in alpha2,alpha)  #       computation.. _EM vs _REC :(
+        sync2=filter(lambda itm:itm in alpha2,alpha)  #             computation.. _EM vs _REC :(
         print sync1, sync2
         res=Comparator(name1,name2,operation,"","",fbcg,sync1,sync2).compare(False,False,True)
 
