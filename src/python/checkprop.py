@@ -1,0 +1,46 @@
+#
+# Name:    checkprop.py - script for comparing two PIF models wrt. a given property
+#
+# Authors: Pascal Poizat, Gwen Salaun
+# Date:    2014-2015
+###############################################################################
+
+#from subprocess import *
+#import os.path
+
+#import pyxb
+#import time
+#import pif
+from vbpmn import *
+
+##############################################################################################
+if __name__ == '__main__':
+
+    import sys
+#    import pyxb
+#    import os
+#    import glob
+
+    file1=sys.argv[1]
+    file2=sys.argv[2]
+    # operation=sys.argv[3]
+    val=0 # return value (0 -> true, 1 -> false, 2 -> wrong format)
+
+    print "converting " + file1 + " to LTS.."
+    (name1,alpha1)=Generator().generateLTS(file1)
+
+    print "converting " + file2 + " to LTS.."
+    (name2,alpha2)=Generator().generateLTS(file2)
+
+    prop=sys.argv[3]
+    res=Checker(name1,name2,prop).check()
+
+    #else:
+    #    res=False
+    #    val=2
+    #    print "Error: wrong format, please look at the README file."
+
+    if not(res):
+        val=1
+    print res
+    sys.exit(val)

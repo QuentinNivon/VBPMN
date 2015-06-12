@@ -1,8 +1,8 @@
 #
-# Name:    pif2lts.py - Classes for comparing two PIF models 
-#                       using CADP verification tools
+# Name:    vbpm.py - Classes for comparing two PIF models 
+#                     using CADP verification tools
 # Authors: Pascal Poizat, Gwen Salaun
-# Date:    late 2014
+# Date:    2014-2015
 ###############################################################################
 
 from subprocess import *
