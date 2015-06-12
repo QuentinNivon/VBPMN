@@ -21,24 +21,24 @@ if __name__ == '__main__':
 #    import os
 #    import glob
 
-    file1=sys.argv[1]
-    file2=sys.argv[2]
-    # operation=sys.argv[3]
-    val=0 # return value (0 -> true, 1 -> false, 2 -> wrong format)
+    if len(sys.argv)!=4:
+        res=False
+        val=2
+        print "Error: wrong format, please look at the README file."
+        # TODO GWEN: verifier le format des parametres
+    else:
+        file1=sys.argv[1]
+        file2=sys.argv[2]
+        val=0 # return value (0 -> true, 1 -> false, 2 -> wrong format)
 
-    print "converting " + file1 + " to LTS.."
-    (name1,alpha1)=Generator().generateLTS(file1)
+        print "converting " + file1 + " to LTS.."
+        (name1,alpha1)=Generator().generateLTS(file1)
 
-    print "converting " + file2 + " to LTS.."
-    (name2,alpha2)=Generator().generateLTS(file2)
+        print "converting " + file2 + " to LTS.."
+        (name2,alpha2)=Generator().generateLTS(file2)
 
-    prop=sys.argv[3]
-    res=Checker(name1,name2,prop).check()
-
-    #else:
-    #    res=False
-    #    val=2
-    #    print "Error: wrong format, please look at the README file."
+        prop=sys.argv[3]
+        res=Checker(name1,name2,prop).check()
 
     if not(res):
         val=1
