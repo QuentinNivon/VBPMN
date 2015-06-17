@@ -66,16 +66,19 @@ public class InputOutputTests {
     }
 
     /**
-     * Reads all examples (using PifPifReader)
+     * Reads all examples (using PifPifReader) and dumps them in graphical format (using DotPifWriter)
      */
     @Test(dataProvider = "directory_walker_provider", groups = "file_reading")
     public void test_read_all_files_with_Reader(Path filePath) {
         AbstractModelReader reader = new PifPifReader();
+        AbstractModelWriter writer = new DotPifWriter();
         AbstractModelFactory factory = PifFactory.getInstance();
         AbstractModel model = factory.create();
         try {
             model.setResource(filePath.toFile());
             model.modelFromFile(reader);
+            model.setResource(new File(filePath.getFileName()+".dot"));
+            model.modelToFile(writer);
         } catch (IllegalResourceException e) {
             e.printStackTrace();
             fail();
