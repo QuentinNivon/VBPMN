@@ -18,14 +18,16 @@
  * emails: pascal.poizat@lip6.fr
  */
 
+// TODO ISSUE : pas beau, utiliser plutôt un visiteur ?
+
 package models.process.pif;
 
 import models.base.*;
 import models.process.pif.generated.*;
 
+import javax.xml.bind.JAXBElement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DotPifWriter extends AbstractStringModelWriter {
@@ -36,7 +38,6 @@ public class DotPifWriter extends AbstractStringModelWriter {
     private static final String ALLJOIN_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"+\"";
     private static final String CHOICE_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"X\"";
     private static final String SIMPLEJOIN_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"X\"";
-    private static final String DOMINATEDCHOICE_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"I\"";
     private static final String SUBSETSELECT_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"O\"";
     private static final String SUBSETJOIN_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"O\"";
     private static final String TRANSITION_STYLE = "";
@@ -61,12 +62,6 @@ public class DotPifWriter extends AbstractStringModelWriter {
         try {
             // generate nodes
             List<WorkflowNode> allStates = new ArrayList<>();
-            rtr += modelToString(pifModel, pifModel.getModel().getBehaviour().getInitialNode());
-            allStates.add(pifModel.getModel().getBehaviour().getInitialNode());
-            for (EndEvent finalState : pifModel.getModel().getBehaviour().getFinalNodes()) {
-                rtr += modelToString(pifModel, finalState);
-                allStates.add(finalState);
-            }
             for (WorkflowNode state : pifModel.getModel().getBehaviour().getNodes()) {
                 rtr += modelToString(pifModel, state);
                 allStates.add(state);
@@ -90,19 +85,22 @@ public class DotPifWriter extends AbstractStringModelWriter {
         return rtr;
     }
 
-    public String modelToString(PifModel model, InitialEvent initialState) {
-        return String.format("%s [%s," +
-                "label=\"\"" +
-                "];\n", normalizeId(initialState.getId()), INITIAL_STYLE);
-    }
-
-    public String modelToString(PifModel model, EndEvent finalState) {
-        return String.format("%s [%s," +
-                "label=\"\"" +
-                "];\n", normalizeId(finalState.getId()), FINAL_STYLE);
-    }
-
     public String modelToString(PifModel model, WorkflowNode state) throws IllegalModelException {
+        if(state instanceof  InitialEvent) {
+            return modelToString(model, (InitialEvent) state);
+        }
+        if(state instanceof EndEvent) {
+            return modelToString(model, (EndEvent) state);
+        }
+        if(state instanceof Task) {
+            return modelToString(model, (Task) state);
+        }
+        if (state instanceof MessageSending) {
+            return modelToString(model, (MessageSending) state);
+        }
+        if (state instanceof MessageReception) {
+            return modelToString(model, (MessageReception) state);
+        }
         if (state instanceof Interaction) {
             return modelToString(model, (Interaction) state);
         }
@@ -115,14 +113,47 @@ public class DotPifWriter extends AbstractStringModelWriter {
         throw new IllegalModelException(String.format("Element %s of class %s is not supported", state.getId(), state.getClass().toString()));
     }
 
+    public String modelToString(PifModel model, Task taskState) {
+        return String.format("%s [%s," +
+                "label=\"%s\"" +
+                "];\n", normalizeId(taskState.getId()), TASK_STYLE, normalizeId(taskState.getId()));
+
+    }
+
+    public String modelToString(PifModel model, InitialEvent initialState) {
+        return String.format("%s [%s," +
+                "label=\"\"" +
+                "];\n", normalizeId(initialState.getId()), INITIAL_STYLE);
+    }
+
+    public String modelToString(PifModel model, EndEvent finalState) {
+        return String.format("%s [%s," +
+                "label=\"\"" +
+                "];\n", normalizeId(finalState.getId()), FINAL_STYLE);
+    }
+
     public String modelToString(PifModel model, Interaction state) throws IllegalModelException {
         Message message = state.getMessage();
         String messageSender = state.getInitiatingPeer().getId();
         String messageLabel = message.getId();
-        String messageReceiver = state.getReceivingPeers().stream().map(x -> x.getId()).collect(Collectors.joining());
+        String messageReceiver = ""; // TODO
         return String.format("%s [%s," +
                 "label=\"%s | %s | %s\"" +
-                "];\n", normalizeId(state.getId()), TASK_STYLE, messageSender, messageLabel, messageReceiver);
+                "];\n", normalizeId(state.getId()), TASK_STYLE, normalizeId(messageSender), normalizeId(messageLabel), normalizeId(messageReceiver));
+    }
+
+    public String modelToString(PifModel model, MessageSending state) throws IllegalModelException {
+        Message message = state.getMessage();
+        return String.format("%s [%s," +
+                "label=\"%s !\"" +
+                "];\n", normalizeId(state.getId()), TASK_STYLE, normalizeId(message.getId()));
+    }
+
+    public String modelToString(PifModel model, MessageReception state) throws IllegalModelException {
+        Message message = state.getMessage();
+        return String.format("%s [%s," +
+                "label=\"%s ?\"" +
+                "];\n", normalizeId(state.getId()), TASK_STYLE, normalizeId(message.getId()));
     }
 
     public String modelToString(PifModel model, JoinGateway state) throws IllegalModelException {
