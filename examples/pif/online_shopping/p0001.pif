@@ -7,8 +7,8 @@
         online shopping (un-realizable version)
         from ?
         OS = purchase[c,s] . checkAndCash[s,b] . SO1
-        SO1 = SPLIT-OR { notifyFailure[b,s] . SA1 ; SA2 }
-        JO1 = JOIN-OR . 0
+        SO1 = SPLIT-XOR { notifyFailure[b,s] . SA1 ; SA2 }
+        JO1 = JOIN-XOR . 0
         SA1 = SPLIT-AND { cardNotApproved[s,c] . JA1 ; purchaseCancelled[p,c] . JA1 }
         SA2 = SPLIT-AND { paymentOk[b,p] . SA3 ; approval[b,s] . JA2 }
         SA3 = SPLIT-AND { invoice[p,c] . JA3 ; purchaseInfo[p,s] . JA2 }
@@ -137,7 +137,7 @@
             <pif:incomingFlows>sf21</pif:incomingFlows>
             <pif:outgoingFlows>sf22</pif:outgoingFlows>
         </pif:nodes>
-        <pif:nodes xsi:type="pif:OrJoinGateway" id="JO1">
+        <pif:nodes xsi:type="pif:XOrJoinGateway" id="JO1">
             <pif:incomingFlows>sf19</pif:incomingFlows>
             <pif:incomingFlows>sf22</pif:incomingFlows>
             <pif:outgoingFlows>sf23</pif:outgoingFlows>
