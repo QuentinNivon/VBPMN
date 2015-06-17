@@ -77,7 +77,7 @@ public class InputOutputTests {
         try {
             model.setResource(filePath.toFile());
             model.modelFromFile(reader);
-            model.setResource(new File(filePath.getFileName()+".dot"));
+            model.setResource(new File(filePath.toString()+".dot"));
             model.modelToFile(writer);
         } catch (IllegalResourceException e) {
             e.printStackTrace();
