@@ -52,7 +52,7 @@
             <pif:incomingFlows>sf2</pif:incomingFlows>
             <pif:outgoingFlows>sf3</pif:outgoingFlows>
             <pif:initiatingPeer>seller</pif:initiatingPeer>
-            <pif:receivingPeers>buyer</pif:receivingPeers>
+            <pif:receivingPeers>bank</pif:receivingPeers>
         </pif:nodes>
         <pif:nodes xsi:type="pif:XOrSplitGateway" id="SO1">
             <pif:incomingFlows>sf3</pif:incomingFlows>
@@ -62,7 +62,7 @@
         <pif:nodes xsi:type="pif:Interaction" id="SO1a" message="notifyFailure">
             <pif:incomingFlows>sf4</pif:incomingFlows>
             <pif:outgoingFlows>sf6</pif:outgoingFlows>
-            <pif:initiatingPeer>buyer</pif:initiatingPeer>
+            <pif:initiatingPeer>bank</pif:initiatingPeer>
             <pif:receivingPeers>seller</pif:receivingPeers>
         </pif:nodes>
         <pif:nodes xsi:type="pif:AndSplitGateway" id="SA1">
@@ -90,13 +90,13 @@
         <pif:nodes xsi:type="pif:Interaction" id="SA2a" message="paymentOk">
             <pif:incomingFlows>sf11</pif:incomingFlows>
             <pif:outgoingFlows>sf13</pif:outgoingFlows>
-            <pif:initiatingPeer>buyer</pif:initiatingPeer>
+            <pif:initiatingPeer>bank</pif:initiatingPeer>
             <pif:receivingPeers>provider</pif:receivingPeers>
         </pif:nodes>
         <pif:nodes xsi:type="pif:Interaction" id="SA2b" message="approval">
             <pif:incomingFlows>sf12</pif:incomingFlows>
             <pif:outgoingFlows>sf14</pif:outgoingFlows>
-            <pif:initiatingPeer>buyer</pif:initiatingPeer>
+            <pif:initiatingPeer>bank</pif:initiatingPeer>
             <pif:receivingPeers>seller</pif:receivingPeers>
         </pif:nodes>
         <pif:nodes xsi:type="pif:AndSplitGateway" id="SA3">
