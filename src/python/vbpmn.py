@@ -33,6 +33,14 @@ def dumpAlphabet(alpha,f,any,startComma = False,syncMessage = False):
             if l<max:
                 f.write(",")
 
+# Checks empty alphabet, input: a list of alphabet, output: true if at least one is not empty
+def emptyAlphabet(alphalist):
+    res=True
+    for l in alphalist:
+        if len(l)>0:
+            res=False
+    return res
+
 # Checks whether a string belongs to a list
 def isInList(elem,l):
     res=False
@@ -95,22 +103,27 @@ def dumpSucc(f,alpha,succ,semic,syncSet = []):
            if succ[0].myProc.splitInOtherSplitCone(succ[0]):
                f.write(succ[0].ident + " [")
            else:
-               f.write("split_" + succ[0].ident + " [")
-           dumpAlphabet(alpha,f,False)
+               f.write("split_" + succ[0].ident + " ")
 
            # we need only the intersecting synchronization labels in the signature
            # i.e., those which are in the split and the caller process of that split
            alphaSync = list(set(map (lambda x : x.ident, succ[0].getSyncSet())) & set(syncSet))
            # print alpha, alphaSync
+           if not(emptyAlphabet([alpha,alphaSync])):
+               f.write("[\n")
+           dumpAlphabet(alpha,f,False)
            dumpAlphabet(alphaSync, f, False, True, True)
-           f.write("]\n")
+           if not(emptyAlphabet([alpha,alphaSync])):
+               f.write("]\n")
        else:
            f.write(succ[0].ident)
-           f.write(" [")
-           dumpAlphabet(alpha,f,False)
            alphaSync = map (lambda x : x.ident, succ[0].getSyncSet())
+           if not(emptyAlphabet([alpha,alphaSync])):
+               f.write(" [")
+           dumpAlphabet(alpha,f,False)
            dumpAlphabet(alphaSync, f, False, True, True)
-           f.write("]\n")
+           if not(emptyAlphabet([alpha,alphaSync])):
+               f.write("]\n")
 
 # create parallel composition of all syncMessages in alphaSync
 def dumpParallelSyncs(alphaSync, f):
@@ -613,11 +626,13 @@ class GatewaySplitState(GatewayState):
 
             # emit parallel process call
             f.write(s.ident)
-            f.write(" [")
-            dumpAlphabet(alpha,f,False)
             alphaSync = map(lambda x : x.ident, s.getSyncSet())
+            if not(emptyAlphabet([alpha,alphaSync])):
+                f.write(" [")
+            dumpAlphabet(alpha,f,False)
             dumpAlphabet(list(alphaSync), f, False, True, True)
-            f.write("]\n")
+            if not(emptyAlphabet([alpha,alphaSync])):
+                f.write(" ]\n")
             nb=nb-1
             if nb>0:
                 f.write(" ||\n")
@@ -693,19 +708,22 @@ class ChoiceState(GatewaySplitState):
             if (isinstance(s, AllSelectState) or isinstance(s, SubsetSelectState)) and not self.myProc.splitInOtherSplitCone(s):
                 f.write("split_")
             f.write(s.ident)
-            f.write(" [")
+            if (isinstance(s, AllSelectState) or isinstance(s, SubsetSelectState)) and not self.myProc.splitInOtherSplitCone(s):
+                alphaSync = map(lambda x : x.ident, self.getSyncSet())
+            else:
+                alphaSync = map(lambda x : x.ident, s.getSyncSet())
+            if not(emptyAlphabet([alpha,alphaSync])):
+                f.write(" [")
             dumpAlphabet(alpha,f,False)
             # TODO
             # to verify: if successor is an AllSelect or SubSetSelect, then there is a split_ gate which closes
             #            over its own SyncSet, i.e., only the synchro messages in the current state need to be considered
             # why not using dumpSucc here?
             #
-            if (isinstance(s, AllSelectState) or isinstance(s, SubsetSelectState)) and not self.myProc.splitInOtherSplitCone(s):
-                alphaSync = map(lambda x : x.ident, self.getSyncSet())
-            else:
-                alphaSync = map(lambda x : x.ident, s.getSyncSet())
+
             dumpAlphabet(alphaSync,f,False, True, True)
-            f.write("]\n")
+            if not(emptyAlphabet([alpha,alphaSync])):
+                f.write(" ]")
             f.write("\n")
             nb=nb-1
             if nb>0:
@@ -782,11 +800,14 @@ class SubsetSelectState(GatewaySplitState):
             # a combination of the other branches!
             # the BPMN spec is not clear in this case!
             if default and (activeProcess.ident == "default"):
-                f.write("default [")
-                dumpAlphabet(alpha, f, False)
+                f.write("default ")
                 alphaSync = map(lambda x : x.ident, activeProcess.getSyncSet())
+                if not(emptyAlphabet([alpha,alphaSync])):
+                    f.write(" [")
+                dumpAlphabet(alpha, f, False)
                 dumpAlphabet(alphaSync, f, False, True, True)
-                f.write("]\n")
+                if not(emptyAlphabet([alpha,alphaSync])):
+                    f.write(" ]\n")
                 nb = nb - 1
                 break;
 
@@ -797,10 +818,12 @@ class SubsetSelectState(GatewaySplitState):
             alphaSync = map(lambda x : x.ident, activeProcess.getSyncSet())
             self.dumpSynchronization(f, alphaSync, False, True)
             f.write(activeProcess.ident)
-            f.write(" [")
+            if not(emptyAlphabet([alpha,alphaSync])):
+                f.write(" [")
             dumpAlphabet(alpha,f,False)
             dumpAlphabet(alphaSync, f, False, True, True)
-            f.write("]\n")
+            if not(emptyAlphabet([alpha,alphaSync])):
+                f.write(" ]\n")
             f.write ("||\n")
             alternatives = len (self.succ) - 1
             alternativeDone = 0
@@ -826,10 +849,13 @@ class SubsetSelectState(GatewaySplitState):
                         f.write(" select\n")
                         first = False
                     f.write(perhapsProcess.ident)
-                    f.write(" [")
+                    if not(emptyAlphabet([alpha,alphaSync])):
+                        f.write(" [")
                     dumpAlphabet(alpha,f,False)
                     dumpAlphabet(alphaSync,f,False,True,True)
-                    f.write("]\n")
+                    if not(emptyAlphabet([alpha,alphaSync])):
+                        f.write(" ]\n")
+
                     if len(alphaSync) > 0:
                         f.write("[]\n")
                         dumpParallelSyncs(alphaSync, f)
@@ -1069,9 +1095,13 @@ class Process:
         # otherwise, we generate one process per state
         for s in self.states:
             if isinstance(s,InitialState):
-                f.write("process MAIN [")
+                f.write("process MAIN ")
+                if not(emptyAlphabet([alpha])):
+                    f.write(" [")
                 dumpAlphabet(alpha,f,True)
-                f.write("] is\n")
+                if not(emptyAlphabet([alpha])):
+                    f.write(" ]")
+                f.write(" is\n")
                 succ=s.getSucc()
                 if (len(succ)>1):
                     print "Error: only one succesor expected here!"
@@ -1090,18 +1120,23 @@ class Process:
                     dumpSucc(f, alpha, succ, False)
                     if len(hideSet) > 0:
                         f.write("end hide\n")
-                f.write("end process\n")
+                f.write(" end process\n")
             else:
                 f.write("\nprocess "+s.getId())
-                f.write(" [")
-                dumpAlphabet(alpha,f,True)
                 alphaSync = map(lambda x : x.ident, s.getSyncSet())
+                if not(emptyAlphabet([alpha,alphaSync])):
+                    f.write(" [")
+
+                dumpAlphabet(alpha,f,True)
 
                 # print "state ", s.ident, alpha, alphaSync
                 dumpAlphabet(alphaSync, f, True, True, True)
-                f.write("] is\n")
+                if not(emptyAlphabet([alpha,alphaSync])):
+                    f.write(" ]")
+
+                f.write(" is\n")
                 s.lnt(f,alpha)
-                f.write("end process\n")
+                f.write(" end process\n")
 
         # generate the parallel composition for the various splits
         # they are called as "split_"+name processes
@@ -1110,7 +1145,10 @@ class Process:
         splitGatewaySet = filter(lambda x : (isinstance(x, AllSelectState) or  isinstance(x, SubsetSelectState)) and not self.splitInOtherSplitCone(x), self.states)
 
         for p in splitGatewaySet:
-            f.write("\nprocess split_" + p.ident + " [")
+            f.write("\nprocess split_" + p.ident)
+
+            if not(emptyAlphabet([alpha])):
+                f.write(" [")
             dumpAlphabet(alpha, f, True)
 
 	    if isinstance(p, AllSelectState):
@@ -1120,7 +1158,9 @@ class Process:
             
             alphaSync = map(lambda x : x.ident, mergeGatewaySet)
             #dumpAlphabet(alphaSync, f, True, True, True)
-            f.write("] is\n")
+            if not(emptyAlphabet([alpha])):
+                f.write("] ")
+            f.write(" is\n")
 
 
             # hide the synchronizations
@@ -1133,7 +1173,7 @@ class Process:
 
             if len(alphaSync) > 0:
                 f.write("end hide\n")
-            f.write("end process\n\n")
+            f.write(" end process\n\n")
 
         f.write("\nend module\n")
 
@@ -1146,10 +1186,14 @@ class Process:
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n") #\"% CADP_TIME=\"memtime\"\n\n")
         f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
         # process generation (LTS)
-        f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN [")
+        f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN")
         alpha=self.alpha()
+        if not(emptyAlphabet([alpha])):
+            f.write(" [")
         dumpAlphabet(alpha,f,False)
-        f.write("]\";\n\n")
+        if not(emptyAlphabet([alpha])):
+            f.write("]")
+        f.write("\";\n\n")
         f.close()
 
 
@@ -1438,54 +1482,5 @@ class Checker:
 
 
 ##############################################################################################
-if __name__ == '__main__':
+#if __name__ == '__main__':
 
-    import sys
-    import pyxb
-    import os
-    import glob
-
-    file1=sys.argv[1]
-    file2=sys.argv[2]
-    operation=sys.argv[3]
-    val=0 # return value (0 -> true, 1 -> false, 2 -> wrong format)
-
-    print "converting " + file1 + " to LTS.."
-    (name1,alpha1)=Generator().generateLTS(file1)
-
-    print "converting " + file2 + " to LTS.."
-    (name2,alpha2)=Generator().generateLTS(file2)
-
-    # comparison with respect to equivalence / simulation
-    if (operation=="=") or (operation=="<") or (operation==">"):
-        print "comparing " + file1 + " and " + file2 + " wrt. " + operation
-        res=Comparator(name1,name2,operation,"","","",[],[]).compare(False,False,False)
-    elif (operation=="p"): # property
-        prop=sys.argv[4]
-        res=Checker(name1,name2,prop).check()
-    elif (operation=="h"): # up-to-alphabet
-        operation=sys.argv[4]
-        fhid=sys.argv[5]
-        res=Comparator(name1,name2,operation,fhid,"","",[],[]).compare(True,False,False)
-    elif (operation=="r"): # up-to-renaming
-        operation=sys.argv[4]
-        fren=sys.argv[5]
-        res=Comparator(name1,name2,operation,"",fren,"",[],[]).compare(False,True,False)
-    elif (operation=="c"): # context-dependent
-        operation=sys.argv[4]
-        fpif=sys.argv[5]
-        print "converting " + fpif + " to LTS.."
-        (fbcg,alpha)=Generator().generateLTS(fpif)
-        sync1=filter(lambda itm:itm in alpha1,alpha)  # TODO GWEN : refine synchronization sets
-        sync2=filter(lambda itm:itm in alpha2,alpha)  #       computation.. _EM vs _REC :(
-        print sync1, sync2
-        res=Comparator(name1,name2,operation,"","",fbcg,sync1,sync2).compare(False,False,True)
-    else:
-        res=False
-        val=2
-        print "Error: wrong format, please look at the README file."
-
-    if not(res):
-        val=1
-    print res
-    sys.exit(val)
