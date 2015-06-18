@@ -1297,18 +1297,18 @@ class Process:
                     stateTab.append(InteractionState(elem[1], [], elem[5], elem[4], elem[3]))
 
                 elif (elem[0] == 'andSplitGateway'):
-                    stateTab.append(ChoiceState(elem[1], []))
-                elif (elem[0] == 'orSplitGateway'):
                     stateTab.append(AllSelectState(elem[1], []))
+                elif (elem[0] == 'orSplitGateway'):
+                    stateTab.append(SubsetSelectState(elem[1], []))
                 elif (elem[0] == 'xorSplitGateway'):
-                    stateTab.append(SubsetJoinState(elem[1], []))
+                    stateTab.append(ChoiceState(elem[1], []))
 
                 elif (elem[0] == 'andJoinGateway'):
-                    stateTab.append(SimpleJoinState(elem[1], []))
-                elif (elem[0] == 'orJoinGateway'):
                     stateTab.append(AllJoinState(elem[1], []))
-                elif (elem[0] == 'xorJoinGateway'):
+                elif (elem[0] == 'orJoinGateway'):
                     stateTab.append(SubsetJoinState(elem[1], []))
+                elif (elem[0] == 'xorJoinGateway'):
+                    stateTab.append(SimpleJoinState(elem[1], []))
 
             for elem in queue:
                 stateList = filter(lambda x: x.ident == elem[1], stateTab)
