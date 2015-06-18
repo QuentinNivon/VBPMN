@@ -6,7 +6,7 @@
     <pif:documentation>
         simple exclusive split-join
         from hand-crafted
-        INIT  = task1 . SPLIT
+        INIT  = task0 . task1 . SPLIT
         SPLIT = SPLIT-OR { task2 . JOIN ; task3 . JOIN }
         JOIN  = JOIN-OR . FINAL
         FINAL = task4 
@@ -21,16 +21,21 @@
             <pif:outgoingFlows>sf1</pif:outgoingFlows>
         </pif:nodes>
         <pif:nodes id="final" xsi:type="pif:EndEvent">
-            <pif:incomingFlows>sf2</pif:incomingFlows>
+            <pif:incomingFlows>sf3</pif:incomingFlows>
         </pif:nodes>
-        <pif:nodes id="task1" xsi:type="pif:Task">
+        <pif:nodes id="task0" xsi:type="pif:Task">
             <pif:incomingFlows>sf1</pif:incomingFlows>
             <pif:outgoingFlows>sf2</pif:outgoingFlows>
         </pif:nodes>
+        <pif:nodes id="task1" xsi:type="pif:Task">
+            <pif:incomingFlows>sf2</pif:incomingFlows>
+            <pif:outgoingFlows>sf3</pif:outgoingFlows>
+        </pif:nodes>
 
         <!--  SEQUENCE FLOWS -->
-        <pif:sequenceFlows id="sf1" source="initial" target="task1"/>
-        <pif:sequenceFlows id="sf2" source="task1" target="final"/>
+        <pif:sequenceFlows id="sf1" source="initial" target="task0"/>
+        <pif:sequenceFlows id="sf2" source="task0" target="task1"/>
+        <pif:sequenceFlows id="sf3" source="task1" target="final"/>
 
         <!--  INITIAL AND FINAL NODES -->
         <pif:initialNode>initial</pif:initialNode>
