@@ -6,8 +6,11 @@
     <pif:documentation>
         example with nested gateways
         from hand-crafted
-        INIT  = task0 . task1 . SPLIT-OR . 
-                { task2 | task3 . SPLIT-OR . { task5 | task6 } . JOIN-OR } . JOIN-OR . task4 . FINAL
+        INIT  = task0 . task1 . SPLIT-OR {
+            task2 . task22 . task222 . JO1 ;
+            task3 . SPLIT-OR { task5 . JO2 ; task6 . JO2 }
+        JO1 = JOIN-OR . task4 . FINAL
+        JO2 = JOIN-OR . JO1
     </pif:documentation>
 
     <!--  WORKFLOW -->
