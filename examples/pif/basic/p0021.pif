@@ -7,7 +7,7 @@
         simple split with more than 2 branches
         from hand-crafted
         INIT  = task0 . task1 . SPLIT
-        SPLIT = SPLIT-OR { task2 . FINAL ; task3 . FINAL ; task4 . FINAL }
+        SPLIT = SPLIT-XOR { task2 . FINAL ; task3 . FINAL ; task4 . FINAL }
     </pif:documentation>
 
     <!--  WORKFLOW -->
