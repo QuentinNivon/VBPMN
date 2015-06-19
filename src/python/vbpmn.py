@@ -101,7 +101,8 @@ def dumpSucc(f,alpha,succ,semic,syncSet = []):
           f.write(" synchro_"+succ[0].getId()+";null\n")
        elif isinstance (succ[0], AllSelectState) or isinstance(succ[0], SubsetSelectState):
            if succ[0].myProc.splitInOtherSplitCone(succ[0]):
-               f.write(succ[0].ident + " [")
+               f.write(succ[0].ident)
+               # f.write(succ[0].ident + " [") 
            else:
                f.write("split_" + succ[0].ident + " ")
 
