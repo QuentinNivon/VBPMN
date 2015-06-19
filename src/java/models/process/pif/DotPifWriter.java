@@ -20,6 +20,8 @@
 
 // TODO ISSUE : pas beau, utiliser plutôt un visiteur ?
 
+// TODO améliorer wrt http://www.researchgate.net/publication/221542866_A_Simple_Algorithm_for_Automatic_Layout_of_BPMN_Processes
+
 package models.process.pif;
 
 import models.base.*;
