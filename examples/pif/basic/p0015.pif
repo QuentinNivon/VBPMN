@@ -6,7 +6,8 @@
     <pif:documentation>
         simple exclusive split-join
         from hand-crafted
-        INIT  = task0 . task1 . SPLIT-OR . { task2 . JOIN ; task3 . JOIN } . JOIN-OR . task4 . FINAL
+        INIT  = task0 . task1 . SPLIT-OR . { task2 . JOIN ; task3 . JOIN }
+        JOIN = JOIN-OR . task4 . FINAL
     </pif:documentation>
 
     <!--  WORKFLOW -->
