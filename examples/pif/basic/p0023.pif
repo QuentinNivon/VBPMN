@@ -8,7 +8,7 @@
         from hand-crafted
         INIT  = task0 . task1 . SPLIT
         SPLIT = SPLIT-AND { task2 . JOIN ; task3 . JOIN ; task4 . JOIN ; task5 . JOIN ; task6 . JOIN }
-        JOIN = JOIN-AND
+        JOIN = JOIN-AND ; FINAL
     </pif:documentation>
 
     <!--  WORKFLOW -->
