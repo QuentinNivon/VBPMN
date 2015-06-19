@@ -6,8 +6,9 @@
     <pif:documentation>
         example with several kinds of splits
         from hand-crafted
-        INIT  = task0 . task1 . SPLIT-XOR . { task2 | task3 } . JOIN-XOR . task4 . 
-                SPLIT-AND . { task5 | task6 } . JOIN-AND . FINAL
+        INIT  = task0 . task1 . SPLIT-XOR . { task2 . JO ; task3 . JO }
+        JO = JOIN-XOR . task4 . SPLIT-AND . { task5 . JA ;  task6 . JA }
+        JA = JOIN-AND . FINAL
     </pif:documentation>
 
     <!--  WORKFLOW -->
