@@ -18,7 +18,7 @@
             <pif:outgoingFlows>sf1</pif:outgoingFlows>
         </pif:nodes>
         <pif:nodes id="final" xsi:type="pif:EndEvent">
-            <pif:incomingFlows>sf14</pif:incomingFlows>
+            <pif:incomingFlows>sf6</pif:incomingFlows>
         </pif:nodes>
         <pif:nodes id="task1" xsi:type="pif:Task">
             <pif:incomingFlows>sf1</pif:incomingFlows>
