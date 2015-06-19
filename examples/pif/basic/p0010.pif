@@ -4,7 +4,7 @@
              xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
     <pif:name>p0010</pif:name>
     <pif:documentation>
-        simple process with a single task (inconsistent SF undetected by JAXB)
+        simple process with a single task (inconsistent SF undetected by JAXB) -> corrige
     </pif:documentation>
 
     <!--  PEERS -->
@@ -31,8 +31,8 @@
         </pif:nodes>
 
         <!--  SEQUENCE FLOWS -->
-        <pif:sequenceFlows id="sf1" source="initial" target="final"/>
-        <pif:sequenceFlows id="sf2" source="initial" target="final"/>
+        <pif:sequenceFlows id="sf1" source="initial" target="task1"/>
+        <pif:sequenceFlows id="sf2" source="task1" target="final"/>
 
         <!--  INITIAL AND FINAL NODES -->
         <pif:initialNode>initial</pif:initialNode>

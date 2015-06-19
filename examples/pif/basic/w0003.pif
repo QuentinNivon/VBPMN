@@ -6,7 +6,7 @@
     <pif:documentation>
         simple process with a single task (inconsistent SF undetected by JAXB)
 	-> corrected
-    </pif:documentation>
+    </pif:documentation>  <!-- TODO : it is not false, why keeping it ? -->
 
     <!--  PEERS -->
     <pif:peers id="peer1" /> <!--  NOT USED IN THIS EXAMPLE -->
