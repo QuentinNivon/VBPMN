@@ -136,10 +136,20 @@ public class DotPifWriter extends AbstractStringModelWriter {
         Message message = state.getMessage();
         String messageSender = state.getInitiatingPeer().getId();
         String messageLabel = message.getId();
-        String messageReceiver = ""; // TODO
-        return String.format("%s [%s," +
-                "label=\"%s | %s | %s\"" +
-                "];\n", normalizeId(state.getId()), TASK_STYLE, normalizeId(messageSender), normalizeId(messageLabel), normalizeId(messageReceiver));
+        // TODO : lourdeur de JAXB à comprendre, en attendant, généraliser à n receveurs
+        // String messageReceiver = state.getReceivingPeers().stream().map(x -> x.getId()).collect(Collectors.joining(","));
+        try {
+            Object o = state.getReceivingPeers().get(0);
+            JAXBElement<Peer> j = (JAXBElement<Peer>)o;
+            Peer p = j.getValue();
+            String messageReceiver = p.getId();
+            return String.format("%s [%s," +
+                    "label=\"%s | %s | %s\"" +
+                    "];\n", normalizeId(state.getId()), TASK_STYLE, normalizeId(messageSender), normalizeId(messageLabel), normalizeId(messageReceiver));
+        }
+        catch (IndexOutOfBoundsException e) {
+            throw new IllegalModelException("no receiver in Interaction");
+        }
     }
 
     public String modelToString(PifModel model, MessageSending state) throws IllegalModelException {
