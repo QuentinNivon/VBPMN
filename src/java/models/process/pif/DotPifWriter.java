@@ -32,6 +32,7 @@ import models.process.pif.generated.*;
 import javax.xml.bind.JAXBElement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 // import java.util.stream.Collectors;
 
 public class DotPifWriter extends AbstractStringModelWriter {
@@ -142,17 +143,18 @@ public class DotPifWriter extends AbstractStringModelWriter {
         String messageLabel = message.getId();
         // TODO : lourdeur de JAXB à comprendre, en attendant, généraliser à n receveurs
         // String messageReceiver = state.getReceivingPeers().stream().map(x -> x.getId()).collect(Collectors.joining(","));
-        try {
-            Object o = state.getReceivingPeers().get(0);
-            JAXBElement<Peer> j = (JAXBElement<Peer>) o;
-            Peer p = j.getValue();
-            String messageReceiver = p.getId();
-            return String.format("%s [%s," +
-                    "label=\"%s | %s | %s\"" +
-                    "];\n", normalizeId(state.getId()), TASK_STYLE, normalizeId(messageSender), normalizeId(messageLabel), normalizeId(messageReceiver));
-        } catch (IndexOutOfBoundsException e) {
-            throw new IllegalModelException("no receiver in Interaction");
+        List<String> messageReceivers = new ArrayList<>();
+        for (Object o : state.getReceivingPeers()) {
+            JAXBElement<Peer> jaxpeer = (JAXBElement<Peer>) o;
+            Peer peer = jaxpeer.getValue();
+            messageReceivers.add(peer.getId());
         }
+        return String.format("%s [%s," +
+                "label=\"%s | %s | %s\"" +
+                "];\n", normalizeId(state.getId()), TASK_STYLE,
+                normalizeId(messageSender),
+                normalizeId(messageLabel),
+                normalizeId(messageReceivers.stream().collect(Collectors.joining(","))));
     }
 
     public String modelToString(PifModel model, MessageSending state) throws IllegalModelException {
