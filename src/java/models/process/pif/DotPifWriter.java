@@ -141,7 +141,7 @@ public class DotPifWriter extends AbstractStringModelWriter {
         Message message = state.getMessage();
         String messageSender = state.getInitiatingPeer().getId();
         String messageLabel = message.getId();
-        // TODO : lourdeur de JAXB à comprendre, en attendant, généraliser à n receveurs
+        // TODO : lourdeur de JAXB à comprendre, en attendant
         // String messageReceiver = state.getReceivingPeers().stream().map(x -> x.getId()).collect(Collectors.joining(","));
         List<String> messageReceivers = new ArrayList<>();
         for (Object o : state.getReceivingPeers()) {
