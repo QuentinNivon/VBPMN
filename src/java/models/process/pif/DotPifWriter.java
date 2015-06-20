@@ -32,18 +32,18 @@ import models.process.pif.generated.*;
 import javax.xml.bind.JAXBElement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+// import java.util.stream.Collectors;
 
 public class DotPifWriter extends AbstractStringModelWriter {
-    private static final String TASK_STYLE = "shape=record,style=\"filled,bold\",fixedsize=true,width=3,height=1,fillcolor=white,color=black";
     private static final String FINAL_STYLE = "shape=doublecircle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=black,color=black";
+    private static final String TASK_STYLE = "shape=record,style=\"filled,bold\",fixedsize=true,width=3,height=1,fillcolor=white,color=black";
     private static final String INITIAL_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.25,fillcolor=black,color=black";
-    private static final String ALLSELECT_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"+\"";
-    private static final String ALLJOIN_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"+\"";
-    private static final String CHOICE_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"X\"";
-    private static final String SIMPLEJOIN_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"X\"";
-    private static final String SUBSETSELECT_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"O\"";
-    private static final String SUBSETJOIN_STYLE = "shape=circle,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"O\"";
+    private static final String SPLIT_AND_STYLE = "shape=diamond,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"+\"";
+    private static final String JOIN_AND_STYLE = "shape=diamond,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"+\"";
+    private static final String SPLIT_XOR_STYLE = "shape=diamond,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"X\"";
+    private static final String JOIN_XOR_STYLE = "shape=diamond,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"X\"";
+    private static final String SPLIT_OR_STYLE = "shape=diamond,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"O\"";
+    private static final String JOIN_OR_STYLE = "shape=diamond,style=\"filled,bold\",fixedsize=true,width=0.5,fillcolor=white,color=black,fontsize=18,label=\"O\"";
     private static final String TRANSITION_STYLE = "";
 
     @Override
@@ -90,13 +90,13 @@ public class DotPifWriter extends AbstractStringModelWriter {
     }
 
     public String modelToString(PifModel model, WorkflowNode state) throws IllegalModelException {
-        if(state instanceof  InitialEvent) {
+        if (state instanceof InitialEvent) {
             return modelToString(model, (InitialEvent) state);
         }
-        if(state instanceof EndEvent) {
+        if (state instanceof EndEvent) {
             return modelToString(model, (EndEvent) state);
         }
-        if(state instanceof Task) {
+        if (state instanceof Task) {
             return modelToString(model, (Task) state);
         }
         if (state instanceof MessageSending) {
@@ -144,14 +144,13 @@ public class DotPifWriter extends AbstractStringModelWriter {
         // String messageReceiver = state.getReceivingPeers().stream().map(x -> x.getId()).collect(Collectors.joining(","));
         try {
             Object o = state.getReceivingPeers().get(0);
-            JAXBElement<Peer> j = (JAXBElement<Peer>)o;
+            JAXBElement<Peer> j = (JAXBElement<Peer>) o;
             Peer p = j.getValue();
             String messageReceiver = p.getId();
             return String.format("%s [%s," +
                     "label=\"%s | %s | %s\"" +
                     "];\n", normalizeId(state.getId()), TASK_STYLE, normalizeId(messageSender), normalizeId(messageLabel), normalizeId(messageReceiver));
-        }
-        catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) {
             throw new IllegalModelException("no receiver in Interaction");
         }
     }
@@ -172,32 +171,33 @@ public class DotPifWriter extends AbstractStringModelWriter {
 
     public String modelToString(PifModel model, JoinGateway state) throws IllegalModelException {
         if (state instanceof AndJoinGateway) {
-            return String.format("%s [%s];\n", normalizeId(state.getId()), ALLJOIN_STYLE);
+            return String.format("%s [%s];\n", normalizeId(state.getId()), JOIN_AND_STYLE);
         }
         if (state instanceof XOrJoinGateway) {
-            return String.format("%s [%s];\n", normalizeId(state.getId()), SIMPLEJOIN_STYLE);
+            return String.format("%s [%s];\n", normalizeId(state.getId()), JOIN_XOR_STYLE);
         }
         if (state instanceof OrJoinGateway) {
-            return String.format("%s [%s];\n", normalizeId(state.getId()), SUBSETJOIN_STYLE);
+            return String.format("%s [%s];\n", normalizeId(state.getId()), JOIN_OR_STYLE);
         }
         throw new IllegalModelException(String.format("Element %s of class %s is not supported", state.getId(), state.getClass().toString()));
     }
 
     public String modelToString(PifModel model, SplitGateway state) throws IllegalModelException {
         if (state instanceof AndSplitGateway) {
-            return String.format("%s [%s];\n", normalizeId(state.getId()), ALLSELECT_STYLE);
+            return String.format("%s [%s];\n", normalizeId(state.getId()), SPLIT_AND_STYLE);
         }
         if (state instanceof XOrSplitGateway) {
-            return String.format("%s [%s];\n", normalizeId(state.getId()), CHOICE_STYLE);
+            return String.format("%s [%s];\n", normalizeId(state.getId()), SPLIT_XOR_STYLE);
         }
         if (state instanceof OrSplitGateway) {
-            return String.format("%s [%s];\n", normalizeId(state.getId()), SUBSETSELECT_STYLE);
+            return String.format("%s [%s];\n", normalizeId(state.getId()), SPLIT_OR_STYLE);
         }
         throw new IllegalModelException(String.format("Element %s of class %s is not supported", state.getId(), state.getClass().toString()));
     }
 
     /**
      * normalizes ids so that dot accepts them, eg replacing spaces by underscores
+     *
      * @param id the raw id to normalize
      * @return the normalized id
      */
