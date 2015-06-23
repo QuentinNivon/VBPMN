@@ -43,92 +43,123 @@ class ConditionalFlow(Flow):
 ##
 # Class for Initial Event
 class InitialEvent(Node):
-    pass
+
+    def __init__(self,ident,inc,out):
+        Node.__init__(self,ident,inc,out)
 
 ##
-# Class for Final Event
-class FinalEvent(Node):
-    pass
+# Class for End Event
+class EndEvent(Node):
+
+    def __init__(self,ident,inc,out):
+        Node.__init__(self,ident,inc,out)
 
 ##
 # Abstract Class for Communication
 class Communication(Node):
 
-    def __init__(self,msg):
+    def __init__(self,ident,inc,out,msg):
+        Node.__init__(self,ident,inc,out)
         self.msg=msg
 
 ##
 # Class for Interaction
 class Interaction(Communication):
 
-    def __init__(self,sender,receiver):
+    def __init__(self,ident,inc,out,msg,sender,receivers):
+        Communication.__init__(self,ident,inc,out,msg)
         self.sender=sender
-        self.receiver=receiver
+        self.receivers=receivers
 
 ##
 # Abstract Class for MessageCommunication
 class MessageCommunication(Communication):
-    pass
+
+    def __init__(self,ident,inc,out,msg):
+        Communication.__init__(self,ident,inc,out,msg)
 
 ##
 # Class for MessageSending
 class MessageSending(MessageCommunication):
-    pass
+
+    def __init__(self,ident,inc,out,msg):
+        MessageCommunication.__init__(self,ident,inc,out,msg)
 
 ##
 # Class for MessageReception
 class MessageReception(MessageCommunication):
-    pass
+
+    def __init__(self,ident,inc,out,msg):
+        MessageCommunication.__init__(self,ident,inc,out,msg)
 
 ##
 # Class for Task
 class Task(Node):
-    pass
+
+    def __init__(self,ident,inc,out):
+        Node.__init__(self,ident,inc,out)
 
 ##
 # Abstract Class for Gateway
 class Gateway(Node):
-    pass
+
+    def __init__(self,ident,inc,out):
+        Node.__init__(self,ident,inc,out)
 
 ##
 # Abstract Class for SplitGateway
 class SplitGateway(Gateway):
-    pass
+
+    def __init__(self,ident,inc,out):
+        Gateway.__init__(self,ident,inc,out)
 
 ##
 # Class for OrSplitGateway
 class OrSplitGateway(SplitGateway):
-    pass
+
+    def __init__(self,ident,inc,out):
+        SplitGateway.__init__(self,ident,inc,out)
 
 ##
 # Class for XOrSplitGateway
 class XOrSplitGateway(SplitGateway):
-    pass
+
+    def __init__(self,ident,inc,out):
+        SplitGateway.__init__(self,ident,inc,out)
 
 ##
 # Class for AndSplitGateway
 class AndSplitGateway(SplitGateway):
-    pass
+
+    def __init__(self,ident,inc,out):
+        SplitGateway.__init__(self,ident,inc,out)
 
 ##
 # Abstract Class for JoinGateway
 class JoinGateway(Gateway):
-    pass
+
+    def __init__(self,ident,inc,out):
+        Gateway.__init__(self,ident,inc,out)
 
 ##
 # Class for OrJoinGateway
 class OrJoinGateway(JoinGateway):
-    pass
+
+    def __init__(self,ident,inc,out):
+        JoinGateway.__init__(self,ident,inc,out)
 
 ##
 # Class for XOrJoinGateway
 class XOrJoinGateway(JoinGateway):
-    pass
+
+    def __init__(self,ident,inc,out):
+        JoinGateway.__init__(self,ident,inc,out)
 
 ##
 # Class for AndJoinGateway
 class AndJoinGateway(JoinGateway):
-    pass
+    def __init__(self,ident,inc,out):
+        JoinGateway.__init__(self,ident,inc,out)
 
 ##
 # Class for Processes described in PIF
@@ -137,9 +168,9 @@ class Process:
 
     def __init__(self):
         self.name=""
-        self.nodes=[]
+        self.nodes=[] # contains all nodes but initial and final nodes
         self.flows=[]
-        self.initial=""
+        self.initial=None
         self.finals=[]
 
     # Generates an LNT module and process for a BPMN 2.0 process
@@ -181,7 +212,42 @@ class Process:
             proc = pif.CreateFromDocument(xml)
             self.name = proc.name
 
-            # TODO: completer cette methode, voir vbpmn.py
+            # we first create all nodes without incoming/outgoing flows
+            for n in proc.behaviour.nodes:
+                if isinstance(n, pif.InitialEvent_):
+                    self.initial=InitialEvent(n.id, [], [])
+                if isinstance(n, pif.EndEvent_):
+                    self.finals.append(EndEvent(n.id, [], []))
+
+                #  tasks / emissions / receptions / interactions
+                if isinstance(n, pif.Task_):
+                    self.nodes.append(Task(n.id, [], []))
+                if isinstance(n, pif.MessageSending_):
+                    self.nodes.append(MessageSending(n.id, [], [], n.message))
+                if isinstance(n, pif.MessageReception_):
+                    self.nodes.append(MessageReception(n.id, [], [], n.message))
+                if isinstance(n, pif.Interaction_):
+                    self.nodes.append(Interaction(n.id, [], [], n.message, n.initiatingPeer, n.receivingPeers))
+
+                # split gateways
+                if isinstance(n, pif.AndSplitGateway_):
+                    self.nodes.append(AndSplitGateway(n.id, [], []))
+                if isinstance(n, pif.OrSplitGateway_):
+                    self.nodes.append(OrSplitGateway(n.id, [], []))
+                if isinstance(n, pif.XOrSplitGateway_):
+                    self.nodes.append(XOrSplitGateway(n.id, [], []))
+
+                # join gateways
+                if isinstance(n, pif.AndJoinGateway_):
+                    self.nodes.append(AndJoinGateway(n.id, [], []))
+                if isinstance(n, pif.OrJoinGateway_):
+                    self.nodes.append(OrJoinGateway(n.id, [], []))
+                if isinstance(n, pif.XOrJoinGateway_):
+                    self.nodes.append(XOrJoinGateway(n.id, [], []))
+
+
+
+
 
         except pyxb.UnrecognizedContentError, e:
             print 'An error occured while parsing xml document ' + filename
