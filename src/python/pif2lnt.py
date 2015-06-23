@@ -239,9 +239,9 @@ class Process:
             proc = pif.CreateFromDocument(xml)
             self.name = proc.name
 
-            allnodes=[]
             # we first create all nodes without incoming/outgoing flows
             for n in proc.behaviour.nodes:
+                # initial and final events
                 if isinstance(n, pif.InitialEvent_):
                     node=InitialEvent(n.id, [], [])
                     self.initial=node
@@ -252,42 +252,32 @@ class Process:
                 #  tasks / emissions / receptions / interactions
                 if isinstance(n, pif.Task_):
                     node=Task(n.id, [], [])
-                    self.nodes.append(node)
                 if isinstance(n, pif.MessageSending_):
                     node=MessageSending(n.id, [], [], n.message)
-                    self.nodes.append(node)
                 if isinstance(n, pif.MessageReception_):
                     node=MessageReception(n.id, [], [], n.message)
-                    self.nodes.append(node)
                 if isinstance(n, pif.Interaction_):
                     node=Interaction(n.id, [], [], n.message, n.initiatingPeer, n.receivingPeers)
-                    self.nodes.append(node)
 
                 # split gateways
                 if isinstance(n, pif.AndSplitGateway_):
                     node=AndSplitGateway(n.id, [], [])
-                    self.nodes.append(node)
                 if isinstance(n, pif.OrSplitGateway_):
                     node=OrSplitGateway(n.id, [], [])
-                    self.nodes.append(node)
                 if isinstance(n, pif.XOrSplitGateway_):
                     node=XOrSplitGateway(n.id, [], [])
-                    self.nodes.append(node)
 
                 # join gateways
                 if isinstance(n, pif.AndJoinGateway_):
                     node=AndJoinGateway(n.id, [], [])
-                    self.nodes.append(node)
                 if isinstance(n, pif.OrJoinGateway_):
                     node=OrJoinGateway(n.id, [], [])
-                    self.nodes.append(node)
                 if isinstance(n, pif.XOrJoinGateway_):
                     node=XOrJoinGateway(n.id, [], [])
+
+                if not(isinstance(n, pif.InitialEvent_)) and not(isinstance(n, pif.EndEvent_)):
                     self.nodes.append(node)
                 
-                # storing all nodes for having a direct access when building flows
-                allnodes.append(node)
-
             # creation of flow Objects
             for sf in proc.behaviour.sequenceFlows:
                 flow=Flow(sf.id,self.getNode(sf.source),self.getNode(sf.target))
