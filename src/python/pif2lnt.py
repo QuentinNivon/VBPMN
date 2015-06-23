@@ -23,6 +23,9 @@ class Node:
         self.incomingFlows=inc
         self.outgoingFlows=out
 
+    def print(self):
+        print "Node "+self.ident+"("+self.incomingFlows+")"
+
 ##
 # Class for Flows
 class Flow:
@@ -173,6 +176,17 @@ class Process:
         self.initial=None
         self.finals=[]
 
+    def print(self):
+        print "NAME: "+self.name
+        print "INITIAL NODE"
+        initial.print()
+        print "FINAL NODES"
+        finals.print()
+        print "NODES"
+        nodes.print()
+        print "FLOWS"
+        flows.print()
+
     # Generates an LNT module and process for a BPMN 2.0 process
     def genLNT(self,name=""):
         if name=="":
@@ -204,7 +218,7 @@ class Process:
         f.write("\";\n\n")
         f.close()
 
-    # this method takes as input a file.pif and generates a PIF Python object
+    # This method takes as input a file.pif and generates a PIF Python object
     def buildProcessFromFile(self, filename, debug = False):
         # open xml document specified in fileName
         xml = file(filename).read()
@@ -212,47 +226,81 @@ class Process:
             proc = pif.CreateFromDocument(xml)
             self.name = proc.name
 
+            allnodes=[]
             # we first create all nodes without incoming/outgoing flows
             for n in proc.behaviour.nodes:
                 if isinstance(n, pif.InitialEvent_):
-                    self.initial=InitialEvent(n.id, [], [])
+                    node=InitialEvent(n.id, [], [])
+                    self.initial=node
                 if isinstance(n, pif.EndEvent_):
-                    self.finals.append(EndEvent(n.id, [], []))
+                    node=EndEvent(n.id, [], [])
+                    self.finals.append(node)
 
                 #  tasks / emissions / receptions / interactions
                 if isinstance(n, pif.Task_):
-                    self.nodes.append(Task(n.id, [], []))
+                    node=Task(n.id, [], [])
+                    self.nodes.append(node)
                 if isinstance(n, pif.MessageSending_):
-                    self.nodes.append(MessageSending(n.id, [], [], n.message))
+                    node=MessageSending(n.id, [], [], n.message)
+                    self.nodes.append(node)
                 if isinstance(n, pif.MessageReception_):
-                    self.nodes.append(MessageReception(n.id, [], [], n.message))
+                    node=MessageReception(n.id, [], [], n.message)
+                    self.nodes.append(node)
                 if isinstance(n, pif.Interaction_):
-                    self.nodes.append(Interaction(n.id, [], [], n.message, n.initiatingPeer, n.receivingPeers))
+                    node=Interaction(n.id, [], [], n.message, n.initiatingPeer, n.receivingPeers)
+                    self.nodes.append(node)
 
                 # split gateways
                 if isinstance(n, pif.AndSplitGateway_):
-                    self.nodes.append(AndSplitGateway(n.id, [], []))
+                    node=AndSplitGateway(n.id, [], [])
+                    self.nodes.append(node)
                 if isinstance(n, pif.OrSplitGateway_):
-                    self.nodes.append(OrSplitGateway(n.id, [], []))
+                    node=OrSplitGateway(n.id, [], [])
+                    self.nodes.append(node)
                 if isinstance(n, pif.XOrSplitGateway_):
-                    self.nodes.append(XOrSplitGateway(n.id, [], []))
+                    node=XOrSplitGateway(n.id, [], [])
+                    self.nodes.append(node)
 
                 # join gateways
                 if isinstance(n, pif.AndJoinGateway_):
-                    self.nodes.append(AndJoinGateway(n.id, [], []))
+                    node=AndJoinGateway(n.id, [], [])
+                    self.nodes.append(node)
                 if isinstance(n, pif.OrJoinGateway_):
-                    self.nodes.append(OrJoinGateway(n.id, [], []))
+                    node=OrJoinGateway(n.id, [], [])
+                    self.nodes.append(node)
                 if isinstance(n, pif.XOrJoinGateway_):
-                    self.nodes.append(XOrJoinGateway(n.id, [], []))
+                    node=XOrJoinGateway(n.id, [], [])
+                    self.nodes.append(node)
+                
+                # storing all nodes for having a direct access when building flows
+                allnodes.append(node)
 
-
-
-
+            # creation of flow Objects
+            for sf in proc.behaviour.sequenceFlows:
+                flow=Flow(sf.id,self.getNode(sf.source,allnodes),self.getNode(sf.target,allnodes))
+                self.flows.append(flow)
+                self.addFlow(flow,allnodes)
 
         except pyxb.UnrecognizedContentError, e:
             print 'An error occured while parsing xml document ' + filename
             print 'Unrecognized element, the message was "%s"' % (e.message)
 
+
+    # Takes as input a node identifier and returns the corresponding object
+    def getNode(self,nident,allnodes):
+        res=None
+        for n in allnodes:
+            if (nident==n.ident):
+                res=n
+        return res
+
+    # Updates the list of incoming/outgoing flows given a flow in parameter
+    def addFlow(self,flow,allnodes):
+        for n in allnodes:
+            if (n.ident==flow.source):
+                n.outgoingFlows.append(flow)
+            if (n.ident==flow.target):
+                n.incomingFlows.append(flow)
 
 # This class generates an LTS (bcg format) from a PIF process 
 class Generator:
@@ -264,6 +312,8 @@ class Generator:
 
         name = proc.name
         proc.genLNT()
+
+        proc.print()
 
         #proc.genSVL(smartReduction)
         #process = Popen (["svl",name], shell = False, stdout=sys.stdout)
