@@ -24,7 +24,13 @@ class Node:
         self.outgoingFlows=out
 
     def print(self):
-        print "Node "+self.ident+"("+self.incomingFlows+")"
+        print "Node "+self.ident+" in: ",
+        for f in self.incomingFlows:
+            print f.ident+" ",
+        print " out: ",
+        for f in self.outgoingFlows:
+            print f.ident+" ",
+        print ""
 
 ##
 # Class for Flows
@@ -34,6 +40,10 @@ class Flow:
         self.ident=ident
         self.source=source
         self.target=target
+
+    def print(self):
+        print "Flow "+self.source.ident+"--"+self.ident+"-->"+self.target.ident
+
 
 ##
 # Class for ConditionalFlows
