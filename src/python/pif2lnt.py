@@ -23,7 +23,7 @@ class Node:
         self.incomingFlows=inc
         self.outgoingFlows=out
 
-    def print(self):
+    def dump(self):
         print "Node "+self.ident+" in: ",
         for f in self.incomingFlows:
             print f.ident+" ",
@@ -41,7 +41,7 @@ class Flow:
         self.source=source
         self.target=target
 
-    def print(self):
+    def dump(self):
         print "Flow "+self.source.ident+"--"+self.ident+"-->"+self.target.ident
 
 
@@ -186,16 +186,19 @@ class Process:
         self.initial=None
         self.finals=[]
 
-    def print(self):
+    def dump(self):
         print "NAME: "+self.name
         print "INITIAL NODE"
-        initial.print()
+        self.initial.dump()
         print "FINAL NODES"
-        finals.print()
+        for n in self.finals:
+            n.dump()
         print "NODES"
-        nodes.print()
+        for n in self.nodes:
+            n.dump()
         print "FLOWS"
-        flows.print()
+        for f in self.flows:
+            f.dump()
 
     # Generates an LNT module and process for a BPMN 2.0 process
     def genLNT(self,name=""):
@@ -287,9 +290,9 @@ class Process:
 
             # creation of flow Objects
             for sf in proc.behaviour.sequenceFlows:
-                flow=Flow(sf.id,self.getNode(sf.source,allnodes),self.getNode(sf.target,allnodes))
+                flow=Flow(sf.id,self.getNode(sf.source),self.getNode(sf.target))
                 self.flows.append(flow)
-                self.addFlow(flow,allnodes)
+                self.addFlow(flow)
 
         except pyxb.UnrecognizedContentError, e:
             print 'An error occured while parsing xml document ' + filename
@@ -297,19 +300,28 @@ class Process:
 
 
     # Takes as input a node identifier and returns the corresponding object
-    def getNode(self,nident,allnodes):
+    def getNode(self,nident):
         res=None
-        for n in allnodes:
+        if (nident==self.initial.ident):
+            return self.initial
+        for n in self.finals:
             if (nident==n.ident):
-                res=n
-        return res
+                return n 
+        for n in self.nodes:
+            if (nident==n.ident):
+                return n 
 
-    # Updates the list of incoming/outgoing flows given a flow in parameter
-    def addFlow(self,flow,allnodes):
-        for n in allnodes:
-            if (n.ident==flow.source):
+    # Updates the list of incoming/outgoing flows for all nodes given a flow in parameter
+    def addFlow(self,flow):
+        if (flow.source.ident==self.initial.ident):
+            self.initial.outgoingFlows.append(flow)
+        for n in self.finals:
+            if (flow.target.ident==n.ident):
+                n.incomingFlows.append(flow)
+        for n in self.nodes:
+            if (flow.source.ident==n.ident):
                 n.outgoingFlows.append(flow)
-            if (n.ident==flow.target):
+            if (flow.target.ident==n.ident):
                 n.incomingFlows.append(flow)
 
 # This class generates an LTS (bcg format) from a PIF process 
@@ -323,7 +335,7 @@ class Generator:
         name = proc.name
         proc.genLNT()
 
-        proc.print()
+        proc.dump()
 
         #proc.genSVL(smartReduction)
         #process = Popen (["svl",name], shell = False, stdout=sys.stdout)
