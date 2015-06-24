@@ -78,8 +78,8 @@ class InitialEvent(Node):
     # Generates the (generic) process for the initial event, only once
     def lnt(self,f):
         if not(self.tolnt):
-            f.write("process init [begin] is\n")
-            f.write(" begin\n")
+            f.write("process init [begin:any, outf:any] is\n")
+            f.write(" begin ; outf \n")
             f.write("end process\n")
             self.tolnt=True
 
@@ -94,8 +94,8 @@ class EndEvent(Node):
     # Generates the (generic) process for final events, only once
     def lnt(self,f):
         if not(self.tolnt):
-            f.write("process final [end] is\n")
-            f.write(" end\n")
+            f.write("process final [incf:any, end:any] is\n")
+            f.write(" incf; end\n")
             f.write("end process\n")
             self.tolnt=True
 
@@ -115,8 +115,15 @@ class Interaction(Communication):
         Communication.__init__(self,ident,inc,out,msg)
         self.sender=sender
         self.receivers=receivers
+        self.tolnt=False # indicates if the LNT process has already been generated
 
-    # TODO lnt() ICI et pour tous les autres ci-dessous
+    # Generates the (generic) process for interactions, only once
+    def lnt(self,f):
+        if not(self.tolnt):
+            f.write("process interaction [incf:any, inter:any, outf:any] is\n")
+            f.write(" incf; inter; outf \n")
+            f.write("end process\n")
+            self.tolnt=True
 
 ##
 # Abstract Class for MessageCommunication
@@ -131,6 +138,15 @@ class MessageSending(MessageCommunication):
 
     def __init__(self,ident,inc,out,msg):
         MessageCommunication.__init__(self,ident,inc,out,msg)
+        self.tolnt=False # indicates if the LNT process has already been generated
+
+    # Generates the (generic) process for message sending, only once
+    def lnt(self,f):
+        if not(self.tolnt):
+            f.write("process messagesending [incf:any, msg:any, outf:any] is\n")
+            f.write(" incf; msg; outf \n")
+            f.write("end process\n")
+            self.tolnt=True
 
 ##
 # Class for MessageReception
@@ -138,6 +154,15 @@ class MessageReception(MessageCommunication):
 
     def __init__(self,ident,inc,out,msg):
         MessageCommunication.__init__(self,ident,inc,out,msg)
+        self.tolnt=False # indicates if the LNT process has already been generated
+
+    # Generates the (generic) process for message reception, only once
+    def lnt(self,f):
+        if not(self.tolnt):
+            f.write("process messagereception [incf:any, msg:any, outf:any] is\n")
+            f.write(" incf; msg; outf \n")
+            f.write("end process\n")
+            self.tolnt=True
 
 ##
 # Class for Task
@@ -145,6 +170,15 @@ class Task(Node):
 
     def __init__(self,ident,inc,out):
         Node.__init__(self,ident,inc,out)
+        self.tolnt=False # indicates if the LNT process has already been generated
+
+    # Generates the (generic) process for task, only once
+    def lnt(self,f):
+        if not(self.tolnt):
+            f.write("process task [incf:any, task:any, outf:any] is\n")
+            f.write(" incf; task; outf \n")
+            f.write("end process\n")
+            self.tolnt=True
 
 ##
 # Abstract Class for Gateway
@@ -166,6 +200,32 @@ class OrSplitGateway(SplitGateway):
 
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
+        self.tolnt=[] # contains a table containing the number of outgoing flows
+                      # for which LNT processes have already been generated
+
+    # Generates the process for inclusive split gateway
+    # Takes as input the number of outgoing flows
+    def lnt(self,f,nboutf):
+        if not(nboutf in self.tolnt):
+            f.write("process orsplit_"+nboutf+" [incf:any,")
+            nb=1
+            while (nb<=nboutf):
+                f.write("outf_"+nb+":any")
+                nb++
+                if (nb<=nboutf):
+                    f.write(",")
+            f.write(" ] is \n")
+            f.write(" incf; \n")
+            f.write(" par ")
+            nb=1
+            while (nb<=nboutf):
+                f.write("select outf_"+nb+" [] null end select ")
+                nb++
+                if (nb<=nboutf):
+                    f.write("||")
+            f.write(" end par ")
+            f.write("end process\n")
+            self.tolnt.append(nboutf)
 
 ##
 # Class for XOrSplitGateway
@@ -173,6 +233,32 @@ class XOrSplitGateway(SplitGateway):
 
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
+        self.tolnt=[] # contains a table containing the number of outgoing flows
+                      # for which LNT processes have already been generated
+
+    # Generates the process for exclusive split gateway
+    # Takes as input the number of outgoing flows
+    def lnt(self,f,nboutf):
+        if not(nboutf in self.tolnt):
+            f.write("process xorsplit_"+nboutf+" [incf:any,")
+            nb=1
+            while (nb<=nboutf):
+                f.write("outf_"+nb+":any")
+                nb++
+                if (nb<=nboutf):
+                    f.write(",")
+            f.write(" ] is \n")
+            f.write(" incf; \n")
+            f.write(" select ")
+            nb=1
+            while (nb<=nboutf):
+                f.write("outf_"+nb+"")
+                nb++
+                if (nb<=nboutf):
+                    f.write("[]")
+            f.write(" end select ")
+            f.write("end process\n")
+            self.tolnt.append(nboutf)
 
 ##
 # Class for AndSplitGateway
@@ -180,6 +266,33 @@ class AndSplitGateway(SplitGateway):
 
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
+        self.tolnt=[] # contains a table containing the number of outgoing flows
+                      # for which LNT processes have already been generated
+
+    # Generates the process for parallel split gateway
+    # Takes as input the number of outgoing flows
+    def lnt(self,f,nboutf):
+        if not(nboutf in self.tolnt):
+            f.write("process andsplit_"+nboutf+" [incf:any,")
+            nb=1
+            while (nb<=nboutf):
+                f.write("outf_"+nb+":any")
+                nb++
+                if (nb<=nboutf):
+                    f.write(",")
+            f.write(" ] is \n")
+            f.write(" incf; \n")
+            f.write(" par ")
+            nb=1
+            while (nb<=nboutf):
+                f.write("outf_"+nb+"")
+                nb++
+                if (nb<=nboutf):
+                    f.write("||")
+            f.write(" end par ")
+            f.write("end process\n")
+            self.tolnt.append(nboutf)
+
 
 ##
 # Abstract Class for JoinGateway
@@ -254,7 +367,7 @@ class Process:
 
         # Generates LNT processes for all other nodes
         for n in self.nodes:
-            pass #n.lnt(f) 
+            pass # n.lnt(f) 
 
         # Note: up to here, translation patterns are independent of the actual tasks, comm, etc.
         # The actual names will be used only in the MAIN process when computing the process alphabet
