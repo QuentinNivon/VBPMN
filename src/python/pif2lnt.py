@@ -50,8 +50,8 @@ class Flow:
     # Generates the (generic) process for flows, only once
     def lnt(self,f):
         if not(self.tolnt):
-            f.write("process flow [begin:any, end:any] is\n")
-            f.write(" begin ; end\n")
+            f.write("process flow [begin:any, finish:any] is\n")
+            f.write(" begin ; finish\n")
             f.write("end process\n")
             self.tolnt=True
 
@@ -94,8 +94,8 @@ class EndEvent(Node):
     # Generates the (generic) process for final events, only once
     def lnt(self,f):
         if not(self.tolnt):
-            f.write("process final [incf:any, end:any] is\n")
-            f.write(" incf; end\n")
+            f.write("process final [incf:any, finish:any] is\n")
+            f.write(" incf; finish\n")
             f.write("end process\n")
             self.tolnt=True
 
@@ -205,12 +205,13 @@ class OrSplitGateway(SplitGateway):
 
     # Generates the process for inclusive split gateway
     # Takes as input the number of outgoing flows
-    def lnt(self,f,nboutf):
+    def lnt(self,f):
+        nboutf=len(self.outgoingFlows)
         if not(nboutf in self.tolnt):
-            f.write("process orsplit_"+nboutf+" [incf:any,")
+            f.write("process orsplit_"+str(nboutf)+" [incf:any,")
             nb=1
             while (nb<=nboutf):
-                f.write("outf_"+nb+":any")
+                f.write("outf_"+str(nb)+":any")
                 nb=nb+1
                 if (nb<=nboutf):
                     f.write(",")
@@ -219,11 +220,11 @@ class OrSplitGateway(SplitGateway):
             f.write(" par ")
             nb=1
             while (nb<=nboutf):
-                f.write("select outf_"+nb+" [] null end select ")
+                f.write("select outf_"+str(nb)+" [] null end select ")
                 nb=nb+1
                 if (nb<=nboutf):
                     f.write("||")
-            f.write(" end par ")
+            f.write(" end par\n")
             f.write("end process\n")
             self.tolnt.append(nboutf)
 
@@ -238,12 +239,13 @@ class XOrSplitGateway(SplitGateway):
 
     # Generates the process for exclusive split gateway
     # Takes as input the number of outgoing flows
-    def lnt(self,f,nboutf):
+    def lnt(self,f):
+        nboutf=len(self.outgoingFlows)
         if not(nboutf in self.tolnt):
-            f.write("process xorsplit_"+nboutf+" [incf:any,")
+            f.write("process xorsplit_"+str(nboutf)+" [incf:any,")
             nb=1
             while (nb<=nboutf):
-                f.write("outf_"+nb+":any")
+                f.write("outf_"+str(nb)+":any")
                 nb=nb+1
                 if (nb<=nboutf):
                     f.write(",")
@@ -252,11 +254,11 @@ class XOrSplitGateway(SplitGateway):
             f.write(" select ")
             nb=1
             while (nb<=nboutf):
-                f.write("outf_"+nb+"")
+                f.write("outf_"+str(nb)+"")
                 nb=nb+1
                 if (nb<=nboutf):
                     f.write("[]")
-            f.write(" end select ")
+            f.write(" end select\n")
             f.write("end process\n")
             self.tolnt.append(nboutf)
 
@@ -271,12 +273,13 @@ class AndSplitGateway(SplitGateway):
 
     # Generates the process for parallel split gateway
     # Takes as input the number of outgoing flows
-    def lnt(self,f,nboutf):
+    def lnt(self,f):
+        nboutf=len(self.outgoingFlows)
         if not(nboutf in self.tolnt):
-            f.write("process andsplit_"+nboutf+" [incf:any,")
+            f.write("process andsplit_"+str(nboutf)+" [incf:any,")
             nb=1
             while (nb<=nboutf):
-                f.write("outf_"+nb+":any")
+                f.write("outf_"+str(nb)+":any")
                 nb=nb+1
                 if (nb<=nboutf):
                     f.write(",")
@@ -285,11 +288,11 @@ class AndSplitGateway(SplitGateway):
             f.write(" par ")
             nb=1
             while (nb<=nboutf):
-                f.write("outf_"+nb+"")
+                f.write("outf_"+str(nb)+"")
                 nb=nb+1
                 if (nb<=nboutf):
                     f.write("||")
-            f.write(" end par ")
+            f.write(" end par\n")
             f.write("end process\n")
             self.tolnt.append(nboutf)
 
@@ -312,23 +315,24 @@ class OrJoinGateway(JoinGateway):
 
     # Generates the process for inclusive join gateway
     # Takes as input the number of incoming flows
-    def lnt(self,f,nbincf):
+    def lnt(self,f):
+        nbincf=len(self.incomingFlows)
         if not(nbincf in self.tolnt):
-            f.write("process orjoin_"+nbincf+" [")
+            f.write("process orjoin_"+str(nbincf)+" [")
             nb=1
             while (nb<=nbincf):
-                f.write("incf_"+nb+":any")
+                f.write("incf_"+str(nb)+":any")
                 nb=nb+1
                 f.write(",")
             f.write("outf:any] is \n")
             f.write(" par ")
             nb=1
             while (nb<=nbincf):
-                f.write("incf_"+nb+"")
+                f.write("incf_"+str(nb)+"")
                 nb=nb+1
                 if (nb<=nbincf):
                     f.write("||")
-            f.write(" end par ; outf")
+            f.write(" end par ; outf\n")
             f.write("end process\n")
             self.tolnt.append(nbincf)
 ##
@@ -342,23 +346,24 @@ class XOrJoinGateway(JoinGateway):
 
     # Generates the process for exclusive join gateway
     # Takes as input the number of incoming flows
-    def lnt(self,f,nbincf):
+    def lnt(self,f):
+        nbincf=len(self.incomingFlows)
         if not(nbincf in self.tolnt):
-            f.write("process xorjoin_"+nbincf+" [")
+            f.write("process xorjoin_"+str(nbincf)+" [")
             nb=1
             while (nb<=nbincf):
-                f.write("incf_"+nb+":any")
+                f.write("incf_"+str(nb)+":any")
                 nb=nb+1
                 f.write(",")
             f.write("outf:any] is \n")
             f.write(" select ")
             nb=1
             while (nb<=nbincf):
-                f.write("select incf_"+nb+" [] null end select ")
+                f.write("select incf_"+str(nb)+" [] null end select ")
                 nb=nb+1
                 if (nb<=nbincf):
                     f.write("[]")
-            f.write(" end select ; outf")
+            f.write(" end select ; outf\n")
             f.write("end process\n")
             self.tolnt.append(nbincf)
 
@@ -372,23 +377,24 @@ class AndJoinGateway(JoinGateway):
 
     # Generates the process for parallel join gateway
     # Takes as input the number of incoming flows
-    def lnt(self,f,nbincf):
+    def lnt(self,f):
+        nbincf=len(self.incomingFlows)
         if not(nbincf in self.tolnt):
-            f.write("process andjoin_"+nbincf+" [")
+            f.write("process andjoin_"+str(nbincf)+" [")
             nb=1
             while (nb<=nbincf):
-                f.write("incf_"+nb+":any")
+                f.write("incf_"+str(nb)+":any")
                 nb=nb+1
                 f.write(",")
             f.write("outf:any] is \n")
             f.write(" par ")
             nb=1
             while (nb<=nbincf):
-                f.write("incf_"+nb+"")
+                f.write("incf_"+str(nb)+"")
                 nb=nb+1
                 if (nb<=nbincf):
                     f.write("||")
-            f.write(" end par ; outf")
+            f.write(" end par ; outf\n")
             f.write("end process\n")
             self.tolnt.append(nbincf)
 
@@ -438,13 +444,18 @@ class Process:
 
         # Generates LNT processes for all other nodes
         for n in self.nodes:
-            pass # n.lnt(f) 
+            n.lnt(f) 
 
         # Note: up to here, translation patterns are independent of the actual tasks, comm, etc.
         # The actual names will be used only in the MAIN process when computing the process alphabet
         #  and instantiating processes
 
         # TODO : generate LNT pour le process MAIN
+        f.write("\nprocess MAIN ")
+        # TODO : generate alphabet (hide all flows+ start/end events)
+
+        f.write("\nend process\n")
+
 
         f.write("\nend module\n")
 
