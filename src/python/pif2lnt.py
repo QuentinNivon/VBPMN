@@ -13,6 +13,22 @@ import time
 import pif
 import sys
 
+# Dumps alphabet (list of strings) in the given file
+def dumpAlphabet(alph,f,addany):
+
+    nbelem=len(alph)
+    if (nbelem>0):
+        f.write("[")
+        cter=1
+        for e in alph:
+            f.write(e)
+            if addany:
+                f.write(":any")
+            cter=cter+1
+            if (cter<=nbelem):
+                f.write(", ")
+        f.write("] ")
+
 ##
 # Abstract class for Nodes
 # Should not be directly used. Use child classes instead.
@@ -125,6 +141,13 @@ class Interaction(Communication):
     def alpha(self):
         return [self.sender+str(self.receivers)+self.msg] # TODO: refine
 
+    # Generates process instantiation for main LNT process
+    def mainlnt(self,f):
+        # we assume one incoming flow and one outgoing flow
+        f.write("interaction ["+self.incomingFlows[0].ident+"_finish,")
+        f.write(self.sender+str(self.receivers)+self.msg+",")
+        f.write(self.outgoingFlows[0].ident+"_begin]")
+
 ##
 # Abstract Class for MessageCommunication
 class MessageCommunication(Communication):
@@ -151,7 +174,14 @@ class MessageSending(MessageCommunication):
 
     # Computes alphabet for a message sending
     def alpha(self):
-        return [self.msg+"_EM"] 
+        return [self.msg+"_EM"]
+
+    # Generates process instantiation for main LNT process
+    def mainlnt(self,f):
+        # we assume one incoming flow and one outgoing flow
+        f.write("messagesending ["+self.incomingFlows[0].ident+"_finish,")
+        f.write(self.msg+"_EM,")
+        f.write(self.outgoingFlows[0].ident+"_begin]")
 
 ##
 # Class for MessageReception
@@ -174,6 +204,13 @@ class MessageReception(MessageCommunication):
     def alpha(self):
         return [self.msg+"_REC"] 
 
+    # Generates process instantiation for main LNT process
+    def mainlnt(self,f):
+        # we assume one incoming flow and one outgoing flow
+        f.write("messagereception ["+self.incomingFlows[0].ident+"_finish,")
+        f.write(self.msg+"_REC,")
+        f.write(self.outgoingFlows[0].ident+"_begin]")
+
 ##
 # Class for Task
 class Task(Node):
@@ -193,7 +230,14 @@ class Task(Node):
 
     # Computes alphabet for a task
     def alpha(self):
-        return [self.ident] 
+        return [self.ident]
+
+    # Generates process instantiation for main LNT process
+    def mainlnt(self,f):
+        # we assume one incoming flow and one outgoing flow
+        f.write("task ["+self.incomingFlows[0].ident+"_finish,")
+        f.write(self.ident+",")
+        f.write(self.outgoingFlows[0].ident+"_begin]")
 
 ##
 # Abstract Class for Gateway
@@ -213,13 +257,27 @@ class SplitGateway(Gateway):
     def __init__(self,ident,inc,out):
         Gateway.__init__(self,ident,inc,out)
 
+    # Generates process instantiation for all split gateways
+    def mainlnt(self,f):
+        # we assume one incoming flow 
+        nboutf=len(self.outgoingFlows)
+        f.write("[")
+        f.write(self.incomingFlows[0].ident+"_finish,")
+        i=0
+        while (i<nboutf):
+            f.write(self.outgoingFlows[i].ident+"_begin")
+            i=i+1
+            if (i<nboutf):
+                f.write(",")
+        f.write("]")
+
+
 ##
 # Class for OrSplitGateway
 class OrSplitGateway(SplitGateway):
 
     tolnt=[] # contains a table containing the number of outgoing flows
              # for which LNT processes have already been generated
-
 
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
@@ -248,6 +306,11 @@ class OrSplitGateway(SplitGateway):
             f.write(" end par\n")
             f.write("end process\n")
             OrSplitGateway.tolnt.append(nboutf)
+
+    # Generates process instantiation for main LNT process
+    def mainlnt(self,f):
+        f.write("orsplit_"+str(len(self.outgoingFlows)))
+        SplitGateway.mainlnt(self,f)
 
 ##
 # Class for XOrSplitGateway
@@ -284,6 +347,11 @@ class XOrSplitGateway(SplitGateway):
             f.write("end process\n")
             XOrSplitGateway.tolnt.append(nboutf)
 
+    # Generates process instantiation for main LNT process
+    def mainlnt(self,f):
+        f.write("xorsplit_"+str(len(self.outgoingFlows)))
+        SplitGateway.mainlnt(self,f)
+
 ##
 # Class for AndSplitGateway
 class AndSplitGateway(SplitGateway):
@@ -319,12 +387,29 @@ class AndSplitGateway(SplitGateway):
             f.write("end process\n")
             AndSplitGateway.tolnt.append(nboutf)
 
+    # Generates process instantiation for main LNT process
+    def mainlnt(self,f):
+        f.write("andsplit_"+str(len(self.outgoingFlows)))
+        SplitGateway.mainlnt(self,f)
+
 ##
 # Abstract Class for JoinGateway
 class JoinGateway(Gateway):
 
     def __init__(self,ident,inc,out):
         Gateway.__init__(self,ident,inc,out)
+
+    # Generates process instantiation for all join gateways
+    def mainlnt(self,f):
+        # we assume one outgoing flow 
+        nbincf=len(self.incomingFlows)
+        f.write("[")
+        i=0
+        while (i<nbincf):
+            f.write(self.incomingFlows[i].ident+"_finish")
+            i=i+1
+            f.write(",")
+        f.write(self.outgoingFlows[0].ident+"_begin]")
 
 ##
 # Class for OrJoinGateway
@@ -359,6 +444,11 @@ class OrJoinGateway(JoinGateway):
             f.write("end process\n")
             OrJoinGateway.tolnt.append(nbincf)
 
+    # Generates process instantiation for main LNT process
+    def mainlnt(self,f):
+        f.write("orjoin_"+str(len(self.incomingFlows)))
+        JoinGateway.mainlnt(self,f)
+
 ##
 # Class for XOrJoinGateway
 class XOrJoinGateway(JoinGateway):
@@ -392,6 +482,11 @@ class XOrJoinGateway(JoinGateway):
             f.write("end process\n")
             XOrJoinGateway.tolnt.append(nbincf)
 
+    # Generates process instantiation for main LNT process
+    def mainlnt(self,f):
+        f.write("xorjoin_"+str(len(self.incomingFlows)))
+        JoinGateway.mainlnt(self,f)
+
 ##
 # Class for AndJoinGateway
 class AndJoinGateway(JoinGateway):
@@ -424,6 +519,11 @@ class AndJoinGateway(JoinGateway):
             f.write(" end par ; outf\n")
             f.write("end process\n")
             AndJoinGateway.tolnt.append(nbincf)
+
+    # Generates process instantiation for main LNT process
+    def mainlnt(self,f):
+        f.write("andjoin_"+str(len(self.incomingFlows)))
+        JoinGateway.mainlnt(self,f)
 
 ##
 # Class for Processes described in PIF
@@ -486,16 +586,8 @@ class Process:
 
         f.write("\nprocess MAIN ")
         alph=self.alpha()
-        nbelem=len(alph)
-        if (nbelem>0):
-            f.write("[")
-            cter=1
-            for e in alph:
-                f.write(e+":any")
-                cter=cter+1
-                if (cter<=nbelem):
-                    f.write(", ")
-            f.write("] is\n")
+        dumpAlphabet(alph,f,True)
+        f.write(" is\n")
         f.write(" hide begin:any, finish:any")
         nbflows=len(self.flows)
         if (nbflows>0):
@@ -541,9 +633,14 @@ class Process:
             cter=cter+1
             if (cter<=nbflows):
                 f.write(" || ")
-        # processes instantiation for all other nodes TODO 
-        f.write("null")
-
+        # processes instantiation for all other nodes (TODO)
+        nbnodes=len(self.nodes)
+        cter=1
+        for n in self.nodes:
+            n.mainlnt(f)
+            cter=cter+1
+            if (cter<=nbnodes):
+                f.write(" || ")
         f.write("\n end par \n")
 
         f.write("\n end par\n")
@@ -562,12 +659,8 @@ class Process:
         f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
         # process generation (LTS)
         f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN")
-        #alpha=self.alpha()
-        #if not(emptyAlphabet([alpha])):
-        #    f.write(" [")
-        #dumpAlphabet(alpha,f,False)
-        #if not(emptyAlphabet([alpha])):
-        #    f.write("]")
+        alpha=self.alpha()
+        dumpAlphabet(alpha,f,False)
         f.write("\";\n\n")
         f.close()
 
@@ -667,12 +760,11 @@ class Generator:
 
         proc.dump()
 
-        #proc.genSVL(smartReduction)
-        #process = Popen (["svl",name], shell = False, stdout=sys.stdout)
+        proc.genSVL(smartReduction)
+        process = Popen (["svl",name], shell = False, stdout=sys.stdout)
             
-        #return (name,proc.alpha())
-        return (name,[])
-
+        return (name,proc.alpha())
+ 
 
 ##############################################################################################
 if __name__ == '__main__':
