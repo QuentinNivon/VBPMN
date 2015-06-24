@@ -23,6 +23,7 @@ class Node:
         self.incomingFlows=inc
         self.outgoingFlows=out
 
+    # This method dumps a textual version of a node (useful for debugging purposes)
     def dump(self):
         print "Node "+self.ident+" in: ",
         for f in self.incomingFlows:
@@ -40,10 +41,19 @@ class Flow:
         self.ident=ident
         self.source=source
         self.target=target
+        self.tolnt=False # indicates if the LNT process has already been generated
 
+    # This method dumps a textual version of a flow (useful for debugging purposes)
     def dump(self):
         print "Flow "+self.source.ident+"--"+self.ident+"-->"+self.target.ident
 
+    # Generates the (generic) process for flows, only once
+    def lnt(self,f):
+        if not(self.tolnt):
+            f.write("process flow [begin:any, end:any] is\n")
+            f.write(" begin ; end\n")
+            f.write("end process\n")
+            self.tolnt=True
 
 ##
 # Class for ConditionalFlows
@@ -53,12 +63,25 @@ class ConditionalFlow(Flow):
         Flow.__init__(self,ident,source,target)
         self.cond=cond
 
+    # Generates the process for conditional flows
+    def lnt(self,f):
+        pass # TODO 
+
 ##
 # Class for Initial Event
 class InitialEvent(Node):
 
     def __init__(self,ident,inc,out):
         Node.__init__(self,ident,inc,out)
+        self.tolnt=False # indicates if the LNT process has already been generated
+
+    # Generates the (generic) process for the initial event, only once
+    def lnt(self,f):
+        if not(self.tolnt):
+            f.write("process init [begin] is\n")
+            f.write(" begin\n")
+            f.write("end process\n")
+            self.tolnt=True
 
 ##
 # Class for End Event
@@ -66,6 +89,15 @@ class EndEvent(Node):
 
     def __init__(self,ident,inc,out):
         Node.__init__(self,ident,inc,out)
+        self.tolnt=False # indicates if the LNT process has already been generated
+
+    # Generates the (generic) process for final events, only once
+    def lnt(self,f):
+        if not(self.tolnt):
+            f.write("process final [end] is\n")
+            f.write(" end\n")
+            f.write("end process\n")
+            self.tolnt=True
 
 ##
 # Abstract Class for Communication
@@ -83,6 +115,8 @@ class Interaction(Communication):
         Communication.__init__(self,ident,inc,out,msg)
         self.sender=sender
         self.receivers=receivers
+
+    # TODO lnt() ICI et pour tous les autres ci-dessous
 
 ##
 # Abstract Class for MessageCommunication
@@ -186,6 +220,7 @@ class Process:
         self.initial=None
         self.finals=[]
 
+    # This method dumps a textual version of a process (useful for debugging purposes)
     def dump(self):
         print "NAME: "+self.name
         print "INITIAL NODE"
@@ -208,7 +243,24 @@ class Process:
             filename=name+".lnt"
         f=open(filename, 'w')
         f.write("module "+self.name+" with \"get\" is\n\n")
-        # TODO : voir vbpmn.py
+
+        if (self.initial!=None):
+            self.initial.lnt(f)
+        # Generates one process for final events and events, this is enough because generic processes
+        if (self.finals!=[]):
+            self.finals[0].lnt(f)
+        if (self.flows!=[]):
+            self.flows[0].lnt(f)
+
+        # Generates LNT processes for all other nodes
+        for n in self.nodes:
+            pass #n.lnt(f) 
+
+        # Note: up to here, translation patterns are independent of the actual tasks, comm, etc.
+        # The actual names will be used only in the MAIN process when computing the process alphabet
+        #  and instantiating processes
+
+        # TODO : generate LNT pour le process MAIN
 
         f.write("\nend module\n")
 
