@@ -7,8 +7,8 @@
         simple join-split with more than 2 branches
         from hand-crafted
         INIT  = task0 . task1 . SPLIT
-        SPLIT = SPLIT-XOR { task2 . M ; task3 . M ; task4 . M }
-        M = JOIN-XOR . FINAL
+        SPLIT = SPLIT-AND { task2 . M ; task3 . M ; task4 . M }
+        M = JOIN-AND . FINAL
     </pif:documentation>
 
     <!--  WORKFLOW -->
