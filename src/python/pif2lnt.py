@@ -436,7 +436,7 @@ class OrJoinGateway(JoinGateway):
             f.write(" par ")
             nb=1
             while (nb<=nbincf):
-                f.write("incf_"+str(nb)+"")
+                f.write("select incf_"+str(nb)+" [] null end select ")
                 nb=nb+1
                 if (nb<=nbincf):
                     f.write("||")
@@ -474,7 +474,7 @@ class XOrJoinGateway(JoinGateway):
             f.write(" select ")
             nb=1
             while (nb<=nbincf):
-                f.write("select incf_"+str(nb)+" [] null end select ")
+                f.write("incf_"+str(nb))
                 nb=nb+1
                 if (nb<=nbincf):
                     f.write("[]")
@@ -757,11 +757,11 @@ class Generator:
 
         name = proc.name
         proc.genLNT()
-
-        proc.dump()
+        # proc.dump()
 
         proc.genSVL(smartReduction)
         process = Popen (["svl",name], shell = False, stdout=sys.stdout)
+        #process = Popen (["svl",name], shell = False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
             
         return (name,proc.alpha())
  
