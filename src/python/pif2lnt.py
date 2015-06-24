@@ -211,7 +211,7 @@ class OrSplitGateway(SplitGateway):
             nb=1
             while (nb<=nboutf):
                 f.write("outf_"+nb+":any")
-                nb++
+                nb=nb+1
                 if (nb<=nboutf):
                     f.write(",")
             f.write(" ] is \n")
@@ -220,7 +220,7 @@ class OrSplitGateway(SplitGateway):
             nb=1
             while (nb<=nboutf):
                 f.write("select outf_"+nb+" [] null end select ")
-                nb++
+                nb=nb+1
                 if (nb<=nboutf):
                     f.write("||")
             f.write(" end par ")
@@ -244,7 +244,7 @@ class XOrSplitGateway(SplitGateway):
             nb=1
             while (nb<=nboutf):
                 f.write("outf_"+nb+":any")
-                nb++
+                nb=nb+1
                 if (nb<=nboutf):
                     f.write(",")
             f.write(" ] is \n")
@@ -253,7 +253,7 @@ class XOrSplitGateway(SplitGateway):
             nb=1
             while (nb<=nboutf):
                 f.write("outf_"+nb+"")
-                nb++
+                nb=nb+1
                 if (nb<=nboutf):
                     f.write("[]")
             f.write(" end select ")
@@ -277,7 +277,7 @@ class AndSplitGateway(SplitGateway):
             nb=1
             while (nb<=nboutf):
                 f.write("outf_"+nb+":any")
-                nb++
+                nb=nb+1
                 if (nb<=nboutf):
                     f.write(",")
             f.write(" ] is \n")
@@ -286,7 +286,7 @@ class AndSplitGateway(SplitGateway):
             nb=1
             while (nb<=nboutf):
                 f.write("outf_"+nb+"")
-                nb++
+                nb=nb+1
                 if (nb<=nboutf):
                     f.write("||")
             f.write(" end par ")
@@ -307,19 +307,90 @@ class OrJoinGateway(JoinGateway):
 
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
+        self.tolnt=[] # contains a table containing the number of incoming flows
+                      # for which LNT processes have already been generated
 
+    # Generates the process for inclusive join gateway
+    # Takes as input the number of incoming flows
+    def lnt(self,f,nbincf):
+        if not(nbincf in self.tolnt):
+            f.write("process orjoin_"+nbincf+" [")
+            nb=1
+            while (nb<=nbincf):
+                f.write("incf_"+nb+":any")
+                nb=nb+1
+                f.write(",")
+            f.write("outf:any] is \n")
+            f.write(" par ")
+            nb=1
+            while (nb<=nbincf):
+                f.write("incf_"+nb+"")
+                nb=nb+1
+                if (nb<=nbincf):
+                    f.write("||")
+            f.write(" end par ; outf")
+            f.write("end process\n")
+            self.tolnt.append(nbincf)
 ##
 # Class for XOrJoinGateway
 class XOrJoinGateway(JoinGateway):
 
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
+        self.tolnt=[] # contains a table containing the number of incoming flows
+                      # for which LNT processes have already been generated
+
+    # Generates the process for exclusive join gateway
+    # Takes as input the number of incoming flows
+    def lnt(self,f,nbincf):
+        if not(nbincf in self.tolnt):
+            f.write("process xorjoin_"+nbincf+" [")
+            nb=1
+            while (nb<=nbincf):
+                f.write("incf_"+nb+":any")
+                nb=nb+1
+                f.write(",")
+            f.write("outf:any] is \n")
+            f.write(" select ")
+            nb=1
+            while (nb<=nbincf):
+                f.write("select incf_"+nb+" [] null end select ")
+                nb=nb+1
+                if (nb<=nbincf):
+                    f.write("[]")
+            f.write(" end select ; outf")
+            f.write("end process\n")
+            self.tolnt.append(nbincf)
 
 ##
 # Class for AndJoinGateway
 class AndJoinGateway(JoinGateway):
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
+        self.tolnt=[] # contains a table containing the number of incoming flows
+                      # for which LNT processes have already been generated
+
+    # Generates the process for parallel join gateway
+    # Takes as input the number of incoming flows
+    def lnt(self,f,nbincf):
+        if not(nbincf in self.tolnt):
+            f.write("process andjoin_"+nbincf+" [")
+            nb=1
+            while (nb<=nbincf):
+                f.write("incf_"+nb+":any")
+                nb=nb+1
+                f.write(",")
+            f.write("outf:any] is \n")
+            f.write(" par ")
+            nb=1
+            while (nb<=nbincf):
+                f.write("incf_"+nb+"")
+                nb=nb+1
+                if (nb<=nbincf):
+                    f.write("||")
+            f.write(" end par ; outf")
+            f.write("end process\n")
+            self.tolnt.append(nbincf)
 
 ##
 # Class for Processes described in PIF
