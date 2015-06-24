@@ -37,11 +37,12 @@ class Node:
 # Class for Flows
 class Flow:
 
+    tolnt=False # indicates if the LNT process has already been generated
+
     def __init__(self,ident,source,target):
         self.ident=ident
         self.source=source
         self.target=target
-        self.tolnt=False # indicates if the LNT process has already been generated
 
     # This method dumps a textual version of a flow (useful for debugging purposes)
     def dump(self):
@@ -49,11 +50,11 @@ class Flow:
 
     # Generates the (generic) process for flows, only once
     def lnt(self,f):
-        if not(self.tolnt):
+        if not(Flow.tolnt):
             f.write("process flow [begin:any, finish:any] is\n")
             f.write(" begin ; finish\n")
             f.write("end process\n")
-            self.tolnt=True
+            Flow.tolnt=True
 
 ##
 # Class for ConditionalFlows
@@ -73,15 +74,12 @@ class InitialEvent(Node):
 
     def __init__(self,ident,inc,out):
         Node.__init__(self,ident,inc,out)
-        self.tolnt=False # indicates if the LNT process has already been generated
 
     # Generates the (generic) process for the initial event, only once
     def lnt(self,f):
-        if not(self.tolnt):
-            f.write("process init [begin:any, outf:any] is\n")
-            f.write(" begin ; outf \n")
-            f.write("end process\n")
-            self.tolnt=True
+        f.write("process init [begin:any, outf:any] is\n")
+        f.write(" begin ; outf \n")
+        f.write("end process\n")
 
 ##
 # Class for End Event
@@ -89,15 +87,12 @@ class EndEvent(Node):
 
     def __init__(self,ident,inc,out):
         Node.__init__(self,ident,inc,out)
-        self.tolnt=False # indicates if the LNT process has already been generated
 
     # Generates the (generic) process for final events, only once
     def lnt(self,f):
-        if not(self.tolnt):
-            f.write("process final [incf:any, finish:any] is\n")
-            f.write(" incf; finish\n")
-            f.write("end process\n")
-            self.tolnt=True
+        f.write("process final [incf:any, finish:any] is\n")
+        f.write(" incf; finish\n")
+        f.write("end process\n")
 
 ##
 # Abstract Class for Communication
@@ -111,19 +106,24 @@ class Communication(Node):
 # Class for Interaction
 class Interaction(Communication):
 
+    tolnt=False # indicates if the LNT process has already been generated
+
     def __init__(self,ident,inc,out,msg,sender,receivers):
         Communication.__init__(self,ident,inc,out,msg)
         self.sender=sender
         self.receivers=receivers
-        self.tolnt=False # indicates if the LNT process has already been generated
 
     # Generates the (generic) process for interactions, only once
     def lnt(self,f):
-        if not(self.tolnt):
+        if not(Interaction.tolnt):
             f.write("process interaction [incf:any, inter:any, outf:any] is\n")
             f.write(" incf; inter; outf \n")
             f.write("end process\n")
-            self.tolnt=True
+            Interaction.tolnt=True
+
+    # Computes alphabet for an interaction
+    def alpha(self):
+        return [self.sender+str(self.receivers)+self.msg] # TODO: refine
 
 ##
 # Abstract Class for MessageCommunication
@@ -136,49 +136,64 @@ class MessageCommunication(Communication):
 # Class for MessageSending
 class MessageSending(MessageCommunication):
 
+    tolnt=False # indicates if the LNT process has already been generated
+
     def __init__(self,ident,inc,out,msg):
         MessageCommunication.__init__(self,ident,inc,out,msg)
-        self.tolnt=False # indicates if the LNT process has already been generated
 
     # Generates the (generic) process for message sending, only once
     def lnt(self,f):
-        if not(self.tolnt):
+        if not(MessageSending.tolnt):
             f.write("process messagesending [incf:any, msg:any, outf:any] is\n")
             f.write(" incf; msg; outf \n")
             f.write("end process\n")
-            self.tolnt=True
+            MessageSending.tolnt=True
+
+    # Computes alphabet for a message sending
+    def alpha(self):
+        return [self.msg+"_EM"] 
 
 ##
 # Class for MessageReception
 class MessageReception(MessageCommunication):
 
+    tolnt=False # indicates if the LNT process has already been generated
+
     def __init__(self,ident,inc,out,msg):
         MessageCommunication.__init__(self,ident,inc,out,msg)
-        self.tolnt=False # indicates if the LNT process has already been generated
 
     # Generates the (generic) process for message reception, only once
     def lnt(self,f):
-        if not(self.tolnt):
+        if not(MessageReception.tolnt):
             f.write("process messagereception [incf:any, msg:any, outf:any] is\n")
             f.write(" incf; msg; outf \n")
             f.write("end process\n")
-            self.tolnt=True
+            MessageReception.tolnt=True
+
+    # Computes alphabet for a message reception
+    def alpha(self):
+        return [self.msg+"_REC"] 
 
 ##
 # Class for Task
 class Task(Node):
 
+    tolnt=False # indicates if the LNT process has already been generated
+
     def __init__(self,ident,inc,out):
         Node.__init__(self,ident,inc,out)
-        self.tolnt=False # indicates if the LNT process has already been generated
 
     # Generates the (generic) process for task, only once
     def lnt(self,f):
-        if not(self.tolnt):
+        if not(Task.tolnt):
             f.write("process task [incf:any, task:any, outf:any] is\n")
             f.write(" incf; task; outf \n")
             f.write("end process\n")
-            self.tolnt=True
+            Task.tolnt=True
+
+    # Computes alphabet for a task
+    def alpha(self):
+        return [self.ident] 
 
 ##
 # Abstract Class for Gateway
@@ -186,6 +201,10 @@ class Gateway(Node):
 
     def __init__(self,ident,inc,out):
         Node.__init__(self,ident,inc,out)
+
+    # Computes alphabet for a message sending
+    def alpha(self):
+        return [] 
 
 ##
 # Abstract Class for SplitGateway
@@ -198,16 +217,18 @@ class SplitGateway(Gateway):
 # Class for OrSplitGateway
 class OrSplitGateway(SplitGateway):
 
+    tolnt=[] # contains a table containing the number of outgoing flows
+             # for which LNT processes have already been generated
+
+
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
-        self.tolnt=[] # contains a table containing the number of outgoing flows
-                      # for which LNT processes have already been generated
 
     # Generates the process for inclusive split gateway
     # Takes as input the number of outgoing flows
     def lnt(self,f):
         nboutf=len(self.outgoingFlows)
-        if not(nboutf in self.tolnt):
+        if not(nboutf in OrSplitGateway.tolnt):
             f.write("process orsplit_"+str(nboutf)+" [incf:any,")
             nb=1
             while (nb<=nboutf):
@@ -226,22 +247,23 @@ class OrSplitGateway(SplitGateway):
                     f.write("||")
             f.write(" end par\n")
             f.write("end process\n")
-            self.tolnt.append(nboutf)
+            OrSplitGateway.tolnt.append(nboutf)
 
 ##
 # Class for XOrSplitGateway
 class XOrSplitGateway(SplitGateway):
 
+    tolnt=[] # contains a table containing the number of outgoing flows
+             # for which LNT processes have already been generated
+
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
-        self.tolnt=[] # contains a table containing the number of outgoing flows
-                      # for which LNT processes have already been generated
 
     # Generates the process for exclusive split gateway
     # Takes as input the number of outgoing flows
     def lnt(self,f):
         nboutf=len(self.outgoingFlows)
-        if not(nboutf in self.tolnt):
+        if not(nboutf in XOrSplitGateway.tolnt):
             f.write("process xorsplit_"+str(nboutf)+" [incf:any,")
             nb=1
             while (nb<=nboutf):
@@ -260,22 +282,23 @@ class XOrSplitGateway(SplitGateway):
                     f.write("[]")
             f.write(" end select\n")
             f.write("end process\n")
-            self.tolnt.append(nboutf)
+            XOrSplitGateway.tolnt.append(nboutf)
 
 ##
 # Class for AndSplitGateway
 class AndSplitGateway(SplitGateway):
 
+    tolnt=[] # contains a table containing the number of outgoing flows
+             # for which LNT processes have already been generated
+
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
-        self.tolnt=[] # contains a table containing the number of outgoing flows
-                      # for which LNT processes have already been generated
 
     # Generates the process for parallel split gateway
     # Takes as input the number of outgoing flows
     def lnt(self,f):
         nboutf=len(self.outgoingFlows)
-        if not(nboutf in self.tolnt):
+        if not(nboutf in AndSplitGateway.tolnt):
             f.write("process andsplit_"+str(nboutf)+" [incf:any,")
             nb=1
             while (nb<=nboutf):
@@ -294,8 +317,7 @@ class AndSplitGateway(SplitGateway):
                     f.write("||")
             f.write(" end par\n")
             f.write("end process\n")
-            self.tolnt.append(nboutf)
-
+            AndSplitGateway.tolnt.append(nboutf)
 
 ##
 # Abstract Class for JoinGateway
@@ -308,16 +330,17 @@ class JoinGateway(Gateway):
 # Class for OrJoinGateway
 class OrJoinGateway(JoinGateway):
 
+    tolnt=[] # contains a table containing the number of incoming flows
+             # for which LNT processes have already been generated
+
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
-        self.tolnt=[] # contains a table containing the number of incoming flows
-                      # for which LNT processes have already been generated
 
     # Generates the process for inclusive join gateway
     # Takes as input the number of incoming flows
     def lnt(self,f):
         nbincf=len(self.incomingFlows)
-        if not(nbincf in self.tolnt):
+        if not(nbincf in OrJoinGateway.tolnt):
             f.write("process orjoin_"+str(nbincf)+" [")
             nb=1
             while (nb<=nbincf):
@@ -334,21 +357,23 @@ class OrJoinGateway(JoinGateway):
                     f.write("||")
             f.write(" end par ; outf\n")
             f.write("end process\n")
-            self.tolnt.append(nbincf)
+            OrJoinGateway.tolnt.append(nbincf)
+
 ##
 # Class for XOrJoinGateway
 class XOrJoinGateway(JoinGateway):
 
+    tolnt=[] # contains a table containing the number of incoming flows
+             # for which LNT processes have already been generated
+
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
-        self.tolnt=[] # contains a table containing the number of incoming flows
-                      # for which LNT processes have already been generated
 
     # Generates the process for exclusive join gateway
     # Takes as input the number of incoming flows
     def lnt(self,f):
         nbincf=len(self.incomingFlows)
-        if not(nbincf in self.tolnt):
+        if not(nbincf in XOrJoinGateway.tolnt):
             f.write("process xorjoin_"+str(nbincf)+" [")
             nb=1
             while (nb<=nbincf):
@@ -365,21 +390,23 @@ class XOrJoinGateway(JoinGateway):
                     f.write("[]")
             f.write(" end select ; outf\n")
             f.write("end process\n")
-            self.tolnt.append(nbincf)
+            XOrJoinGateway.tolnt.append(nbincf)
 
 ##
 # Class for AndJoinGateway
 class AndJoinGateway(JoinGateway):
+
+    tolnt=[] # contains a table containing the number of incoming flows
+             # for which LNT processes have already been generated
+
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
-        self.tolnt=[] # contains a table containing the number of incoming flows
-                      # for which LNT processes have already been generated
 
     # Generates the process for parallel join gateway
     # Takes as input the number of incoming flows
     def lnt(self,f):
         nbincf=len(self.incomingFlows)
-        if not(nbincf in self.tolnt):
+        if not(nbincf in AndJoinGateway.tolnt):
             f.write("process andjoin_"+str(nbincf)+" [")
             nb=1
             while (nb<=nbincf):
@@ -396,7 +423,7 @@ class AndJoinGateway(JoinGateway):
                     f.write("||")
             f.write(" end par ; outf\n")
             f.write("end process\n")
-            self.tolnt.append(nbincf)
+            AndJoinGateway.tolnt.append(nbincf)
 
 ##
 # Class for Processes described in PIF
@@ -425,6 +452,13 @@ class Process:
         for f in self.flows:
             f.dump()
 
+    # Computes the process alphabet
+    def alpha(self):
+        alph=[]
+        for n in self.nodes:
+            alph=alph+n.alpha()
+        return alph
+
     # Generates an LNT module and process for a BPMN 2.0 process
     def genLNT(self,name=""):
         if name=="":
@@ -452,8 +486,34 @@ class Process:
 
         # TODO : generate LNT pour le process MAIN
         f.write("\nprocess MAIN ")
-        # TODO : generate alphabet (hide all flows+ start/end events)
+        alph=self.alpha()
+        nbelem=len(alph)
+        if (nbelem>0):
+            f.write("[")
+            cter=1
+            for e in alph:
+                f.write(e+":any")
+                cter=cter+1
+                if (cter<=nbelem):
+                    f.write(", ")
+            f.write("] is\n")
+        f.write(" hide begin:any, finish:any")
+        nbflows=len(self.flows)
+        if (nbflows>0):
+            f.write(", ")
+            cter=1
+            for fl in self.flows:
+                f.write(fl.ident+"_begin:any, "+fl.ident+"_finish:any")
+                cter=cter+1
+                if (cter<=nbflows):
+                    f.write(", ")        
+        f.write(" in\n")
 
+        f.write("null\n")
+
+        # TODO : hide all flows+ start/end events
+
+        f.write(" end hide\n")
         f.write("\nend process\n")
 
 
