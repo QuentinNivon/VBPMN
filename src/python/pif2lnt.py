@@ -484,7 +484,6 @@ class Process:
         # The actual names will be used only in the MAIN process when computing the process alphabet
         #  and instantiating processes
 
-        # TODO : generate LNT pour le process MAIN
         f.write("\nprocess MAIN ")
         alph=self.alpha()
         nbelem=len(alph)
@@ -508,14 +507,48 @@ class Process:
                 if (cter<=nbflows):
                     f.write(", ")        
         f.write(" in\n")
+        f.write("par ")
+        # synchronizations on all begin/finish flows
+        if (nbflows>0):
+            cter=1
+            for fl in self.flows:
+                f.write(fl.ident+"_begin, "+fl.ident+"_finish")
+                cter=cter+1
+                if (cter<=nbflows):
+                    f.write(", ")
+        f.write(" in\n")
 
-        f.write("null\n")
+        # interleaving of all flow processes
+        f.write(" par \n")
+        cter=1
+        for fl in self.flows:
+            f.write("flow["+fl.ident+"_begin, "+fl.ident+"_finish]")
+            cter=cter+1
+            if (cter<=nbflows):
+                f.write(" || ")
+        f.write("\n end par \n")
+        f.write("\n||\n")
 
-        # TODO : hide all flows+ start/end events
+        # interleaving of all node processes
+        f.write(" par \n")
+        # process instantiation for initial node
+        f.write("init[begin,"+self.initial.outgoingFlows[0].ident+"_begin] || ") # TODO: on suppose un seul out flow, a affiner ! 
+        nbfinals=len(self.finals)
+        cter=1
+        # processes instantiation for final nodes
+        for n in self.finals:
+            f.write("final["+n.incomingFlows[0].ident+"_finish, finish]") # TODO: on suppose un seul incoming flow, a affiner !
+            cter=cter+1
+            if (cter<=nbflows):
+                f.write(" || ")
+        # processes instantiation for all other nodes TODO 
+        f.write("null")
 
+        f.write("\n end par \n")
+
+        f.write("\n end par\n")
         f.write(" end hide\n")
         f.write("\nend process\n")
-
 
         f.write("\nend module\n")
 
