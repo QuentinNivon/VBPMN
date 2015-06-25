@@ -12,6 +12,7 @@ import pyxb
 import time
 import pif
 import sys
+import itertools
 
 # Dumps alphabet (list of strings) in the given file
 def dumpAlphabet(alph,f,addany):
@@ -28,6 +29,19 @@ def dumpAlphabet(alph,f,addany):
             if (cter<=nbelem):
                 f.write(", ")
         f.write("] ")
+
+# Computes all permutations, any possible number, given a list of elements
+def computeAllCombinations(l):
+    nbelem=len(l)
+    i=1
+    res=[]
+    while (i<=nbelem):
+        restmp=itertools.permutations(l,i)
+        for r in restmp:
+            res.append(r)
+        i=i+1
+    return res
+
 
 ##
 # Abstract class for Nodes
@@ -297,24 +311,49 @@ class OrSplitGateway(SplitGateway):
             f.write(" ] is \n")
             f.write(" incf; \n")
             f.write(" select ")
+
+            # We translate the inclusive split by enumerating all combinations in a select
+
+            #alphaout=[]
+            #nb=1
+            #while (nb<=nboutf):
+            #    alphaout.append("outf_"+str(nb))
+            #    nb=nb+1
+            #allcombi=computeAllCombinations(alphaout)
+            #nbt=len(allcombi)
+            #nb=1
+            #for t in allcombi:
+            #    nbelem=len(t)
+            #    nb2=1
+            #    for e in t:
+            #        f.write(e)
+            #        nb2=nb2+1
+            #        if (nb2<=nbelem):
+            #            f.write(";")
+            #    nb=nb+1
+            #    if (nb<=nbt):
+            #        f.write(" [] ")
+
+            # Caution : the translation pattern below may not be semantically correct
+            #  because it discards the decision for some of the outgoing branches
+            # The solution above using flattening might be an alternative option
+
             nb=1
-            # we can execute at least one branch to all
             while (nb<=nboutf):
-                f.write(" par ")
-                f.write("outf_"+str(nb)+"||")
+                f.write("outf_"+str(nb)+";")
                 nb2=1
                 nbbar=1
                 while (nb2<=nboutf):
                     if (nb!=nb2):
-                        f.write("select outf_"+str(nb2)+" [] null end select ")
+                        f.write("select i; outf_"+str(nb2)+" [] i; null end select ")
                         nbbar=nbbar+1
                         if (nbbar<nboutf):
                             f.write("||")
                     nb2=nb2+1
-                f.write(" end par ")
                 nb=nb+1
                 if (nb<=nboutf):
                     f.write("[]")
+
             f.write(" end select\n")
             f.write("end process\n")
             OrSplitGateway.tolnt.append(nboutf)
@@ -693,7 +732,8 @@ class Process:
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n") #\"% CADP_TIME=\"memtime\"\n\n")
         f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
         # process generation (LTS)
-        f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN")
+        #f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN")
+        f.write("\"" + self.name + ".bcg\" = branching reduction of \"MAIN")
         alpha=self.alpha()
         dumpAlphabet(alpha,f,False)
         f.write("\";\n\n")
@@ -803,6 +843,14 @@ class Generator:
 ##############################################################################################
 if __name__ == '__main__':
 
-        filename=sys.argv[1]
-        print "converting " + filename + " to LTS.."
-        (name,alpha)=Generator().generateLTS(filename)
+    import itertools
+
+    filename=sys.argv[1]
+    print "converting " + filename + " to LTS.."
+    (name,alpha)=Generator().generateLTS(filename)
+
+#    res=computeAllCombinations(["a","b","c"])
+#    for t in res:
+#        print t
+#        for e in t:
+#            print e
