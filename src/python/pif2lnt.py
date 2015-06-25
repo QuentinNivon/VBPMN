@@ -707,7 +707,7 @@ class Process:
             cter=cter+1
             if (cter<=nbflows):
                 f.write(" || ")
-        # processes instantiation for all other nodes (TODO)
+        # processes instantiation for all other nodes 
         nbnodes=len(self.nodes)
         cter=1
         for n in self.nodes:
@@ -849,8 +849,3 @@ if __name__ == '__main__':
     print "converting " + filename + " to LTS.."
     (name,alpha)=Generator().generateLTS(filename)
 
-#    res=computeAllCombinations(["a","b","c"])
-#    for t in res:
-#        print t
-#        for e in t:
-#            print e
