@@ -338,11 +338,13 @@ class OrSplitGateway(SplitGateway):
             #  because it discards the decision for some of the outgoing branches
             # The solution above using flattening might be an alternative option
 
+            # TODO : the translation below is false ! we need "par", see inclusive1.lnt
             nb=1
             while (nb<=nboutf):
                 f.write("outf_"+str(nb)+";")
                 nb2=1
                 nbbar=1
+                f.write(" par ")
                 while (nb2<=nboutf):
                     if (nb!=nb2):
                         f.write("select i; outf_"+str(nb2)+" [] i; null end select ")
@@ -351,6 +353,7 @@ class OrSplitGateway(SplitGateway):
                             f.write("||")
                     nb2=nb2+1
                 nb=nb+1
+                f.write(" end par ")
                 if (nb<=nboutf):
                     f.write("[]")
 
