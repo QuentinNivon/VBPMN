@@ -296,14 +296,26 @@ class OrSplitGateway(SplitGateway):
                     f.write(",")
             f.write(" ] is \n")
             f.write(" incf; \n")
-            f.write(" par ")
+            f.write(" select ")
             nb=1
+            # we can execute at least one branch to all
             while (nb<=nboutf):
-                f.write("select outf_"+str(nb)+" [] null end select ")
+                f.write(" par ")
+                f.write("outf_"+str(nb)+"||")
+                nb2=1
+                nbbar=1
+                while (nb2<=nboutf):
+                    if (nb!=nb2):
+                        f.write("select outf_"+str(nb2)+" [] null end select ")
+                        nbbar=nbbar+1
+                        if (nbbar<nboutf):
+                            f.write("||")
+                    nb2=nb2+1
+                f.write(" end par ")
                 nb=nb+1
                 if (nb<=nboutf):
-                    f.write("||")
-            f.write(" end par\n")
+                    f.write("[]")
+            f.write(" end select\n")
             f.write("end process\n")
             OrSplitGateway.tolnt.append(nboutf)
 
@@ -433,14 +445,37 @@ class OrJoinGateway(JoinGateway):
                 nb=nb+1
                 f.write(",")
             f.write("outf:any] is \n")
-            f.write(" par ")
+
+            #f.write(" par ")
+            #nb=1
+            #while (nb<=nbincf):
+            #    f.write("select incf_"+str(nb)+" [] null end select ")
+            #    nb=nb+1
+            #    if (nb<=nbincf):
+            #        f.write("||")
+            #f.write(" end par ; outf\n")
+
+            f.write(" select ")
             nb=1
+            # we can execute at least one branch to all for merges as well
             while (nb<=nbincf):
-                f.write("select incf_"+str(nb)+" [] null end select ")
+                f.write(" par ")
+                f.write("incf_"+str(nb)+"||")
+                nb2=1
+                nbbar=1
+                while (nb2<=nbincf):
+                    if (nb!=nb2):
+                        f.write("select incf_"+str(nb2)+" [] null end select ")
+                        nbbar=nbbar+1
+                        if (nbbar<nbincf):
+                            f.write("||")
+                    nb2=nb2+1
+                f.write(" end par ")
                 nb=nb+1
                 if (nb<=nbincf):
-                    f.write("||")
-            f.write(" end par ; outf\n")
+                    f.write("[]")
+            f.write(" end select ; outf\n")
+
             f.write("end process\n")
             OrJoinGateway.tolnt.append(nbincf)
 
@@ -761,8 +796,7 @@ class Generator:
 
         proc.genSVL(smartReduction)
         process = Popen (["svl",name], shell = False, stdout=sys.stdout)
-        #process = Popen (["svl",name], shell = False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-            
+
         return (name,proc.alpha())
  
 
