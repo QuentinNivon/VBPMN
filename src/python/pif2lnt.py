@@ -313,49 +313,49 @@ class OrSplitGateway(SplitGateway):
             f.write(" select ")
 
             # We translate the inclusive split by enumerating all combinations in a select
-
-            #alphaout=[]
-            #nb=1
-            #while (nb<=nboutf):
-            #    alphaout.append("outf_"+str(nb))
-            #    nb=nb+1
-            #allcombi=computeAllCombinations(alphaout)
-            #nbt=len(allcombi)
-            #nb=1
-            #for t in allcombi:
-            #    nbelem=len(t)
-            #    nb2=1
-            #    for e in t:
-            #        f.write(e)
-            #        nb2=nb2+1
-            #        if (nb2<=nbelem):
-            #            f.write(";")
-            #    nb=nb+1
-            #    if (nb<=nbt):
-            #        f.write(" [] ")
+            alphaout=[]
+            nb=1
+            while (nb<=nboutf):
+                alphaout.append("outf_"+str(nb))
+                nb=nb+1
+            allcombi=computeAllCombinations(alphaout)
+            nbt=len(allcombi)
+            nb=1
+            for t in allcombi:
+                nbelem=len(t)
+                nb2=1
+                for e in t:
+                    f.write(e)
+                    nb2=nb2+1
+                    if (nb2<=nbelem):
+                        f.write(";")
+                nb=nb+1
+                if (nb<=nbt):
+                    f.write(" [] ")
 
             # Caution : the translation pattern below may not be semantically correct
             #  because it discards the decision for some of the outgoing branches
-            # The solution above using flattening might be an alternative option
+            # Moreover, it adds many unnecessary internal actions 
 
-            # TODO : the translation below is false ! we need "par", see inclusive1.lnt
-            nb=1
-            while (nb<=nboutf):
-                f.write("outf_"+str(nb)+";")
-                nb2=1
-                nbbar=1
-                f.write(" par ")
-                while (nb2<=nboutf):
-                    if (nb!=nb2):
-                        f.write("select i; outf_"+str(nb2)+" [] i; null end select ")
-                        nbbar=nbbar+1
-                        if (nbbar<nboutf):
-                            f.write("||")
-                    nb2=nb2+1
-                nb=nb+1
-                f.write(" end par ")
-                if (nb<=nboutf):
-                    f.write("[]")
+            #nb=1
+            #while (nb<=nboutf):
+            #    f.write("outf_"+str(nb)+";")
+            #    nb2=1
+            #    nbbar=1
+            #    f.write(" par ")
+            #    while (nb2<=nboutf):
+            #        if (nb!=nb2):
+            #            # the internal choice here ic crucial, otherwise the env decides
+            #            # and the corresponding LTS is erroneous
+            #            f.write("select i; outf_"+str(nb2)+" [] i; null end select ")
+            #            nbbar=nbbar+1
+            #            if (nbbar<nboutf):
+            #                f.write("||")
+            #        nb2=nb2+1
+            #    nb=nb+1
+            #    f.write(" end par ")
+            #    if (nb<=nboutf):
+            #        f.write("[]")
 
             f.write(" end select\n")
             f.write("end process\n")
@@ -487,35 +487,47 @@ class OrJoinGateway(JoinGateway):
                 nb=nb+1
                 f.write(",")
             f.write("outf:any] is \n")
+            f.write(" select ")
 
-            #f.write(" par ")
+            alphainc=[]
+            nb=1
+            while (nb<=nbincf):
+                alphainc.append("incf_"+str(nb))
+                nb=nb+1
+            allcombi=computeAllCombinations(alphainc)
+            nbt=len(allcombi)
+            nb=1
+            for t in allcombi:
+                nbelem=len(t)
+                nb2=1
+                for e in t:
+                    f.write(e)
+                    nb2=nb2+1
+                    if (nb2<=nbelem):
+                        f.write(";")
+                nb=nb+1
+                if (nb<=nbt):
+                    f.write(" [] ")
+
             #nb=1
+            ## we can execute at least one branch to all for merges as well
             #while (nb<=nbincf):
-            #    f.write("select incf_"+str(nb)+" [] null end select ")
+            #    f.write("incf_"+str(nb)+";")
+            #    nb2=1
+            #    nbbar=1
+            #    f.write(" par ")
+            #    while (nb2<=nbincf):
+            #        if (nb!=nb2):
+            #            f.write("select incf_"+str(nb2)+" [] null end select ")
+            #            nbbar=nbbar+1
+            #            if (nbbar<nbincf):
+            #                f.write("||")
+            #        nb2=nb2+1
+            #    f.write(" end par ")
             #    nb=nb+1
             #    if (nb<=nbincf):
-            #        f.write("||")
-            #f.write(" end par ; outf\n")
+            #        f.write("[]")
 
-            f.write(" select ")
-            nb=1
-            # we can execute at least one branch to all for merges as well
-            while (nb<=nbincf):
-                f.write(" par ")
-                f.write("incf_"+str(nb)+"||")
-                nb2=1
-                nbbar=1
-                while (nb2<=nbincf):
-                    if (nb!=nb2):
-                        f.write("select incf_"+str(nb2)+" [] null end select ")
-                        nbbar=nbbar+1
-                        if (nbbar<nbincf):
-                            f.write("||")
-                    nb2=nb2+1
-                f.write(" end par ")
-                nb=nb+1
-                if (nb<=nbincf):
-                    f.write("[]")
             f.write(" end select ; outf\n")
 
             f.write("end process\n")
@@ -736,7 +748,7 @@ class Process:
         f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
         # process generation (LTS)
         #f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN")
-        f.write("\"" + self.name + ".bcg\" = branching reduction of \"MAIN")
+        f.write("\"" + self.name + ".bcg\" = tau*.a reduction of branching reduction of \"MAIN")
         alpha=self.alpha()
         dumpAlphabet(alpha,f,False)
         f.write("\";\n\n")
