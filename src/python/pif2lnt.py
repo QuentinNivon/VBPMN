@@ -15,6 +15,7 @@ import sys
 import itertools
 
 # Dumps alphabet (list of strings) in the given file
+# Inputs: a list of strings, a file identifier, a Boolean indicating whether to add "any" or not
 def dumpAlphabet(alph,f,addany):
 
     nbelem=len(alph)
@@ -31,6 +32,7 @@ def dumpAlphabet(alph,f,addany):
         f.write("] ")
 
 # Computes all permutations, any possible number, given a list of elements
+# Inputs: a list of strings
 def computeAllCombinations(l):
     nbelem=len(l)
     i=1
@@ -82,7 +84,7 @@ class Flow:
     def lnt(self,f):
         if not(Flow.tolnt):
             f.write("process flow [begin:any, finish:any] is\n")
-            f.write(" begin ; finish\n")
+            f.write(" loop begin ; finish end loop\n")
             f.write("end process\n")
             Flow.tolnt=True
 
@@ -147,7 +149,7 @@ class Interaction(Communication):
     def lnt(self,f):
         if not(Interaction.tolnt):
             f.write("process interaction [incf:any, inter:any, outf:any] is\n")
-            f.write(" incf; inter; outf \n")
+            f.write(" loop incf; inter; outf end loop \n")
             f.write("end process\n")
             Interaction.tolnt=True
 
@@ -182,7 +184,7 @@ class MessageSending(MessageCommunication):
     def lnt(self,f):
         if not(MessageSending.tolnt):
             f.write("process messagesending [incf:any, msg:any, outf:any] is\n")
-            f.write(" incf; msg; outf \n")
+            f.write(" loop incf; msg; outf end loop \n")
             f.write("end process\n")
             MessageSending.tolnt=True
 
@@ -210,7 +212,7 @@ class MessageReception(MessageCommunication):
     def lnt(self,f):
         if not(MessageReception.tolnt):
             f.write("process messagereception [incf:any, msg:any, outf:any] is\n")
-            f.write(" incf; msg; outf \n")
+            f.write(" loop incf; msg; outf end loop \n")
             f.write("end process\n")
             MessageReception.tolnt=True
 
@@ -238,7 +240,7 @@ class Task(Node):
     def lnt(self,f):
         if not(Task.tolnt):
             f.write("process task [incf:any, task:any, outf:any] is\n")
-            f.write(" incf; task; outf \n")
+            f.write(" loop incf; task; outf end loop \n")
             f.write("end process\n")
             Task.tolnt=True
 
@@ -309,7 +311,7 @@ class OrSplitGateway(SplitGateway):
                 if (nb<=nboutf):
                     f.write(",")
             f.write(" ] is \n")
-            f.write(" incf; \n")
+            f.write(" loop incf; \n")
             f.write(" select ")
 
             # We translate the inclusive split by enumerating all combinations in a select
@@ -357,7 +359,7 @@ class OrSplitGateway(SplitGateway):
             #    if (nb<=nboutf):
             #        f.write("[]")
 
-            f.write(" end select\n")
+            f.write(" end select end loop\n")
             f.write("end process\n")
             OrSplitGateway.tolnt.append(nboutf)
 
@@ -389,7 +391,7 @@ class XOrSplitGateway(SplitGateway):
                 if (nb<=nboutf):
                     f.write(",")
             f.write(" ] is \n")
-            f.write(" incf; \n")
+            f.write(" loop incf; \n")
             f.write(" select ")
             nb=1
             while (nb<=nboutf):
@@ -397,7 +399,7 @@ class XOrSplitGateway(SplitGateway):
                 nb=nb+1
                 if (nb<=nboutf):
                     f.write("[]")
-            f.write(" end select\n")
+            f.write(" end select end loop \n")
             f.write("end process\n")
             XOrSplitGateway.tolnt.append(nboutf)
 
@@ -429,7 +431,7 @@ class AndSplitGateway(SplitGateway):
                 if (nb<=nboutf):
                     f.write(",")
             f.write(" ] is \n")
-            f.write(" incf; \n")
+            f.write(" loop incf; \n")
             f.write(" par ")
             nb=1
             while (nb<=nboutf):
@@ -437,7 +439,7 @@ class AndSplitGateway(SplitGateway):
                 nb=nb+1
                 if (nb<=nboutf):
                     f.write("||")
-            f.write(" end par\n")
+            f.write(" end par end loop \n")
             f.write("end process\n")
             AndSplitGateway.tolnt.append(nboutf)
 
@@ -487,7 +489,7 @@ class OrJoinGateway(JoinGateway):
                 nb=nb+1
                 f.write(",")
             f.write("outf:any] is \n")
-            f.write(" select ")
+            f.write(" loop select ")
 
             alphainc=[]
             nb=1
@@ -528,7 +530,7 @@ class OrJoinGateway(JoinGateway):
             #    if (nb<=nbincf):
             #        f.write("[]")
 
-            f.write(" end select ; outf\n")
+            f.write(" end select ; outf end loop \n")
 
             f.write("end process\n")
             OrJoinGateway.tolnt.append(nbincf)
@@ -560,14 +562,14 @@ class XOrJoinGateway(JoinGateway):
                 nb=nb+1
                 f.write(",")
             f.write("outf:any] is \n")
-            f.write(" select ")
+            f.write(" loop select ")
             nb=1
             while (nb<=nbincf):
                 f.write("incf_"+str(nb))
                 nb=nb+1
                 if (nb<=nbincf):
                     f.write("[]")
-            f.write(" end select ; outf\n")
+            f.write(" end select ; outf end loop \n")
             f.write("end process\n")
             XOrJoinGateway.tolnt.append(nbincf)
 
@@ -598,14 +600,14 @@ class AndJoinGateway(JoinGateway):
                 nb=nb+1
                 f.write(",")
             f.write("outf:any] is \n")
-            f.write(" par ")
+            f.write(" loop par ")
             nb=1
             while (nb<=nbincf):
                 f.write("incf_"+str(nb)+"")
                 nb=nb+1
                 if (nb<=nbincf):
                     f.write("||")
-            f.write(" end par ; outf\n")
+            f.write(" end par ; outf end loop \n")
             f.write("end process\n")
             AndJoinGateway.tolnt.append(nbincf)
 
