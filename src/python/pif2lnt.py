@@ -31,14 +31,14 @@ def dumpAlphabet(alph,f,addany):
                 f.write(", ")
         f.write("] ")
 
-# Computes all permutations, any possible number, given a list of elements
-# Inputs: a list of strings
+# Computes all combinations, in sorted order, any possible number from 1 to len(l)
+# Inputs: a list of strings l
 def computeAllCombinations(l):
     nbelem=len(l)
     i=1
     res=[]
     while (i<=nbelem):
-        restmp=itertools.permutations(l,i)
+        restmp=itertools.combinations(l,i)
         for r in restmp:
             res.append(r)
         i=i+1
@@ -88,9 +88,15 @@ class Flow:
             f.write("end process\n")
             Flow.tolnt=True
 
+    # A normal flow cannot be a default flow
+    def isDefault(self):
+        return False
+
 ##
 # Class for ConditionalFlows
 class ConditionalFlow(Flow):
+
+    tolnt=False # indicates if the LNT process has already been generated
 
     def __init__(self,ident,source,target,cond):
         Flow.__init__(self,ident,source,target)
@@ -98,7 +104,16 @@ class ConditionalFlow(Flow):
 
     # Generates the process for conditional flows
     def lnt(self,f):
-        pass # TODO 
+        if not(ConditionalFlow.tolnt):
+            # TODO: translate the condition too
+            f.write("process conditionalflow [begin:any, finish:any] is\n")
+            f.write(" loop begin ; finish end loop\n")
+            f.write("end process\n")
+            ConditionalFlow.tolnt=True
+
+    # A conditional flow is default iff the condition attribute contains "default"
+    def isDefault(self):
+        return self.cond=="default"
 
 ##
 # Class for Initial Event
@@ -298,10 +313,21 @@ class OrSplitGateway(SplitGateway):
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
 
+
+    # Checks whether the set of outgoing flows contains a default flow
+    # Returns a Boolean value
+    def existDefaultFlow(self):
+        res=False
+        for f in self.outgoingFlows:
+            if f.isDefault():
+                res=True
+        return res
+    
     # Generates the process for inclusive split gateway
-    # Takes as input the number of outgoing flows
     def lnt(self,f):
         nboutf=len(self.outgoingFlows)
+        default=self.existDefaultFlow()
+        # TODO: update the translation to consider properly the default semantics (if there is such a branch)
         if not(nboutf in OrSplitGateway.tolnt):
             f.write("process orsplit_"+str(nboutf)+" [incf:any,")
             nb=1
@@ -314,7 +340,7 @@ class OrSplitGateway(SplitGateway):
             f.write(" loop incf; \n")
             f.write(" select ")
 
-            # We translate the inclusive split by enumerating all combinations in a select
+            # We translate the inclusive split by enumerating all combinations in a select / par
             alphaout=[]
             nb=1
             while (nb<=nboutf):
@@ -326,11 +352,13 @@ class OrSplitGateway(SplitGateway):
             for t in allcombi:
                 nbelem=len(t)
                 nb2=1
+                f.write(" par ")
                 for e in t:
                     f.write(e)
                     nb2=nb2+1
                     if (nb2<=nbelem):
-                        f.write(";")
+                        f.write("||")
+                f.write(" end par ")
                 nb=nb+1
                 if (nb<=nbt):
                     f.write(" [] ")
@@ -502,11 +530,13 @@ class OrJoinGateway(JoinGateway):
             for t in allcombi:
                 nbelem=len(t)
                 nb2=1
+                f.write(" par ")
                 for e in t:
                     f.write(e)
                     nb2=nb2+1
                     if (nb2<=nbelem):
-                        f.write(";")
+                        f.write("||")
+                f.write(" end par ")
                 nb=nb+1
                 if (nb<=nbt):
                     f.write(" [] ")
