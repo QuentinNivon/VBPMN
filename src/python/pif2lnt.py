@@ -680,6 +680,17 @@ class Process:
             alph=alph+n.alpha()
         return alph
 
+    # This method applies a pre-processing to the whole process
+    # and computes correspondences between or splits/merges
+    def reachableOrJoin(self):
+        # we traverse all process nodes and call this computation for all inclusive splits
+        for n in self.nodes:
+            if isinstance(n, OrJoinGateway):
+                pass
+                # res=n.reachableOrJoin([],-1) # TODO in all classes
+                # TODO: update split and corresponding merge attributes
+
+
     # Generates an LNT module and process for a BPMN 2.0 process
     def genLNT(self,name=""):
         if name=="":
