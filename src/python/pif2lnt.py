@@ -44,7 +44,6 @@ def computeAllCombinations(l):
         i=i+1
     return res
 
-
 ##
 # Abstract class for Nodes
 # Should not be directly used. Use child classes instead.
@@ -312,7 +311,7 @@ class OrSplitGateway(SplitGateway):
 
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
-
+        correspOrJoin="" # contains the identifier of the corresponding join (if there is one)
 
     # Checks whether the set of outgoing flows contains a default flow
     # Returns a Boolean value
@@ -504,6 +503,7 @@ class OrJoinGateway(JoinGateway):
 
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
+        correspOrSplit="" # contains the identifier of the corresponding split (if there is one)
 
     # Generates the process for inclusive join gateway
     # Takes as input the number of incoming flows
@@ -685,11 +685,14 @@ class Process:
     def reachableOrJoin(self):
         # we traverse all process nodes and call this computation for all inclusive splits
         for n in self.nodes:
-            if isinstance(n, OrJoinGateway):
+            if isinstance(n, OrSplitGateway):
                 pass
                 # res=n.reachableOrJoin([],-1) # TODO in all classes
-                # TODO: update split and corresponding merge attributes
-
+                res = "" # TODO a enlever a terme
+                if (res!=""):
+                    n.correspOrJoin=res           # we update the split attribute
+                    njoin=self.getNode(res)       # we retrieve the object corresponding to the join id
+                    njoin.correspOrSplit=n.ident  # we update the join attribute
 
     # Generates an LNT module and process for a BPMN 2.0 process
     def genLNT(self,name=""):
@@ -853,7 +856,6 @@ class Process:
         except pyxb.UnrecognizedContentError, e:
             print 'An error occured while parsing xml document ' + filename
             print 'Unrecognized element, the message was "%s"' % (e.message)
-
 
     # Takes as input a node identifier and returns the corresponding object
     def getNode(self,nident):
