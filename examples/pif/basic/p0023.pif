@@ -4,11 +4,10 @@
              xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
     <pif:name>p0023</pif:name>
     <pif:documentation>
-        simple join-split with more than 2 branches
-        from hand-crafted
+        balanced parallel split with more than 2 branches
         INIT  = task0 . task1 . SPLIT
         SPLIT = SPLIT-AND { task2 . JOIN ; task3 . JOIN ; task4 . JOIN ; task5 . JOIN ; task6 . JOIN }
-        JOIN = JOIN-AND ; FINAL
+        JOIN = JOIN-AND ; 0
     </pif:documentation>
 
     <!--  WORKFLOW -->

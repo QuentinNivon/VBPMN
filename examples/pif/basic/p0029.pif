@@ -5,9 +5,8 @@
     <pif:name>p0029</pif:name>
     <pif:documentation>
         example with a loop
-        from hand-crafted
         INIT  = task1 . JO
-        JO = JOIN-XOR . task2 . SPLIT-XOR {JO ; task3 . FINAL}
+        JO = JOIN-XOR . task2 . SPLIT-XOR {JO ; task3 . 0}
     </pif:documentation>
 
     <!--  WORKFLOW -->

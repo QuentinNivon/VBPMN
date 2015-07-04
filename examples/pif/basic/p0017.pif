@@ -4,11 +4,10 @@
              xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
     <pif:name>p0017</pif:name>
     <pif:documentation>
-        example with several kinds of splits
-        from hand-crafted
+        multi-split/join balanced
         INIT  = task0 . task1 . SPLIT-AND . { task2 . JA ; task3 . JA }
         JA = JOIN-AND . task4 . SPLIT-AND . { task5 . task55 . JA2 ; task6 . task66 .JA2 }
-        JA2 = JOIN-AND . FINAL
+        JA2 = JOIN-AND . 0
     </pif:documentation>
 
     <!--  WORKFLOW -->

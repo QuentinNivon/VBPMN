@@ -5,6 +5,7 @@
     <pif:name>p0001</pif:name>
     <pif:documentation>
         start - end process with useless information (peers and messages)
+        P = 0
     </pif:documentation>
 
     <!--  PEERS -->

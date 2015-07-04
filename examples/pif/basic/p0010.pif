@@ -2,37 +2,36 @@
 <pif:Process xmlns:pif="http://www.example.org/PIF"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
-    <pif:name>p0010</pif:name>
+    <pif:name>p0011</pif:name>
     <pif:documentation>
-        simple process with a single task (inconsistent SF undetected by JAXB) -> corrige
+        sequence of tasks
+        INIT  = t1 . t2 . 0
     </pif:documentation>
-
-    <!--  PEERS -->
-    <pif:peers id="peer1" /> <!--  NOT USED IN THIS EXAMPLE -->
-    <pif:peers id="peer2" /> <!--  NOT USED IN THIS EXAMPLE -->
-
-    <!--  MESSAGES -->
-    <pif:messages id="message1" />
-    <pif:messages id="message2" />
 
     <!--  WORKFLOW -->
     <pif:behaviour>
 
         <!--  NODES -->
+        <!--  NODES -->
         <pif:nodes id="initial" xsi:type="pif:InitialEvent">
             <pif:outgoingFlows>sf1</pif:outgoingFlows>
         </pif:nodes>
         <pif:nodes id="final" xsi:type="pif:EndEvent">
-            <pif:incomingFlows>sf2</pif:incomingFlows>
+            <pif:incomingFlows>sf3</pif:incomingFlows>
         </pif:nodes>
-        <pif:nodes id="task1" xsi:type="pif:Task">
+        <pif:nodes id="task0" xsi:type="pif:Task">
             <pif:incomingFlows>sf1</pif:incomingFlows>
             <pif:outgoingFlows>sf2</pif:outgoingFlows>
         </pif:nodes>
+        <pif:nodes id="task1" xsi:type="pif:Task">
+            <pif:incomingFlows>sf2</pif:incomingFlows>
+            <pif:outgoingFlows>sf3</pif:outgoingFlows>
+        </pif:nodes>
 
         <!--  SEQUENCE FLOWS -->
-        <pif:sequenceFlows id="sf1" source="initial" target="task1"/>
-        <pif:sequenceFlows id="sf2" source="task1" target="final"/>
+        <pif:sequenceFlows id="sf1" source="initial" target="task0"/>
+        <pif:sequenceFlows id="sf2" source="task0" target="task1"/>
+        <pif:sequenceFlows id="sf3" source="task1" target="final"/>
 
         <!--  INITIAL AND FINAL NODES -->
         <pif:initialNode>initial</pif:initialNode>

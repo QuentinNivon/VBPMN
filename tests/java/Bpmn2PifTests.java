@@ -1,5 +1,12 @@
+import models.base.*;
+import models.choreography.bpmn.BpmnEMFBpmnReader;
+import models.choreography.bpmn.BpmnFactory;
+import models.process.pif.PifPifWriter;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import transformations.base.AbstractTransformer;
+import transformations.base.Transformer;
+import transformations.bpmn2pif.Bpmn2PifTransformer;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,7 +74,30 @@ public class Bpmn2PifTests {
      */
     @Test(dataProvider = "directory_walker_provider")
     public void test_bpmn2pif(String fin, String fout) {
-
+        System.out.println(String.format("%s -> %s",fin,fout));
+        ModelFactory factory = BpmnFactory.getInstance();
+        AbstractModelReader reader = new BpmnEMFBpmnReader();
+        AbstractModelWriter writer = new PifPifWriter();
+        AbstractModel min = factory.create();
+        AbstractModel mout = factory.create();
+        try {
+            min.setResource(new File(fin));
+            mout.setResource(new File(fout));
+            Transformer transformer = new Bpmn2PifTransformer();
+            transformer.setResources(min,mout,reader,writer);
+            transformer.load();
+            transformer.transform();
+            transformer.dump();
+        } catch (IllegalResourceException e) {
+            e.printStackTrace();
+            fail();
+        } catch (IllegalModelException e) {
+            e.printStackTrace();
+            fail();
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
     }
 
 }

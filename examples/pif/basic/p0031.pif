@@ -5,7 +5,6 @@
     <pif:name>p0031</pif:name>
     <pif:documentation>
         example with a loop
-        from hand-crafted
         INIT  = task1 . JO
         JO = JOIN-XOR . task2 . JO2
         JO2 = JOIN-XOR . SPLIT-AND . {task4 . J2 ; task5 . J2}

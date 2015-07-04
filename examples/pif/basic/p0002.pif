@@ -5,6 +5,7 @@
     <pif:name>p0002</pif:name>
     <pif:documentation>
         simple process with a single task
+        P = t1 . 0
     </pif:documentation>
 
     <!--  PEERS -->

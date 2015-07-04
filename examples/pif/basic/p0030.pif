@@ -5,10 +5,9 @@
     <pif:name>p0030</pif:name>
     <pif:documentation>
         example with a loop
-        from hand-crafted
         INIT  = task1 . JO
         JO = JOIN-XOR . task2 . SPLIT-AND . {task4 . J2 ; task5 . J2}
-	J2 = JOIN-AND . SPLIT-XOR {JO ; task3 . FINAL}
+	    J2 = JOIN-AND . SPLIT-XOR {JO ; task3 . 0}
     </pif:documentation>
 
     <!--  WORKFLOW -->

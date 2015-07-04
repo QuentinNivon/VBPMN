@@ -5,6 +5,7 @@
     <pif:name>p0009</pif:name>
     <pif:documentation>
         simple process with a single communication task (copy of p0005 with an inversion in peers)
+        P = [p2|m1|p1] . 0
     </pif:documentation>
 
     <!--  PEERS -->

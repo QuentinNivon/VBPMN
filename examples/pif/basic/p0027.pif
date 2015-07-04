@@ -4,11 +4,10 @@
              xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
     <pif:name>p0027</pif:name>
     <pif:documentation>
-        simple join-split with more than 2 branches
-        from hand-crafted
+        simple inclusive join-split with more than 2 branches
         INIT  = task0 . task1 . SPLIT
         SPLIT = SPLIT-OR { task2 . M ; task3 . M ; task4 . M }
-        M = JOIN-OR . FINAL
+        M = JOIN-OR . 0
     </pif:documentation>
 
     <!--  WORKFLOW -->

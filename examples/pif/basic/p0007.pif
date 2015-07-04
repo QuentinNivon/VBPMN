@@ -5,6 +5,7 @@
     <pif:name>p0007</pif:name>
     <pif:documentation>
         simple process with a single emission task (copy of p0004 with a renaming message1 -> message2)
+        P = m2! . 0
     </pif:documentation>
 
     <!--  PEERS -->

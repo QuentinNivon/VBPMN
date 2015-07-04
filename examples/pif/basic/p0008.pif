@@ -5,6 +5,7 @@
     <pif:name>p0008</pif:name>
     <pif:documentation>
         simple process with a single communication task (copy of p0005 with a renaming message1 -> message2)
+        P = [p1|m2|p2] . 0
     </pif:documentation>
 
     <!--  PEERS -->

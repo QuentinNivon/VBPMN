@@ -4,9 +4,9 @@
              xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
     <pif:name>p0028</pif:name>
     <pif:documentation>
-        simple exclusive split-join
-        from hand-crafted
-        INIT  = task0 . task1 . SPLIT-OR . { task2 . FINAL ; task3 . FINAL }
+        simple inclusive split-join with no join gateway, jonction on state final state (variation from p0012)
+        INIT  = task0 . task1 . SPLIT-OR . { task2 . F ; task3 . F }
+        F = 0
     </pif:documentation>
 
     <!--  WORKFLOW -->
@@ -16,10 +16,8 @@
         <pif:nodes id="initial" xsi:type="pif:InitialEvent">
             <pif:outgoingFlows>sf1</pif:outgoingFlows>
         </pif:nodes>
-        <pif:nodes id="final1" xsi:type="pif:EndEvent">
+        <pif:nodes id="final" xsi:type="pif:EndEvent">
             <pif:incomingFlows>sf6</pif:incomingFlows>
-        </pif:nodes>
-        <pif:nodes id="final2" xsi:type="pif:EndEvent">
             <pif:incomingFlows>sf7</pif:incomingFlows>
         </pif:nodes>
         <pif:nodes id="task0" xsi:type="pif:Task">
@@ -51,13 +49,12 @@
         <pif:sequenceFlows id="sf3" source="task1" target="S1"/>
         <pif:sequenceFlows id="sf4" source="S1" target="task2"/>
         <pif:sequenceFlows id="sf5" source="S1" target="task3"/>
-        <pif:sequenceFlows id="sf6" source="task2" target="final1"/>
-        <pif:sequenceFlows id="sf7" source="task3" target="final2"/>
+        <pif:sequenceFlows id="sf6" source="task2" target="final"/>
+        <pif:sequenceFlows id="sf7" source="task3" target="final"/>
 
         <!--  INITIAL AND FINAL NODES -->
         <pif:initialNode>initial</pif:initialNode>
-        <pif:finalNodes>final1</pif:finalNodes>
-        <pif:finalNodes>final2</pif:finalNodes>
+        <pif:finalNodes>final</pif:finalNodes>
 
     </pif:behaviour>
 

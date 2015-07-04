@@ -4,13 +4,12 @@
              xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
     <pif:name>p0019</pif:name>
     <pif:documentation>
-        example with nested gateways
-        from hand-crafted
+        multi-split/join balanced with a nested subgraph
         INIT  = task0 . task1 . SPLIT-OR {
             task2 . task22 . task222 . JO1 ;
             task3 . SPLIT-OR { task5 . JO2 ; task6 . JO2 }
         }
-        JO1 = JOIN-OR . task4 . FINAL
+        JO1 = JOIN-OR . task4 . 0
         JO2 = JOIN-OR . JO1
     </pif:documentation>
 

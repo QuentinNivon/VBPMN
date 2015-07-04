@@ -4,10 +4,9 @@
              xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
     <pif:name>p0015</pif:name>
     <pif:documentation>
-        simple exclusive split-join
-        from hand-crafted
+        balanced inclusive split/join
         INIT  = task0 . task1 . SPLIT-OR . { task2 . JOIN ; task3 . JOIN }
-        JOIN = JOIN-OR . task4 . FINAL
+        JOIN = JOIN-OR . task4 . 0
     </pif:documentation>
 
     <!--  WORKFLOW -->

@@ -5,6 +5,7 @@
     <pif:name>p0000</pif:name>
     <pif:documentation>
         start - end process
+        P = 0
     </pif:documentation>
 
     <!--  PEERS -->

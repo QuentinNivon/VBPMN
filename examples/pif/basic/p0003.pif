@@ -5,6 +5,7 @@
     <pif:name>p0003</pif:name>
     <pif:documentation>
         simple process with a single reception task
+        P = m1? . 0
     </pif:documentation>
 
     <!--  PEERS -->

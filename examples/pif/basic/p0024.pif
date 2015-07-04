@@ -5,7 +5,6 @@
     <pif:name>p0024</pif:name>
     <pif:documentation>
         example with 3 nested gateways
-        from hand-crafted
         INIT  = task0 . task1 . SPLIT-OR {
             task2 . task22 . task222 . JO1 ;
             task3 . SPLIT-OR {
@@ -13,7 +12,7 @@
                 SPLIT-XOR { task18 . JO3 ; task19 . JO3 ; task20 . JO3 ; task21 . JO3 }
             }
         }
-        JO1 = JOIN-OR . task4 . FINAL
+        JO1 = JOIN-OR . task4 . 0
         JO2 = JOIN-OR . JO1
         JO3 = JOIN-XOR . JO2
     </pif:documentation>

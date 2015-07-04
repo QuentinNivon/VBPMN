@@ -5,6 +5,7 @@
     <pif:name>p0026</pif:name>
     <pif:documentation>
         simple process with a single interaction task, copy of p0005 with another receiver
+        P = [p1|m1|p2,p3] . 0
     </pif:documentation>
 
     <!--  PEERS -->
