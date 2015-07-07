@@ -376,9 +376,6 @@ class SplitGateway(Gateway):
 # Class for OrSplitGateway
 class OrSplitGateway(SplitGateway):
 
-    tolnt=[] # contains a table containing the number of outgoing flows
-             # for which LNT processes have already been generated
-
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
         correspOrJoin="" # contains the identifier of the corresponding join (if there is one)
@@ -399,40 +396,47 @@ class OrSplitGateway(SplitGateway):
         nboutf=len(self.outgoingFlows)
         default=self.existDefaultFlow()
         # TODO: update the translation to consider properly the default semantics (if there is such a branch)
-        if not(nboutf in OrSplitGateway.tolnt):
-            f.write("process orsplit_"+str(nboutf)+" [incf:any,")
-            nb=1
-            while (nb<=nboutf):
-                f.write("outf_"+str(nb)+":any")
-                nb=nb+1
-                if (nb<=nboutf):
-                    f.write(",")
-            f.write(" ] is \n")
-            f.write(" loop incf; \n")
-            f.write(" select ")
+        f.write("process orsplit_"+self.ident+" [incf:any,")
+        nb=1
+        while (nb<=nboutf):
+            f.write("outf_"+str(nb)+":any")
+            nb=nb+1
+            if (nb<=nboutf):
+                f.write(",")
+        f.write(" ] is \n")
+        f.write(" loop incf; \n")
+        f.write(" select ")
 
-            # We translate the inclusive split by enumerating all combinations in a select / par
-            alphaout=[]
-            nb=1
-            while (nb<=nboutf):
-                alphaout.append("outf_"+str(nb))
-                nb=nb+1
-            allcombi=computeAllCombinations(alphaout)
-            nbt=len(allcombi)
-            nb=1
-            for t in allcombi:
-                nbelem=len(t)
-                nb2=1
-                f.write(" par ")
-                for e in t:
-                    f.write(e)
-                    nb2=nb2+1
-                    if (nb2<=nbelem):
-                        f.write("||")
-                f.write(" end par ")
-                nb=nb+1
-                if (nb<=nbt):
-                    f.write(" [] ")
+        # We translate the inclusive split by enumerating all combinations in a select / par
+        alphaout=[]
+        nb=1
+        while (nb<=nboutf):
+            alphaout.append("outf_"+str(nb))
+            nb=nb+1
+        allcombi=computeAllCombinations(alphaout)
+        print allcombi
+        nbt=len(allcombi)
+        nb=1
+        # counter for generating synchro points
+        cter=1
+        for t in allcombi:
+            nbelem=len(t)
+            nb2=1
+            f.write(" par ")
+            for e in t:
+                f.write(e)
+                nb2=nb2+1
+                if (nb2<=nbelem):
+                    f.write("||")
+            f.write(" end par ")
+            # add synchronization points if there's a corresponding join
+            if (self.correspOrJoin!=""):
+                f.write(" ; "+self.correspOrJoin+"_"+str(cter))
+                cter=cter+1
+
+            nb=nb+1
+            if (nb<=nbt):
+                f.write(" [] ")
 
             # Caution : the translation pattern below may not be semantically correct
             #  because it discards the decision for some of the outgoing branches
@@ -458,13 +462,12 @@ class OrSplitGateway(SplitGateway):
             #    if (nb<=nboutf):
             #        f.write("[]")
 
-            f.write(" end select end loop\n")
-            f.write("end process\n")
-            OrSplitGateway.tolnt.append(nboutf)
+        f.write(" end select end loop\n")
+        f.write("end process\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self,f):
-        f.write("orsplit_"+str(len(self.outgoingFlows)))
+        f.write("orsplit_"+self.ident) 
         SplitGateway.mainlnt(self,f)
 
     # For an or split, if not visited yet, recursive call on the target nodes of all outgoing flows
@@ -484,9 +487,6 @@ class OrSplitGateway(SplitGateway):
 # Class for XOrSplitGateway
 class XOrSplitGateway(SplitGateway):
 
-    tolnt=[] # contains a table containing the number of outgoing flows
-             # for which LNT processes have already been generated
-
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
 
@@ -494,30 +494,28 @@ class XOrSplitGateway(SplitGateway):
     # Takes as input the number of outgoing flows
     def lnt(self,f):
         nboutf=len(self.outgoingFlows)
-        if not(nboutf in XOrSplitGateway.tolnt):
-            f.write("process xorsplit_"+str(nboutf)+" [incf:any,")
-            nb=1
-            while (nb<=nboutf):
-                f.write("outf_"+str(nb)+":any")
-                nb=nb+1
-                if (nb<=nboutf):
-                    f.write(",")
-            f.write(" ] is \n")
-            f.write(" loop incf; \n")
-            f.write(" select ")
-            nb=1
-            while (nb<=nboutf):
-                f.write("outf_"+str(nb)+"")
-                nb=nb+1
-                if (nb<=nboutf):
-                    f.write("[]")
-            f.write(" end select end loop \n")
-            f.write("end process\n")
-            XOrSplitGateway.tolnt.append(nboutf)
+        f.write("process xorsplit_"+str(nboutf)+" [incf:any,")
+        nb=1
+        while (nb<=nboutf):
+            f.write("outf_"+str(nb)+":any")
+            nb=nb+1
+            if (nb<=nboutf):
+                f.write(",")
+        f.write(" ] is \n")
+        f.write(" loop incf; \n")
+        f.write(" select ")
+        nb=1
+        while (nb<=nboutf):
+            f.write("outf_"+str(nb)+"")
+            nb=nb+1
+            if (nb<=nboutf):
+                f.write("[]")
+        f.write(" end select end loop \n")
+        f.write("end process\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self,f):
-        f.write("xorsplit_"+str(len(self.outgoingFlows)))
+        f.write("xorsplit_"+self.ident)
         SplitGateway.mainlnt(self,f)
 
     # For an xor split, call to the super class
@@ -528,9 +526,6 @@ class XOrSplitGateway(SplitGateway):
 # Class for AndSplitGateway
 class AndSplitGateway(SplitGateway):
 
-    tolnt=[] # contains a table containing the number of outgoing flows
-             # for which LNT processes have already been generated
-
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
 
@@ -538,30 +533,28 @@ class AndSplitGateway(SplitGateway):
     # Takes as input the number of outgoing flows
     def lnt(self,f):
         nboutf=len(self.outgoingFlows)
-        if not(nboutf in AndSplitGateway.tolnt):
-            f.write("process andsplit_"+str(nboutf)+" [incf:any,")
-            nb=1
-            while (nb<=nboutf):
-                f.write("outf_"+str(nb)+":any")
-                nb=nb+1
-                if (nb<=nboutf):
-                    f.write(",")
-            f.write(" ] is \n")
-            f.write(" loop incf; \n")
-            f.write(" par ")
-            nb=1
-            while (nb<=nboutf):
-                f.write("outf_"+str(nb)+"")
-                nb=nb+1
-                if (nb<=nboutf):
-                    f.write("||")
-            f.write(" end par end loop \n")
-            f.write("end process\n")
-            AndSplitGateway.tolnt.append(nboutf)
+        f.write("process andsplit_"+self.ident+" [incf:any,")
+        nb=1
+        while (nb<=nboutf):
+            f.write("outf_"+str(nb)+":any")
+            nb=nb+1
+            if (nb<=nboutf):
+                f.write(",")
+        f.write(" ] is \n")
+        f.write(" loop incf; \n")
+        f.write(" par ")
+        nb=1
+        while (nb<=nboutf):
+            f.write("outf_"+str(nb)+"")
+            nb=nb+1
+            if (nb<=nboutf):
+                f.write("||")
+        f.write(" end par end loop \n")
+        f.write("end process\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self,f):
-        f.write("andsplit_"+str(len(self.outgoingFlows)))
+        f.write("andsplit_"+self.ident)
         SplitGateway.mainlnt(self,f)
 
     # For an and split, call to the super class
@@ -599,9 +592,6 @@ class JoinGateway(Gateway):
 # Class for OrJoinGateway
 class OrJoinGateway(JoinGateway):
 
-    tolnt=[] # contains a table containing the number of incoming flows
-             # for which LNT processes have already been generated
-
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
         correspOrSplit="" # contains the identifier of the corresponding split (if there is one)
@@ -612,37 +602,43 @@ class OrJoinGateway(JoinGateway):
     # Takes as input the number of incoming flows
     def lnt(self,f):
         nbincf=len(self.incomingFlows)
-        if not(nbincf in OrJoinGateway.tolnt):
-            f.write("process orjoin_"+str(nbincf)+" [")
-            nb=1
-            while (nb<=nbincf):
-                f.write("incf_"+str(nb)+":any")
-                nb=nb+1
-                f.write(",")
-            f.write("outf:any] is \n")
-            f.write(" loop select ")
 
-            alphainc=[]
-            nb=1
-            while (nb<=nbincf):
-                alphainc.append("incf_"+str(nb))
-                nb=nb+1
-            allcombi=computeAllCombinations(alphainc)
-            nbt=len(allcombi)
-            nb=1
-            for t in allcombi:
-                nbelem=len(t)
-                nb2=1
-                f.write(" par ")
-                for e in t:
-                    f.write(e)
-                    nb2=nb2+1
-                    if (nb2<=nbelem):
-                        f.write("||")
-                f.write(" end par ")
-                nb=nb+1
-                if (nb<=nbt):
-                    f.write(" [] ")
+        f.write("process orjoin_"+self.ident+" [")
+        nb=1
+        while (nb<=nbincf):
+            f.write("incf_"+str(nb)+":any")
+            nb=nb+1
+            f.write(",")
+        f.write("outf:any] is \n")
+        f.write(" loop select ")
+
+        alphainc=[]
+        nb=1
+        while (nb<=nbincf):
+            alphainc.append("incf_"+str(nb))
+            nb=nb+1
+        allcombi=computeAllCombinations(alphainc)
+        nbt=len(allcombi)
+        nb=1
+        for t in allcombi:
+            nbelem=len(t)
+            nb2=1
+            f.write(" par ")
+            for e in t:
+                f.write(e)
+                nb2=nb2+1
+                if (nb2<=nbelem):
+                    f.write("||")
+            f.write(" end par ")
+
+            # add synchronization points if there's a corresponding split
+            if (self.correspOrSplit!=""):
+                f.write(" ; "+self.ident+"_"+str(cter))
+                cter=cter+1
+
+            nb=nb+1
+            if (nb<=nbt):
+                f.write(" [] ")
 
             #nb=1
             ## we can execute at least one branch to all for merges as well
@@ -663,14 +659,13 @@ class OrJoinGateway(JoinGateway):
             #    if (nb<=nbincf):
             #        f.write("[]")
 
-            f.write(" end select ; outf end loop \n")
+        f.write(" end select ; outf end loop \n")
 
-            f.write("end process\n")
-            OrJoinGateway.tolnt.append(nbincf)
+        f.write("end process\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self,f):
-        f.write("orjoin_"+str(len(self.incomingFlows)))
+        f.write("orjoin_"+self.ident)
         JoinGateway.mainlnt(self,f)
 
     # For an or join, if not visited yet, recursive call on the target node of the outgoing flow
@@ -686,9 +681,6 @@ class OrJoinGateway(JoinGateway):
 # Class for XOrJoinGateway
 class XOrJoinGateway(JoinGateway):
 
-    tolnt=[] # contains a table containing the number of incoming flows
-             # for which LNT processes have already been generated
-
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
 
@@ -696,28 +688,26 @@ class XOrJoinGateway(JoinGateway):
     # Takes as input the number of incoming flows
     def lnt(self,f):
         nbincf=len(self.incomingFlows)
-        if not(nbincf in XOrJoinGateway.tolnt):
-            f.write("process xorjoin_"+str(nbincf)+" [")
-            nb=1
-            while (nb<=nbincf):
-                f.write("incf_"+str(nb)+":any")
-                nb=nb+1
-                f.write(",")
-            f.write("outf:any] is \n")
-            f.write(" loop select ")
-            nb=1
-            while (nb<=nbincf):
-                f.write("incf_"+str(nb))
-                nb=nb+1
-                if (nb<=nbincf):
-                    f.write("[]")
-            f.write(" end select ; outf end loop \n")
-            f.write("end process\n")
-            XOrJoinGateway.tolnt.append(nbincf)
+        f.write("process xorjoin_"+str(nbincf)+" [")
+        nb=1
+        while (nb<=nbincf):
+            f.write("incf_"+str(nb)+":any")
+            nb=nb+1
+            f.write(",")
+        f.write("outf:any] is \n")
+        f.write(" loop select ")
+        nb=1
+        while (nb<=nbincf):
+            f.write("incf_"+str(nb))
+            nb=nb+1
+            if (nb<=nbincf):
+                f.write("[]")
+        f.write(" end select ; outf end loop \n")
+        f.write("end process\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self,f):
-        f.write("xorjoin_"+str(len(self.incomingFlows)))
+        f.write("xorjoin_"+self.ident)
         JoinGateway.mainlnt(self,f)
 
     # For an and split, call to the super class
@@ -728,9 +718,6 @@ class XOrJoinGateway(JoinGateway):
 # Class for AndJoinGateway
 class AndJoinGateway(JoinGateway):
 
-    tolnt=[] # contains a table containing the number of incoming flows
-             # for which LNT processes have already been generated
-
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
 
@@ -738,28 +725,26 @@ class AndJoinGateway(JoinGateway):
     # Takes as input the number of incoming flows
     def lnt(self,f):
         nbincf=len(self.incomingFlows)
-        if not(nbincf in AndJoinGateway.tolnt):
-            f.write("process andjoin_"+str(nbincf)+" [")
-            nb=1
-            while (nb<=nbincf):
-                f.write("incf_"+str(nb)+":any")
-                nb=nb+1
-                f.write(",")
-            f.write("outf:any] is \n")
-            f.write(" loop par ")
-            nb=1
-            while (nb<=nbincf):
-                f.write("incf_"+str(nb)+"")
-                nb=nb+1
-                if (nb<=nbincf):
-                    f.write("||")
-            f.write(" end par ; outf end loop \n")
-            f.write("end process\n")
-            AndJoinGateway.tolnt.append(nbincf)
+        f.write("process andjoin_"+str(nbincf)+" [")
+        nb=1
+        while (nb<=nbincf):
+            f.write("incf_"+str(nb)+":any")
+            nb=nb+1
+            f.write(",")
+        f.write("outf:any] is \n")
+        f.write(" loop par ")
+        nb=1
+        while (nb<=nbincf):
+            f.write("incf_"+str(nb)+"")
+            nb=nb+1
+            if (nb<=nbincf):
+                f.write("||")
+        f.write(" end par ; outf end loop \n")
+        f.write("end process\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self,f):
-        f.write("andjoin_"+str(len(self.incomingFlows)))
+        f.write("andjoin_"+self.ident)
         JoinGateway.mainlnt(self,f)
 
     # For an and split, call to the super class
@@ -856,7 +841,8 @@ class Process:
                     f.write(", ")        
         f.write(" in\n")
         f.write("par ")
-        # synchronizations on all begin/finish flows
+        # synchronizations on all begin/finish flows 
+        # + synchronizations on additional synchro points for corresponding or split/join gateways
         if (nbflows>0):
             cter=1
             for fl in self.flows:
@@ -864,6 +850,7 @@ class Process:
                 cter=cter+1
                 if (cter<=nbflows):
                     f.write(", ")
+        # TODO : dump additional synchro points for or splits/joins
         f.write(" in\n")
 
         # interleaving of all flow processes
