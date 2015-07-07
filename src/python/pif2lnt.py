@@ -44,6 +44,33 @@ def computeAllCombinations(l):
         i=i+1
     return res
 
+# Takes a list of couple (ident,depth) resulting from the reachableOrJoin method call
+#  and a number of outgoing flows. Checks if all flows lead to a same split. 
+# If yes, returns that split identifier, else returns "". 
+def analyzeReachabilityResults(lc,nbflows):
+    # first we check whether there is at least a corresponding join with depth 0 
+    # (there is at most one)
+    existjoin=False
+    for c in lc:
+        if (c[1]==0):
+            joinident=c[0]
+            existjoin=True
+            break
+    if existjoin:
+        # we check if there is as many couples with the join identifiers as flows number
+        cter=0
+        for c in lc:
+            if (c[0]==joinident) and (c[1]==0):
+                cter=cter+1
+        if (cter==nbflows):
+            return joinident
+        else:
+            return ""
+    else:
+        return ""
+
+
+
 ##
 # Abstract class for Nodes
 # Should not be directly used. Use child classes instead.
@@ -364,6 +391,8 @@ class OrSplitGateway(SplitGateway):
             if f.isDefault():
                 res=True
         return res
+
+    # TODO: update the LNT encoding by adding synchronization points if there is a corresponding join
     
     # Generates the process for inclusive split gateway
     def lnt(self,f):
@@ -577,6 +606,8 @@ class OrJoinGateway(JoinGateway):
         JoinGateway.__init__(self,ident,inc,out)
         correspOrSplit="" # contains the identifier of the corresponding split (if there is one)
 
+    # TODO: update the LNT encoding by adding synchronization points if there is a corresponding split
+
     # Generates the process for inclusive join gateway
     # Takes as input the number of incoming flows
     def lnt(self,f):
@@ -775,10 +806,10 @@ class Process:
         # we traverse all process nodes and call this computation for all inclusive splits
         for n in self.nodes:
             if isinstance(n, OrSplitGateway):
-                pass
-                res=n.reachableOrJoin([],-1) # TODO in all classes
-                # TODO: retrieve the corresponding merge (all branches with a same merge at depth 0)
-                res=""
+                restmp=n.reachableOrJoin([],-1) 
+                print restmp
+                res=analyzeReachabilityResults(restmp,len(n.outgoingFlows))
+                print res
                 if (res!=""):
                     n.correspOrJoin=res           # we update the split attribute
                     njoin=self.getNode(res)       # we retrieve the object corresponding to the join id
@@ -979,6 +1010,9 @@ class Generator:
     def generateLTS(self, filename, smartReduction = True, debug = False):
         proc = Process()
         proc.buildProcessFromFile(filename)
+
+        # pre-processing: compute correspondences between or splits/joins
+        proc.reachableOrJoin()
 
         name = proc.name
         proc.genLNT()
