@@ -396,16 +396,6 @@ class OrSplitGateway(SplitGateway):
         nboutf=len(self.outgoingFlows)
         default=self.existDefaultFlow()
         # TODO: update the translation to consider properly the default semantics (if there is such a branch)
-        f.write("process orsplit_"+self.ident+" [incf:any,")
-        nb=1
-        while (nb<=nboutf):
-            f.write("outf_"+str(nb)+":any")
-            nb=nb+1
-            if (nb<=nboutf):
-                f.write(",")
-        f.write(" ] is \n")
-        f.write(" loop incf; \n")
-        f.write(" select ")
 
         # We translate the inclusive split by enumerating all combinations in a select / par
         alphaout=[]
@@ -414,8 +404,32 @@ class OrSplitGateway(SplitGateway):
             alphaout.append("outf_"+str(nb))
             nb=nb+1
         allcombi=computeAllCombinations(alphaout)
-        print allcombi
+        # print allcombi
         nbt=len(allcombi)
+
+        f.write("process orsplit_"+self.ident+" [incf:any,")
+        # We dumps the process alphabet (flows + synchronization points if necessary)
+        nbg=1
+        while (nbg<=nboutf):
+            f.write("outf_"+str(nbg)+":any")
+            nbg=nbg+1
+            if (nbg<=nboutf):
+                f.write(",")
+
+        if (nbt>0):
+            f.write(", ")
+            cter=1
+            for elem in allcombi:
+                f.write(self.correspOrJoin+"_"+str(cter)+":any")
+                cter=cter+1
+                if (cter<=nbt):
+                    f.write(",")
+
+        f.write(" ] is \n")
+        f.write(" loop incf; \n")
+        f.write(" select ")
+
+
         nb=1
         # counter for generating synchro points
         cter=1
@@ -467,8 +481,38 @@ class OrSplitGateway(SplitGateway):
 
     # Generates process instantiation for main LNT process
     def mainlnt(self,f):
-        f.write("orsplit_"+self.ident) 
-        SplitGateway.mainlnt(self,f)
+        f.write("orsplit_"+self.ident)
+        if (self.correspOrJoin!=""):
+
+            nboutf=len(self.outgoingFlows)
+            f.write("[")
+            f.write(self.incomingFlows[0].ident+"_finish,")
+            i=0
+            while (i<nboutf):
+                f.write(self.outgoingFlows[i].ident+"_begin")
+                i=i+1
+                if (i<nboutf):
+                    f.write(",")
+
+            alphaout=[]
+            nb=1
+            while (nb<=nboutf):
+                alphaout.append("outf_"+str(nb))
+                nb=nb+1
+            allcombi=computeAllCombinations(alphaout)
+            nbt=len(allcombi)
+            if (nbt>0):
+                f.write(", ")
+                cter=1
+                for elem in allcombi:
+                    f.write(self.correspOrJoin+"_"+str(cter))
+                    cter=cter+1
+                    if (cter<=nbt):
+                        f.write(",")
+            f.write("]")
+            
+        else:
+            SplitGateway.mainlnt(self,f)
 
     # For an or split, if not visited yet, recursive call on the target nodes of all outgoing flows
     # We increase the depth, to distinguish it from the split or being analyzed
@@ -603,15 +647,6 @@ class OrJoinGateway(JoinGateway):
     def lnt(self,f):
         nbincf=len(self.incomingFlows)
 
-        f.write("process orjoin_"+self.ident+" [")
-        nb=1
-        while (nb<=nbincf):
-            f.write("incf_"+str(nb)+":any")
-            nb=nb+1
-            f.write(",")
-        f.write("outf:any] is \n")
-        f.write(" loop select ")
-
         alphainc=[]
         nb=1
         while (nb<=nbincf):
@@ -619,10 +654,39 @@ class OrJoinGateway(JoinGateway):
             nb=nb+1
         allcombi=computeAllCombinations(alphainc)
         nbt=len(allcombi)
+
+        f.write("process orjoin_"+self.ident+" [")
         nb=1
+        while (nb<=nbincf):
+            f.write("incf_"+str(nb)+":any")
+            nb=nb+1
+            f.write(",")
+        f.write("outf:any ")
+
+        # we add to the alphabet potential additional synchronization points
+        if (nbt>0):
+            cter=1
+            f.write(",")
+            for elem in allcombi:
+                f.write(self.ident+"_"+str(cter)+":any")
+                cter=cter+1
+                if (cter<=nbt):
+                    f.write(",")
+
+        f.write("] is \n")
+        f.write(" loop select ")
+
+        nb=1
+        cter=1
         for t in allcombi:
             nbelem=len(t)
             nb2=1
+
+            # add synchronization points if there's a corresponding split
+            if (self.correspOrSplit!=""):
+                f.write(self.ident+"_"+str(cter) + ";")
+                cter=cter+1
+
             f.write(" par ")
             for e in t:
                 f.write(e)
@@ -630,11 +694,6 @@ class OrJoinGateway(JoinGateway):
                 if (nb2<=nbelem):
                     f.write("||")
             f.write(" end par ")
-
-            # add synchronization points if there's a corresponding split
-            if (self.correspOrSplit!=""):
-                f.write(" ; "+self.ident+"_"+str(cter))
-                cter=cter+1
 
             nb=nb+1
             if (nb<=nbt):
@@ -666,7 +725,38 @@ class OrJoinGateway(JoinGateway):
     # Generates process instantiation for main LNT process
     def mainlnt(self,f):
         f.write("orjoin_"+self.ident)
-        JoinGateway.mainlnt(self,f)
+        if (self.correspOrSplit!=""):
+
+            nbincf=len(self.incomingFlows)
+            f.write("[")
+            i=0
+            while (i<nbincf):
+                f.write(self.incomingFlows[i].ident+"_finish")
+                i=i+1
+                f.write(",")
+            f.write(self.outgoingFlows[0].ident+"_begin")
+
+            alphainc=[]
+            nb=1
+            while (nb<=nbincf):
+                alphainc.append("incf_"+str(nb))
+                nb=nb+1
+            allcombi=computeAllCombinations(alphainc)
+            nbt=len(allcombi)
+
+            if (nbt>0):
+                cter=1
+                f.write(",")
+                for elem in allcombi:
+                    f.write(self.ident+"_"+str(cter))
+                    cter=cter+1
+                    if (cter<=nbt):
+                        f.write(",")
+
+            f.write("]")
+
+        else:
+            JoinGateway.mainlnt(self,f)
 
     # For an or join, if not visited yet, recursive call on the target node of the outgoing flow
     # We store the result and we decrease the depth
@@ -792,13 +882,32 @@ class Process:
         for n in self.nodes:
             if isinstance(n, OrSplitGateway):
                 restmp=n.reachableOrJoin([],-1) 
-                print restmp
+                # print restmp
                 res=analyzeReachabilityResults(restmp,len(n.outgoingFlows))
-                print res
+                # print res
                 if (res!=""):
                     n.correspOrJoin=res           # we update the split attribute
                     njoin=self.getNode(res)       # we retrieve the object corresponding to the join id
                     njoin.correspOrSplit=n.ident  # we update the join attribute
+
+    # Computes the list with the additionnal synchronization points for corresponding or splits/joins
+    def computeAddSynchroPoints(self): 
+        res=[]
+        for n in self.nodes:
+            if isinstance(n, OrSplitGateway):
+                if (n.correspOrJoin!=""):
+                    alphaout=[]
+                    nb=1
+                    while (nb<=len(n.outgoingFlows)):
+                        alphaout.append("outf_"+str(nb))
+                        nb=nb+1
+                    allcombi=computeAllCombinations(alphaout)
+                    nbt=len(allcombi)
+                    cter=1
+                    for elem in allcombi:
+                        res.append(n.correspOrJoin+"_"+str(cter))
+                        cter=cter+1
+        return res
 
     # Generates an LNT module and process for a BPMN 2.0 process
     def genLNT(self,name=""):
@@ -829,6 +938,10 @@ class Process:
         alph=self.alpha()
         dumpAlphabet(alph,f,True)
         f.write(" is\n")
+        # computes additional synchros for or splits/joins
+        addSynchro=self.computeAddSynchroPoints()
+        nbsync=len(addSynchro)
+
         f.write(" hide begin:any, finish:any")
         nbflows=len(self.flows)
         if (nbflows>0):
@@ -839,18 +952,27 @@ class Process:
                 cter=cter+1
                 if (cter<=nbflows):
                     f.write(", ")        
+            # we hide additional synchros for or splits/joins as well
+            nb=0
+            if (nbsync>0):
+                f.write(", ")
+                for e in addSynchro:
+                    f.write(e+":any")
+                    nb=nb+1
+                    if (nb<nbsync):
+                        f.write(", ")
+
         f.write(" in\n")
         f.write("par ")
         # synchronizations on all begin/finish flows 
-        # + synchronizations on additional synchro points for corresponding or split/join gateways
         if (nbflows>0):
             cter=1
             for fl in self.flows:
                 f.write(fl.ident+"_begin, "+fl.ident+"_finish")
                 cter=cter+1
                 if (cter<=nbflows):
-                    f.write(", ")
-        # TODO : dump additional synchro points for or splits/joins
+                    f.write(", ")                    
+            
         f.write(" in\n")
 
         # interleaving of all flow processes
@@ -865,7 +987,18 @@ class Process:
         f.write("\n||\n")
 
         # interleaving of all node processes
-        f.write(" par \n")
+        f.write(" par ")
+        # dump additional synchro points for or splits/joins
+        nb=0
+        if (nbsync>0):
+            for e in addSynchro:
+                f.write(e)
+                nb=nb+1
+                if (nb<nbsync):
+                    f.write(", ")
+        if (nbsync>0):
+            f.write(" in\n ")
+
         # process instantiation for initial node
         f.write("init[begin,"+self.initial.outgoingFlows[0].ident+"_begin] || ") # we assume a single output flow 
         nbfinals=len(self.finals)
