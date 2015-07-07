@@ -91,6 +91,14 @@ class Flow:
     def isDefault(self):
         return False
 
+    # Returns the source node
+    def getSource(self):
+        return self.source
+
+    # Returns the target node
+    def getTarget(self):
+        return self.target
+
 ##
 # Class for ConditionalFlows
 class ConditionalFlow(Flow):
@@ -127,6 +135,11 @@ class InitialEvent(Node):
         f.write(" begin ; outf \n")
         f.write("end process\n")
 
+    # Seeks or joins, for an initial event, just a recursive call on the target node of the outgoing flow
+    # Returns the list of reachable or joins
+    def reachableOrJoin(self,visited,depth):
+        return self.outgoingFlows[0].getTarget().reachableOrJoin(visited+[self.ident],depth)
+
 ##
 # Class for End Event
 class EndEvent(Node):
@@ -140,6 +153,11 @@ class EndEvent(Node):
         f.write(" incf; finish\n")
         f.write("end process\n")
 
+    # Seeks an or join, for an initial event, just a recursive call on the target node of the outgoing flow
+    def reachableOrJoin(self,visited,depth):
+        return []
+
+
 ##
 # Abstract Class for Communication
 class Communication(Node):
@@ -147,6 +165,13 @@ class Communication(Node):
     def __init__(self,ident,inc,out,msg):
         Node.__init__(self,ident,inc,out)
         self.msg=msg
+
+    # For a communication, if not visited yet, recursive call on the target node of the outgoing flow
+    def reachableOrJoin(self,visited,depth):
+        if self.ident in visited:
+            return []
+        else:
+            return self.outgoingFlows[0].getTarget().reachableOrJoin(visited+[self.ident],depth)
 
 ##
 # Class for Interaction
@@ -269,6 +294,14 @@ class Task(Node):
         f.write(self.ident+",")
         f.write(self.outgoingFlows[0].ident+"_begin]")
 
+    # For a task, if not visited yet, recursive call on the target node of the outgoing flow
+    # Returns the list of reachable or joins
+    def reachableOrJoin(self,visited,depth):
+        if self.ident in visited:
+            return []
+        else:
+            return self.outgoingFlows[0].getTarget().reachableOrJoin(visited+[self.ident],depth)
+
 ##
 # Abstract Class for Gateway
 class Gateway(Node):
@@ -301,6 +334,16 @@ class SplitGateway(Gateway):
                 f.write(",")
         f.write("]")
 
+    # For a split (generic), if not visited yet, recursive call on the target nodes of all outgoing flows
+    # Returns the list of reachable or joins
+    def reachableOrJoin(self,visited,depth):
+        if self.ident in visited:
+            return []
+        else:
+            res=[]
+            for f in self.outgoingFlows:
+                res=res+f.getTarget().reachableOrJoin(visited+[self.ident],depth)
+            return res
 
 ##
 # Class for OrSplitGateway
@@ -395,6 +438,19 @@ class OrSplitGateway(SplitGateway):
         f.write("orsplit_"+str(len(self.outgoingFlows)))
         SplitGateway.mainlnt(self,f)
 
+    # For an or split, if not visited yet, recursive call on the target nodes of all outgoing flows
+    # We increase the depth, to distinguish it from the split or being analyzed
+    # Returns the list of reachable or joins
+    def reachableOrJoin(self,visited,depth):
+        if self.ident in visited:
+            return []
+        else:
+            res=[]
+            for f in self.outgoingFlows:
+                res=res+f.getTarget().reachableOrJoin(visited+[self.ident],depth+1)
+            return res
+
+
 ##
 # Class for XOrSplitGateway
 class XOrSplitGateway(SplitGateway):
@@ -434,6 +490,10 @@ class XOrSplitGateway(SplitGateway):
     def mainlnt(self,f):
         f.write("xorsplit_"+str(len(self.outgoingFlows)))
         SplitGateway.mainlnt(self,f)
+
+    # For an xor split, call to the super class
+    def reachableOrJoin(self,visited,depth):
+        return SplitGateway.reachableOrJoin(self,visited,depth)
 
 ##
 # Class for AndSplitGateway
@@ -475,6 +535,10 @@ class AndSplitGateway(SplitGateway):
         f.write("andsplit_"+str(len(self.outgoingFlows)))
         SplitGateway.mainlnt(self,f)
 
+    # For an and split, call to the super class
+    def reachableOrJoin(self,visited,depth):
+        return SplitGateway.reachableOrJoin(self,visited,depth)
+
 ##
 # Abstract Class for JoinGateway
 class JoinGateway(Gateway):
@@ -493,6 +557,14 @@ class JoinGateway(Gateway):
             i=i+1
             f.write(",")
         f.write(self.outgoingFlows[0].ident+"_begin]")
+
+    # For a join (generic), if not visited yet, recursive call on the target node of the outgoing flow
+    # Returns the list of reachable or joins
+    def reachableOrJoin(self,visited,depth):
+        if self.ident in visited:
+            return []
+        else:
+            return self.outgoingFlows[0].getTarget().reachableOrJoin(visited+[self.ident],depth)
 
 ##
 # Class for OrJoinGateway
@@ -570,6 +642,15 @@ class OrJoinGateway(JoinGateway):
         f.write("orjoin_"+str(len(self.incomingFlows)))
         JoinGateway.mainlnt(self,f)
 
+    # For an or join, if not visited yet, recursive call on the target node of the outgoing flow
+    # We store the result and we decrease the depth
+    # Returns the list of reachable or joins
+    def reachableOrJoin(self,visited,depth):
+        if self.ident in visited:
+            return []
+        else:
+            return [(self.ident,depth)]+self.outgoingFlows[0].getTarget().reachableOrJoin(visited+[self.ident],depth-1)
+
 ##
 # Class for XOrJoinGateway
 class XOrJoinGateway(JoinGateway):
@@ -608,6 +689,10 @@ class XOrJoinGateway(JoinGateway):
         f.write("xorjoin_"+str(len(self.incomingFlows)))
         JoinGateway.mainlnt(self,f)
 
+    # For an and split, call to the super class
+    def reachableOrJoin(self,visited,depth):
+        return SplitGateway.reachableOrJoin(self,visited,depth)
+
 ##
 # Class for AndJoinGateway
 class AndJoinGateway(JoinGateway):
@@ -645,6 +730,10 @@ class AndJoinGateway(JoinGateway):
     def mainlnt(self,f):
         f.write("andjoin_"+str(len(self.incomingFlows)))
         JoinGateway.mainlnt(self,f)
+
+    # For an and split, call to the super class
+    def reachableOrJoin(self,visited,depth):
+        return SplitGateway.reachableOrJoin(self,visited,depth)
 
 ##
 # Class for Processes described in PIF
@@ -687,8 +776,9 @@ class Process:
         for n in self.nodes:
             if isinstance(n, OrSplitGateway):
                 pass
-                # res=n.reachableOrJoin([],-1) # TODO in all classes
-                res = "" # TODO a enlever a terme
+                res=n.reachableOrJoin([],-1) # TODO in all classes
+                # TODO: retrieve the corresponding merge (all branches with a same merge at depth 0)
+                res=""
                 if (res!=""):
                     n.correspOrJoin=res           # we update the split attribute
                     njoin=self.getNode(res)       # we retrieve the object corresponding to the join id
@@ -759,12 +849,12 @@ class Process:
         # interleaving of all node processes
         f.write(" par \n")
         # process instantiation for initial node
-        f.write("init[begin,"+self.initial.outgoingFlows[0].ident+"_begin] || ") # TODO: on suppose un seul out flow, a affiner ! 
+        f.write("init[begin,"+self.initial.outgoingFlows[0].ident+"_begin] || ") # we assume a single output flow 
         nbfinals=len(self.finals)
         cter=1
         # processes instantiation for final nodes
         for n in self.finals:
-            f.write("final["+n.incomingFlows[0].ident+"_finish, finish]") # TODO: on suppose un seul incoming flow, a affiner !
+            f.write("final["+n.incomingFlows[0].ident+"_finish, finish]") # we assume a single incoming flow
             cter=cter+1
             if (cter<=nbflows):
                 f.write(" || ")
