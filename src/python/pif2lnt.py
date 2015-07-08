@@ -389,8 +389,6 @@ class OrSplitGateway(SplitGateway):
                 res=True
         return res
 
-    # TODO: update the LNT encoding by adding synchronization points if there is a corresponding join
-    
     # Generates the process for inclusive split gateway
     def lnt(self,f):
         nboutf=len(self.outgoingFlows)
@@ -657,8 +655,6 @@ class OrJoinGateway(JoinGateway):
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
         correspOrSplit="" # contains the identifier of the corresponding split (if there is one)
-
-    # TODO: update the LNT encoding by adding synchronization points if there is a corresponding split
 
     # Generates the process for inclusive join gateway
     # Takes as input the number of incoming flows
