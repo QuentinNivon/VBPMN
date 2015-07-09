@@ -221,13 +221,13 @@ class Interaction(Communication):
 
     # Computes alphabet for an interaction
     def alpha(self):
-        return [self.sender+str(self.receivers)+self.msg] # TODO: refine
+        return [self.sender+"_"+str(self.receivers[0])+"_"+self.msg] # we assume a single receiver
 
     # Generates process instantiation for main LNT process
     def mainlnt(self,f):
         # we assume one incoming flow and one outgoing flow
         f.write("interaction ["+self.incomingFlows[0].ident+"_finish,")
-        f.write(self.sender+str(self.receivers)+self.msg+",")
+        f.write(self.sender+"_"+str(self.receivers[0])+"_"+self.msg+",")
         f.write(self.outgoingFlows[0].ident+"_begin]")
 
 ##
@@ -378,7 +378,7 @@ class OrSplitGateway(SplitGateway):
 
     def __init__(self,ident,inc,out):
         SplitGateway.__init__(self,ident,inc,out)
-        correspOrJoin="" # contains the identifier of the corresponding join (if there is one)
+        self.correspOrJoin="" # contains the identifier of the corresponding join (if there is one)
 
     # Checks whether the set of outgoing flows contains a default flow
     # Returns a Boolean value
@@ -414,7 +414,7 @@ class OrSplitGateway(SplitGateway):
             if (nbg<=nboutf):
                 f.write(",")
 
-        if (nbt>0):
+        if (nbt>0) and (self.correspOrJoin!=""):
             f.write(", ")
             cter=1
             for elem in allcombi:
@@ -554,7 +554,7 @@ class XOrSplitGateway(SplitGateway):
     # Takes as input the number of outgoing flows
     def lnt(self,f):
         nboutf=len(self.outgoingFlows)
-        f.write("process xorsplit_"+str(nboutf)+" [incf:any,")
+        f.write("process xorsplit_"+self.ident+" [incf:any,")
         nb=1
         while (nb<=nboutf):
             f.write("outf_"+str(nb)+":any")
@@ -654,7 +654,7 @@ class OrJoinGateway(JoinGateway):
 
     def __init__(self,ident,inc,out):
         JoinGateway.__init__(self,ident,inc,out)
-        correspOrSplit="" # contains the identifier of the corresponding split (if there is one)
+        self.correspOrSplit="" # contains the identifier of the corresponding split (if there is one)
 
     # Generates the process for inclusive join gateway
     # Takes as input the number of incoming flows
@@ -678,7 +678,7 @@ class OrJoinGateway(JoinGateway):
         f.write("outf:any ")
 
         # we add to the alphabet potential additional synchronization points
-        if (nbt>0):
+        if (nbt>0) and (self.correspOrSplit!=""):
             cter=1
             f.write(",")
             for elem in allcombi:
@@ -809,7 +809,7 @@ class XOrJoinGateway(JoinGateway):
     # Takes as input the number of incoming flows
     def lnt(self,f):
         nbincf=len(self.incomingFlows)
-        f.write("process xorjoin_"+str(nbincf)+" [")
+        f.write("process xorjoin_"+self.ident+" [")
         nb=1
         while (nb<=nbincf):
             f.write("incf_"+str(nb)+":any")
@@ -846,7 +846,7 @@ class AndJoinGateway(JoinGateway):
     # Takes as input the number of incoming flows
     def lnt(self,f):
         nbincf=len(self.incomingFlows)
-        f.write("process andjoin_"+str(nbincf)+" [")
+        f.write("process andjoin_"+self.ident+" [")
         nb=1
         while (nb<=nbincf):
             f.write("incf_"+str(nb)+":any")
