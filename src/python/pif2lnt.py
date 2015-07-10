@@ -221,13 +221,21 @@ class Interaction(Communication):
 
     # Computes alphabet for an interaction
     def alpha(self):
-        return [self.sender+"_"+str(self.receivers[0])+"_"+self.msg] # we assume a single receiver
+        res=self.sender+"_"
+        for e in self.receivers:
+            res=res+e+"_"
+        res=res+self.msg
+        return [res]
 
     # Generates process instantiation for main LNT process
     def mainlnt(self,f):
         # we assume one incoming flow and one outgoing flow
         f.write("interaction ["+self.incomingFlows[0].ident+"_finish,")
-        f.write(self.sender+"_"+str(self.receivers[0])+"_"+self.msg+",")
+        res=self.sender+"_"
+        for e in self.receivers:
+            res=res+e+"_"
+        res=res+self.msg
+        f.write(res+",")
         f.write(self.outgoingFlows[0].ident+"_begin]")
 
 ##
@@ -833,7 +841,7 @@ class XOrJoinGateway(JoinGateway):
 
     # For an and split, call to the super class
     def reachableOrJoin(self,visited,depth):
-        return SplitGateway.reachableOrJoin(self,visited,depth)
+        return JoinGateway.reachableOrJoin(self,visited,depth)
 
 ##
 # Class for AndJoinGateway
@@ -870,7 +878,7 @@ class AndJoinGateway(JoinGateway):
 
     # For an and split, call to the super class
     def reachableOrJoin(self,visited,depth):
-        return SplitGateway.reachableOrJoin(self,visited,depth)
+        return JoinGateway.reachableOrJoin(self,visited,depth)
 
 ##
 # Class for Processes described in PIF
