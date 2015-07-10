@@ -5,7 +5,7 @@
     <pif:name>p0033</pif:name>
     <pif:documentation>
         simple exclusive split-join with no join gateway, jonction on state final state (variation from p0013)
-        INIT  = task0 . task1 . SPLIT-OR . { task2 . F ; task3 . F }
+        INIT  = task0 . task1 . SPLIT-XOR . { task2 . F ; task3 . F }
         F = 0
     </pif:documentation>
 
