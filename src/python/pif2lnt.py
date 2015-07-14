@@ -29,7 +29,7 @@ def dumpAlphabet(alph,f,addany):
             cter=cter+1
             if (cter<=nbelem):
                 f.write(", ")
-        f.write("] ")
+        f.write("]")
 
 # Computes all combinations, in sorted order, any possible number from 1 to len(l)
 # Inputs: a list of strings l
@@ -95,8 +95,6 @@ class Node:
 # Class for Flows
 class Flow:
 
-    tolnt=False # indicates if the LNT process has already been generated
-
     def __init__(self,ident,source,target):
         self.ident=ident
         self.source=source
@@ -108,11 +106,9 @@ class Flow:
 
     # Generates the (generic) process for flows, only once
     def lnt(self,f):
-        if not(Flow.tolnt):
-            f.write("process flow [begin:any, finish:any] is\n")
-            f.write(" loop begin ; finish end loop\n")
-            f.write("end process\n")
-            Flow.tolnt=True
+        f.write("process flow [begin:any, finish:any] is\n")
+        f.write(" loop begin ; finish end loop\n")
+        f.write("end process\n")
 
     # A normal flow cannot be a default flow
     def isDefault(self):
@@ -130,20 +126,16 @@ class Flow:
 # Class for ConditionalFlows
 class ConditionalFlow(Flow):
 
-    tolnt=False # indicates if the LNT process has already been generated
-
     def __init__(self,ident,source,target,cond):
         Flow.__init__(self,ident,source,target)
         self.cond=cond
 
     # Generates the process for conditional flows
     def lnt(self,f):
-        if not(ConditionalFlow.tolnt):
-            # TODO: translate the condition too
-            f.write("process conditionalflow [begin:any, finish:any] is\n")
-            f.write(" loop begin ; finish end loop\n")
-            f.write("end process\n")
-            ConditionalFlow.tolnt=True
+        # TODO: translate the condition too
+        f.write("process conditionalflow [begin:any, finish:any] is\n")
+        f.write(" loop begin ; finish end loop\n")
+        f.write("end process\n")
 
     # A conditional flow is default iff the condition attribute contains "default"
     def isDefault(self):
@@ -204,8 +196,6 @@ class Communication(Node):
 # Class for Interaction
 class Interaction(Communication):
 
-    tolnt=False # indicates if the LNT process has already been generated
-
     def __init__(self,ident,inc,out,msg,sender,receivers):
         Communication.__init__(self,ident,inc,out,msg)
         self.sender=sender
@@ -213,11 +203,9 @@ class Interaction(Communication):
 
     # Generates the (generic) process for interactions, only once
     def lnt(self,f):
-        if not(Interaction.tolnt):
-            f.write("process interaction [incf:any, inter:any, outf:any] is\n")
-            f.write(" loop incf; inter; outf end loop \n")
-            f.write("end process\n")
-            Interaction.tolnt=True
+        f.write("process interaction [incf:any, inter:any, outf:any] is\n")
+        f.write(" loop incf; inter; outf end loop \n")
+        f.write("end process\n")
 
     # Computes alphabet for an interaction
     def alpha(self):
@@ -249,18 +237,14 @@ class MessageCommunication(Communication):
 # Class for MessageSending
 class MessageSending(MessageCommunication):
 
-    tolnt=False # indicates if the LNT process has already been generated
-
     def __init__(self,ident,inc,out,msg):
         MessageCommunication.__init__(self,ident,inc,out,msg)
 
     # Generates the (generic) process for message sending, only once
     def lnt(self,f):
-        if not(MessageSending.tolnt):
-            f.write("process messagesending [incf:any, msg:any, outf:any] is\n")
-            f.write(" loop incf; msg; outf end loop \n")
-            f.write("end process\n")
-            MessageSending.tolnt=True
+        f.write("process messagesending [incf:any, msg:any, outf:any] is\n")
+        f.write(" loop incf; msg; outf end loop \n")
+        f.write("end process\n")
 
     # Computes alphabet for a message sending
     def alpha(self):
@@ -277,18 +261,14 @@ class MessageSending(MessageCommunication):
 # Class for MessageReception
 class MessageReception(MessageCommunication):
 
-    tolnt=False # indicates if the LNT process has already been generated
-
     def __init__(self,ident,inc,out,msg):
         MessageCommunication.__init__(self,ident,inc,out,msg)
 
     # Generates the (generic) process for message reception, only once
     def lnt(self,f):
-        if not(MessageReception.tolnt):
-            f.write("process messagereception [incf:any, msg:any, outf:any] is\n")
-            f.write(" loop incf; msg; outf end loop \n")
-            f.write("end process\n")
-            MessageReception.tolnt=True
+        f.write("process messagereception [incf:any, msg:any, outf:any] is\n")
+        f.write(" loop incf; msg; outf end loop \n")
+        f.write("end process\n")
 
     # Computes alphabet for a message reception
     def alpha(self):
@@ -305,18 +285,14 @@ class MessageReception(MessageCommunication):
 # Class for Task
 class Task(Node):
 
-    tolnt=False # indicates if the LNT process has already been generated
-
     def __init__(self,ident,inc,out):
         Node.__init__(self,ident,inc,out)
 
     # Generates the (generic) process for task, only once
     def lnt(self,f):
-        if not(Task.tolnt):
-            f.write("process task [incf:any, task:any, outf:any] is\n")
-            f.write(" loop incf; task; outf end loop \n")
-            f.write("end process\n")
-            Task.tolnt=True
+        f.write("process task [incf:any, task:any, outf:any] is\n")
+        f.write(" loop incf; task; outf end loop \n")
+        f.write("end process\n")
 
     # Computes alphabet for a task
     def alpha(self):
@@ -921,9 +897,9 @@ class Process:
         for n in self.nodes:
             if isinstance(n, OrSplitGateway):
                 restmp=n.reachableOrJoin([],-1) 
-                print restmp
+                #print restmp
                 res=analyzeReachabilityResults(restmp,len(n.outgoingFlows))
-                print res
+                #print res
                 if (res!=""):
                     n.correspOrJoin=res           # we update the split attribute
                     njoin=self.getNode(res)       # we retrieve the object corresponding to the join id
@@ -963,11 +939,19 @@ class Process:
         if (self.finals!=[]):
             self.finals[0].lnt(f)
         if (self.flows!=[]):
-            self.flows[0].lnt(f)
+            self.flows[0].lnt(f) # TODO: ConditionalFlow?
 
         # Generates LNT processes for all other nodes
+        specialnodes=[] # we keep track of nodes that need to be translated only once
         for n in self.nodes:
-            n.lnt(f) 
+            if isinstance(n, Interaction) or isinstance(n, MessageSending) or isinstance(n, MessageReception) or isinstance(n, Task):
+                if (type(n).__name__ in specialnodes):
+                    pass
+                else:
+                    specialnodes.append(type(n).__name__)
+                    n.lnt(f)
+            else:
+                n.lnt(f) 
 
         # Note: up to here, translation patterns are independent of the actual tasks, comm, etc.
         # The actual names will be used only in the MAIN process when computing the process alphabet
@@ -1018,7 +1002,8 @@ class Process:
         f.write(" par \n")
         cter=1
         for fl in self.flows:
-            f.write("flow["+fl.ident+"_begin, "+fl.ident+"_finish]")
+            # TODO: take ConditionalFlow into account
+            f.write("flow ["+fl.ident+"_begin, "+fl.ident+"_finish]")
             cter=cter+1
             if (cter<=nbflows):
                 f.write(" || ")
@@ -1029,12 +1014,12 @@ class Process:
         f.write(" par ")
 
         # process instantiation for initial node
-        f.write("init[begin,"+self.initial.outgoingFlows[0].ident+"_begin] || ") # we assume a single output flow 
+        f.write("init [begin,"+self.initial.outgoingFlows[0].ident+"_begin] || ") # we assume a single output flow 
         nbfinals=len(self.finals)
         cter=1
         # processes instantiation for final nodes
         for n in self.finals:
-            f.write("final["+n.incomingFlows[0].ident+"_finish, finish]") # we assume a single incoming flow
+            f.write("final ["+n.incomingFlows[0].ident+"_finish, finish]") # we assume a single incoming flow
             cter=cter+1
             if (cter<=nbflows):
                 f.write(" || ")
@@ -1168,7 +1153,11 @@ class Generator:
         # proc.dump()
 
         proc.genSVL(smartReduction)
-        process = Popen (["svl",name], shell = False, stdout=sys.stdout)
+        #pr=Popen (["svl",name], shell = False, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        #pr.communicate()
+
+        pr=Popen (["svl",name], shell = False, stdout=sys.stdout)
+        pr.communicate()
 
         return (name,proc.alpha())
  
