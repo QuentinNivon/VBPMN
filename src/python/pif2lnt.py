@@ -45,8 +45,8 @@ def computeAllCombinations(l):
     return res
 
 # Takes a list of couple (ident,depth) resulting from the reachableOrJoin method call
-#  and a number of outgoing flows. Checks if all flows lead to a same split. 
-# If yes, returns that split identifier, else returns "". 
+#  and a number of outgoing flows. Checks if all flows lead to a same join. 
+# If yes, returns that join identifier, else returns "". 
 def analyzeReachabilityResults(lc,nbflows):
     # first we check whether there is at least a corresponding join with depth 0 
     # (there is at most one)
@@ -62,7 +62,7 @@ def analyzeReachabilityResults(lc,nbflows):
         for c in lc:
             if (c[0]==joinident) and (c[1]==0):
                 cter=cter+1
-        if (cter==nbflows):
+        if (cter>=nbflows): # you can have more splits in-between, thus more flows..
             return joinident
         else:
             return ""
@@ -921,9 +921,9 @@ class Process:
         for n in self.nodes:
             if isinstance(n, OrSplitGateway):
                 restmp=n.reachableOrJoin([],-1) 
-                # print restmp
+                print restmp
                 res=analyzeReachabilityResults(restmp,len(n.outgoingFlows))
-                # print res
+                print res
                 if (res!=""):
                     n.correspOrJoin=res           # we update the split attribute
                     njoin=self.getNode(res)       # we retrieve the object corresponding to the join id
