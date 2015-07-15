@@ -47,7 +47,7 @@
         </pif:nodes>
         <pif:nodes id="task5" xsi:type="pif:Task">
             <pif:incomingFlows>sf7</pif:incomingFlows>
-            <pif:outgoingFlows>sf19</pif:outgoingFlows>
+            <pif:outgoingFlows>sf9</pif:outgoingFlows>
         </pif:nodes>
 
         <pif:nodes id="task18" xsi:type="pif:Task">
