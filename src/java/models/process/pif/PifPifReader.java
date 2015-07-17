@@ -42,6 +42,7 @@ import java.io.IOException;
 
 public class PifPifReader extends AbstractModelReader {
     public static final String SCHEMA_PATH = "model/pif.xsd";
+    private String schema_path = null;
     @Override
     public String getSuffix() {
         return "pif";
@@ -53,8 +54,10 @@ public class PifPifReader extends AbstractModelReader {
         // load model using JAXB
         FileInputStream fis;
         try {
+            // use the set schema path or the default one if it is undefined
+            if(schema_path == null) { schema_path = SCHEMA_PATH; }
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
+            Schema schema = factory.newSchema(new StreamSource(new File(schema_path)));
             fis = new FileInputStream(cifModel.getResource());
             JAXBContext ctx = JAXBContext.newInstance(Process.class);
             Unmarshaller unmarshaller = ctx.createUnmarshaller();
@@ -68,5 +71,8 @@ public class PifPifReader extends AbstractModelReader {
         } catch (SAXException e) {
             throw new IllegalModelException(e.getMessage());
         }
+    }
+    public void setSchemaPath(String path) {
+        this.schema_path = path;
     }
 }
