@@ -25,6 +25,15 @@ class Comparator:
 
     # generates SVL code to check the given operation
     def genSVL(self, filename, hide, ren, cont):
+        """
+        Generates the SVL code for a verification operation.
+
+        :param filename: String, name of the SVL script file to write.
+        :param hide: Boolean, ...
+        :param ren: ??, ...
+        :param cont: ??; ...
+        :return:
+        """
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
         if hide:
