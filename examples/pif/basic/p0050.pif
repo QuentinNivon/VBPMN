@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pif:Process xmlns:pif="http://www.example.org/PIF"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
+    <pif:name>p0050</pif:name>
+    <pif:documentation>
+        booking system (v1) with a single on-event gateway (encoded as an exclusive gateway) 
+        INIT  = JOIN-XOR . receiveRequest . reply . SPLIT-XOR . 
+                { JOIN-XOR ; abort . 0 ; book . receivePayment . logTransaction . 0 }
+    </pif:documentation>
+
+    <!--  WORKFLOW -->
+    <pif:behaviour>
+
+        <!--  NODES -->
+        <pif:nodes id="initial" xsi:type="pif:InitialEvent">
+            <pif:outgoingFlows>sf0</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="final" xsi:type="pif:EndEvent">
+            <pif:incomingFlows>sf6</pif:incomingFlows>
+            <pif:incomingFlows>sf10</pif:incomingFlows>
+        </pif:nodes>
+
+        <pif:nodes id="receiveRequest" xsi:type="pif:Task">
+            <pif:incomingFlows>sf1</pif:incomingFlows>
+            <pif:outgoingFlows>sf2</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="reply" xsi:type="pif:Task">
+            <pif:incomingFlows>sf2</pif:incomingFlows>
+            <pif:outgoingFlows>sf3</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="abort" xsi:type="pif:Task">
+            <pif:incomingFlows>sf5</pif:incomingFlows>
+            <pif:outgoingFlows>sf6</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="book" xsi:type="pif:Task">
+            <pif:incomingFlows>sf7</pif:incomingFlows>
+            <pif:outgoingFlows>sf8</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="receivePayment" xsi:type="pif:Task">
+            <pif:incomingFlows>sf8</pif:incomingFlows>
+            <pif:outgoingFlows>sf9</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="logTransaction" xsi:type="pif:Task">
+            <pif:incomingFlows>sf9</pif:incomingFlows>
+            <pif:outgoingFlows>sf10</pif:outgoingFlows>
+        </pif:nodes>
+
+        <pif:nodes xsi:type="pif:XOrSplitGateway" id="S1">
+            <pif:incomingFlows>sf3</pif:incomingFlows>
+            <pif:outgoingFlows>sf4</pif:outgoingFlows>
+            <pif:outgoingFlows>sf5</pif:outgoingFlows>
+            <pif:outgoingFlows>sf7</pif:outgoingFlows>
+        </pif:nodes>
+
+        <pif:nodes xsi:type="pif:XOrJoinGateway" id="J1">
+            <pif:incomingFlows>sf0</pif:incomingFlows>
+            <pif:incomingFlows>sf4</pif:incomingFlows>
+            <pif:outgoingFlows>sf1</pif:outgoingFlows>
+        </pif:nodes>
+
+        <!--  SEQUENCE FLOWS -->
+        <pif:sequenceFlows id="sf0" source="initial" target="J1"/>
+        <pif:sequenceFlows id="sf1" source="J1" target="receiveRequest"/>
+        <pif:sequenceFlows id="sf2" source="receiveRequest" target="reply"/>
+        <pif:sequenceFlows id="sf3" source="reply" target="S1"/>
+        <pif:sequenceFlows id="sf4" source="S1" target="J1"/>
+        <pif:sequenceFlows id="sf5" source="S1" target="abort"/>
+        <pif:sequenceFlows id="sf6" source="abort" target="final"/>
+        <pif:sequenceFlows id="sf7" source="S1" target="book"/>
+        <pif:sequenceFlows id="sf8" source="book" target="receivePayment"/>
+        <pif:sequenceFlows id="sf9" source="receivePayment" target="logTransaction"/>
+        <pif:sequenceFlows id="sf10" source="logTransaction" target="final"/>
+
+        <!--  INITIAL AND FINAL NODES -->
+        <pif:initialNode>initial</pif:initialNode>
+        <pif:finalNodes>final</pif:finalNodes>
+
+    </pif:behaviour>
+
+</pif:Process>
