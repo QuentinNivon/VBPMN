@@ -61,11 +61,11 @@ class Comparator:
             f.write("\""+self.name2+".bcg\" ; \n\n")
 
         if (self.operation=="="):
-            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -strong \""+self.name2+".bcg\" \n\n")
+            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -taustar -diag \""+self.name2+".bcg\" \n\n")
         elif (self.operation==">"):
-            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -greater -strong \""+self.name2+".bcg\" \n\n")
+            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -greater -taustar -diag \""+self.name2+".bcg\" \n\n")
         elif (self.operation=="<"):
-            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -smaller -strong \""+self.name2+".bcg\" \n\n")
+            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -smaller -taustar -diag \""+self.name2+".bcg\" \n\n")
         else:
             print self.operation + " is not yet implemented"
         f.write("\n\n")
@@ -98,8 +98,8 @@ class Checker:
     def genSVL(self,filename):
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
-        f.write("% bcg_open \""+self.name1+".bcg\" evaluator \""+self.f+"\" \n\n")
-        f.write("% bcg_open \""+self.name2+".bcg\" evaluator \""+self.f+"\" \n\n")
+        f.write("% bcg_open \""+self.name1+".bcg\" evaluator -diag \""+self.f+"\" \n\n")
+        f.write("% bcg_open \""+self.name2+".bcg\" evaluator -diag \""+self.f+"\" \n\n")
         f.write("\n\n")
         f.close()
 

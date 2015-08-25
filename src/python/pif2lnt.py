@@ -1049,10 +1049,13 @@ class Process:
         f.write ("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
         # process generation (LTS)
         #f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN")
-        f.write("\"" + self.name + ".bcg\" = tau*.a reduction of branching reduction of \"MAIN")
+        # generation of the raw bcg
+        f.write("\"" + self.name + "_raw.bcg\" = generation of \"MAIN")
         alpha=self.alpha()
         dumpAlphabet(alpha,f,False)
         f.write("\";\n\n")
+        # reduction of the raw bcg
+        f.write("\"" + self.name + ".bcg\" = branching reduction of "+"\"" + self.name + "_raw.bcg\";\n\n")
         f.close()
 
     # This method takes as input a file.pif and generates a PIF Python object
