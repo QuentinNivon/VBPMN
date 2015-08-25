@@ -98,8 +98,8 @@ class Checker:
     def genSVL(self,filename):
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
-        f.write("% bcg_open \""+self.name1+".bcg\" evaluator -diag \""+self.f+"\" \n\n")
-        f.write("% bcg_open \""+self.name2+".bcg\" evaluator -diag \""+self.f+"\" \n\n")
+        f.write("% bcg_open \""+self.name1+".bcg\" evaluator4 -diag \""+self.f+"\" \n\n")
+        f.write("% bcg_open \""+self.name2+".bcg\" evaluator4 -diag \""+self.f+"\" \n\n")
         f.write("\n\n")
         f.close()
 
