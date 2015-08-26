@@ -60,12 +60,18 @@ class Comparator:
                 f.write("]| ")
             f.write("\""+self.name2+".bcg\" ; \n\n")
 
+        # the equivalence notion is strong by default but if hidding is used
+        # in that case, we use branching equivalence
+        eqnotion="strong"
+        if hide:
+            eqnotion="branching"
+
         if (self.operation=="="):
-            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -taustar -diag \""+self.name2+".bcg\" \n\n")
+            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -"+eqnotion+" -diag \""+self.name2+".bcg\" \n\n")
         elif (self.operation==">"):
-            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -greater -taustar -diag \""+self.name2+".bcg\" \n\n")
+            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -greater -"+eqnotion+" -diag \""+self.name2+".bcg\" \n\n")
         elif (self.operation=="<"):
-            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -smaller -taustar -diag \""+self.name2+".bcg\" \n\n")
+            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -smaller -"+eqnotion+" -diag \""+self.name2+".bcg\" \n\n")
         else:
             print self.operation + " is not yet implemented"
         f.write("\n\n")

@@ -1055,7 +1055,7 @@ class Process:
         dumpAlphabet(alpha,f,False)
         f.write("\";\n\n")
         # reduction of the raw bcg
-        f.write("\"" + self.name + ".bcg\" = branching reduction of "+"\"" + self.name + "_raw.bcg\";\n\n")
+        f.write("\"" + self.name + ".bcg\" = safety reduction of "+"\"" + self.name + "_raw.bcg\";\n\n")
         f.close()
 
     # This method takes as input a file.pif and generates a PIF Python object
