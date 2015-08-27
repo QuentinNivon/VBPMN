@@ -6,8 +6,9 @@
     <pif:documentation>
         booking system (v2) with a single on-event gateway (encoded as an exclusive gateway) 
          and an additional parallel split/join + confirmation message (within the parallel split/join)
-        INIT  = JOIN-XOR . receiveRequest . reply . SPLIT-XOR . 
-                { JOIN-XOR ; abort . 0 ; book . receivePayment . logTransaction . 0 }
+        INIT   = JOIN-XOR . receiveRequest . reply . SPLIT-XOR . 
+                 { JOIN-XOR ; abort . 0 ; book . SPLIT2 }
+        SPLIT2 = SPLIT-AND . { receivePayment . confirm ; logTransaction } . JOIN-AND . 0
     </pif:documentation>
 
     <!--  WORKFLOW -->
