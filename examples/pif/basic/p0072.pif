@@ -5,7 +5,7 @@
     <pif:name>p0072</pif:name>
     <pif:documentation>
         balanced inclusive split with several branches 
-        (no join inclusive, so no sync point, so much less S/T)
+        (no join inclusive, so no sync point, so much less states/transitions)
         INIT  = task0 . task1 . SPLIT-OR . 
                 { task2 . JOIN ; task10 . JOIN ; 
                   task13 . JOIN ; 
