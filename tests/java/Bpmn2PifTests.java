@@ -1,24 +1,3 @@
-import models.base.*;
-import models.choreography.bpmn.BpmnEMFBpmnReader;
-import models.choreography.bpmn.BpmnFactory;
-import models.process.pif.PifPifWriter;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-import transformations.base.AbstractTransformer;
-import transformations.base.Transformer;
-import transformations.bpmn2pif.Bpmn2PifTransformer;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import static org.testng.Assert.fail;
-
 /**
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +17,28 @@ import static org.testng.Assert.fail;
  * Copyright (C) 2015 Pascal Poizat (@pascalpoizat)
  * emails: pascal.poizat@lip6.fr
  */
+
+// java
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+// testng
+import models.process.bpmn.BpmnModel;
+import models.process.pif.*;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+// fmt
+import models.base.*;
+import transformations.base.Transformer;
+// vbpmn
+import models.process.bpmn.BpmnEMFBpmnReader;
+import transformations.bpmn2pif.Bpmn2PifTransformer;
+
+import static org.testng.Assert.fail;
 
 public class Bpmn2PifTests {
 
@@ -75,12 +76,12 @@ public class Bpmn2PifTests {
     @Test(dataProvider = "directory_walker_provider")
     public void test_bpmn2pif(String fin, String fout) {
         System.out.println(String.format("%s -> %s",fin,fout));
-        ModelFactory factory = BpmnFactory.getInstance();
         AbstractModelReader reader = new BpmnEMFBpmnReader();
         AbstractModelWriter writer = new PifPifWriter();
-        AbstractModel min = factory.create();
-        AbstractModel mout = factory.create();
+        AbstractModel min = new BpmnModel();
+        AbstractModel mout = new PifModel();
         try {
+            // on essaye de generer le PIF
             min.setResource(new File(fin));
             mout.setResource(new File(fout));
             Transformer transformer = new Bpmn2PifTransformer();
@@ -88,13 +89,16 @@ public class Bpmn2PifTests {
             transformer.load();
             transformer.transform();
             transformer.dump();
-        } catch (IllegalResourceException e) {
-            e.printStackTrace();
-            fail();
-        } catch (IllegalModelException e) {
-            e.printStackTrace();
-            fail();
-        } catch (IOException e) {
+            // on essaye de le lire TODO plutot passer par les InputOutputTests
+            AbstractModelFactory factory = PifFactory.getInstance();
+            AbstractModel model = factory.create();
+            AbstractModelReader pifReader = new PifPifReader();
+            AbstractModelWriter dotWriter = new DotPifWriter();
+            model.setResource(new File(fout));
+            model.modelFromFile(pifReader);
+            model.setResource(new File(fout+".dot"));
+            model.modelToFile(dotWriter);
+        } catch (IllegalResourceException | IllegalModelException | IOException e) {
             e.printStackTrace();
             fail();
         }

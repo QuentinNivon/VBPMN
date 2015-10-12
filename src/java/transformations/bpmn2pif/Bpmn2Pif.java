@@ -20,14 +20,17 @@
 
 package transformations.bpmn2pif;
 
-import models.base.*;
-import models.choreography.bpmn.BpmnEMFBpmnReader;
-import models.choreography.bpmn.BpmnModel;
-import models.process.pif.PifModel;
-import models.process.pif.PifPifWriter;
-import transformations.base.Transformer;
+// java
 import java.io.File;
 import java.io.IOException;
+// fmt
+import models.base.*;
+import transformations.base.Transformer;
+// vbpmn
+import models.process.bpmn.BpmnModel;
+import models.process.pif.PifModel;
+import models.process.bpmn.BpmnEMFBpmnReader;
+import models.process.pif.PifPifWriter;
 
 public class Bpmn2Pif {
     public static final String USAGE = "Bpmn2Pif input_file output_file";
