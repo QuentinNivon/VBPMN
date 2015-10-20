@@ -24,7 +24,8 @@ class Comparator:
 
 
     # generates SVL code to check the given operation
-    def genSVL(self, filename, hide, ren, cont):
+    # allbutmode decides is the alphabet elements in hide are to be hidden or if they are the only ones to be shown
+    def genSVL(self, filename, hide, ren, cont, allbutmode=False):
         """
         Generates the SVL code for a verification operation.
 
@@ -37,8 +38,12 @@ class Comparator:
         f=open(filename, 'w')
         f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
         if hide:
-            f.write("\""+self.name1+".bcg\" = total hide using \""+self.fhide+"\" in \""+self.name1+".bcg\" ; \n") 
-            f.write("\""+self.name2+".bcg\" = total hide using \""+self.fhide+"\" in \""+self.name2+".bcg\" ; \n\n") 
+            if allbutmode:
+                hidemode = "hide all but"
+            else:
+                hidemode = "hide"
+            f.write("\""+self.name1+".bcg\" = total %s using \""+self.fhide+"\" in \""+self.name1+".bcg\" ; \n" % hidemode)
+            f.write("\""+self.name2+".bcg\" = total %s using \""+self.fhide+"\" in \""+self.name2+".bcg\" ; \n\n" % hidemode)
         if ren:
             f.write("\""+self.name1+".bcg\" = total rename using \""+self.fren+"\" in \""+self.name1+".bcg\" ; \n") 
             f.write("\""+self.name2+".bcg\" = total rename using \""+self.fren+"\" in \""+self.name2+".bcg\" ; \n\n") 
@@ -78,11 +83,11 @@ class Comparator:
         f.close()
 
     # generates and calls the generated SVL file
-    def compare(self, hide, ren, cont):
+    def compare(self, hide, ren, cont, allbutmode=False):
         import sys
 
         fname="compare.svl"
-        self.genSVL(fname, hide, ren, cont)
+        self.genSVL(fname, hide, ren, cont, allbutmode)
         call('svl '+fname+ ' > res.txt', shell=True)
         res=call('grep TRUE res.txt', shell=True)
 

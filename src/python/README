@@ -20,8 +20,11 @@ There are 3 available operations so far:
 
 There are three (exclusive) options:
 
+   "e" op "file.hide" -> where op is ">" or "<" or "=", both processes
+                     are compared up-to-alphabet hiding all alphabet elements but for those in file.hide
+
    "h" op "file.hide" -> where op is ">" or "<" or "=", both processes
-       	  	      	 are compared up-to-alphabet
+       	  	      	 are compared up-to-alphabet hiding alphabet elements in file.hide
 
    "r" op "file.ren"  -> where op is ">" or "<" or "=", both processes
        	  	      	 are compared after renaming

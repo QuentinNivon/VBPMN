@@ -29,10 +29,15 @@ if __name__ == '__main__':
         print "comparing " + file1 + " and " + file2 + " wrt. " + operation
         res=Comparator(name1,name2,operation,"","","",[],[]).compare(False,False,False)
 
-    elif (operation=="h"): # up-to-alphabet
+    elif (operation=="e"): # up-to-alphabet (hide all but)
         operation=sys.argv[4]
         fhid=sys.argv[5]
-        res=Comparator(name1,name2,operation,fhid,"","",[],[]).compare(True,False,False)
+        res=Comparator(name1,name2,operation,fhid,"","",[],[]).compare(True,False,False,allbutmode=True)
+
+    elif (operation=="h"): # up-to-alphabet (hide)
+        operation=sys.argv[4]
+        fhid=sys.argv[5]
+        res=Comparator(name1,name2,operation,fhid,"","",[],[]).compare(True,False,False,allbutmode=False)
 
     elif (operation=="r"): # up-to-renaming
         operation=sys.argv[4]
