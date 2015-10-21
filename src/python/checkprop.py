@@ -14,7 +14,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 4:
         res = False
         val = 2
-        print "Error: wrong number of parameters, please look at the README file."
+        print "Error: wrong number of parameters, please look at the README.md file."
 
     else:
         # TODO Gwen: verifier le format des parametres ?
