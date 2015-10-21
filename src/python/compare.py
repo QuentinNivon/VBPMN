@@ -11,55 +11,57 @@ from vbpmn import *
 ##############################################################################################
 if __name__ == '__main__':
 
-    # TODO Gwen: verifier le nombre et format des parametres ?
+    # initializations
+    val = 0  # return value (0 -> true, 1 -> false, 2 -> wrong format)
 
-    file1=sys.argv[1]
-    file2=sys.argv[2]
-    operation=sys.argv[3]
-    val=0 # return value (0 -> true, 1 -> false, 2 -> wrong format)
+    # set up parser
+    import argparse
 
-    print "converting " + file1 + " to LTS.."
-    (name1,alpha1)=Generator().generateLTS(file1)
+    parser = argparse.ArgumentParser(prog='VBPMN-compare', description='Compares two PIF processes.')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('models', metavar='Model', nargs=2,
+                        help='the models to compare (filenames of PIF files)')
+    parser.add_argument('operation', metavar='OP', choices=ComparisonChecker.OPERATIONS,
+                        help='the comparison operation')
+    parser.add_argument('--hiding', nargs='*',
+                        help='list of alphabet elements to hide or to expose (based on --exposemode)')
+    parser.add_argument('--exposemode', nargs='?', choices=[True, False], const=True, default=False,
+                        help='decides whether arguments for --hiding should be the ones hidden (default) or the ones exposed (if this option is set)')
+    parser.add_argument('--context', metavar='Context',
+                        help='context to compare with reference to (filename of a PIF file)')
 
-    print "converting " + file2 + " to LTS.."
-    (name2,alpha2)=Generator().generateLTS(file2)
+    # parse arguments
+    try:
+        args = parser.parse_args()
+    except:
+        # parser.print_help()
+        res = False
+        val = 2
+        sys.exit(val)
 
-    # comparison with respect to equivalence / simulation
-    if (operation=="=") or (operation=="<") or (operation==">"):
-        print "comparing " + file1 + " and " + file2 + " wrt. " + operation
-        res=Comparator(name1,name2,operation,"","","",[],[]).compare(False,False,False)
+    # convert models from PIF to LNT
+    pifModel1 = args.models[0]
+    print "converting " + pifModel1 + " to LTS.."
+    (ltsModel1, model1Alphabet) = Generator().generateLTS(pifModel1)
+    pifModel2 = args.models[1]
+    print "converting " + pifModel2 + " to LTS.."
+    (ltsModel2, model2Alphabet) = Generator().generateLTS(pifModel2)
 
-    elif (operation=="e"): # up-to-alphabet (hide all but)
-        operation=sys.argv[4]
-        fhid=sys.argv[5]
-        res=Comparator(name1,name2,operation,fhid,"","",[],[]).compare(True,False,False,allbutmode=True)
-
-    elif (operation=="h"): # up-to-alphabet (hide)
-        operation=sys.argv[4]
-        fhid=sys.argv[5]
-        res=Comparator(name1,name2,operation,fhid,"","",[],[]).compare(True,False,False,allbutmode=False)
-
-    elif (operation=="r"): # up-to-renaming
-        operation=sys.argv[4]
-        fren=sys.argv[5]
-        res=Comparator(name1,name2,operation,"",fren,"",[],[]).compare(False,True,False)
-
-    elif (operation=="c"): # context-dependent
-        operation=sys.argv[4]
-        fpif=sys.argv[5]
-        print "converting " + fpif + " to LTS.."
-        (fbcg,alpha)=Generator().generateLTS(fpif)
-        sync1=filter(lambda itm:itm in alpha1,alpha)  # TODO Gwen : refine synchronization sets
-        sync2=filter(lambda itm:itm in alpha2,alpha)  #             computation.. _EM vs _REC :(
-        print sync1, sync2
-        res=Comparator(name1,name2,operation,"","",fbcg,sync1,sync2).compare(False,False,True)
-
+    # checks if we compare up to a context
+    if args.context is not None:
+        pifContextModel = args.context
+        print "converting " + pifContextModel + " to LTS.."
+        (ltsContext, contextAlphabet) = Generator().generateLTS(pifContextModel)
+        syncset1 = filter(lambda itm: itm in model1Alphabet, contextAlphabet)  # TODO Gwen : refine synchronization sets
+        syncset2 = filter(lambda itm: itm in model2Alphabet, contextAlphabet)  # computation.. _EM vs _REC :(
+        print syncset1, syncset2
     else:
-        res=False
-        val=2
-        print "Error: wrong format, please look at the README file."
+        syncset1, syncset2 = [], []
 
-    if not(res):
-        val=1
+    # perform comparison
+    comparator = ComparisonChecker(ltsModel1, ltsModel2, args.operation, args.hiding, args.exposemode, syncsets=[syncset1, syncset2])
+    res = comparator()
+    if not res:
+        val = 1
     print res
     sys.exit(val)

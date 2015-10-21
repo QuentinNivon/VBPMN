@@ -5,131 +5,193 @@
 # Date:    2014-2015
 ###############################################################################
 
-from pif2lnt import * # this library allows to go from PIF to LNT and LTS
+from pif2lnt import *  # this library allows to go from PIF to LNT and LTS
 # import os.path
 
-# This class compares two LTSs wrt. a certain operation
-class Comparator:
 
-    # two names corresponding to the LTSs to be compared, one comparison operation, hide/rename/context files
-    def __init__(self, n1, n2, op, fhide, fren, fbcg, sync1=[], sync2=[]):
-        self.name1=n1
-        self.name2=n2
-        self.operation=op
-        self.fhide=fhide  # file.hid
-        self.fren=fren    # file.ren
-        self.fbcg=fbcg    # file.bcg
-        self.sync1=sync1  # first synchronization set, useful for context-dependent check
-        self.sync2=sync2  # second synchronization set, useful for context-dependent check
+# command to call SVL
+# first argument is the script, second one is the result file
+SVL_CALL_COMMAND = 'svl %s > %s'
+
+# template for SVL scripts
+# first argument is the SVL contents
+SVL_CAESAR_TEMPLATE = '''%% CAESAR_OPEN_OPTIONS="-silent -warning"
+%% CAESAR_OPTIONS="-more cat"
+%s
+'''
+
+# template of the verification of a comparison between two models
+# first argument is the first model (LTS in BCG format)
+# second one is the comparison operation for bisimulator
+# third one is the equivalence notion (strong, branching, ...)
+# fourth one is the second model (LTS in BCG format)
+SVL_COMPARISON_CHECKING_TEMPLATE = '''%% bcg_open "%s.bcg" bisimulator -%s -%s -diag "%s.bcg"
+'''
+
+# template of the verification of formula over a model
+# first argument is the model file (LTS in BCG format)
+# second one is the formula (MCG) file
+SVL_FORMULA_CHECKING_TEMPLATE = '''%% bcg_open "%s.bcg" evaluator4 -diag "%s"
+'''
+
+# template for hiding in SVL
+# first and fourth arguments are the model file (LTS in BCG format)
+# second argument is the hiding mode (hiding or hiding all but)
+# third argument is the list of elements to hide (or hide but)
+SVL_HIDING_TEMPLATE = '''"%s.bcg" = total %s %s in "%s.bcg" ;
+'''
 
 
-    # generates SVL code to check the given operation
-    # allbutmode decides is the alphabet elements in hide are to be hidden or if they are the only ones to be shown
-    def genSVL(self, filename, hide, ren, cont, allbutmode=False):
-        """
-        Generates the SVL code for a verification operation.
+# This class represents the superclass of all classes performing some formal checking on two LTS models (stores in BCG format files)
+class Checker:
+    # sets up the Checker
+    # @param model1 String, filename of the first model (LTS in a BCG file)
+    # @param model2 String, filename of the second model (LTS in a BCG file)
+    def __init__(self, model1, model2):
+        self.model1 = model1
+        self.model2 = model2
 
-        :param filename: String, name of the SVL script file to write.
-        :param hide: Boolean, ...
-        :param ren: ??, ...
-        :param cont: ??; ...
-        :return:
-        """
-        f=open(filename, 'w')
-        f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
-        if hide:
-            if allbutmode:
+    # generates SVL script to check the property on both models
+    # @param filename String, filename of the SVL script to create
+    def __genSVL(self, filename):
+        raise NotImplementedError("__genSVL method is not implemented in class %s" % self.__class__.__name__)
+
+    # reification of a Checker as a callable object
+    # @param args list, list of the unnamed arguments
+    # @param kwargs dictionary, map name->value of the named arguments
+    # @return boolean
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError("__call__ method is not implemented in class %s" % self.__class__.__name__)
+
+
+# This class is used to perform comparison operations on two models (LTS stored in two BCG format files)
+class ComparisonChecker(Checker):
+    OPERATIONS = ["conservative", "inclusive", "exclusive"]
+    OPERATION_TO_BISIMULATOR = {"conservative": "equal", "inclusive": "smaller", "exclusive": "greater"}
+
+    # sets up the ComparisonChecker
+    # @param model1 String, filename of the first model (LTS in a BCG file)
+    # @param model2 String, filename of the second model (LTS in a BCG file)
+    # @param operation String, comparison operation (in ComparisonChecker.OPERATIONS)
+    # @param hiding List<String>, elements to hide (or to expose, wrt exposemode)
+    # @param expose boolean, expose mode if true element in hiding are hidden else they are exposed
+    # @param syncsets [List<String>,List<String>], couple of list of alphabets to synchronize on (one for each model)
+    # @param formula String, filename of the property file (MCL file)
+    def __init__(self, model1, model2, operation, hiding, exposemode, syncsets):
+        Checker.__init__(self, model1, model2)
+        if operation not in ComparisonChecker.OPERATIONS:
+            raise TypeError(
+                "operation from creating %s should be in %s" % (self.__class__.__name__, ComparisonChecker.OPERATIONS))
+        self.operation = operation
+        self.hiding = hiding
+        self.exposemode = exposemode
+        self.syncsets = syncsets
+
+    # generates SVL script to check the property on both models
+    # @param filename String, filename of the SVL script to create
+    def __genSVL(self, filename):
+        equivalence_version = "strong"
+        svl_commands = ""
+        # if required, perform hiding (on BOTH models) TODO: is this ok? shouldn't we all more freedom by hiding only in one? (OK FOR FASE'16)
+        if self.hiding is not None:
+            equivalence_version = "branching"
+            if self.exposemode:
                 hidemode = "hide all but"
             else:
                 hidemode = "hide"
-            f.write("\""+self.name1+".bcg\" = total %s using \""+self.fhide+"\" in \""+self.name1+".bcg\" ; \n" % hidemode)
-            f.write("\""+self.name2+".bcg\" = total %s using \""+self.fhide+"\" in \""+self.name2+".bcg\" ; \n\n" % hidemode)
-        if ren:
-            f.write("\""+self.name1+".bcg\" = total rename using \""+self.fren+"\" in \""+self.name1+".bcg\" ; \n") 
-            f.write("\""+self.name2+".bcg\" = total rename using \""+self.fren+"\" in \""+self.name2+".bcg\" ; \n\n") 
-        if cont:
-            f.write("\""+self.name1+".bcg\" = \""+self.fbcg+".bcg\""),
-            if (self.sync1==[]):
-                f.write(" ||| ")
-            else:
-                f.write(" |[")
-                dumpAlphabet(sync1,f,False)
-                f.write("]| ")
-            f.write("\""+self.name1+".bcg\" ; \n") 
-            f.write("\""+self.name2+".bcg\" = \""+self.fbcg+".bcg\""),
-            if (self.sync2==[]):
-                f.write(" ||| ")
-            else:
-                f.write(" |[")
-                dumpAlphabet(sync2,f,False)
-                f.write("]| ")
-            f.write("\""+self.name2+".bcg\" ; \n\n")
-
-        # the equivalence notion is strong by default but if hidding is used
-        # in that case, we use branching equivalence
-        eqnotion="strong"
-        if hide:
-            eqnotion="branching"
-
-        if (self.operation=="="):
-            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -equal -"+eqnotion+" -diag \""+self.name2+".bcg\" \n\n")
-        elif (self.operation==">"):
-            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -greater -"+eqnotion+" -diag \""+self.name2+".bcg\" \n\n")
-        elif (self.operation=="<"):
-            f.write("% bcg_open \""+self.name1+".bcg\" bisimulator -smaller -"+eqnotion+" -diag \""+self.name2+".bcg\" \n\n")
-        else:
-            print self.operation + " is not yet implemented"
-        f.write("\n\n")
+            for model in [self.model1, self.model2]:
+                svl_commands += SVL_HIDING_TEMPLATE % (model, hidemode, ','.join(self.hiding), model)
+        # perform renaming in both models (done AFTER having hidden) TODO: is this ok? shouldn't we allow more freedom in the ordering of things?
+        # if ren:
+        #    f.write(
+        #        "\"" + self.name1 + ".bcg\" = total rename using \"" + self.fren + "\" in \"" + self.name1 + ".bcg\" ; \n")
+        #    f.write(
+        #        "\"" + self.name2 + ".bcg\" = total rename using \"" + self.fren + "\" in \"" + self.name2 + ".bcg\" ; \n\n")
+        # if cont:
+        #    f.write("\"" + self.name1 + ".bcg\" = \"" + self.fbcg + ".bcg\""),
+        #    if (self.sync1 == []):
+        #        f.write(" ||| ")
+        #    else:
+        #        f.write(" |[")
+        #        dumpAlphabet(self.sync1, f, False)
+        #        f.write("]| ")
+        #    f.write("\"" + self.name1 + ".bcg\" ; \n")
+        #    f.write("\"" + self.name2 + ".bcg\" = \"" + self.fbcg + ".bcg\""),
+        #    if (self.sync2 == []):
+        #        f.write(" ||| ")
+        #    else:
+        #        f.write(" |[")
+        #        dumpAlphabet(self.sync2, f, False)
+        #        f.write("]| ")
+        #    f.write("\"" + self.name2 + ".bcg\" ; \n\n")
+        # add the command to perform the comparison
+        # equivalences are strong (by default) but we use branching in case of hiding
+        svl_commands += SVL_COMPARISON_CHECKING_TEMPLATE % (
+            self.model1, ComparisonChecker.OPERATION_TO_BISIMULATOR[self.operation], equivalence_version, self.model2)
+        #
+        template = SVL_CAESAR_TEMPLATE % svl_commands
+        f = open(filename, 'w')
+        f.write(template)
         f.close()
 
-    # generates and calls the generated SVL file
-    def compare(self, hide, ren, cont, allbutmode=False):
+    # checks if an equivalence or preorder yiels between two models
+    # does it by generating first a SVL script and then calling it
+    # @param args list, list of the unnamed arguments (NOT USED)
+    # @param kwargs dictionary, map name->value of the named arguments (NOT USED)
+    # @return boolean, true if it yiels, false else
+    def __call__(self, *args, **kwargs):
         import sys
-
-        fname="compare.svl"
-        self.genSVL(fname, hide, ren, cont, allbutmode)
-        call('svl '+fname+ ' > res.txt', shell=True)
-        res=call('grep TRUE res.txt', shell=True)
-
-        if (res==1):
+        script_filename = "compare.svl"
+        result_filename = "res.txt"
+        self.__genSVL(script_filename)
+        call(SVL_CALL_COMMAND % (script_filename, result_filename), shell=True)
+        res = call('grep TRUE %s' % result_filename, shell=True)
+        if (res == 1):
             return False
         else:
             return True
 
-# This class checks both process LTSs wrt. a certain MCL property
-class Checker:
 
-    # two names corresponding to the LTSs to be compared and a property in an MCL file
-    def __init__(self,n1,n2,f):
-        self.name1=n1
-        self.name2=n2
-        self.f=f
+# This class is used to perform model checking operations on two models (LTS stored in two BCG format files)
+# wrt an MCL property (stored in an MCL file)
+class FormulaChecker(Checker):
+    # sets up the FormulaChecker
+    # @param model1 String, filename of the first model (LTS in a BCG file)
+    # @param model2 String, filename of the second model (LTS in a BCG file)
+    # @param formula String, filename of the property file (MCL file)
+    def __init__(self, model1, model2, formula):
+        Checker.__init__(self, model1, model2)
+        self.formula = formula
 
-    # generates SVL code to check the property on both LTSs
-    def genSVL(self,filename):
-        f=open(filename, 'w')
-        f.write("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")
-        f.write("% bcg_open \""+self.name1+".bcg\" evaluator4 -diag \""+self.f+"\" \n\n")
-        f.write("% bcg_open \""+self.name2+".bcg\" evaluator4 -diag \""+self.f+"\" \n\n")
-        f.write("\n\n")
+    # generates SVL script to check the property on both models
+    # @param filename String, filename of the SVL script to create
+    def __genSVL(self, filename):
+        svl_commands = ""
+        for model in [self.model1, self.model2]:
+            svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (model, self.f)
+        template = SVL_CAESAR_TEMPLATE % svl_commands
+        #
+        f = open(filename, 'w')
+        f.write(template)
         f.close()
 
-    # generates and calls the generated SVL file
-    def check(self, debug = False):
+    # checks if a formula yields on two models
+    # does it by generating first a SVL script and then calling it
+    # @param args list, list of the unnamed arguments (NOT USED)
+    # @param kwargs dictionary, map name->value of the named arguments (NOT USED)
+    # @return boolean, true if no error(s) detected by SVL, false else.
+    def __call__(self, *args, **kwargs):
         import sys
-        
-        fname="check.svl"
-        self.genSVL(fname)
-        call('svl '+fname+ ' > res.txt', shell=True, stdout=sys.stdout)
-        res=call('grep FALSE res.txt', shell=True, stdout=sys.stdout)
-
-        # we return False if at least one FALSE in res.txt
-        if (res==1):
+        script_filename = "check.svl"
+        result_filename = "res.txt"
+        self.__genSVL(script_filename)
+        call(SVL_CALL_COMMAND % (script_filename, result_filename), shell=True, stdout=sys.stdout)
+        # check the result, return false if at least one FALSE in the result
+        res = call('grep FALSE %s' % result_filename, shell=True, stdout=sys.stdout)
+        if (res == 1):
             return True
         else:
             return False
-
 
 ##############################################################################################
-#if __name__ == '__main__':
-
+# if __name__ == '__main__':
