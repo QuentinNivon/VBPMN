@@ -5,10 +5,19 @@
 //
 
 // x( x( a, b ), c ) <--conservative--> x ( a, b ,c )
-fase16/p0001.pif = fase16/p0002.pif +
-fase16/p0002.pif = fase16/p0001.pif +
++ fase16/p0001.pif fase16/p0002.pif conservative
++ fase16/p0002.pif fase16/p0001.pif conservative
 
 // +( a, b ) -/-conservative--> + ( a, x( b, c ) )
 // +( a, b ) --inclusive--> + ( a, x( b, c ) )
-fase16/p0003.pif = fase16/p0004.pif -
-fase16/p0003.pif < fase16/p0004.pif +
+- fase16/p0003.pif fase16/p0004.pif conservative
++ fase16/p0003.pif fase16/p0004.pif inclusive
++ fase16/p0004.pif fase16/p0003.pif exclusive
+
+// a ; b -/-inclusive--> +( a, log ) ; b
+// a ; b --selective conservative--> +( a, log ) ; b
+- fase16/p0005.pif fase16/p0006.pif conservative
+- fase16/p0005.pif fase16/p0006.pif inclusive
++ fase16/p0005.pif fase16/p0006.pif conservative --hiding log
++ fase16/p0005.pif fase16/p0006.pif conservative --hiding a b --exposemode
+
