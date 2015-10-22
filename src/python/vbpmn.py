@@ -41,6 +41,11 @@ SVL_FORMULA_CHECKING_TEMPLATE = '''%% bcg_open "%s.bcg" evaluator4 -diag "%s"
 SVL_HIDING_TEMPLATE = '''"%s.bcg" = total %s %s in "%s.bcg" ;
 '''
 
+# template for renaming in SVL
+# first and third arguments are the model file (LTS in BCG format)
+# second argument is the relabelling function
+SVL_RENAMING_TEMPLATE = '''"%s.bcg" = total rename %s in "%s.bcg" ;
+'''
 
 # This class represents the superclass of all classes performing some formal checking on two LTS models (stores in BCG format files)
 class Checker:
@@ -67,6 +72,9 @@ class Checker:
 # This class is used to perform comparison operations on two models (LTS stored in two BCG format files)
 class ComparisonChecker(Checker):
     OPERATIONS = ["conservative", "inclusive", "exclusive"]
+    OPERATIONS_DEFAULT = "conservative"
+    SELECTIONS = ["first", "second", "all"]
+    SELECTIONS_DEFAULT = "all"
     OPERATION_TO_BISIMULATOR = {"conservative": "equal", "inclusive": "smaller", "exclusive": "greater"}
 
     # sets up the ComparisonChecker
@@ -74,17 +82,27 @@ class ComparisonChecker(Checker):
     # @param model2 String, filename of the second model (LTS in a BCG file)
     # @param operation String, comparison operation (in ComparisonChecker.OPERATIONS)
     # @param hiding List<String>, elements to hide (or to expose, wrt exposemode)
-    # @param expose boolean, expose mode if true element in hiding are hidden else they are exposed
+    # @param exposemode boolean, expose mode if true element in hiding are hidden else they are exposed
+    # @param renaming Dictionnary<String,String>, relabelling function
+    # @param renamed String, which model to rename (first, second, or all)
     # @param syncsets [List<String>,List<String>], couple of list of alphabets to synchronize on (one for each model)
     # @param formula String, filename of the property file (MCL file)
-    def __init__(self, model1, model2, operation, hiding, exposemode, syncsets):
+    def __init__(self, model1, model2, operation,
+                 hiding, exposemode,
+                 renaming, renamed,
+                 syncsets):
         Checker.__init__(self, model1, model2)
         if operation not in ComparisonChecker.OPERATIONS:
             raise TypeError(
-                "operation from creating %s should be in %s" % (self.__class__.__name__, ComparisonChecker.OPERATIONS))
+                "operation in creating %s should be in %s" % (self.__class__.__name__, ComparisonChecker.OPERATIONS))
+        if renamed not in ComparisonChecker.SELECTIONS:
+            raise TypeError(
+                "selection in creating %s should be in %s" % (self.__class__.__name__, ComparisonChecker.SELECTIONS))
         self.operation = operation
         self.hiding = hiding
+        self.renamed = renamed
         self.exposemode = exposemode
+        self.renaming = renaming
         self.syncsets = syncsets
 
     # generates SVL script to check the property on both models
@@ -92,7 +110,8 @@ class ComparisonChecker(Checker):
     def __genSVL(self, filename):
         equivalence_version = "strong"
         svl_commands = ""
-        # if required, perform hiding (on BOTH models) TODO: is this ok? shouldn't we all more freedom by hiding only in one? (OK FOR FASE'16)
+        # if required, perform hiding (on BOTH models)
+        # TODO: is this ok? shouldn't we all more freedom by hiding only in one? (OK FOR FASE'16) -> can do as for renaming
         if self.hiding is not None:
             equivalence_version = "branching"
             if self.exposemode:
@@ -101,12 +120,19 @@ class ComparisonChecker(Checker):
                 hidemode = "hide"
             for model in [self.model1, self.model2]:
                 svl_commands += SVL_HIDING_TEMPLATE % (model, hidemode, ','.join(self.hiding), model)
-        # perform renaming in both models (done AFTER having hidden) TODO: is this ok? shouldn't we allow more freedom in the ordering of things?
-        # if ren:
-        #    f.write(
-        #        "\"" + self.name1 + ".bcg\" = total rename using \"" + self.fren + "\" in \"" + self.name1 + ".bcg\" ; \n")
-        #    f.write(
-        #        "\"" + self.name2 + ".bcg\" = total rename using \"" + self.fren + "\" in \"" + self.name2 + ".bcg\" ; \n\n")
+        # perform renaming
+        # done AFTER having hidden TODO: is this ok? shouldn't we allow more freedom in the ordering of things?
+        if len(self.renaming) > 0:
+            renamings = []
+            for renaming in self.renaming:
+                (old, new) = renaming.split(":")
+                renamings.append("%s -> %s" % (old, new))
+            if self.renamed in ["first", "all"]:
+                svl_command = SVL_RENAMING_TEMPLATE % (self.model1, ','.join(renamings), self.model1)
+                svl_commands += svl_command
+            if self.renamed in ["second", "all"]:
+                svl_command = SVL_RENAMING_TEMPLATE % (self.model2, ','.join(renamings), self.model2)
+                svl_commands += svl_command
         # if cont:
         #    f.write("\"" + self.name1 + ".bcg\" = \"" + self.fbcg + ".bcg\""),
         #    if (self.sync1 == []):

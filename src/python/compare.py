@@ -16,12 +16,14 @@ if __name__ == '__main__':
 
     # set up parser
     import argparse
+    import ast
 
     parser = argparse.ArgumentParser(prog='VBPMN-compare', description='Compares two PIF processes.')
     parser.add_argument('--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('models', metavar='Model', nargs=2,
                         help='the models to compare (filenames of PIF files)')
-    parser.add_argument('operation', metavar='OP', choices=ComparisonChecker.OPERATIONS,
+    parser.add_argument('operation', metavar='OP',
+                        choices=ComparisonChecker.OPERATIONS,
                         help='the comparison operation')
     parser.add_argument('--hiding', nargs='*',
                         help='list of alphabet elements to hide or to expose (based on --exposemode)')
@@ -29,12 +31,18 @@ if __name__ == '__main__':
                         help='decides whether arguments for --hiding should be the ones hidden (default) or the ones exposed (if this option is set)')
     parser.add_argument('--context', metavar='Context',
                         help='context to compare with reference to (filename of a PIF file)')
+    parser.add_argument('--renaming', metavar='old:new', nargs='*', default=[],
+                        help='list of renamings')
+    parser.add_argument('--renamed', nargs='?',
+                        choices=ComparisonChecker.SELECTIONS,
+                        const=ComparisonChecker.SELECTIONS_DEFAULT, default=ComparisonChecker.SELECTIONS_DEFAULT,
+                        help='gives the model to apply renaming to (first, second, or all(default))')
 
     # parse arguments
     try:
         args = parser.parse_args()
     except:
-        # parser.print_help()
+        parser.print_help()
         res = False
         val = 2
         sys.exit(val)
@@ -48,18 +56,23 @@ if __name__ == '__main__':
     (ltsModel2, model2Alphabet) = Generator().generateLTS(pifModel2)
 
     # checks if we compare up to a context
+    # TODO Gwen : refine synchronization sets computation (_EM vs _REC)
+    # TODO Pascal : what about if we have hiding and/or renaming + context-awareness? different alphabets should be used?
     if args.context is not None:
         pifContextModel = args.context
         print "converting " + pifContextModel + " to LTS.."
         (ltsContext, contextAlphabet) = Generator().generateLTS(pifContextModel)
-        syncset1 = filter(lambda itm: itm in model1Alphabet, contextAlphabet)  # TODO Gwen : refine synchronization sets
-        syncset2 = filter(lambda itm: itm in model2Alphabet, contextAlphabet)  # computation.. _EM vs _REC :(
+        syncset1 = filter(lambda itm: itm in model1Alphabet, contextAlphabet)
+        syncset2 = filter(lambda itm: itm in model2Alphabet, contextAlphabet)
         print syncset1, syncset2
     else:
         syncset1, syncset2 = [], []
 
     # perform comparison
-    comparator = ComparisonChecker(ltsModel1, ltsModel2, args.operation, args.hiding, args.exposemode, syncsets=[syncset1, syncset2])
+    comparator = ComparisonChecker(ltsModel1, ltsModel2, args.operation,
+                                   args.hiding, args.exposemode,
+                                   args.renaming, args.renamed,
+                                   syncsets=[syncset1, syncset2])
     res = comparator()
     if not res:
         val = 1
