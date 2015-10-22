@@ -1,8 +1,4 @@
 // TESTS PARAMETERS
-// TODO: support workflow a ; a by adding supplemental information in pif.xsd::Task
-// TODO: support different renaming / hiding for the two processes (useful?)
-// TODO: the way the things are computed, one should not compare a process with itself!
-// TODO: do not compute the LTS each time (--rebuild option)
 
 //
 // FASE16

@@ -5,9 +5,12 @@
 # Date:    2014-2015
 ###############################################################################
 
-from pif2lnt import *  # this library allows to go from PIF to LNT and LTS
-# import os.path
+# TODO: support workflow a ; a by adding supplemental information in pif.xsd::Task
+# TODO: support different renaming / hiding for the two processes (useful?)
+# TODO: the way the things are computed, one should not compare a process with itself!
+# TODO: do not compute the LTS each time (--rebuild option)
 
+from pif2lnt import *  # this library allows to go from PIF to LNT and LTS
 
 # command to call SVL
 # first argument is the script, second one is the result file
@@ -47,6 +50,14 @@ SVL_HIDING_TEMPLATE = '''"%s.bcg" = total %s %s in "%s.bcg" ;
 SVL_RENAMING_TEMPLATE = '''"%s.bcg" = total rename %s in "%s.bcg" ;
 '''
 
+# template for making a working copy in SVL
+# first and second arguments are the source and target model file (LTS in BCG format)
+SVL_COPY_TEMPLATE = '''%% bcg_io "%s.bcg" "%s.bcg"
+'''
+
+WORK_SUFFIX = "_work"
+
+
 # This class represents the superclass of all classes performing some formal checking on two LTS models (stores in BCG format files)
 class Checker:
     TERM_OK, TERM_ERROR, TERM_PROBLEM = (0, 1, 2)
@@ -73,7 +84,7 @@ class Checker:
 
 # This class is used to perform comparison operations on two models (LTS stored in two BCG format files)
 class ComparisonChecker(Checker):
-    OPERATIONS = ["conservative", "inclusive", "exclusive","_"]
+    OPERATIONS = ["conservative", "inclusive", "exclusive", "_"]
     OPERATIONS_DEFAULT = "conservative"
     SELECTIONS = ["first", "second", "all"]
     SELECTIONS_DEFAULT = "all"
@@ -94,9 +105,10 @@ class ComparisonChecker(Checker):
                  renaming, renamed,
                  syncsets):
         Checker.__init__(self, model1, model2)
-        if operation not in ComparisonChecker.OPERATIONS or operation=='_':
+        if operation not in ComparisonChecker.OPERATIONS or operation == '_':
             raise TypeError(
-                "operation in creating %s should be in %s and _ is only for --hiding" % (self.__class__.__name__, ComparisonChecker.OPERATIONS))
+                "operation in creating %s should be in %s and _ is only for --hiding" % (
+                    self.__class__.__name__, ComparisonChecker.OPERATIONS))
         if renamed not in ComparisonChecker.SELECTIONS:
             raise TypeError(
                 "selection in creating %s should be in %s" % (self.__class__.__name__, ComparisonChecker.SELECTIONS))
@@ -112,6 +124,11 @@ class ComparisonChecker(Checker):
     def __genSVL(self, filename):
         equivalence_version = "strong"
         svl_commands = ""
+        # add commands to make copies of the models and not change them
+        workmodel1 = self.model1 + WORK_SUFFIX
+        workmodel2 = self.model2 + WORK_SUFFIX
+        svl_commands += SVL_COPY_TEMPLATE % (self.model1, workmodel1)
+        svl_commands += SVL_COPY_TEMPLATE % (self.model2, workmodel2)
         # if required, perform hiding (on BOTH models)
         # TODO: is this ok? shouldn't we all more freedom by hiding only in one? (OK FOR FASE'16) -> can do as for renaming
         if self.hiding is not None:
@@ -120,8 +137,8 @@ class ComparisonChecker(Checker):
                 hidemode = "hide all but"
             else:
                 hidemode = "hide"
-            for model in [self.model1, self.model2]:
-                svl_commands += SVL_HIDING_TEMPLATE % (model, hidemode, ','.join(self.hiding), model)
+            svl_commands += SVL_HIDING_TEMPLATE % (workmodel1, hidemode, ','.join(self.hiding), workmodel1)
+            svl_commands += SVL_HIDING_TEMPLATE % (workmodel2, hidemode, ','.join(self.hiding), workmodel2)
         # perform renaming
         # done AFTER having hidden TODO: is this ok? shouldn't we allow more freedom in the ordering of things?
         if len(self.renaming) > 0:
@@ -130,10 +147,10 @@ class ComparisonChecker(Checker):
                 (old, new) = renaming.split(":")
                 renamings.append("%s -> %s" % (old, new))
             if self.renamed in ["first", "all"]:
-                svl_command = SVL_RENAMING_TEMPLATE % (self.model1, ','.join(renamings), self.model1)
+                svl_command = SVL_RENAMING_TEMPLATE % (workmodel1, ','.join(renamings), workmodel1)
                 svl_commands += svl_command
             if self.renamed in ["second", "all"]:
-                svl_command = SVL_RENAMING_TEMPLATE % (self.model2, ','.join(renamings), self.model2)
+                svl_command = SVL_RENAMING_TEMPLATE % (workmodel2, ','.join(renamings), workmodel2)
                 svl_commands += svl_command
         # if cont:
         #    f.write("\"" + self.name1 + ".bcg\" = \"" + self.fbcg + ".bcg\""),
@@ -155,7 +172,7 @@ class ComparisonChecker(Checker):
         # add the command to perform the comparison
         # equivalences are strong (by default) but we use branching in case of hiding
         svl_commands += SVL_COMPARISON_CHECKING_TEMPLATE % (
-            self.model1, ComparisonChecker.OPERATION_TO_BISIMULATOR[self.operation], equivalence_version, self.model2)
+            workmodel1, ComparisonChecker.OPERATION_TO_BISIMULATOR[self.operation], equivalence_version, workmodel2)
         #
         template = SVL_CAESAR_TEMPLATE % svl_commands
         f = open(filename, 'w')
@@ -182,6 +199,8 @@ class ComparisonChecker(Checker):
 
 # This class is used to perform model checking operations on two models (LTS stored in two BCG format files)
 # wrt an MCL property (stored in an MCL file)
+# TODO : it should support renaming and hiding
+# TODO : it should check that M1 |= PHI => M2 |= PHI, not that M1 |= PHI /\ M2 |= PHI
 class FormulaChecker(Checker):
     # sets up the FormulaChecker
     # @param model1 String, filename of the first model (LTS in a BCG file)
@@ -195,8 +214,8 @@ class FormulaChecker(Checker):
     # @param filename String, filename of the SVL script to create
     def __genSVL(self, filename):
         svl_commands = ""
-        for model in [self.model1, self.model2]:
-            svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (model, self.f)
+        svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model1, self.f)
+        svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model2, self.f)
         template = SVL_CAESAR_TEMPLATE % svl_commands
         #
         f = open(filename, 'w')
