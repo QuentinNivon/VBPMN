@@ -143,7 +143,6 @@ public class InputOutputTests {
         try {
             model.setResource(new File(String.format("%s%s%s%s", OUTFILES_PATH, GENPREFIX, p.getName(), SUFFIX)));
             model.modelToFile(writer);
-            final JAXBContext ctx;
             assertEquals(true, true);
         } catch (IllegalResourceException e) {
             e.printStackTrace();
