@@ -3,16 +3,16 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
+ * <p>
  * vbpmn
  * Copyright (C) 2015 Pascal Poizat (@pascalpoizat)
  * emails: pascal.poizat@lip6.fr
@@ -42,7 +42,7 @@ public class ComparisonTests {
     public static final String PROGRAM = "compare.py";
     public static final String TESTFILE = "tests.txt";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
-    public static final String REGEX_TEST = "^([\\w/.]*)\\h([=<>])\\h([\\w/.]*)\\h([+-])$";
+    public static final String REGEX_TEST = "^([+-])\\h(.*)$";
     public static final String REGEX_EMPTYLINE = "^\\h*$";
     public static final String OK = "+";
     public static final String NOK = "-";
@@ -54,21 +54,17 @@ public class ComparisonTests {
      * <p>
      * note : there are issues with Process/ProcessBuilder for some contexts of use
      * see http://docs.oracle.com/javase/8/docs/api/java/lang/Process.html, http://docs.oracle.com/javase/8/docs/api/java/lang/ProcessBuilder.html
-     * hence, we use Apache Commons Exec
+     * hence, we use Apache Commons Exec https://commons.apache.org/proper/commons-exec/
      */
     @Test(dataProvider = "get_data_from_test_file")
-    public void run_all_tests(String filepath1, String filepath2, String operator, String expected_result) {
+    public void run_all_tests(String expected_result, String rest) {
         int exitValue;
-        CommandLine cmd = new CommandLine(CMD);
-        cmd.addArgument(PROGRAM_PATH + PROGRAM);
-        cmd.addArgument(filepath1);
-        cmd.addArgument(filepath2);
-        cmd.addArgument(operator);
+        CommandLine cmd = CommandLine.parse(CMD + " -u " + PROGRAM_PATH + PROGRAM + " " + rest);
         Executor executor = new DefaultExecutor();
         executor.setWorkingDirectory(new File(WORKINGDIR));
         int expected_result_as_int = 2;
-        if(expected_result.equals(OK)) expected_result_as_int = 0;
-        else if(expected_result.equals(NOK)) expected_result_as_int = 1;
+        if (expected_result.equalsIgnoreCase(OK)) expected_result_as_int = 0;
+        else if (expected_result.equalsIgnoreCase(NOK)) expected_result_as_int = 1;
         else fail();
         executor.setExitValue(expected_result_as_int);
         try {
@@ -80,13 +76,14 @@ public class ComparisonTests {
 //            else
 //                fail();
         } catch (ExecuteException e) {
-            e.printStackTrace();
+            System.out.println(e.getCause());
             fail();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getCause());
             fail();
         }
     }
+
 
     /**
      * Data provider from a test file
@@ -109,15 +106,11 @@ public class ComparisonTests {
                 } else if (line.matches(REGEX_TEST)) {
                     Matcher m_test = p_test.matcher(line);
                     if (m_test.matches()) {
-                        String process1 = m_test.group(1);
-                        String process2 = m_test.group(3);
-                        String operator = m_test.group(2);
-                        String expected_result = m_test.group(4);
-                        Object[] line_elements = new Object[4];
-                        line_elements[0] = process1;
-                        line_elements[1] = process2;
-                        line_elements[2] = operator;
-                        line_elements[3] = expected_result;
+                        String expected_result = m_test.group(1);
+                        String rest = m_test.group(2);
+                        Object[] line_elements = new Object[2];
+                        line_elements[0] = expected_result;
+                        line_elements[1] = rest;
                         data.add(line_elements);
                     } else {
                         fail();
