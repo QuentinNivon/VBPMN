@@ -49,6 +49,8 @@ SVL_RENAMING_TEMPLATE = '''"%s.bcg" = total rename %s in "%s.bcg" ;
 
 # This class represents the superclass of all classes performing some formal checking on two LTS models (stores in BCG format files)
 class Checker:
+    TERM_OK, TERM_ERROR, TERM_PROBLEM = (0, 1, 2)
+
     # sets up the Checker
     # @param model1 String, filename of the first model (LTS in a BCG file)
     # @param model2 String, filename of the second model (LTS in a BCG file)
@@ -71,7 +73,7 @@ class Checker:
 
 # This class is used to perform comparison operations on two models (LTS stored in two BCG format files)
 class ComparisonChecker(Checker):
-    OPERATIONS = ["conservative", "inclusive", "exclusive"]
+    OPERATIONS = ["conservative", "inclusive", "exclusive","_"]
     OPERATIONS_DEFAULT = "conservative"
     SELECTIONS = ["first", "second", "all"]
     SELECTIONS_DEFAULT = "all"
@@ -92,9 +94,9 @@ class ComparisonChecker(Checker):
                  renaming, renamed,
                  syncsets):
         Checker.__init__(self, model1, model2)
-        if operation not in ComparisonChecker.OPERATIONS:
+        if operation not in ComparisonChecker.OPERATIONS or operation=='_':
             raise TypeError(
-                "operation in creating %s should be in %s" % (self.__class__.__name__, ComparisonChecker.OPERATIONS))
+                "operation in creating %s should be in %s and _ is only for --hiding" % (self.__class__.__name__, ComparisonChecker.OPERATIONS))
         if renamed not in ComparisonChecker.SELECTIONS:
             raise TypeError(
                 "selection in creating %s should be in %s" % (self.__class__.__name__, ComparisonChecker.SELECTIONS))
@@ -172,7 +174,7 @@ class ComparisonChecker(Checker):
         self.__genSVL(script_filename)
         call(SVL_CALL_COMMAND % (script_filename, result_filename), shell=True)
         res = call('grep TRUE %s' % result_filename, shell=True)
-        if (res == 1):
+        if (res == Checker.TERM_ERROR):
             return False
         else:
             return True
@@ -214,7 +216,7 @@ class FormulaChecker(Checker):
         call(SVL_CALL_COMMAND % (script_filename, result_filename), shell=True, stdout=sys.stdout)
         # check the result, return false if at least one FALSE in the result
         res = call('grep FALSE %s' % result_filename, shell=True, stdout=sys.stdout)
-        if (res == 1):
+        if (res == Checker.TERM_ERROR):
             return True
         else:
             return False

@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) != 4:
         res = False
-        val = 2
+        val = Checker.TERM_PROBLEM
         print "Error: wrong number of parameters, please look at the README.md file."
 
     else:
@@ -21,7 +21,7 @@ if __name__ == '__main__':
         pifModel1 = sys.argv[1]
         pifModel2 = sys.argv[2]
         formula = sys.argv[3]
-        val = 0  # return value (0 -> true, 1 -> false, 2 -> wrong format)
+        val = Checker.TERM_OK
 
         print "converting " + pifModel1 + " to LTS.."
         (ltsModel1, _) = Generator().generateLTS(pifModel1)
@@ -33,6 +33,6 @@ if __name__ == '__main__':
         res = formulaChecker()
 
     if not res:
-        val = 1
+        val = Checker.TERM_ERROR
     print res
     sys.exit(val)

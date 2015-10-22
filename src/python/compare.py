@@ -11,13 +11,8 @@ from vbpmn import *
 ##############################################################################################
 if __name__ == '__main__':
 
-    # initializations
-    val = 0  # return value (0 -> true, 1 -> false, 2 -> wrong format)
-
     # set up parser
     import argparse
-    import ast
-
     parser = argparse.ArgumentParser(prog='VBPMN-compare', description='Compares two PIF processes.')
     parser.add_argument('--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('models', metavar='Model', nargs=2,
@@ -43,14 +38,13 @@ if __name__ == '__main__':
         args = parser.parse_args()
     except:
         parser.print_help()
-        res = False
-        val = 2
-        sys.exit(val)
+        sys.exit(Checker.TERM_PROBLEM)
 
-    # convert models from PIF to LNT
+    # (re)build first model
     pifModel1 = args.models[0]
     print "converting " + pifModel1 + " to LTS.."
     (ltsModel1, model1Alphabet) = Generator().generateLTS(pifModel1)
+    # (re)build second model
     pifModel2 = args.models[1]
     print "converting " + pifModel2 + " to LTS.."
     (ltsModel2, model2Alphabet) = Generator().generateLTS(pifModel2)
@@ -75,6 +69,8 @@ if __name__ == '__main__':
                                    syncsets=[syncset1, syncset2])
     res = comparator()
     if not res:
-        val = 1
+        val = Checker.TERM_ERROR
+    else:
+        val = Checker.TERM_OK
     print res
     sys.exit(val)
