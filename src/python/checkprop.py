@@ -22,12 +22,13 @@ if __name__ == '__main__':
         pifModel2 = sys.argv[2]
         formula = sys.argv[3]
         val = Checker.TERM_OK
+        loader = Loader()
 
         print "converting " + pifModel1 + " to LTS.."
-        (ltsModel1, _) = Generator().generateLTS(pifModel1)
+        (ltsModel1, _) = loader(pifModel1)
 
         print "converting " + pifModel2 + " to LTS.."
-        (ltsModel2, _) = Generator().generateLTS(pifModel2)
+        (ltsModel2, _) = loader(pifModel2)
 
         formulaChecker = FormulaChecker(ltsModel1, ltsModel2, formula)
         res = formulaChecker()

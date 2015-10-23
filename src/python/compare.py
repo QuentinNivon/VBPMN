@@ -40,14 +40,14 @@ if __name__ == '__main__':
         parser.print_help()
         sys.exit(Checker.TERM_PROBLEM)
 
+    loader = Loader()
+
     # (re)build first model
     pifModel1 = args.models[0]
-    print "converting " + pifModel1 + " to LTS.."
-    (ltsModel1, model1Alphabet) = Generator().generateLTS(pifModel1)
+    (ltsModel1, model1Alphabet) = loader(pifModel1)
     # (re)build second model
     pifModel2 = args.models[1]
-    print "converting " + pifModel2 + " to LTS.."
-    (ltsModel2, model2Alphabet) = Generator().generateLTS(pifModel2)
+    (ltsModel2, model2Alphabet) = loader(pifModel2)
 
     # checks if we compare up to a context
     # TODO Gwen : refine synchronization sets computation (_EM vs _REC)
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     if args.context is not None:
         pifContextModel = args.context
         print "converting " + pifContextModel + " to LTS.."
-        (ltsContext, contextAlphabet) = Generator().generateLTS(pifContextModel)
+        (ltsContext, contextAlphabet) = loader(pifContextModel)
         syncset1 = filter(lambda itm: itm in model1Alphabet, contextAlphabet)
         syncset2 = filter(lambda itm: itm in model2Alphabet, contextAlphabet)
         print syncset1, syncset2
