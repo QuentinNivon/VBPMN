@@ -1170,7 +1170,7 @@ class Generator:
         pr = Popen(["svl", pifModelName], shell=False, stdout=sys.stdout)
         pr.communicate()
         # return name and alphabet
-        return (pifModelName
+        return (pifModelName,proc.alpha())
 
 
 # This class gets loads an LTS (BCG format) for a PIF model
