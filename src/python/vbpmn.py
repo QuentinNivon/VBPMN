@@ -9,6 +9,8 @@
 # TODO: support different renaming / hiding for the two processes (useful?)
 # TODO: the way the things are computed, one should not compare a process with itself!
 # TODO: support hiding, renaming, refinement, and context-awareness in property based comparison
+# TODO: optimize by calling bisimulator / evaluator4 with hiding/renaming options instead of generating new bcg files
+# TODO: use SVL options to create buffers instead of writing them in LNT
 
 import sys
 from pif2lnt import *  # this library allows to go from PIF to LNT and LTS
@@ -70,6 +72,8 @@ OPERATION_TO_BISIMULATOR = {"conservative": "equal", "inclusive": "smaller", "ex
 # This class represents the superclass of all classes performing some formal checking on two LTS models (stores in BCG format files)
 class Checker:
     TERM_OK, TERM_ERROR, TERM_PROBLEM = (0, 1, 2)
+    CHECKER_FILE = "check.svl"
+    DIAGNOSTIC_FILE = "res.txt"
 
     # sets up the Checker
     # @param model1 String, filename of the first model (LTS in a BCG file)
@@ -93,6 +97,7 @@ class Checker:
 
 # This class is used to perform comparison operations on two models (LTS stored in two BCG format files)
 class ComparisonChecker(Checker):
+
     # sets up the ComparisonChecker
     # @param model1 String, filename of the first model (LTS in a BCG file)
     # @param model2 String, filename of the second model (LTS in a BCG file)
@@ -189,11 +194,9 @@ class ComparisonChecker(Checker):
     # @return boolean, true if it yiels, false else
     def __call__(self, *args, **kwargs):
         import sys
-        script_filename = "compare.svl"
-        result_filename = "res.txt"
-        self.__genSVL(script_filename)
-        call(SVL_CALL_COMMAND % (script_filename, result_filename), shell=True)
-        res = call('grep TRUE %s' % result_filename, shell=True)
+        self.__genSVL(Checker.CHECKER_FILE)
+        call(SVL_CALL_COMMAND % (Checker.CHECKER_FILE, Checker.DIAGNOSTIC_FILE), shell=True)
+        res = call('grep TRUE %s' % Checker.DIAGNOSTIC_FILE, shell=True)
         if (res == Checker.TERM_ERROR):
             return False
         else:
@@ -203,8 +206,10 @@ class ComparisonChecker(Checker):
 # This class is used to perform model checking operations on two models (LTS stored in two BCG format files)
 # wrt an MCL property (stored in an MCL file)
 # TODO : it should support renaming and hiding
-# TODO : it should check that M1 |= PHI => M2 |= PHI, not that M1 |= PHI /\ M2 |= PHI
+# TODO : only property-and is implemented, missing property-implied
 class FormulaChecker(Checker):
+    FORMULA_FILE = "formula.mcl"
+
     # sets up the FormulaChecker
     # @param model1 String, filename of the first model (LTS in a BCG file)
     # @param model2 String, filename of the second model (LTS in a BCG file)
@@ -217,8 +222,8 @@ class FormulaChecker(Checker):
     # @param filename String, filename of the SVL script to create
     def __genSVL(self, filename):
         svl_commands = ""
-        svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model1, self.f)
-        svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model2, self.f)
+        svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model1, "formula.mcl")
+        svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model2, "formula.mcl")
         template = SVL_CAESAR_TEMPLATE % svl_commands
         #
         f = open(filename, 'w')
@@ -232,12 +237,13 @@ class FormulaChecker(Checker):
     # @return boolean, true if no error(s) detected by SVL, false else.
     def __call__(self, *args, **kwargs):
         import sys
-        script_filename = "check.svl"
-        result_filename = "res.txt"
-        self.__genSVL(script_filename)
-        call(SVL_CALL_COMMAND % (script_filename, result_filename), shell=True, stdout=sys.stdout)
+        f = open(FormulaChecker.FORMULA_FILE, 'w')
+        f.write(self.formula[1:-1]) # TODO: not very clean ...
+        f.close()
+        self.__genSVL(Checker.CHECKER_FILE)
+        call(SVL_CALL_COMMAND % (Checker.CHECKER_FILE, Checker.DIAGNOSTIC_FILE), shell=True, stdout=sys.stdout)
         # check the result, return false if at least one FALSE in the result
-        res = call('grep FALSE %s' % result_filename, shell=True, stdout=sys.stdout)
+        res = call('grep FALSE %s' % Checker.DIAGNOSTIC_FILE, shell=True, stdout=sys.stdout)
         if res == Checker.TERM_ERROR:
             return True
         else:
@@ -260,7 +266,7 @@ if __name__ == '__main__':
                         help='temporal logic formula to check (used only if operation is in %s)' % OPERATIONS_PROPERTY)
     parser.add_argument('--hiding', nargs='*',
                         help='list of alphabet elements to hide or to expose (based on --exposemode)')
-    parser.add_argument('--exposemode', nargs='?', choices=[True, False], const=True, default=False,
+    parser.add_argument('--exposemode', action='store_true',
                         help='decides whether arguments for --hiding should be the ones hidden (default) or the ones exposed (if this option is set)')
     parser.add_argument('--context', metavar='Context',
                         help='context to compare with reference to (filename of a PIF file)')

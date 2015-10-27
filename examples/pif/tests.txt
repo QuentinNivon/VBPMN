@@ -39,4 +39,9 @@
 + fase16/p0007.pif fase16/p0008.pif conservative --renaming "b:a" "c:b" "a:c" --renamed second
 + fase16/p0009.pif fase16/p0009.pif conservative --renaming "b:c" --renamed all
 
+// formula
+
+// a ; b --property-and "AF {B}"--> +( a, log ) ; b
++ fase16/p0005.pif fase16/p0006.pif property-and --formula "mu X  . (< true > true and [ not B ] X)"
+
 // renaming + hiding
