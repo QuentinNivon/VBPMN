@@ -249,7 +249,7 @@ if __name__ == '__main__':
     # set up parser
     import argparse
 
-    parser = argparse.ArgumentParser(prog='VBPMN-compare', description='Compares two PIF processes.')
+    parser = argparse.ArgumentParser(prog='vbpmn', description='Compares two PIF processes.')
     parser.add_argument('--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('models', metavar='Model', nargs=2,
                         help='the models to compare (filenames of PIF files)')
