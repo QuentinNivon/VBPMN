@@ -39,7 +39,7 @@ public class ComparisonTests {
     public static final String CMD = "python";
     public static final String WORKINGDIR = "out/test/vbpmn/pif/";
     public static final String PROGRAM_PATH = "../../../production/vbpmn/";
-    public static final String PROGRAM = "compare.py";
+    public static final String PROGRAM = "vbpmn.py";
     public static final String TESTFILE = "tests.txt";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
     public static final String REGEX_TEST = "^([+-])\\h(.*)$";

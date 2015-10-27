@@ -8,8 +8,9 @@
 # TODO: support workflow a ; a by adding supplemental information in pif.xsd::Task
 # TODO: support different renaming / hiding for the two processes (useful?)
 # TODO: the way the things are computed, one should not compare a process with itself!
-# TODO: do not compute the LTS each time (--rebuild option)
+# TODO: support hiding, renaming, refinement, and context-awareness in property based comparison
 
+import sys
 from pif2lnt import *  # this library allows to go from PIF to LNT and LTS
 
 # command to call SVL
@@ -57,6 +58,14 @@ SVL_COPY_TEMPLATE = '''%% bcg_io "%s.bcg" "%s.bcg"
 
 WORK_SUFFIX = "_work"
 
+OPERATIONS_COMPARISON = ["conservative", "inclusive", "exclusive"]
+OPERATIONS_PROPERTY = ["property-and", "property-implied"]
+OPERATIONS = OPERATIONS_COMPARISON + OPERATIONS_PROPERTY
+OPERATIONS_DEFAULT = "conservative"
+SELECTIONS = ["first", "second", "all"]
+SELECTIONS_DEFAULT = "all"
+OPERATION_TO_BISIMULATOR = {"conservative": "equal", "inclusive": "smaller", "exclusive": "greater"}
+
 
 # This class represents the superclass of all classes performing some formal checking on two LTS models (stores in BCG format files)
 class Checker:
@@ -84,12 +93,6 @@ class Checker:
 
 # This class is used to perform comparison operations on two models (LTS stored in two BCG format files)
 class ComparisonChecker(Checker):
-    OPERATIONS = ["conservative", "inclusive", "exclusive", "_"]
-    OPERATIONS_DEFAULT = "conservative"
-    SELECTIONS = ["first", "second", "all"]
-    SELECTIONS_DEFAULT = "all"
-    OPERATION_TO_BISIMULATOR = {"conservative": "equal", "inclusive": "smaller", "exclusive": "greater"}
-
     # sets up the ComparisonChecker
     # @param model1 String, filename of the first model (LTS in a BCG file)
     # @param model2 String, filename of the second model (LTS in a BCG file)
@@ -105,11 +108,11 @@ class ComparisonChecker(Checker):
                  renaming, renamed,
                  syncsets):
         Checker.__init__(self, model1, model2)
-        if operation not in ComparisonChecker.OPERATIONS or operation == '_':
+        if operation not in OPERATIONS or operation == '_':
             raise TypeError(
                 "operation in creating %s should be in %s and _ is only for --hiding" % (
-                    self.__class__.__name__, ComparisonChecker.OPERATIONS))
-        if renamed not in ComparisonChecker.SELECTIONS:
+                    self.__class__.__name__, OPERATIONS))
+        if renamed not in SELECTIONS:
             raise TypeError(
                 "selection in creating %s should be in %s" % (self.__class__.__name__, ComparisonChecker.SELECTIONS))
         self.operation = operation
@@ -172,7 +175,7 @@ class ComparisonChecker(Checker):
         # add the command to perform the comparison
         # equivalences are strong (by default) but we use branching in case of hiding
         svl_commands += SVL_COMPARISON_CHECKING_TEMPLATE % (
-            workmodel1, ComparisonChecker.OPERATION_TO_BISIMULATOR[self.operation], equivalence_version, workmodel2)
+            workmodel1, OPERATION_TO_BISIMULATOR[self.operation], equivalence_version, workmodel2)
         #
         template = SVL_CAESAR_TEMPLATE % svl_commands
         f = open(filename, 'w')
@@ -235,10 +238,87 @@ class FormulaChecker(Checker):
         call(SVL_CALL_COMMAND % (script_filename, result_filename), shell=True, stdout=sys.stdout)
         # check the result, return false if at least one FALSE in the result
         res = call('grep FALSE %s' % result_filename, shell=True, stdout=sys.stdout)
-        if (res == Checker.TERM_ERROR):
+        if res == Checker.TERM_ERROR:
             return True
         else:
             return False
 
+
 ##############################################################################################
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    # set up parser
+    import argparse
+
+    parser = argparse.ArgumentParser(prog='VBPMN-compare', description='Compares two PIF processes.')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('models', metavar='Model', nargs=2,
+                        help='the models to compare (filenames of PIF files)')
+    parser.add_argument('operation', metavar='OP',
+                        choices=OPERATIONS,
+                        help='the comparison operation')
+    parser.add_argument('--formula', metavar='Formula',
+                        help='temporal logic formula to check (used only if operation is in %s)' % OPERATIONS_PROPERTY)
+    parser.add_argument('--hiding', nargs='*',
+                        help='list of alphabet elements to hide or to expose (based on --exposemode)')
+    parser.add_argument('--exposemode', nargs='?', choices=[True, False], const=True, default=False,
+                        help='decides whether arguments for --hiding should be the ones hidden (default) or the ones exposed (if this option is set)')
+    parser.add_argument('--context', metavar='Context',
+                        help='context to compare with reference to (filename of a PIF file)')
+    parser.add_argument('--renaming', metavar='old:new', nargs='*', default=[],
+                        help='list of renamings')
+    parser.add_argument('--renamed', nargs='?',
+                        choices=SELECTIONS,
+                        const=SELECTIONS_DEFAULT, default=SELECTIONS_DEFAULT,
+                        help='gives the model to apply renaming to (first, second, or all(default))')
+
+    # parse arguments
+    try:
+        args = parser.parse_args()
+        if args.operation in OPERATIONS_PROPERTY and args.formula is None:
+            print "missing formula in presence of property based comparison"
+            raise Exception()
+        if args.operation not in OPERATIONS_PROPERTY and args.formula is not None:
+            print "formula in presence of equivalence based comparison will not be used"
+    except:
+        parser.print_help()
+        sys.exit(Checker.TERM_PROBLEM)
+
+    loader = Loader()
+
+    # (re)build first model
+    pifModel1 = args.models[0]
+    (ltsModel1, model1Alphabet) = loader(pifModel1)
+    # (re)build second model
+    pifModel2 = args.models[1]
+    (ltsModel2, model2Alphabet) = loader(pifModel2)
+
+    # checks if we compare up to a context
+    # TODO Gwen : refine synchronization sets computation (_EM vs _REC)
+    # TODO Pascal : what about if we have hiding and/or renaming + context-awareness? different alphabets should be used?
+    if args.context is not None:
+        pifContextModel = args.context
+        print "converting " + pifContextModel + " to LTS.."
+        (ltsContext, contextAlphabet) = loader(pifContextModel)
+        syncset1 = filter(lambda itm: itm in model1Alphabet, contextAlphabet)
+        syncset2 = filter(lambda itm: itm in model2Alphabet, contextAlphabet)
+        print syncset1, syncset2
+    else:
+        syncset1, syncset2 = [], []
+
+    # check whether we compare based on an equivalence or based on a property
+    if args.operation in OPERATIONS_COMPARISON:
+        comparator = ComparisonChecker(ltsModel1, ltsModel2, args.operation,
+                                       args.hiding, args.exposemode,
+                                       args.renaming, args.renamed,
+                                       syncsets=[syncset1, syncset2])
+    else:
+        comparator = FormulaChecker(ltsModel1, ltsModel2, args.formula)
+
+    # perform comparison and process result
+    res = comparator()
+    if not res:
+        val = Checker.TERM_ERROR
+    else:
+        val = Checker.TERM_OK
+    print res
+    sys.exit(val)
