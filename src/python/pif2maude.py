@@ -10,6 +10,12 @@ import sys
 from pif2lnt import *  # this library allows to load Python objects from PIF
 import random
 
+# Note: this transformation supports the constructs available in the Maude
+#  BPMN model, namely tasks, start/end events, and/xor/or split/join gateways.
+
+# TODO: launch the translation only if all operators in the PIF instance are
+#  supported by the translation.
+
 class MaudeDumper:
 
     def __init__(self, filename):
@@ -69,7 +75,7 @@ class MaudeDumper:
         countnds=len(proc.nodes)
         for nd in proc.nodes:
             countnds=countnds-1
-            nd.dumpMaude(f)
+            nd.dumpMaude(f)   # these functions are defined for each object in pif2lnt
             if (countnds>0):
                 f.write(",")
             f.write("\n")
