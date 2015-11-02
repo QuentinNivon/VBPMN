@@ -663,7 +663,7 @@ class JoinGateway(Gateway):
 
     # Dumps a Maude line of code into the given file
     def dumpMaude(self,f,nameop):
-        f.write("        split("+self.ident+","+nameop+",")
+        f.write("        merge("+self.ident+","+nameop+",")
         cpt=len(self.incomingFlows)
         f.write("(")
         for ofl in self.incomingFlows:

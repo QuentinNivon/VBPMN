@@ -31,7 +31,7 @@ class MaudeDumper:
         f = open(fmaude, 'w')
         f.write("---- Example "+proc.name+" in BPMN\n\n")
         f.write("load bpmn.maude\n\n")
-        f.write("mod "+proc.name+" \n")
+        f.write("mod BPMN-EX is ---- "+proc.name+" \n")
         f.write("  pr BPMN-SEM . \n")
         f.write("  ops ")
         for fl in proc.flows:
@@ -48,7 +48,7 @@ class MaudeDumper:
         f.write("  op fls : -> Set{Flow} . \n")
         f.write("  op nds : -> Set{Node} . \n")
 
-        f.write("  eq init = token("+proc.initial.ident+",0) . \n\n")
+        f.write("  eq init = token("+proc.initial.outgoingFlows[0].ident+",0) . \n\n")
 
         # generating flow objects
         f.write("  eq fls \n")
