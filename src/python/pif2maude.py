@@ -104,5 +104,5 @@ if __name__ == '__main__':
         md.dumpMaude()
 
 # TODO: launch the translation only if all operators in the PIF instance are
-#  supported inthe Maude encoding.
+#  supported in the Maude encoding.
 
