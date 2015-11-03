@@ -9,12 +9,10 @@
 import sys
 from pif2lnt import *  # this library allows to load Python objects from PIF
 import random
+from subprocess import call
 
 # Note: this transformation supports the constructs available in the Maude
 #  BPMN model, namely tasks, start/end events, and/xor/or split/join gateways.
-
-# TODO: launch the translation only if all operators in the PIF instance are
-#  supported by the translation.
 
 class MaudeDumper:
 
@@ -88,8 +86,23 @@ class MaudeDumper:
 ##############################################################################################
 if __name__ == '__main__':
 
-    filename = sys.argv[1]
-    print filename
-    md = MaudeDumper(filename)
-    md.dumpMaude()
+    # script format -> python pif2maude.py x.pif OR python pif2maude.py all
+    #  the second option translates all pif files in the current directory
+
+    firstarg = sys.argv[1]
+    if (firstarg=="all"):
+        call('ls *.pif >& tmp.txt', shell=True)
+        ff = open('tmp.txt', 'r')
+        res=ff.readlines()
+        for f in res:
+            f2=f.rstrip('\n')
+            print f2
+            md = MaudeDumper(f2)
+            md.dumpMaude()
+    else:
+        md = MaudeDumper(firstarg)
+        md.dumpMaude()
+
+# TODO: launch the translation only if all operators in the PIF instance are
+#  supported inthe Maude encoding.
 
