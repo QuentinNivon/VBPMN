@@ -32,7 +32,7 @@ class MaudeDumper:
     def dumpMaude(self,f,proc):
         f.write("---- Example "+proc.name+" in BPMN\n\n")
         f.write("load bpmn.maude\n\n")
-        f.write("mod BPMN-EX is ---- "+proc.name+" \n")
+        f.write("mod BPMN-EX is \n")
         f.write("  pr BPMN-SEM . \n")
         f.write("  ops ")
         for fl in proc.flows:
