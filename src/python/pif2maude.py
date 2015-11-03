@@ -16,17 +16,20 @@ from subprocess import call
 
 class MaudeDumper:
 
-    def __init__(self, filename):
-        self.filename=filename
+    def __init__(self, param):
+        self.param=param
 
-    def dumpMaude(self):
-        proc = Process()
-        # load PIF model
-        proc.buildProcessFromFile(self.filename)
-        #proc.dump()
+    # checks if all the constructs in the PIF instance are supported in the Maude model for processes
+    def isTransformableToMaude(self,proc):
+        res=True
+        for n in proc.nodes:
+            if isinstance(n, MessageSending) or isinstance(n, MessageReception) or isinstance(n, Interaction):
+                res=False
+        if not(res):
+            print "Example "+proc.name+" is NOT transformable to Maude...\n"
+        return res
 
-        fmaude = proc.name + ".maude"
-        f = open(fmaude, 'w')
+    def dumpMaude(self,f,proc):
         f.write("---- Example "+proc.name+" in BPMN\n\n")
         f.write("load bpmn.maude\n\n")
         f.write("mod BPMN-EX is ---- "+proc.name+" \n")
@@ -80,8 +83,33 @@ class MaudeDumper:
         f.write("      ) . \n\n")
 
         f.write("endm\n")
-        f.close()
+        print "Example "+proc.name+" has been transformed to Maude...\n"
 
+
+    # Generates maude files for one or all input PIF files
+    def main(self):
+        if (self.param=="all"):
+            call('ls *.pif >& tmp.txt', shell=True)
+            ff = open('tmp.txt', 'r')
+            res=ff.readlines()
+            for f in res:
+                f2=f.rstrip('\n')
+                print f2
+                proc = Process()
+                # load PIF model
+                proc.buildProcessFromFile(f2)
+                #proc.dump()
+                if self.isTransformableToMaude(proc):
+                    f = open(proc.name+".maude", 'w')
+                    self.dumpMaude(f,proc)
+                    f.close()
+        else:
+                proc = Process()
+                proc.buildProcessFromFile(self.param)
+                if self.isTransformableToMaude(proc):
+                    f = open(proc.name+".maude", 'w')
+                    self.dumpMaude(f,proc)
+                    f.close()
 
 ##############################################################################################
 if __name__ == '__main__':
@@ -90,19 +118,6 @@ if __name__ == '__main__':
     #  the second option translates all pif files in the current directory
 
     firstarg = sys.argv[1]
-    if (firstarg=="all"):
-        call('ls *.pif >& tmp.txt', shell=True)
-        ff = open('tmp.txt', 'r')
-        res=ff.readlines()
-        for f in res:
-            f2=f.rstrip('\n')
-            print f2
-            md = MaudeDumper(f2)
-            md.dumpMaude()
-    else:
-        md = MaudeDumper(firstarg)
-        md.dumpMaude()
-
-# TODO: launch the translation only if all operators in the PIF instance are
-#  supported in the Maude encoding.
+    md=MaudeDumper(firstarg)
+    md.main()
 
