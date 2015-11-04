@@ -75,9 +75,6 @@ public class ComparisonTests {
 //                assertEquals(RETURN_NOT_AS_EXPECTED, exitValue);
 //            else
 //                fail();
-        } catch (ExecuteException e) {
-            System.out.println(e.getCause());
-            fail();
         } catch (IOException e) {
             System.out.println(e.getCause());
             fail();
@@ -116,14 +113,11 @@ public class ComparisonTests {
                         fail();
                     }
                 } else {
-                    System.out.println(String.format("cannot parse line: ", line));
+                    System.out.println(String.format("cannot parse line: %s", line));
                     fail();
                 }
                 line = fin.readLine();
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            fail();
         } catch (IOException e) {
             e.printStackTrace();
             fail();
