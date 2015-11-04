@@ -21,6 +21,7 @@ package transformations.bpmn2pif;
 
 // fmt
 
+import com.sun.xml.internal.rngom.parse.host.Base;
 import models.base.IllegalModelException;
 import models.base.IllegalResourceException;
 import transformations.base.AbstractTransformer;
@@ -43,31 +44,31 @@ import java.util.stream.Collectors;
  * Transformation from BPMN to PIF
  * <p>
  * TODO: more comments
+ * TODO: use a visitor for the transformation
  * TODO: replace cascading method calls by delegation
- * TODO: support the flow between nodes
  * TODO: modify the PIF generation to get correct namespaces (PifPifWriter)
+ * TODO: support more than one message in choreography tasks (requires change in the PIF format)
+ * TODO: support case with 2 tasks having the same name but different ids (requires change in the PIF format to deal with id+name)
  * <p>
  * differences wrt. the Bpmn2Cif transformation:
- * - no messages are generated for ChoreographyTasks without messages (TODO EXTENSION)
  */
 public class Bpmn2PifTransformer extends AbstractTransformer {
 
     public static final String NAME = "bpmn2pif";
     public static final String VERSION = "1.0";
 
+    ObjectFactory factory;
     Map<String, String> trans_participants; // used to keep track of BPMN:id -> PIF:id for participants (peers)
-    Map<String, Peer> participants;         // map of participants (used to optimize wrt the model that uses a list and not a map)
-    Map<String, String> messages;           // used to keep track of BPMN:id -> PIF:id for messages
-    Map<String, WorkflowNode> nodes;        // used to keep track of BPMN:id -> PIF:node for nodes
+    Map<String, String> trans_messages;     // used to keep track of BPMN:id -> PIF:id for messages
+    // no need for a BPMN:id -> PIF:id for nodes since we use the id in both case (for the time being, maybe this could be changed later on for traceability purposes)
     boolean has_initial_state;              // start event has been found
     boolean has_final_state;                // end event has been found
 
     public Bpmn2PifTransformer() {
         super();
-        participants = new HashMap<>();
+        factory = new ObjectFactory();
         trans_participants = new HashMap<>();
-        messages = new HashMap<>();
-        nodes = new HashMap<>();
+        trans_messages = new HashMap<>();
         has_initial_state = false;
         has_final_state = false;
     }
@@ -101,7 +102,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
      */
     private void setDocumentation(BpmnModel min, PifModel mout) {
         List<Documentation> documentations = min.getDocumentation();
-        String documentation = documentations.stream().map(x -> x.toString()).collect(Collectors.joining());
+        String documentation = documentations.stream().map(x -> x.getText()).collect(Collectors.joining());
         mout.getModel().setDocumentation(documentation);
     }
 
@@ -113,8 +114,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
      * @throws IllegalModelException
      */
     private void setParticipants(BpmnModel min, PifModel mout) throws IllegalModelException {
-        List<Participant> bpmnPeers = min.getParticipants();    // participants in the BPMN model
-        for (Participant bpmnPeer : bpmnPeers) {
+        for (Participant bpmnPeer : min.getParticipants()) {
             Peer pifPeer = new Peer();
             String pifPeerId = getNameOrIdForParticipant(bpmnPeer);
             String bpmnPeerId = bpmnPeer.getId();
@@ -125,20 +125,19 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
             }
             pifPeer.setId(pifPeerId);
             trans_participants.put(bpmnPeerId, pifPeerId);
-            participants.put(pifPeerId, pifPeer);
+            mout.addPeer(pifPeer);
         }
     }
 
     /**
      * Sets the messages of the process. pif::Message.id is bpmn::Message.name or bpmn::Message.id if undefined
-     * TODO EXTENSION MESSAGES CAN ALSO BE IMPLICIT AND COME FROM SPECIFIC TASKS (CHOREOGRAPHY, SEND, AND RECEIVE TASKS)
+     * TODO EXTENSION MESSAGES CAN ALSO BE IMPLICIT AND COME FROM SPECIFIC TASKS (CHOREOGRAPHY, SEND, AND RECEIVE TASKS: DONE FOR CHOREOGRAPHY TASKS)
      *
      * @param min  BPMN model where the messages are defined
      * @param mout PIF model where the messages are to be defined
      * @throws IllegalModelException
      */
     private void setMessages(BpmnModel min, PifModel mout) throws IllegalModelException {
-        List<Message> pifMessages = mout.getModel().getMessages(); // initializes the list of messages
         for (org.eclipse.bpmn2.Message bpmnMessage : min.getMessages()) {
             Message pifMessage = new Message();
             String pifMessageId = getNameOrIdForMessage(bpmnMessage);
@@ -149,10 +148,36 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
                 throw e;
             }
             pifMessage.setId(pifMessageId);
-            messages.put(bpmnMessageId, pifMessageId);
-            pifMessages.add(pifMessage);
+            trans_messages.put(bpmnMessageId, pifMessageId);
+            mout.addMessage(pifMessage);
         }
     }
+
+    /**
+     * Gets the name of an entity in the BPMN model or its id if the name is undefined
+     *
+     * @param entity the entity
+     * @param name   name of the entity (passed as an argument since different classes without common ancestor with a name can be passed as entity, e.g., Participant and Message)
+     * @return name of the entity (if defined) or id (if not)
+     * @throws IllegalModelException if neither the name nor the id is defined
+     */
+    private String getNameOrId(BaseElement entity, String name) throws IllegalModelException {
+        String rtr;
+        if (name == null) {
+            warning(String.format("BPMN model is incorrect (a %s without name)", entity.eClass().getName()));
+            if (name == null) {
+                IllegalModelException e = new IllegalModelException(String.format("BPMN model is incorrect (a %s without id)", entity.eClass().getName()));
+                error(e.getMessage());
+                throw e;
+            } else {
+                rtr = entity.getId();
+            }
+        } else {
+            rtr = name;
+        }
+        return rtr;
+    }
+
 
     /**
      * Gets the name of a participant or its id if the name is undefined
@@ -162,20 +187,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
      * @throws IllegalModelException if neither the name nor the id is defined
      */
     private String getNameOrIdForParticipant(Participant p) throws IllegalModelException {
-        String rtr;
-        if (p.getName() == null) {
-            warning(String.format("BPMN model is incorrect (a %s without name)", p.eClass().getName()));
-            if (p.getId() == null) {
-                IllegalModelException e = new IllegalModelException(String.format("BPMN model is incorrect (a %s without id)", p.eClass().getName()));
-                error(e.getMessage());
-                throw e;
-            } else {
-                rtr = p.getId();
-            }
-        } else {
-            rtr = p.getName();
-        }
-        return rtr;
+        return getNameOrId(p, p.getName());
     }
 
     /**
@@ -186,20 +198,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
      * @throws IllegalModelException if neither the name nor the id is defined
      */
     private String getNameOrIdForMessage(org.eclipse.bpmn2.Message m) throws IllegalModelException {
-        String rtr;
-        if (m.getName() == null) {
-            warning(String.format("BPMN model is incorrect (a %s without name)", m.eClass().getName()));
-            if (m.getId() == null) {
-                IllegalModelException e = new IllegalModelException(String.format("BPMN model is incorrect (a %s without id)", m.eClass().getName()));
-                error(e.getMessage());
-                throw e;
-            } else {
-                rtr = m.getId();
-            }
-        } else {
-            rtr = m.getName();
-        }
-        return rtr;
+        return getNameOrId(m, m.getName());
     }
 
     /**
@@ -217,15 +216,13 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
 
     /**
      * Sets up the behavioral part of the PIF model (nodes)
-     * TODO EXTENSION USE A DESIGN PATTERN
      *
      * @param min  BPMN model source of the transformation
      * @param mout PIF model target of the transformation
      * @throws IllegalModelException
      */
     private void setBehaviorNodes(BpmnModel min, PifModel mout) throws IllegalModelException {
-        List<FlowElement> flowElements = min.getFlowElements();
-        for (FlowElement flowElement : flowElements) {
+        for (FlowElement flowElement : min.getFlowElements()) {
             if (flowElement instanceof StartEvent) {
                 transform_StartEvent(min, mout, (StartEvent) flowElement);
             } else if (flowElement instanceof EndEvent) {
@@ -264,6 +261,31 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
      * @throws IllegalModelException
      */
     private void setBehaviorEdges(BpmnModel min, PifModel mout) throws IllegalModelException {
+        try {
+            min.getFlowElements().stream().filter(flowElement -> flowElement instanceof SequenceFlow).forEach(flowElement -> {
+                SequenceFlow bpmnSequenceFlow = (SequenceFlow) flowElement;
+                String bpmnSourceNodeId = bpmnSequenceFlow.getSourceRef().getId();
+                String bpmnTargetNodeId = bpmnSequenceFlow.getTargetRef().getId();
+                if (!mout.hasNode(bpmnSourceNodeId) || !mout.hasNode(bpmnTargetNodeId)) {
+                    throw new RuntimeException(); // trick due to Java 8 management of Exceptions in stream commands
+                }
+                WorkflowNode pifSourceNode = mout.getNode(bpmnSourceNodeId);
+                WorkflowNode pifTargetNode = mout.getNode(bpmnTargetNodeId);
+                models.process.pif.generated.SequenceFlow pifSequenceFlow = new models.process.pif.generated.SequenceFlow();
+                pifSequenceFlow.setId(bpmnSequenceFlow.getId());
+                // links peers <-> sequence flow
+                pifSequenceFlow.setSource(pifSourceNode);
+                pifSequenceFlow.setTarget(pifTargetNode);
+                pifSourceNode.getOutgoingFlows().add(factory.createWorkflowNodeOutgoingFlows(pifSequenceFlow));
+                pifTargetNode.getIncomingFlows().add(factory.createWorkflowNodeIncomingFlows(pifSequenceFlow));
+                // adding in the output model
+                mout.getModel().getBehaviour().getSequenceFlows().add(pifSequenceFlow); // TODO clean this
+            });
+        } catch (RuntimeException e) {
+            IllegalModelException e2 = new IllegalModelException("BPMN model is incorrect (unknown node reference in sequence flow)");
+            error(e2.getMessage());
+            throw e2;
+        }
     }
 
     /**
@@ -279,22 +301,96 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
         checkOutStrict(flowElement, 1, true);
         models.process.pif.generated.Interaction task = new models.process.pif.generated.Interaction();
         task.setId(flowElement.getId());
-        String initiatingPeerId = flowElement.getId();
-        task.setInitiatingPeer(participants.get(trans_participants.get(initiatingPeerId)));
-        List<Peer> receivingPeers = task.getReceivingPeers();
-        receivingPeers = new ArrayList<Peer>();
-        for (Participant participant : flowElement.getParticipantRefs()) {
-            receivingPeers.add(participants.get(trans_participants.get(participant.getId())));
+        // check if we have messages, if not generate one
+        if (flowElement.getMessageFlowRef().size() != 0) {
+            if (flowElement.getMessageFlowRef().size() != 1) {
+                warning(String.format("More than one message for choreography task %s, only one will be used", flowElement.getId()));
+            }
+            task.setMessage(mout.getMessage(trans_messages.get(flowElement.getMessageFlowRef().get(0).getMessageRef().getId())));
+        } else {
+            Message m = new Message();
+            String id = "Message_" + task.getId();
+            if (mout.hasMessage(id)) {
+                throw new IllegalModelException(String.format("Impossible to generate a new message (id) for choreography task %s", flowElement.getId()));
+            }
+            m.setId(id);
+            trans_messages.put(m.getId(), m.getId());
+            mout.addMessage(m);
+            task.setMessage(m);
         }
+        // deal with the initiating and receiving peers
+        String bpmnInitiatingPeerId = flowElement.getInitiatingParticipantRef().getId();
+        task.setInitiatingPeer(mout.getPeer(trans_participants.get(bpmnInitiatingPeerId)));
+        for (Participant bpmnParticipant : flowElement.getParticipantRefs()) {
+            String bpmnParticipantId = bpmnParticipant.getId();
+            if (!(bpmnInitiatingPeerId.equals(bpmnParticipantId))) {
+                task.getReceivingPeers().add(factory.createInteractionReceivingPeers(mout.getPeer(trans_participants.get(bpmnParticipantId))));
+            }
+        }
+        // add node
         mout.addNode(task);
     }
 
-    private void transform_Receive(BpmnModel min, PifModel mout, ReceiveTask flowElement) {
-        // TODO:
+    /**
+     * Transforms a BPMN ReceiveTask into a PIF MessageReception
+     *
+     * @param min         BPMN model
+     * @param mout        PIF model
+     * @param flowElement BPMN ReceiveTask to transform
+     * @throws IllegalModelException
+     */
+    private void transform_Receive(BpmnModel min, PifModel mout, ReceiveTask flowElement) throws IllegalModelException {
+        checkInStrict(flowElement, 1, true);
+        checkOutStrict(flowElement, 1, true);
+        models.process.pif.generated.MessageReception task = new models.process.pif.generated.MessageReception();
+        task.setId(flowElement.getId());
+        // check if we have messages, if not generate one
+        if (flowElement.getMessageRef() != null) {
+            task.setMessage(mout.getMessage(trans_messages.get(flowElement.getMessageRef().getId())));
+        } else {
+            Message m = new Message();
+            String id = "Message_" + task.getId();
+            if (mout.hasMessage(id)) {
+                throw new IllegalModelException(String.format("Impossible to generate a new message (id) for choreography task %s", flowElement.getId()));
+            }
+            m.setId(id);
+            trans_messages.put(m.getId(), m.getId());
+            mout.addMessage(m);
+            task.setMessage(m);
+        }
+        // add node
+        mout.addNode(task);
     }
 
-    private void transform_Send(BpmnModel min, PifModel mout, SendTask flowElement) {
-        // TODO:
+    /**
+     * Transforms a BPMN SendTask into a PIF MessageSending
+     *
+     * @param min         BPMN model
+     * @param mout        PIF model
+     * @param flowElement BPMN SendTask to transform
+     * @throws IllegalModelException
+     */
+    private void transform_Send(BpmnModel min, PifModel mout, SendTask flowElement) throws IllegalModelException {
+        checkInStrict(flowElement, 1, true);
+        checkOutStrict(flowElement, 1, true);
+        models.process.pif.generated.MessageSending task = new models.process.pif.generated.MessageSending();
+        task.setId(flowElement.getId());
+        // check if we have messages, if not generate one
+        if (flowElement.getMessageRef() != null) {
+            task.setMessage(mout.getMessage(trans_messages.get(flowElement.getMessageRef().getId())));
+        } else {
+            Message m = new Message();
+            String id = "Message_" + task.getId();
+            if (mout.hasMessage(id)) {
+                throw new IllegalModelException(String.format("Impossible to generate a new message (id) for choreography task %s", flowElement.getId()));
+            }
+            m.setId(id);
+            trans_messages.put(m.getId(), m.getId());
+            mout.addMessage(m);
+            task.setMessage(m);
+        }
+        // add node
+        mout.addNode(task);
     }
 
     /**
@@ -309,12 +405,12 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
         checkInStrict(flowElement, 1, true);
         checkOutStrict(flowElement, 1, true);
         models.process.pif.generated.Task task = new models.process.pif.generated.Task();
-        task.setId(flowElement.getId());
+        task.setId(getAndCheckId(flowElement));
         mout.addNode(task);
     }
 
     private void transform_Gateway(BpmnModel min, PifModel mout, Gateway flowElement) {
-        // TODO:
+        throw new UnsupportedOperationException();
     }
 
     /**
