@@ -3,16 +3,16 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- *
+ * <p>
  * vbpmn
  * Copyright (C) 2015 Pascal Poizat (@pascalpoizat)
  * emails: pascal.poizat@lip6.fr
@@ -27,6 +27,7 @@ import models.process.pif.generated.*;
 
 import javax.xml.bind.*;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,19 +42,26 @@ public class InputOutputTests {
     public static final String FILES_PATH = "out/test/vbpmn/pif/";
     public static final String OUTFILES_PATH = "out/test/vbpmn/pif/";
     public static final String SUFFIX = ".pif";
+    public static final String COPYSUFFIX = "_copy";
     public static final String GENPREFIX = "gen_";
-    public static final String SCHEMA_PATH = "model/pif.xsd";
 
     /**
      * Provides data for tests based on the list of all .pif files in the example directory
+     * in case it is used with the test_readWrite test, do not take copies (_copy.pif files) into account
      */
     @DataProvider(name = "directory_walker_provider")
-    public Iterator<Object[]> directory_walker_provider() {
+    public Iterator<Object[]> directory_walker_provider(Method m) {
         List<Object[]> data = new ArrayList<>();
         try {
-            Object[] files = Files.walk(Paths.get(FILES_PATH))
-                    .filter(x -> x.toFile().getName().endsWith(SUFFIX))
-                    .toArray();
+            Object[] files;
+            if (m.getName().equals("test_readWrite"))
+                files = Files.walk(Paths.get(FILES_PATH))
+                        .filter(x -> x.toFile().getName().endsWith(SUFFIX) && !x.toFile().getName().contains(COPYSUFFIX))
+                        .toArray();
+            else
+                files = Files.walk(Paths.get(FILES_PATH))
+                        .filter(x -> x.toFile().getName().endsWith(SUFFIX))
+                        .toArray();
             for (Object file : files) {
                 Object[] value = new Object[1];
                 value[0] = file;
@@ -68,7 +76,7 @@ public class InputOutputTests {
     /**
      * Reads all examples (using PifPifReader) and dumps them in graphical format (using DotPifWriter)
      */
-    @Test(dataProvider = "directory_walker_provider", groups = "file_reading")
+    @Test(dataProvider = "directory_walker_provider", groups = "reading")
     public void test_read_all_files_with_Reader(Path filePath) {
         AbstractModelReader reader = new PifPifReader();
         AbstractModelWriter writer = new DotPifWriter();
@@ -77,105 +85,104 @@ public class InputOutputTests {
         try {
             model.setResource(filePath.toFile());
             model.modelFromFile(reader);
-            model.setResource(new File(filePath.toString()+".dot"));
+            model.setResource(new File(filePath.toString() + ".dot"));
             model.modelToFile(writer);
-        } catch (IllegalResourceException e) {
-            e.printStackTrace();
-            fail();
-        } catch (IllegalModelException e) {
-            e.printStackTrace();
-            fail();
-        } catch (IOException e) {
+        } catch (IllegalResourceException | IllegalModelException | IOException e) {
             e.printStackTrace();
             fail();
         }
     }
 
-    @Test(groups = "file_writing")
-    public void test_writeToFile() {
-        //
-        ObjectFactory factory = new ObjectFactory();
-        //
-        Workflow w = factory.createWorkflow();
-        InitialEvent n1 = factory.createInitialEvent();
-        n1.setId("n1");
-        EndEvent n2 = factory.createEndEvent();
-        n2.setId("n2");
-        Task t = factory.createTask();
-        t.setId("t");
-        //
-        SequenceFlow sf1 = factory.createSequenceFlow();
-        sf1.setId("sf1");
-        SequenceFlow sf2 = factory.createSequenceFlow();
-        sf2.setId("sf2");
-        sf1.setSource(n1);
-        sf1.setTarget(t);
-        sf2.setSource(t);
-        sf2.setTarget(n2);
-        n1.getOutgoingFlows().add(sf1);
-        t.getIncomingFlows().add(sf1);
-        t.getOutgoingFlows().add(sf2);
-        n2.getIncomingFlows().add(sf2);
-        //
-        w.getNodes().add(n1);
-        w.setInitialNode(n1);
-        w.getNodes().add(n2);
-        w.getFinalNodes().add(n2);
-        w.getNodes().add(t);
-        w.getSequenceFlows().add(sf1);
-        w.getSequenceFlows().add(sf2);
-        //
-        Peer p1 = factory.createPeer();
-        p1.setId("p1");
-        Message m1 = factory.createMessage();
-        m1.setId("m1");
-        //
-        models.process.pif.generated.Process p = factory.createProcess();
-        p.setName("t0000");
-        p.setDocumentation("A simple process");
-        p.setBehaviour(w);
-        p.getPeers().add(p1);
-        //
+    @Test(groups = "writing")
+    public void test_write_basic1() {
+        ObjectFactory objectFactory = new ObjectFactory();
         AbstractModelWriter writer = new PifPifWriter();
         AbstractModelFactory mfactory = PifFactory.getInstance();
         PifModel model = (PifModel) mfactory.create();
+        //
+        Peer p1 = objectFactory.createPeer();
+        p1.setId("peer1");
+        Peer p2 = objectFactory.createPeer();
+        p2.setId("peer2");
+        //
+        Message m1 = objectFactory.createMessage();
+        m1.setId("message1");
+        Message m2 = objectFactory.createMessage();
+        m2.setId("message2");
+        //
+        InitialEvent start = objectFactory.createInitialEvent();
+        start.setId("start");
+        EndEvent stop = objectFactory.createEndEvent();
+        stop.setId("stop");
+        Task task = objectFactory.createTask();
+        task.setId("task");
+        Interaction exchange1 = objectFactory.createInteraction();
+        exchange1.setId("x1");
+        exchange1.setMessage(m1);
+        exchange1.setInitiatingPeer(p1);
+        exchange1.getReceivingPeers().add(objectFactory.createInteractionReceivingPeers(p2));
+        //
+        Workflow w = objectFactory.createWorkflow();
+        w.getNodes().add(start);
+        w.getNodes().add(stop);
+        w.getNodes().add(task);
+        w.getNodes().add(exchange1);
+        w.setInitialNode(start);
+        w.getFinalNodes().add(objectFactory.createWorkflowFinalNodes(stop));
+        //
+        SequenceFlow sf1 = objectFactory.createSequenceFlow();
+        sf1.setId("sf1");
+        sf1.setSource(start);
+        sf1.setTarget(task);
+        start.getOutgoingFlows().add(objectFactory.createWorkflowNodeOutgoingFlows(sf1));
+        task.getIncomingFlows().add(objectFactory.createWorkflowNodeIncomingFlows(sf1));
+        SequenceFlow sf2 = new SequenceFlow();
+        sf2.setId("sf2");
+        sf2.setSource(task);
+        sf2.setTarget(exchange1);
+        task.getOutgoingFlows().add(objectFactory.createWorkflowNodeOutgoingFlows(sf2));
+        exchange1.getIncomingFlows().add(objectFactory.createWorkflowNodeIncomingFlows(sf2));
+        SequenceFlow sf3 = new SequenceFlow();
+        sf3.setId("sf3");
+        sf3.setSource(exchange1);
+        sf3.setTarget(stop);
+        exchange1.getOutgoingFlows().add(objectFactory.createWorkflowNodeOutgoingFlows(sf3));
+        stop.getIncomingFlows().add(objectFactory.createWorkflowNodeIncomingFlows(sf3));
+        w.getSequenceFlows().add(sf1);
+        w.getSequenceFlows().add(sf2);
+        w.getSequenceFlows().add(sf3);
+        //
+        Process p = objectFactory.createProcess();
+        p.setName("basic1");
+        p.setDocumentation("test process basic 1");
+        p.setBehaviour(w);
+        p.getPeers().add(p1);
+        p.getPeers().add(p2);
+        p.getMessages().add(m1);
+        p.getMessages().add(m2);
         model.setModel(p);
         try {
             model.setResource(new File(String.format("%s%s%s%s", OUTFILES_PATH, GENPREFIX, p.getName(), SUFFIX)));
             model.modelToFile(writer);
             assertEquals(true, true);
-        } catch (IllegalResourceException e) {
-            e.printStackTrace();
-            fail();
-        } catch (IllegalModelException e) {
-            e.printStackTrace();
-            fail();
-        } catch (IOException e) {
+        } catch (IllegalResourceException | IllegalModelException | IOException e) {
             e.printStackTrace();
             fail();
         }
     }
 
-    @Test(dependsOnGroups = {"file_reading", "file_writing"})
-    public void test_readWrite() {
+    @Test(dataProvider = "directory_walker_provider", groups = "readingwriting")
+    public void test_readWrite(Path filePath) {
         AbstractModelReader reader = new PifPifReader();
         AbstractModelWriter writer = new PifPifWriter();
         AbstractModel model = PifFactory.getInstance().create();
-        String file1 = String.format("%s%s%s%s", OUTFILES_PATH, GENPREFIX, "t0000", SUFFIX);
-        String file2 = String.format("%s%s%s%s", OUTFILES_PATH, GENPREFIX, "t0000_copy", SUFFIX);
         try {
-            model.setResource(new File(file1));
+            model.setResource(filePath.toFile());
             model.modelFromFile(reader);
-            model.setResource(new File(file2));
+            model.setResource(new File(filePath.toString() + COPYSUFFIX + SUFFIX));
             model.modelToFile(writer);
-            assertEquals(true,true);
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail();
-        } catch (IllegalResourceException e) {
-            e.printStackTrace();
-            fail();
-        } catch (IllegalModelException e) {
+            assertEquals(true, true);
+        } catch (IOException | IllegalResourceException | IllegalModelException e) {
             e.printStackTrace();
             fail();
         }
