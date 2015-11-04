@@ -46,6 +46,8 @@ public class Bpmn2PifTests {
     public static final String SUFFIX1 = ".bpmn";
     public static final String SUFFIX2 = ".pif";
 
+    public static final boolean TRY_READING_GENERATED = false;
+
     /**
      * Provides data for tests based on the list of all .pif files in the example directory
      */
@@ -89,15 +91,17 @@ public class Bpmn2PifTests {
             transformer.load();
             transformer.transform();
             transformer.dump();
-            // on essaye de le lire TODO plutot passer par les InputOutputTests
-            AbstractModelFactory factory = PifFactory.getInstance();
-            AbstractModel model = factory.create();
-            AbstractModelReader pifReader = new PifPifReader();
-            AbstractModelWriter dotWriter = new DotPifWriter();
-            model.setResource(new File(fout));
-            model.modelFromFile(pifReader);
-            model.setResource(new File(fout+".dot"));
-            model.modelToFile(dotWriter);
+            if (TRY_READING_GENERATED) {
+                // on essaye de le lire TODO plutot passer par les InputOutputTests
+                AbstractModelFactory factory = PifFactory.getInstance();
+                AbstractModel model = factory.create();
+                AbstractModelReader pifReader = new PifPifReader();
+                AbstractModelWriter dotWriter = new DotPifWriter();
+                model.setResource(new File(fout));
+                model.modelFromFile(pifReader);
+                model.setResource(new File(fout + ".dot"));
+                model.modelToFile(dotWriter);
+            }
         } catch (IllegalResourceException | IllegalModelException | IOException e) {
             e.printStackTrace();
             fail();
