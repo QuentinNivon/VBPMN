@@ -46,7 +46,7 @@ public class Bpmn2PifTests {
     public static final String SUFFIX1 = ".bpmn";
     public static final String SUFFIX2 = ".pif";
 
-    public static final boolean TRY_READING_GENERATED = false;
+    public static final boolean TRY_READING_GENERATED = true;
 
     /**
      * Provides data for tests based on the list of all .pif files in the example directory
