@@ -48,7 +48,7 @@
             <pif:outgoingFlows>sf13</pif:outgoingFlows>
         </pif:nodes>
         <pif:nodes id="confirm" xsi:type="pif:Task">
-            <pif:incomingFlows>s10</pif:incomingFlows>
+            <pif:incomingFlows>sf10</pif:incomingFlows>
             <pif:outgoingFlows>sf11</pif:outgoingFlows>
         </pif:nodes>
 
