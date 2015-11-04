@@ -2,7 +2,7 @@
 // Ce fichier a été généré par l'implémentation de référence JavaTM Architecture for XML Binding (JAXB), v2.2.8-b130911.1802 
 // Voir <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Toute modification apportée à ce fichier sera perdue lors de la recompilation du schéma source. 
-// Généré le : 2015.11.04 à 06:19:30 PM CET 
+// Généré le : 2015.11.04 à 08:45:53 PM CET 
 //
 
 
@@ -54,7 +54,7 @@ public class Interaction
     @XmlSchemaType(name = "IDREF")
     protected Peer initiatingPeer;
     @XmlElementRef(name = "receivingPeers", namespace = "http://www.example.org/PIF", type = JAXBElement.class)
-    protected List<Peer> receivingPeers;
+    protected List<JAXBElement<Object>> receivingPeers;
 
     /**
      * Obtient la valeur de la propriété initiatingPeer.
@@ -102,9 +102,9 @@ public class Interaction
      * 
      * 
      */
-    public List<Peer> getReceivingPeers() {
+    public List<JAXBElement<Object>> getReceivingPeers() {
         if (receivingPeers == null) {
-            receivingPeers = new ArrayList<Peer>();
+            receivingPeers = new ArrayList<JAXBElement<Object>>();
         }
         return this.receivingPeers;
     }

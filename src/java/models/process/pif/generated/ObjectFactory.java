@@ -2,7 +2,7 @@
 // Ce fichier a été généré par l'implémentation de référence JavaTM Architecture for XML Binding (JAXB), v2.2.8-b130911.1802 
 // Voir <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Toute modification apportée à ce fichier sera perdue lors de la recompilation du schéma source. 
-// Généré le : 2015.11.04 à 06:19:30 PM CET 
+// Généré le : 2015.11.04 à 08:45:53 PM CET 
 //
 
 
@@ -32,10 +32,10 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
+    private final static QName _WorkflowFinalNodes_QNAME = new QName("http://www.example.org/PIF", "finalNodes");
     private final static QName _WorkflowNodeOutgoingFlows_QNAME = new QName("http://www.example.org/PIF", "outgoingFlows");
     private final static QName _WorkflowNodeIncomingFlows_QNAME = new QName("http://www.example.org/PIF", "incomingFlows");
     private final static QName _InteractionReceivingPeers_QNAME = new QName("http://www.example.org/PIF", "receivingPeers");
-    private final static QName _WorkflowFinalNodes_QNAME = new QName("http://www.example.org/PIF", "finalNodes");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: models.process.pif.generated
@@ -200,6 +200,16 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
      * 
      */
+    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "finalNodes", scope = Workflow.class)
+    @XmlIDREF
+    public JAXBElement<Object> createWorkflowFinalNodes(Object value) {
+        return new JAXBElement<Object>(_WorkflowFinalNodes_QNAME, Object.class, Workflow.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
+     * 
+     */
     @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "outgoingFlows", scope = WorkflowNode.class)
     @XmlIDREF
     public JAXBElement<Object> createWorkflowNodeOutgoingFlows(Object value) {
@@ -224,16 +234,6 @@ public class ObjectFactory {
     @XmlIDREF
     public JAXBElement<Object> createInteractionReceivingPeers(Object value) {
         return new JAXBElement<Object>(_InteractionReceivingPeers_QNAME, Object.class, Interaction.class, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "finalNodes", scope = Workflow.class)
-    @XmlIDREF
-    public JAXBElement<Object> createWorkflowFinalNodes(Object value) {
-        return new JAXBElement<Object>(_WorkflowFinalNodes_QNAME, Object.class, Workflow.class, value);
     }
 
 }

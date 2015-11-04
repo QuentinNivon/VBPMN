@@ -2,7 +2,7 @@
 // Ce fichier a été généré par l'implémentation de référence JavaTM Architecture for XML Binding (JAXB), v2.2.8-b130911.1802 
 // Voir <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Toute modification apportée à ce fichier sera perdue lors de la recompilation du schéma source. 
-// Généré le : 2015.11.04 à 06:19:30 PM CET 
+// Généré le : 2015.11.04 à 08:45:53 PM CET 
 //
 
 
@@ -59,7 +59,7 @@ public class Workflow {
     @XmlSchemaType(name = "IDREF")
     protected InitialEvent initialNode;
     @XmlElementRef(name = "finalNodes", namespace = "http://www.example.org/PIF", type = JAXBElement.class, required = false)
-    protected List<EndEvent> finalNodes;
+    protected List<JAXBElement<Object>> finalNodes;
 
     /**
      * Gets the value of the nodes property.
@@ -165,9 +165,9 @@ public class Workflow {
      * 
      * 
      */
-    public List<EndEvent> getFinalNodes() {
+    public List<JAXBElement<Object>> getFinalNodes() {
         if (finalNodes == null) {
-            finalNodes = new ArrayList<EndEvent>();
+            finalNodes = new ArrayList<JAXBElement<Object>>();
         }
         return this.finalNodes;
     }

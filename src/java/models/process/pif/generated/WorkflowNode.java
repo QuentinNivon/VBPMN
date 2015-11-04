@@ -2,7 +2,7 @@
 // Ce fichier a été généré par l'implémentation de référence JavaTM Architecture for XML Binding (JAXB), v2.2.8-b130911.1802 
 // Voir <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
 // Toute modification apportée à ce fichier sera perdue lors de la recompilation du schéma source. 
-// Généré le : 2015.11.04 à 06:19:30 PM CET 
+// Généré le : 2015.11.04 à 08:45:53 PM CET 
 //
 
 
@@ -59,9 +59,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public abstract class WorkflowNode {
 
     @XmlElementRef(name = "incomingFlows", namespace = "http://www.example.org/PIF", type = JAXBElement.class, required = false)
-    protected List<SequenceFlow> incomingFlows;
+    protected List<JAXBElement<Object>> incomingFlows;
     @XmlElementRef(name = "outgoingFlows", namespace = "http://www.example.org/PIF", type = JAXBElement.class, required = false)
-    protected List<SequenceFlow> outgoingFlows;
+    protected List<JAXBElement<Object>> outgoingFlows;
     @XmlAttribute(name = "id", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlID
@@ -90,9 +90,9 @@ public abstract class WorkflowNode {
      * 
      * 
      */
-    public List<SequenceFlow> getIncomingFlows() {
+    public List<JAXBElement<Object>> getIncomingFlows() {
         if (incomingFlows == null) {
-            incomingFlows = new ArrayList<SequenceFlow>();
+            incomingFlows = new ArrayList<JAXBElement<Object>>();
         }
         return this.incomingFlows;
     }
@@ -119,9 +119,9 @@ public abstract class WorkflowNode {
      * 
      * 
      */
-    public List<SequenceFlow> getOutgoingFlows() {
+    public List<JAXBElement<Object>> getOutgoingFlows() {
         if (outgoingFlows == null) {
-            outgoingFlows = new ArrayList<SequenceFlow>();
+            outgoingFlows = new ArrayList<JAXBElement<Object>>();
         }
         return this.outgoingFlows;
     }
