@@ -43,6 +43,9 @@ public class BpmnModel extends AbstractModel {
     private FlowElementsContainer behavior;
     private boolean is_choreography;
 
+    private static final String CHOREOGRAPHY_TYPE = "Choreography";
+    private static final String PROCESS_TYPE = "Process";
+
     public BpmnModel() {
         super();
         model = null;
@@ -61,6 +64,7 @@ public class BpmnModel extends AbstractModel {
 
     /**
      * sets the flow elements container (Process or Choreography) from the BPMN model
+     * TODO the setup of is_choreography is not correct
      *
      * @throws IllegalModelException if the model does not contain a flow element container
      */
@@ -68,12 +72,13 @@ public class BpmnModel extends AbstractModel {
         boolean found = false;
         if (model.eContents().size() > 0) {
             for (EObject definition : model.eContents()) {
-                if (definition.eClass().getName().equals("Choreography")) {
+                System.out.println(definition.eClass().getName());
+                if (definition.eClass().getName().equals(CHOREOGRAPHY_TYPE)) {
                     behavior = (Choreography) definition;
                     is_choreography = true;
                     found = true;
                     break;
-                } else if (definition.eClass().getName().equals("Process")) {
+                } else if (definition.eClass().getName().equals(PROCESS_TYPE)) {
                     behavior = (Process) definition;
                     found = true;
                     break;
@@ -134,12 +139,17 @@ public class BpmnModel extends AbstractModel {
     }
 
     /**
-     * Gets the documentation for the model
+     * Gets the documentation for the model ( = the one for the root model + the one for the behavior )
      *
      * @return the documentation
      */
     public List<Documentation> getDocumentation() {
-        return model.getDocumentation();
+        List<Documentation> rtr = new ArrayList<>();
+        if (model != null)
+            rtr.addAll(model.getDocumentation());
+        if (behavior != null)
+        rtr.addAll(behavior.getDocumentation());
+        return rtr;
     }
 
 }
