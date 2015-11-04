@@ -84,7 +84,12 @@ public class DotPifWriter extends AbstractStringModelWriter {
 
     public String modelToString(WorkflowNode source, List<SequenceFlow> flows) {
         String rtr = "";
-        for (SequenceFlow flow : flows) {
+        for (Object flow_raw : flows) {
+            SequenceFlow flow = null;
+            if(flow_raw instanceof SequenceFlow)
+                flow = (SequenceFlow) flow_raw;
+            if(flow_raw instanceof JAXBElement)
+                flow = (SequenceFlow)((JAXBElement)flow_raw).getValue();
             rtr += String.format("%s -> %s [%s];\n", normalizeId(flow.getSource().getId()), normalizeId(flow.getTarget().getId()), TRANSITION_STYLE);
         }
         return rtr;
