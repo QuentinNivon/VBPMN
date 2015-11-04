@@ -42,15 +42,14 @@ import java.util.stream.Collectors;
 
 /**
  * Transformation from BPMN to PIF
- * <p>
+
  * TODO: more comments
  * TODO: use a visitor for the transformation
  * TODO: replace cascading method calls by delegation
  * TODO: modify the PIF generation to get correct namespaces (PifPifWriter)
  * TODO: support more than one message in choreography tasks (requires change in the PIF format)
  * TODO: support case with 2 tasks having the same name but different ids (requires change in the PIF format to deal with id+name)
- * <p>
- * differences wrt. the Bpmn2Cif transformation:
+ * TODO: we have only IDs in PIF (no NAMEs) and due to ID/IDREF rules, we cannot get a PIF element ID from a BPMN element Name (e.g., in case of whitespace)
  */
 public class Bpmn2PifTransformer extends AbstractTransformer {
 
@@ -95,7 +94,6 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
 
     /**
      * Sets the documentation of the process.
-     * TODO ISSUE PROBLEM WITH LOADING FROM BPMN
      *
      * @param min  BPMN model where the documentation is defined
      * @param mout PIF model whee the documentation is to be defined
@@ -116,7 +114,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
     private void setParticipants(BpmnModel min, PifModel mout) throws IllegalModelException {
         for (Participant bpmnPeer : min.getParticipants()) {
             Peer pifPeer = new Peer();
-            String pifPeerId = getNameOrIdForParticipant(bpmnPeer);
+            String pifPeerId = getAndCheckId(bpmnPeer);
             String bpmnPeerId = bpmnPeer.getId();
             if (bpmnPeerId == null) {
                 IllegalModelException e = new IllegalModelException("BPMN model is incorrect (a participant has no id)");
@@ -131,7 +129,6 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
 
     /**
      * Sets the messages of the process. pif::Message.id is bpmn::Message.name or bpmn::Message.id if undefined
-     * TODO EXTENSION MESSAGES CAN ALSO BE IMPLICIT AND COME FROM SPECIFIC TASKS (CHOREOGRAPHY, SEND, AND RECEIVE TASKS: DONE FOR CHOREOGRAPHY TASKS)
      *
      * @param min  BPMN model where the messages are defined
      * @param mout PIF model where the messages are to be defined
@@ -140,7 +137,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
     private void setMessages(BpmnModel min, PifModel mout) throws IllegalModelException {
         for (org.eclipse.bpmn2.Message bpmnMessage : min.getMessages()) {
             Message pifMessage = new Message();
-            String pifMessageId = getNameOrIdForMessage(bpmnMessage);
+            String pifMessageId = getAndCheckId(bpmnMessage);
             String bpmnMessageId = bpmnMessage.getId();
             if (bpmnMessageId == null) {
                 IllegalModelException e = new IllegalModelException("BPMN model is incorrect (a message has no id)");
@@ -151,54 +148,6 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
             trans_messages.put(bpmnMessageId, pifMessageId);
             mout.addMessage(pifMessage);
         }
-    }
-
-    /**
-     * Gets the name of an entity in the BPMN model or its id if the name is undefined
-     *
-     * @param entity the entity
-     * @param name   name of the entity (passed as an argument since different classes without common ancestor with a name can be passed as entity, e.g., Participant and Message)
-     * @return name of the entity (if defined) or id (if not)
-     * @throws IllegalModelException if neither the name nor the id is defined
-     */
-    private String getNameOrId(BaseElement entity, String name) throws IllegalModelException {
-        String rtr;
-        if (name == null) {
-            warning(String.format("BPMN model is incorrect (a %s without name)", entity.eClass().getName()));
-            if (name == null) {
-                IllegalModelException e = new IllegalModelException(String.format("BPMN model is incorrect (a %s without id)", entity.eClass().getName()));
-                error(e.getMessage());
-                throw e;
-            } else {
-                rtr = entity.getId();
-            }
-        } else {
-            rtr = name;
-        }
-        return rtr;
-    }
-
-
-    /**
-     * Gets the name of a participant or its id if the name is undefined
-     *
-     * @param p participant
-     * @return name of the participant (if defined) or id (if not)
-     * @throws IllegalModelException if neither the name nor the id is defined
-     */
-    private String getNameOrIdForParticipant(Participant p) throws IllegalModelException {
-        return getNameOrId(p, p.getName());
-    }
-
-    /**
-     * Gets the name of a message or its id if the name is undefined
-     *
-     * @param m message
-     * @return name of the message (if defined) or id (if not)
-     * @throws IllegalModelException if neither the name nor the id is defined
-     */
-    private String getNameOrIdForMessage(org.eclipse.bpmn2.Message m) throws IllegalModelException {
-        return getNameOrId(m, m.getName());
     }
 
     /**
@@ -309,7 +258,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
             task.setMessage(mout.getMessage(trans_messages.get(flowElement.getMessageFlowRef().get(0).getMessageRef().getId())));
         } else {
             Message m = new Message();
-            String id = "Message_" + task.getId();
+            String id = "Message_" + getAndCheckId(flowElement);
             if (mout.hasMessage(id)) {
                 throw new IllegalModelException(String.format("Impossible to generate a new message (id) for choreography task %s", flowElement.getId()));
             }
@@ -409,8 +358,75 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
         mout.addNode(task);
     }
 
-    private void transform_Gateway(BpmnModel min, PifModel mout, Gateway flowElement) {
-        throw new UnsupportedOperationException();
+    /**
+     * Transforms a BPMN Gateway into a PIF Gateway
+     *
+     * @param min         BPMN model
+     * @param mout        PIF model
+     * @param flowElement BPMN Gateway to transform
+     * @throws IllegalModelException
+     */
+    private void transform_Gateway(BpmnModel min, PifModel mout, Gateway flowElement) throws IllegalModelException {
+        GatewayDirection direction = getDirection(flowElement);
+        if (direction.getValue() == GatewayDirection.CONVERGING_VALUE) {
+            transform_JoinGateway(min, mout, flowElement);
+        } else if (direction.getValue() == GatewayDirection.DIVERGING_VALUE) {
+            transform_SplitGateway(min, mout, flowElement);
+        } else {
+            IllegalModelException e = new IllegalModelException("BPMN model incorrect (1-1, mixed or unknown type gateway " + flowElement.getId() + " not supported)");
+            error(e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Transforms a BPMN Join Gateway into a PIF Join Gateway
+     *
+     * @param min         BPMN model
+     * @param mout        PIF model
+     * @param flowElement BPMN Gateway to transform
+     * @throws IllegalModelException
+     */
+    private void transform_JoinGateway(BpmnModel min, PifModel mout, Gateway flowElement) throws IllegalModelException {
+        JoinGateway gw;
+        if (flowElement instanceof ParallelGateway) {
+            gw = new AndJoinGateway();
+        } else if (flowElement instanceof  ExclusiveGateway) {
+            gw = new XOrJoinGateway();
+        } else if (flowElement instanceof  InclusiveGateway) {
+            gw = new OrJoinGateway();
+        } else {
+            IllegalModelException e = new IllegalModelException("BPMN model incorrect (gateway " + flowElement.getId() + " type is not supported)");
+            error(e.getMessage());
+            throw e;
+        }
+        gw.setId(flowElement.getId());
+        mout.addNode(gw);
+    }
+
+    /**
+     * Transforms a BPMN Split Gateway into a PIF Split Gateway
+     *
+     * @param min         BPMN model
+     * @param mout        PIF model
+     * @param flowElement BPMN Gateway to transform
+     * @throws IllegalModelException
+     */
+    private void transform_SplitGateway(BpmnModel min, PifModel mout, Gateway flowElement) throws IllegalModelException {
+        SplitGateway gw;
+        if (flowElement instanceof ParallelGateway) {
+            gw = new AndSplitGateway();
+        } else if (flowElement instanceof  ExclusiveGateway) {
+            gw = new XOrSplitGateway();
+        } else if (flowElement instanceof  InclusiveGateway) {
+            gw = new OrSplitGateway();
+        } else {
+            IllegalModelException e = new IllegalModelException("BPMN model incorrect (gateway " + flowElement.getId() + " type is not supported)");
+            error(e.getMessage());
+            throw e;
+        }
+        gw.setId(flowElement.getId());
+        mout.addNode(gw);
     }
 
     /**
@@ -537,6 +553,29 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
             }
         }
         return rtr;
+    }
+
+    /**
+     * Gets the direction (split or join) of a gateway and check it is consistent wrt. the sequence flow
+     *
+     * @param gateway the gateway to check and get the direction for
+     * @return the direction of the gateway
+     */
+    private GatewayDirection getDirection(Gateway gateway) {
+        GatewayDirection direction;
+        int given_dir;
+        given_dir = gateway.getGatewayDirection().getValue();
+        if (this.checkOutStrict(gateway, 1, false) && (this.checkInMore(gateway, 1, false))) {
+            direction = GatewayDirection.CONVERGING;
+            if (given_dir != direction.getValue())
+                warning("BPMN model is incorrect (gateway " + gateway.getId() + " should be defined to be converging)");
+        } else if (this.checkInStrict(gateway, 1, false) && (this.checkOutMore(gateway, 1, false))) {
+            direction = org.eclipse.bpmn2.GatewayDirection.DIVERGING;
+            if (given_dir != direction.getValue())
+                this.warning("BPMN model is incorrect (gateway " + gateway.getId() + " should be defined to be diverging)");
+        } else // 1-1 (no-op gateway) or n-m (unsupported)
+            direction = org.eclipse.bpmn2.GatewayDirection.UNSPECIFIED;
+        return direction;
     }
 
     /**
