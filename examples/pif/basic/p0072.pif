@@ -21,7 +21,12 @@
             <pif:outgoingFlows>sf1</pif:outgoingFlows>
         </pif:nodes>
         <pif:nodes id="final" xsi:type="pif:EndEvent">
-            <pif:incomingFlows>sf9</pif:incomingFlows>
+            <pif:incomingFlows>sf6</pif:incomingFlows>
+            <pif:incomingFlows>sf10b</pif:incomingFlows>
+            <pif:incomingFlows>sf13b</pif:incomingFlows>
+            <pif:incomingFlows>sf18b</pif:incomingFlows>
+            <pif:incomingFlows>sf19b</pif:incomingFlows>
+            <pif:incomingFlows>sf20b</pif:incomingFlows>
         </pif:nodes>
         <pif:nodes id="task0" xsi:type="pif:Task">
             <pif:incomingFlows>sf1</pif:incomingFlows>
@@ -62,7 +67,6 @@
         <pif:nodes xsi:type="pif:OrSplitGateway" id="S1">
             <pif:incomingFlows>sf3</pif:incomingFlows>
             <pif:outgoingFlows>sf4</pif:outgoingFlows>
-            <pif:outgoingFlows>sf10a</pif:outgoingFlows>
             <pif:outgoingFlows>sf10a</pif:outgoingFlows>
             <pif:outgoingFlows>sf13a</pif:outgoingFlows>
             <pif:outgoingFlows>sf18a</pif:outgoingFlows>
