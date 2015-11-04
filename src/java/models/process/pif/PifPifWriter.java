@@ -40,6 +40,7 @@ import java.io.IOException;
 
 public class PifPifWriter extends AbstractModelWriter {
     public static final String SCHEMA_PATH = "model/pif.xsd";
+    public static final boolean VALIDATE = true;
 
     @Override
     public String getSuffix() {
@@ -50,17 +51,19 @@ public class PifPifWriter extends AbstractModelWriter {
     public void modelToFile(AbstractModel model) throws IOException, IllegalResourceException, IllegalModelException {
         try {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
             checkModel(model, PifModel.class);
-            PifModel cifModel = (PifModel) model;
-            FileOutputStream fos = new FileOutputStream(cifModel.getResource());
+            PifModel pifModel = (PifModel) model;
+            FileOutputStream fos = new FileOutputStream(pifModel.getResource());
             final JAXBContext ctx = JAXBContext.newInstance(Process.class);
             final Marshaller marshaller = ctx.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.setSchema(schema);
-            marshaller.marshal(cifModel.getModel(), fos);
+            if(VALIDATE) {
+                Schema schema = factory.newSchema(new StreamSource(new File(SCHEMA_PATH)));
+                marshaller.setSchema(schema);
+            }
+            marshaller.marshal(pifModel.getModel(), fos);
         } catch (JAXBException e) {
-            throw new IllegalModelException(e.getMessage());
+            throw new IllegalModelException(e.toString());
         } catch (SAXException e) {
             throw new IllegalResourceException(e.getMessage());
         }

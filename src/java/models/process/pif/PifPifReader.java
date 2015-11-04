@@ -42,6 +42,8 @@ import java.io.IOException;
 
 public class PifPifReader extends AbstractModelReader {
     public static final String SCHEMA_PATH = "model/pif.xsd";
+    public static final boolean VALIDATE = true;
+
     private String schema_path = null;
     @Override
     public String getSuffix() {
@@ -57,11 +59,13 @@ public class PifPifReader extends AbstractModelReader {
             // use the set schema path or the default one if it is undefined
             if(schema_path == null) { schema_path = SCHEMA_PATH; }
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = factory.newSchema(new StreamSource(new File(schema_path)));
             fis = new FileInputStream(cifModel.getResource());
             JAXBContext ctx = JAXBContext.newInstance(Process.class);
             Unmarshaller unmarshaller = ctx.createUnmarshaller();
-            unmarshaller.setSchema(schema);
+            if (VALIDATE) {
+                Schema schema = factory.newSchema(new StreamSource(new File(schema_path)));
+                unmarshaller.setSchema(schema);
+            }
             cifModel.setModel((Process) unmarshaller.unmarshal(fis));
             fis.close();
         } catch (FileNotFoundException e) {
