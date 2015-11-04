@@ -1,3 +1,10 @@
+//
+// Ce fichier a été généré par l'implémentation de référence JavaTM Architecture for XML Binding (JAXB), v2.2.8-b130911.1802 
+// Voir <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
+// Toute modification apportée à ce fichier sera perdue lors de la recompilation du schéma source. 
+// Généré le : 2015.11.04 à 06:19:30 PM CET 
+//
+
 
 package models.process.pif.generated;
 
@@ -11,7 +18,7 @@ import javax.xml.namespace.QName;
 /**
  * This object contains factory methods for each 
  * Java content interface and Java element interface 
- * generated in the pif package. 
+ * generated in the models.process.pif.generated package. 
  * <p>An ObjectFactory allows you to programatically 
  * construct new instances of the Java representation 
  * for XML content. The Java representation of XML 
@@ -25,13 +32,13 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _InteractionReceivingPeers_QNAME = new QName("http://www.example.org/PIF", "receivingPeers");
     private final static QName _WorkflowNodeOutgoingFlows_QNAME = new QName("http://www.example.org/PIF", "outgoingFlows");
     private final static QName _WorkflowNodeIncomingFlows_QNAME = new QName("http://www.example.org/PIF", "incomingFlows");
+    private final static QName _InteractionReceivingPeers_QNAME = new QName("http://www.example.org/PIF", "receivingPeers");
     private final static QName _WorkflowFinalNodes_QNAME = new QName("http://www.example.org/PIF", "finalNodes");
 
     /**
-     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: pif
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: models.process.pif.generated
      * 
      */
     public ObjectFactory() {
@@ -70,7 +77,7 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link models.process.pif.generated.Condition }
+     * Create an instance of {@link Condition }
      * 
      */
     public Condition createCondition() {
@@ -86,7 +93,7 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link models.process.pif.generated.AndSplitGateway }
+     * Create an instance of {@link AndSplitGateway }
      * 
      */
     public AndSplitGateway createAndSplitGateway() {
@@ -110,7 +117,7 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link models.process.pif.generated.ConditionalSequenceFlow }
+     * Create an instance of {@link ConditionalSequenceFlow }
      * 
      */
     public ConditionalSequenceFlow createConditionalSequenceFlow() {
@@ -166,7 +173,7 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link models.process.pif.generated.EndEvent }
+     * Create an instance of {@link EndEvent }
      * 
      */
     public EndEvent createEndEvent() {
@@ -174,7 +181,7 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link models.process.pif.generated.AndJoinGateway }
+     * Create an instance of {@link AndJoinGateway }
      * 
      */
     public AndJoinGateway createAndJoinGateway() {
@@ -187,16 +194,6 @@ public class ObjectFactory {
      */
     public XOrJoinGateway createXOrJoinGateway() {
         return new XOrJoinGateway();
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "receivingPeers", scope = Interaction.class)
-    @XmlIDREF
-    public JAXBElement<Object> createInteractionReceivingPeers(Object value) {
-        return new JAXBElement<Object>(_InteractionReceivingPeers_QNAME, Object.class, Interaction.class, value);
     }
 
     /**
@@ -217,6 +214,16 @@ public class ObjectFactory {
     @XmlIDREF
     public JAXBElement<Object> createWorkflowNodeIncomingFlows(Object value) {
         return new JAXBElement<Object>(_WorkflowNodeIncomingFlows_QNAME, Object.class, WorkflowNode.class, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link Object }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://www.example.org/PIF", name = "receivingPeers", scope = Interaction.class)
+    @XmlIDREF
+    public JAXBElement<Object> createInteractionReceivingPeers(Object value) {
+        return new JAXBElement<Object>(_InteractionReceivingPeers_QNAME, Object.class, Interaction.class, value);
     }
 
     /**
