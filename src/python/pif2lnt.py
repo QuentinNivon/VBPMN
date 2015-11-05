@@ -1202,9 +1202,30 @@ class Loader:
         return False
 
 if __name__ == '__main__':
-    import sys
-    if len(sys.argv) == 2:
+    import argparse
+
+    TERM_OK, TERM_ERROR, TERM_PROBLEM = (0, 1, 2)
+
+    parser = argparse.ArgumentParser(prog='pif2lnt', description='Computes a BCG model from a PIF model.')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('model', metavar='Model',
+                    help='the PIF model to transform (filename of PIF file)')
+    parser.add_argument('--lazy', action='store_true',
+                    help='does not recompute the BCG model if it already exists and is more recent than the PIF model')
+
+    # parse arguments
+    try:
+        args = parser.parse_args()
+    except:
+        parser.print_help()
+        sys.exit(TERM_PROBLEM)
+
+    if args.lazy:
         loader = Loader()
-        (model_name, model_alphabet) = loader(sys.argv[1])
+        (model, alphabet) = loader(args.model)
     else:
-        print "you should give the name of a PIF model file"
+        generator = Generator()
+        (model, alphabet) = generator(args.model)
+
+    val = TERM_OK # TODO : get the result of the execution of SVL in computing the BCG instead of always OK
+    sys.exit(val)
