@@ -71,7 +71,6 @@ OPERATION_TO_BISIMULATOR = {"conservative": "equal", "inclusive": "smaller", "ex
 
 # This class represents the superclass of all classes performing some formal checking on two LTS models (stores in BCG format files)
 class Checker:
-    TERM_OK, TERM_ERROR, TERM_PROBLEM = (0, 1, 2)
     CHECKER_FILE = "check.svl"
     DIAGNOSTIC_FILE = "res.txt"
 
@@ -197,7 +196,7 @@ class ComparisonChecker(Checker):
         self.__genSVL(Checker.CHECKER_FILE)
         call(SVL_CALL_COMMAND % (Checker.CHECKER_FILE, Checker.DIAGNOSTIC_FILE), shell=True)
         res = call('grep TRUE %s' % Checker.DIAGNOSTIC_FILE, shell=True)
-        if (res == Checker.TERM_ERROR):
+        if (res == ReturnCodes.TERM_ERROR):
             return False
         else:
             return True
@@ -244,7 +243,7 @@ class FormulaChecker(Checker):
         call(SVL_CALL_COMMAND % (Checker.CHECKER_FILE, Checker.DIAGNOSTIC_FILE), shell=True, stdout=sys.stdout)
         # check the result, return false if at least one FALSE in the result
         res = call('grep FALSE %s' % Checker.DIAGNOSTIC_FILE, shell=True, stdout=sys.stdout)
-        if res == Checker.TERM_ERROR:
+        if res == ReturnCodes.TERM_ERROR:
             return True
         else:
             return False
@@ -276,6 +275,8 @@ if __name__ == '__main__':
                         choices=SELECTIONS,
                         const=SELECTIONS_DEFAULT, default=SELECTIONS_DEFAULT,
                         help='gives the model to apply renaming to (first, second, or all(default))')
+    parser.add_argument('--lazy', action='store_true',
+                        help='does not recompute the BCG model if it already exists and is more recent than the PIF model')
 
     # parse arguments
     try:
@@ -287,16 +288,25 @@ if __name__ == '__main__':
             print "formula in presence of equivalence based comparison will not be used"
     except:
         parser.print_help()
-        sys.exit(Checker.TERM_PROBLEM)
+        sys.exit(ReturnCodes.TERM_PROBLEM)
 
-    loader = Loader()
+    # if in lazy mode, rebuild the BCG files only if needed
+    if args.lazy:
+        loader = Loader()
+    else:
+        loader = Generator()
 
     # (re)build first model
     pifModel1 = args.models[0]
-    (ltsModel1, model1Alphabet) = loader(pifModel1)
+    (res1, ltsModel1, model1Alphabet) = loader(pifModel1)
     # (re)build second model
     pifModel2 = args.models[1]
-    (ltsModel2, model2Alphabet) = loader(pifModel2)
+    (res2, ltsModel2, model2Alphabet) = loader(pifModel2)
+
+    # if one of the two models could not be loader -> ERROR
+    if not(res1==ReturnCodes.TERM_OK and res2==ReturnCodes.TERM_OK):
+        print "error in loading models"
+        sys.exit(ReturnCodes.TERM_PROBLEM)
 
     # checks if we compare up to a context
     # TODO Gwen : refine synchronization sets computation (_EM vs _REC)
@@ -323,8 +333,8 @@ if __name__ == '__main__':
     # perform comparison and process result
     res = comparator()
     if not res:
-        val = Checker.TERM_ERROR
+        val = ReturnCodes.TERM_ERROR
     else:
-        val = Checker.TERM_OK
+        val = ReturnCodes.TERM_OK
     print res
     sys.exit(val)

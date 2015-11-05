@@ -30,6 +30,7 @@ There are different options:
 - `--exposemode` can be used (in conjunction with `--hiding`) to give elements of the alphabets to **keep** (*i.e.*, not to hide) instead of those to hide.
 - `--renaming` is used to rename elements of the model alphabets
 - `--renamed` can be used (in conjunction with `--renaming`) to indicate to which model the renaming applies (both by default)
+- `--lazy` does not recompute the BCG models for the PIF models if not needed (= if BCG file exists and is newer than the PIF file)
 
 ## Examples
 

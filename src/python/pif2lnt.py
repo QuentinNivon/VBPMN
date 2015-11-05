@@ -18,6 +18,9 @@ import random
 LTS_SUFFIX = ".bcg"
 LNT_SUFFIX = ".lnt"
 
+# TODO: use values that must exist in some python library instead
+class ReturnCodes:
+    TERM_OK, TERM_ERROR, TERM_PROBLEM = (0, 1, 2)
 
 # Dumps alphabet (list of strings) in the given file
 # Inputs: a list of strings, a file identifier, a Boolean indicating whether to add "any" or not
@@ -1146,7 +1149,7 @@ class Generator:
     # @param pifFilename String, name of the PIF file
     # @param smartReduction boolean, true if a smart reduction is done on the LTS when loading it, false else
     # @param debug boolean, true to get debug information, false else
-    # @return (String, Collection<String>), name of the model (can be different from the filename) and its alphabet
+    # @return (Integer, String, Collection<String>), return code, name of the model (can be different from the filename) and its alphabet
     def __call__(self, pifFilename, smartReduction=True, debug=False):
         proc = Process()
         # load PIF model
@@ -1161,7 +1164,7 @@ class Generator:
         pr = Popen(["svl", pifModelName], shell=False, stdout=sys.stdout)
         pr.communicate()
         # return name and alphabet
-        return (pifModelName,proc.alpha())
+        return (ReturnCodes.TERM_OK, pifModelName,proc.alpha()) # TODO: use return value from SVL call
 
 
 # This class gets loads an LTS (BCG format) for a PIF model
@@ -1172,7 +1175,7 @@ class Loader:
     # @param pifFilename String, name of the PIF file
     # @param smartReduction boolean, true if a smart reduction is done on the LTS when loading it, false else
     # @param debug boolean, true to get debug information, false else
-    # @return (String, Collection<String>), name of the model (can be different from the filename) and its alphabet
+    # @return (Integer, String, Collection<String>), return code, name of the model (can be different from the filename) and its alphabet
     def __call__(self, pifFilename, smartReduction=True, debug=False):
         proc = Process()
         proc.buildProcessFromFile(pifFilename)
@@ -1182,7 +1185,7 @@ class Loader:
             generator = Generator()
             return generator(pifFilename, smartReduction=smartReduction, debug=debug)
         else:
-            return (pifModelName, proc.alpha())
+            return (ReturnCodes.TERM_OK, pifModelName, proc.alpha())
 
     # decides if the LTS for the pifFileName has to be recomputed
     # @param pifFilename String, name of the PIF file
@@ -1204,8 +1207,6 @@ class Loader:
 if __name__ == '__main__':
     import argparse
 
-    TERM_OK, TERM_ERROR, TERM_PROBLEM = (0, 1, 2)
-
     parser = argparse.ArgumentParser(prog='pif2lnt', description='Computes a BCG model from a PIF model.')
     parser.add_argument('--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('model', metavar='Model',
@@ -1218,14 +1219,15 @@ if __name__ == '__main__':
         args = parser.parse_args()
     except:
         parser.print_help()
-        sys.exit(TERM_PROBLEM)
+        sys.exit(ReturnCodes.TERM_PROBLEM)
 
     if args.lazy:
+        # generate BCG only if needed (does not exist or exists and is older than PIF)
         loader = Loader()
-        (model, alphabet) = loader(args.model)
+        (res, model, alphabet) = loader(args.model)
     else:
+        # generate BCG in any case
         generator = Generator()
-        (model, alphabet) = generator(args.model)
+        (res, model, alphabet) = generator(args.model)
 
-    val = TERM_OK # TODO : get the result of the execution of SVL in computing the BCG instead of always OK
-    sys.exit(val)
+    sys.exit(res)
