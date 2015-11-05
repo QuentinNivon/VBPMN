@@ -42,7 +42,7 @@ public class ComparisonTests {
     public static final String PROGRAM = "vbpmn.py";
     public static final String TESTFILE = "tests.txt";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
-    public static final String REGEX_TEST = "^([+-])\\h(.*)$";
+    public static final String REGEX_TEST = "^([+-])\\h(.*)\\h(.*)\\h(.*)$";
     public static final String REGEX_EMPTYLINE = "^\\h*$";
     public static final String OK = "+";
     public static final String NOK = "-";
@@ -104,10 +104,12 @@ public class ComparisonTests {
                     Matcher m_test = p_test.matcher(line);
                     if (m_test.matches()) {
                         String expected_result = m_test.group(1);
-                        String rest = m_test.group(2);
+                        String file1 = m_test.group(2);
+                        String file2 = m_test.group(3);
+                        String options = m_test.group(4);
                         Object[] line_elements = new Object[2];
                         line_elements[0] = expected_result;
-                        line_elements[1] = rest;
+                        line_elements[1] = file1+" "+file2+" "+options;
                         data.add(line_elements);
                     } else {
                         fail();
