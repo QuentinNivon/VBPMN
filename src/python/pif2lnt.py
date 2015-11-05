@@ -1201,3 +1201,10 @@ class Loader:
         # else -> no need to rebuild
         return False
 
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) == 2:
+        loader = Loader()
+        (model_name, model_alphabet) = loader(sys.argv[1])
+    else:
+        print "you should give the name of a PIF model file"
