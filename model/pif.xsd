@@ -33,15 +33,6 @@
                </annotation>
             </element>
     		<element name="finalNodes" type="IDREF" minOccurs="0" maxOccurs="unbounded">
-<!--
-                <annotation>
-                    <appinfo>
-                    	<jaxb:property>
-                              <jaxb:baseType name="EndEvent"/>
-                        </jaxb:property>
-                    </appinfo>
-               </annotation>
--->
     		</element>
     	</sequence>
 
@@ -52,27 +43,9 @@
     	<sequence>
     		<element name="incomingFlows" type="IDREF"
     			minOccurs="0" maxOccurs="unbounded">
-<!--
-                <annotation>
-                    <appinfo>
-                    	<jaxb:property>
-                              <jaxb:baseType name="SequenceFlow"/>
-						 </jaxb:property>
-                    </appinfo>
-               </annotation>
--->
             </element>
     		<element name="outgoingFlows" type="IDREF"
     			minOccurs="0" maxOccurs="unbounded">
-<!--
-                <annotation>
-                    <appinfo>
-                    	<jaxb:property>
-                              <jaxb:baseType name="SequenceFlow"/>
-						 </jaxb:property>
-                    </appinfo>
-               </annotation>
--->
     		</element>
     	</sequence>
     	<attribute name="id" type="ID" use="required"></attribute>
@@ -143,15 +116,6 @@
                </annotation>
     				</element>
     				<element name="receivingPeers" type="IDREF" minOccurs="1" maxOccurs="unbounded">
-<!--
-                <annotation>
-                    <appinfo>
-                    	<jaxb:property>
-                              <jaxb:baseType name="Peer"/>
-						 </jaxb:property>
-                    </appinfo>
-               </annotation>
--->
     				</element>
     			</sequence>
     		</extension>
