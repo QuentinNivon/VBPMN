@@ -2,6 +2,8 @@
 
 ## Syntax
 
+Comparison of (two) PIF processes it achieved with the `vbpmn` command.
+It is a python script that is called using `python vbpmn.py`.
 You can type in `python vbpmn.py -h` to get information about the use of it.
 
 In short: `python vbpmn.py Model1 Model2 operation [options]`
