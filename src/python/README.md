@@ -1,25 +1,16 @@
 # Comparison of PIF Processes
 
-There are two scripts:
+## Syntax
 
-- `compare.py` to perform comparison based on equivalences or preorders, including support for hiding, exposal, renaming, and context-awareness
+You can type in `python vbpmn.py -h` to get information about the use of it.
 
-- `checkprop.py` to perform comparison based on a temporal logic property
-
-## Equivalence and Preorder
-
-### Syntax
-
-You can type in `python checkprop.py -h` to get information about the use of it.
-
-In short: `python checkprop.py Model1 Model2 operation [options]`
+In short: `python vbpmn.py Model1 Model2 operation [options]`
 
 This command converts each PIF file into an LTS (internal behavior
-removed), and compares them wrt. the given operation (strong
-equivalence/preorder). Options can be used for hiding/renaming
-purposes.
+removed), and compares them wrt. the given operation (equivalences / preorders / model-checking).
+Options can be used for hiding/renaming purposes.
 
-There are 3 available operations:
+There are 5 available operations:
 
 - `conservative`: both PIF models are equivalent
 
@@ -27,28 +18,39 @@ There are 3 available operations:
 
 - `exclusive`: the first PIF model simulates the second one
 
+- `property-and`: checks that both PIF models verify some temporal logic formula
+
+- `property-implied`: checks that if the first PIF model verifies some temporal logic formula then the second one does too
+
 There are different options:
 
 - `--hiding` is used to hide elements of the model alphabets to **hide** before checking equivalence/preorder.
 - `--exposemode` can be used (in conjunction with `--hiding`) to give elements of the alphabets to **keep** (*i.e.*, not to hide) instead of those to hide.
+- `--renaming` is used to rename elements of the model alphabets
+- `--renamed` can be used (in conjunction with `--renaming`) to indicate to which model the renaming applies (both by default)
 
-### Examples (from FASE'16)
+## Examples
 
-compare.py model1.pif model2.pif conservative
+```bash
+$ python vbpmn.py model1.pif model2.pif conservative
 
-compare.py model1.pif model2.pif inclusive
+$ python vbpmn.py model1.pif model2.pif inclusive
 
-compare.py model2.pif model1.pif exclusive
+$ python vbpmn.py model2.pif model1.pif exclusive
 
-compare.py model1.pif model2.pif conservative --hiding log
+$ python vbpmn.py model1.pif model2.pif conservative --hiding log
 
-compare.py model1.pif model2.pif conservative --hiding a b --exposemode
+$ python vbpmn.py model1.pif model2.pif conservative --hiding a b --exposemode
 
-## Comparison with reference to a Temporal Logic Formula
+$ python vbpmn.py model1.pif model2.pif conservative --renaming "a:a" "b:b"
 
-$ python checkprop.py file1.pif file2.pif file.mcl
+$ python vbpmn.py model1.pif model2.pif conservative --renaming "a:b" "b:c" "c:a" --renamed first
 
-This command converts each PIF file into an LTS (internal behavior
-removed), and checks that both process LTSs respect the property
-specified in file.mcl. 
+$ python vbpmn.py model1.pif model2.pif conservative --renaming "b:a" "c:b" "a:c" --renamed second
+
+$ python vbpmn.py model1.pif model2.pif conservative --renaming "b:c" --renamed all
+
+$ python vbpmn.py model1.pif model2.pif property-and --formula "mu X  . (< true > true and [ not B ] X)"
+
+```
 
