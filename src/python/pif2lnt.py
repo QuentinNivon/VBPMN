@@ -941,13 +941,11 @@ class Process:
         # Generates LNT processes for all other nodes
         specialnodes = []  # we keep track of nodes that need to be translated only once
         for n in self.nodes:
-            if isinstance(n, Interaction) or isinstance(n, MessageSending) or isinstance(n,
-                                                                                         MessageReception) or isinstance(
-                n, Task):
-                if (type(n).__name__ in specialnodes):
+            if isinstance(n, Interaction) or isinstance(n, MessageSending) or isinstance(n, MessageReception) or isinstance(n, Task):
+                if (n.__class__.__name__ in specialnodes):
                     pass
-                else:
-                    specialnodes.append(type(n).__name__)
+                else: 
+                    specialnodes.append(n.__class__.__name__)
                     n.lnt(f)
             else:
                 n.lnt(f)
