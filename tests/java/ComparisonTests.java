@@ -53,7 +53,7 @@ public class ComparisonTests {
     public static final String REGEX_EMPTYLINE = "^\\h*$";
     public static final String OK = "+";
     public static final String NOK = "-";
-    public static final String USELESS[] = {".o", ".f", ".t", ".err", ".lnt", ".svl", ".log", "bisimulator", "evaluator4", "generator"};
+    public static final String USELESS[] = {".o", ".f", ".t", ".err", ".lnt", ".lotos", ".svl", ".log", "bisimulator", "evaluator4", "generator"};
     public static List<String> USELESS_LIST;
 
     /**
