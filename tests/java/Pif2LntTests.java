@@ -49,18 +49,24 @@ public class Pif2LntTests {
     public static final String PROGRAM = "pif2lnt.py";
     public static final String OPTIONS = "--lazy"; // use --lazy not to recompute, empty string to recompute
     public static final String SUFFIX = ".pif";
+    public static final String COPYSUFFIX = "_copy";
 
     /**
      * Provides data for tests based on the list of all .pif files in the example directory
      */
     @DataProvider(name = "directory_walker_provider")
-    public Iterator<Object[]> directory_walker_provider() {
+    public Iterator<Object[]> directory_walker_provider(Method m) {
         List<Object[]> data = new ArrayList<>();
         try {
-            Object[] files = Files.walk(Paths.get(FILES_PATH))
-                    .filter(x -> x.toFile().getName().endsWith(SUFFIX))
-                    .toArray();
-            for (Object file : files) {
+            Object[] files;
+            if (m.getName().equals("test_pif2lnt_all_files_with_Reader"))
+                files = Files.walk(Paths.get(FILES_PATH))
+                        .filter(x -> x.toFile().getName().endsWith(SUFFIX) && !x.toFile().getName().contains(COPYSUFFIX))
+                        .toArray();
+            else
+                files = Files.walk(Paths.get(FILES_PATH))
+                        .filter(x -> x.toFile().getName().endsWith(SUFFIX))
+                        .toArray();            for (Object file : files) {
                 Object[] value = new Object[1];
                 value[0] = file;
                 data.add(value);
@@ -75,7 +81,7 @@ public class Pif2LntTests {
      * Performs the Pif2Lnt transformation on all examples
      */
     @Test(dataProvider = "directory_walker_provider", groups = "reading")
-    public void test_read_all_files_with_Reader(Path filePath) {
+    public void test_pif2lnt_all_files_with_Reader(Path filePath) {
         int exitValue;
         Path python_dir = Paths.get(PROGRAM_PATH+PROGRAM);
         String python_script = python_dir.toAbsolutePath().toString();
