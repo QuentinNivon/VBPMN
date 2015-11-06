@@ -46,6 +46,7 @@ public class ComparisonTests {
     public static final String WORKINGDIR = "out/test/vbpmn/pif/";
     public static final String PROGRAM_PATH = "../../../production/vbpmn/";
     public static final String PROGRAM = "vbpmn.py";
+    //public static final String OPTIONS = ""; // "--lazy" to have computation of BCG models only if needed, else ""
     public static final String OPTIONS = "--lazy"; // "--lazy" to have computation of BCG models only if needed, else ""
     public static final String TESTFILE = "tests.txt";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
@@ -53,7 +54,9 @@ public class ComparisonTests {
     public static final String REGEX_EMPTYLINE = "^\\h*$";
     public static final String OK = "+";
     public static final String NOK = "-";
-    public static final String USELESS[] = {".o", ".f", ".t", ".err", ".lnt", ".lotos", ".svl", ".log", "bisimulator", "evaluator4", "generator"};
+    public static final String USELESS[] = {".o", ".f", ".t", ".err", ".lnt", ".lotos", ".svl", ".log", "_raw.bcg", "_work.bcg",
+            "bisimulator", "bisimulator.bcg", "evaluator4", "evaluator.bcg", "generator",
+            "formula.mcl", "res.txt"};
     public static List<String> USELESS_LIST;
 
     /**
