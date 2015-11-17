@@ -320,6 +320,12 @@ class Task(Node):
         else:
             return self.outgoingFlows[0].getTarget().reachableOrJoin(visited + [self.ident], depth)
 
+    # Dumps a Maude line of code into the given file
+    def dumpMaude(self,f):
+        t=random.randint(0,4) # we generate a random time !
+        f.write("        task("+self.ident+",\""+self.ident+"\","+self.incomingFlows[0].ident+","+self.outgoingFlows[0].ident+","+str(t)+")")
+
+
 ##
 # Abstract Class for Gateway
 class Gateway(Node):
@@ -361,6 +367,19 @@ class SplitGateway(Gateway):
             for f in self.outgoingFlows:
                 res = res + f.getTarget().reachableOrJoin(visited + [self.ident], depth)
             return res
+
+    # Dumps a Maude line of code into the given file
+    def dumpMaude(self,f,nameop):
+        f.write("        split("+self.ident+","+nameop+","+self.incomingFlows[0].ident+",")
+        cpt=len(self.outgoingFlows)
+        f.write("(")
+        for ofl in self.outgoingFlows:
+            cpt=cpt-1
+            f.write(ofl.ident)
+            if (cpt>0):
+                f.write(",")
+        f.write("))")
+
 
 ##
 # Class for OrSplitGateway
@@ -530,6 +549,11 @@ class OrSplitGateway(SplitGateway):
                 res = res + f.getTarget().reachableOrJoin(visited + [self.ident], depth + 1)
             return res
 
+    # Dumps a Maude line of code into the given file
+    def dumpMaude(self,f):
+        SplitGateway.dumpMaude(self,f,"inclusive")
+
+
 ##
 # Class for XOrSplitGateway
 class XOrSplitGateway(SplitGateway):
@@ -567,6 +591,10 @@ class XOrSplitGateway(SplitGateway):
     # For an xor split, call to the super class
     def reachableOrJoin(self, visited, depth):
         return SplitGateway.reachableOrJoin(self, visited, depth)
+
+    # Dumps a Maude line of code into the given file
+    def dumpMaude(self,f):
+        SplitGateway.dumpMaude(self,f,"exclusive")
 
 ##
 # Class for AndSplitGateway
@@ -606,6 +634,10 @@ class AndSplitGateway(SplitGateway):
     def reachableOrJoin(self, visited, depth):
         return SplitGateway.reachableOrJoin(self, visited, depth)
 
+    # Dumps a Maude line of code into the given file
+    def dumpMaude(self,f):
+        SplitGateway.dumpMaude(self,f,"parallel")
+
 ##
 # Abstract Class for JoinGateway
 class JoinGateway(Gateway):
@@ -631,6 +663,19 @@ class JoinGateway(Gateway):
             return []
         else:
             return self.outgoingFlows[0].getTarget().reachableOrJoin(visited + [self.ident], depth)
+
+    # Dumps a Maude line of code into the given file
+    def dumpMaude(self,f,nameop):
+        f.write("        merge("+self.ident+","+nameop+",")
+        cpt=len(self.incomingFlows)
+        f.write("(")
+        for ofl in self.incomingFlows:
+            cpt=cpt-1
+            f.write(ofl.ident)
+            if (cpt>0):
+                f.write(",")
+        f.write("),"+self.outgoingFlows[0].ident+")")
+
 
 ##
 # Class for OrJoinGateway
@@ -782,6 +827,11 @@ class OrJoinGateway(JoinGateway):
             return [(self.ident, depth)] + self.outgoingFlows[0].getTarget().reachableOrJoin(visited + [self.ident],
                                                                                              depth - 1)
 
+    # Dumps a Maude line of code into the given file
+    def dumpMaude(self,f):
+        JoinGateway.dumpMaude(self,f,"inclusive")
+
+
 ##
 # Class for XOrJoinGateway
 class XOrJoinGateway(JoinGateway):
@@ -818,6 +868,10 @@ class XOrJoinGateway(JoinGateway):
     def reachableOrJoin(self, visited, depth):
         return JoinGateway.reachableOrJoin(self, visited, depth)
 
+    # Dumps a Maude line of code into the given file
+    def dumpMaude(self,f):
+        JoinGateway.dumpMaude(self,f,"exclusive")
+
 ##
 # Class for AndJoinGateway
 class AndJoinGateway(JoinGateway):
@@ -853,6 +907,10 @@ class AndJoinGateway(JoinGateway):
     # For an and split, call to the super class
     def reachableOrJoin(self, visited, depth):
         return JoinGateway.reachableOrJoin(self, visited, depth)
+
+    # Dumps a Maude line of code into the given file
+    def dumpMaude(self,f):
+        JoinGateway.dumpMaude(self,f,"parallel")
 
 ##
 # Class for Processes described in PIF
