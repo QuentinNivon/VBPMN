@@ -45,3 +45,14 @@
 + fase16/f0005.pif fase16/f0006.pif property-and --formula "mu X  . (< true > true and [ not B ] X)"
 
 // renaming + hiding
+
+// case study
+
+- fase16/booking16a.pif fase16/booking16b.pif conservative
++ fase16/booking16a.pif fase16/booking16b.pif inclusive
++ fase16/booking16b.pif fase16/booking16a.pif exclusive
+
+- fase16/booking16a.pif fase16/booking16c.pif conservative
+- fase16/booking16a.pif fase16/booking16c.pif inclusive
+- fase16/booking16a.pif fase16/booking16c.pif exclusive
++ fase16/booking16a.pif fase16/booking16c.pif conservative --hiding update
