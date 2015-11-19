@@ -8,7 +8,7 @@
         INIT = SPLIT1
         SPLIT1 = SPLIT-AND { A . JOIN1 ; SPLIT2 }
         SPLIT2 = SPLIT-XOR { B . JOIN2 ; C . JOIN2 }
-        JOIN2 = JOIN-AND . JOIN1
+        JOIN2 = JOIN-XOR . JOIN1
         JOIN1 = JOIN-AND . 0
     </pif:documentation>
 
