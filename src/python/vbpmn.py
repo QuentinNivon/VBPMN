@@ -6,11 +6,14 @@
 ###############################################################################
 
 # TODO: support workflow a ; a by adding supplemental information in pif.xsd::Task
-# TODO: support different renaming / hiding for the two processes (useful?)
+# TODO: support hiding in only one of the processes (as done for renaming) and different hiding for the two processes (useful?)
+# TODO: support different renamings in the two processes (useful?)
 # TODO: the way the things are computed, one should not compare a process with itself!
 # TODO: support hiding, renaming, refinement, and context-awareness in property based comparison
+# TODO: support => mode for property based comparison, not only /\
 # TODO: optimize by calling bisimulator / evaluator4 with hiding/renaming options instead of generating new bcg files
 # TODO: use SVL options to create buffers instead of writing them in LNT
+# TODO: perform cleaning in SVL scripts
 
 import sys
 from pif2lnt import *  # this library allows to go from PIF to LNT and LTS
@@ -137,7 +140,6 @@ class ComparisonChecker(Checker):
         svl_commands += SVL_COPY_TEMPLATE % (self.model1, workmodel1)
         svl_commands += SVL_COPY_TEMPLATE % (self.model2, workmodel2)
         # if required, perform hiding (on BOTH models)
-        # TODO: is this ok? shouldn't we all more freedom by hiding only in one? (OK FOR FASE'16) -> can do as for renaming
         if self.hiding is not None:
             equivalence_version = "branching"
             if self.exposemode:
@@ -204,8 +206,6 @@ class ComparisonChecker(Checker):
 
 # This class is used to perform model checking operations on two models (LTS stored in two BCG format files)
 # wrt an MCL property (stored in an MCL file)
-# TODO : it should support renaming and hiding
-# TODO : only property-and is implemented, missing property-implied
 class FormulaChecker(Checker):
     FORMULA_FILE = "formula.mcl"
 
