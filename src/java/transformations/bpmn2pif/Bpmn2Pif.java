@@ -51,9 +51,7 @@ public class Bpmn2Pif {
             AbstractModel output_model = new PifModel();
             output_model.setResource(new File(args[1]));
             trans.setResources(input_model, output_model, reader, writer);
-            trans.load();
-            trans.transform();
-            trans.dump();
+            trans.run(false);
             trans.cleanUp();
         } catch (IOException | IllegalResourceException | IllegalModelException e) {
             trans.message(e.getMessage());
