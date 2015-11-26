@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ComparisonTests {
+public class PifComparisonTests {
 
     public static final String CMD = "python";
     public static final String WORKINGDIR = "out/test/vbpmn/pif/";
