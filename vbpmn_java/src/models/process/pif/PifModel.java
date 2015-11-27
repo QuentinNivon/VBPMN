@@ -25,8 +25,8 @@ package models.process.pif;
 import models.base.IllegalModelException;
 import models.base.AbstractModel;
 // vbpmn
-import models.process.pif.generated.*;
 import models.process.pif.generated.Process;
+import models.process.pif.generated.*;
 // java
 import java.util.HashMap;
 import java.util.Map;

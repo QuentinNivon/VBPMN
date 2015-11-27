@@ -25,9 +25,9 @@ import java.io.File;
 import java.io.IOException;
 // fmt
 import models.base.*;
+import models.process.bpmn.BpmnModel;
 import transformations.base.Transformer;
 // vbpmn
-import models.process.bpmn.BpmnModel;
 import models.process.pif.PifModel;
 import models.process.bpmn.BpmnEMFBpmnReader;
 import models.process.pif.PifPifWriter;

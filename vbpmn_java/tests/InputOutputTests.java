@@ -18,18 +18,17 @@
  * emails: pascal.poizat@lip6.fr
  */
 
-import models.base.*;
-import models.process.pif.*;
-import models.process.pif.generated.Process;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import models.process.pif.generated.*;
 
-import javax.xml.bind.*;
+import models.base.*;
+import models.process.pif.*;
+import models.process.pif.generated.*;
+import models.process.pif.generated.Process;
+
 import java.io.*;
-import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

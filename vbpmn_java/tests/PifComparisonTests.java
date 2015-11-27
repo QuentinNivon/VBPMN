@@ -20,7 +20,6 @@
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.Executor;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -46,8 +45,8 @@ public class PifComparisonTests {
     public static final String WORKINGDIR = "out/test/vbpmn/pif/";
     public static final String PROGRAM_PATH = "../../../production/vbpmn/";
     public static final String PROGRAM = "vbpmn.py";
-    //public static final String OPTIONS = ""; // "--lazy" to have computation of BCG models only if needed, else ""
-    public static final String OPTIONS = "--lazy"; // "--lazy" to have computation of BCG models only if needed, else ""
+    public static final String OPTIONS = ""; // "--lazy" to have computation of BCG models only if needed, else ""
+    //public static final String OPTIONS = "--lazy"; // "--lazy" to have computation of BCG models only if needed, else ""
     public static final String TESTFILE = "tests.txt";
     public static final String REGEX_COMMENT = "^\\h*//.*$";
     public static final String REGEX_TEST = "^([+-])\\h(.*)\\h(.*)\\h(.*)$";

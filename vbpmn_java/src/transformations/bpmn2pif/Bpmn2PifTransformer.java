@@ -20,22 +20,21 @@
 package transformations.bpmn2pif;
 
 // fmt
-
-import com.sun.xml.internal.rngom.parse.host.Base;
 import models.base.IllegalModelException;
 import models.base.IllegalResourceException;
 import transformations.base.AbstractTransformer;
-// vbpmn
+// vbpmn bpmn
 import models.process.bpmn.BpmnModel;
+// vbpmn pif
 import models.process.pif.PifModel;
-import models.process.pif.generated.Message;
 import models.process.pif.generated.*;
+import models.process.pif.generated.EndEvent;
+import models.process.pif.generated.Message;
 // bpmn2
-import org.eclipse.bpmn2.EndEvent;
+import org.eclipse.bpmn2.*;
 import org.eclipse.bpmn2.Gateway;
 import org.eclipse.bpmn2.SequenceFlow;
 import org.eclipse.bpmn2.Task;
-import org.eclipse.bpmn2.*;
 // java
 import java.util.*;
 import java.util.stream.Collectors;
@@ -175,7 +174,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
             if (flowElement instanceof StartEvent) {
                 transform_StartEvent(min, mout, (StartEvent) flowElement);
             } else if (flowElement instanceof EndEvent) {
-                transform_EndEvent(min, mout, (EndEvent) flowElement);
+                transform_EndEvent(min, mout, (org.eclipse.bpmn2.EndEvent) flowElement);
             } else if (flowElement instanceof Gateway) {
                 transform_Gateway(min, mout, (Gateway) flowElement);
             } else if (flowElement instanceof ReceiveTask) { // should be BEFORE the test on Task since ReceiveTask is a subclass of it
@@ -248,7 +247,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
     private void transform_ChoreographyTask(BpmnModel min, PifModel mout, ChoreographyTask flowElement) throws IllegalModelException {
         checkInStrict(flowElement, 1, true);
         checkOutStrict(flowElement, 1, true);
-        models.process.pif.generated.Interaction task = new models.process.pif.generated.Interaction();
+        Interaction task = new Interaction();
         task.setId(flowElement.getId());
         // check if we have messages, if not generate one
         if (flowElement.getMessageFlowRef().size() != 0) {
@@ -291,7 +290,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
     private void transform_Receive(BpmnModel min, PifModel mout, ReceiveTask flowElement) throws IllegalModelException {
         checkInStrict(flowElement, 1, true);
         checkOutStrict(flowElement, 1, true);
-        models.process.pif.generated.MessageReception task = new models.process.pif.generated.MessageReception();
+        MessageReception task = new MessageReception();
         task.setId(flowElement.getId());
         // check if we have messages, if not generate one
         if (flowElement.getMessageRef() != null) {
@@ -322,7 +321,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
     private void transform_Send(BpmnModel min, PifModel mout, SendTask flowElement) throws IllegalModelException {
         checkInStrict(flowElement, 1, true);
         checkOutStrict(flowElement, 1, true);
-        models.process.pif.generated.MessageSending task = new models.process.pif.generated.MessageSending();
+        MessageSending task = new MessageSending();
         task.setId(flowElement.getId());
         // check if we have messages, if not generate one
         if (flowElement.getMessageRef() != null) {
@@ -350,7 +349,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
      * @param flowElement BPMN Task to transform
      * @throws IllegalModelException
      */
-    private void transform_Task(BpmnModel min, PifModel mout, Task flowElement) throws IllegalModelException {
+    private void transform_Task(BpmnModel min, PifModel mout, org.eclipse.bpmn2.Task flowElement) throws IllegalModelException {
         checkInStrict(flowElement, 1, true);
         checkOutStrict(flowElement, 1, true);
         models.process.pif.generated.Task task = new models.process.pif.generated.Task();
@@ -437,7 +436,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
      * @param bpmnEvent BPMN EndEvent to transform
      * @throws IllegalModelException
      */
-    private void transform_EndEvent(BpmnModel min, PifModel mout, EndEvent bpmnEvent) throws IllegalModelException {
+    private void transform_EndEvent(BpmnModel min, PifModel mout, org.eclipse.bpmn2.EndEvent bpmnEvent) throws IllegalModelException {
         checkInStrict(bpmnEvent, 1, true);
         checkOutStrict(bpmnEvent, 0, true);
         //
@@ -447,7 +446,7 @@ public class Bpmn2PifTransformer extends AbstractTransformer {
             has_final_state = true;
         }
         //
-        models.process.pif.generated.EndEvent pifEvent = new models.process.pif.generated.EndEvent();
+        EndEvent pifEvent = new EndEvent();
         pifEvent.setId(getAndCheckId(bpmnEvent));
         mout.addNode(pifEvent);
         mout.addFinalNode(pifEvent);

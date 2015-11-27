@@ -19,24 +19,28 @@
  */
 
 // java
-import java.io.File;
-import java.io.IOException;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 // testng
-import models.process.bpmn.BpmnModel;
-import models.process.pif.*;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 // fmt
 import models.base.*;
 import transformations.base.Transformer;
 // vbpmn
+import models.process.bpmn.BpmnModel;
 import models.process.bpmn.BpmnEMFBpmnReader;
 import transformations.bpmn2pif.Bpmn2PifTransformer;
+import models.process.pif.PifModel;
+import models.process.pif.PifFactory;
+import models.process.pif.PifPifWriter;
+import models.process.pif.PifPifReader;
+import models.process.pif.DotPifWriter;
 
 import static org.testng.Assert.fail;
 
@@ -59,10 +63,10 @@ public class Bpmn2PifTests {
                     .map(x -> x.toFile().getPath())
                     .filter(x -> x.endsWith(SUFFIX1))
                     .toArray();
-            for(Object filename1 : files) {
+            for (Object filename1 : files) {
                 Object[] value = new Object[2];
                 value[0] = filename1;
-                String filename2 = ((String)filename1).substring(0,((String)filename1).length()-SUFFIX1.length())+SUFFIX2;
+                String filename2 = ((String) filename1).substring(0, ((String) filename1).length() - SUFFIX1.length()) + SUFFIX2;
                 value[1] = filename2;
                 data.add(value);
             }
@@ -77,7 +81,7 @@ public class Bpmn2PifTests {
      */
     @Test(dataProvider = "directory_walker_provider")
     public void test_bpmn2pif(String fin, String fout) {
-        System.out.println(String.format("%s -> %s",fin,fout));
+        System.out.println(String.format("%s -> %s", fin, fout));
         AbstractModelReader reader = new BpmnEMFBpmnReader();
         AbstractModelWriter writer = new PifPifWriter();
         AbstractModel min = new BpmnModel();
@@ -87,7 +91,7 @@ public class Bpmn2PifTests {
             min.setResource(new File(fin));
             mout.setResource(new File(fout));
             Transformer transformer = new Bpmn2PifTransformer();
-            transformer.setResources(min,mout,reader,writer);
+            transformer.setResources(min, mout, reader, writer);
             transformer.load();
             transformer.transform();
             transformer.dump();

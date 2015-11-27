@@ -18,10 +18,6 @@
  * emails: pascal.poizat@lip6.fr
  */
 
-import models.base.*;
-import models.process.pif.*;
-import models.process.pif.generated.*;
-import models.process.pif.generated.Process;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;

@@ -5,15 +5,14 @@
 # Date:    2014-2015
 ###############################################################################
 
-from subprocess import *
-import os.path
-
-import pyxb
-import time
-import pif
-import sys
 import itertools
 import random
+import sys
+from subprocess import *
+
+import pyxb
+
+import pif
 
 LTS_SUFFIX = ".bcg"
 LNT_SUFFIX = ".lnt"

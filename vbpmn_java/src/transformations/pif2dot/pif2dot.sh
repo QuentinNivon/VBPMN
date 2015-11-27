@@ -2,7 +2,7 @@
 
 # pif2dot should be on your PATH
 # eg using:
-# export PATH=$PATH:/Users/pascalpoizat/IdeaProjects/vbpmn/src/java/transformations/pif2dot
+# export PATH=$PATH:/Users/pascalpoizat/IdeaProjects/vbpmn/vbpmn_java/src/java/transformations/pif2dot
 
 # change this to the path where transformations.pif2dot is
 # TODO : integrate into FMT
