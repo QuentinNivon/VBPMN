@@ -103,7 +103,7 @@ class MyTestCase(unittest.TestCase):
                 rtr = False
                 results_ko.append(pifFilename)
         if not rtr:
-            self.fail("error for some files", results_ko)
+            self.fail("error for some files: %s" % results_ko)
 
 
 if __name__ == '__main__':
