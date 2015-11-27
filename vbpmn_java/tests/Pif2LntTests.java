@@ -42,18 +42,23 @@ import static org.testng.Assert.fail;
 
 public class Pif2LntTests {
 
-    public static final String CMD = "python";
-    public static final String FILES_PATH = "out/test/vbpmn/pif/";
-    public static final String PROGRAM_PATH = "out/production/vbpmn/";
-    public static final String PROGRAM = "pif2lnt.py";
-    //public static final String OPTIONS = ""; // use --lazy not to recompute, empty string to recompute
+    // IMPORTANT : LAZY MODE SHOULD BE FALSE (EMPTY OPTION STRING) IN GENERAL FOR TESTS
+    // LAZY MODE IS JUST FOR DEBUGGING STEPS
     public static final String OPTIONS = "--lazy"; // use --lazy not to recompute, empty string to recompute
-    public static final String SUFFIX = ".pif";
+
+    // SUFFIXES FOR EXCLUSION OF TESTS AND CLEAN UP
     public static final String BIGSUFFIX1 = "_big10"; // time > 10 min
     public static final String BIGSUFFIX2 = "_bigXX"; // out of memory
     public static final String EXCLUSIONS[] = {BIGSUFFIX1, BIGSUFFIX2};
     public static final String USELESS[] = {".o", ".f", ".t", ".err", ".lnt", ".lotos", ".svl", ".log", "_raw.bcg", "_work.bcg",
             "bisimulator", "bisimulator.bcg", "evaluator4", "evaluator.bcg", "generator"};
+
+    // OPERATIONAL PATHS AND OTHER CONSTANTS
+    public static final String CMD = "python";
+    public static final String FILES_PATH = "out/test/vbpmn/pif/";
+    public static final String PROGRAM_PATH = "out/production/vbpmn_python/";
+    public static final String PROGRAM = "pif2lnt.py";
+    public static final String SUFFIX = ".pif";
     public static List<String> EXCLUSION_LIST;
     public static List<String> USELESS_LIST;
 
