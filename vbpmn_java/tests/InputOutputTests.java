@@ -133,6 +133,10 @@ public class InputOutputTests {
         return data.iterator();
     }
 
+    public final String getOutputFilenameFromInputFilename(String filename, String suffix1, String suffix2) {
+        return String.format("%s%s", filename.substring(0, filename.length() - suffix1.length()), suffix2);
+    }
+
     /**
      * Reads all examples (using PifPifReader) and dumps them in graphical format (using DotPifWriter)
      */
@@ -145,7 +149,9 @@ public class InputOutputTests {
         try {
             model.setResource(filePath.toFile());
             model.modelFromFile(reader);
-            model.setResource(new File(filePath.toString() + ".dot"));
+            model.setResource(new File(getOutputFilenameFromInputFilename(filePath.toFile().getAbsolutePath(),
+                    reader.getSuffix(),
+                    writer.getSuffix())));
             model.modelToFile(writer);
         } catch (IllegalResourceException | IllegalModelException | IOException e) {
             e.printStackTrace();
