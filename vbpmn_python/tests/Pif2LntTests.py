@@ -26,7 +26,7 @@ BIGSUFFIX2 = "_bigXX.pif"  # out of memory
 EXCLUSIONS = [BIGSUFFIX1, BIGSUFFIX2]
 
 # put in this list the suffixes of files to delete after tests are done, e.g., ".o", "evaluator.bcg", etc.
-USELESS = [".o", ".f", ".t", ".err", ".lnt", ".lotos", ".svl", ".log", "_raw.bcg", "_work.bcg",
+USELESS = [".h", ".o", ".f", ".t", ".err", ".lnt", ".lotos", ".svl", ".log", "_raw.bcg", "_work.bcg",
            "bisimulator", "bisimulator.bcg", "evaluator4", "evaluator.bcg", "generator"]
 
 

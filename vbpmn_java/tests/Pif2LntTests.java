@@ -50,7 +50,7 @@ public class Pif2LntTests {
     public static final String BIGSUFFIX1 = "_big10"; // time > 10 min
     public static final String BIGSUFFIX2 = "_bigXX"; // out of memory
     public static final String EXCLUSIONS[] = {BIGSUFFIX1, BIGSUFFIX2};
-    public static final String USELESS[] = {".o", ".f", ".t", ".err", ".lnt", ".lotos", ".svl", ".log", "_raw.bcg", "_work.bcg",
+    public static final String USELESS[] = {".h", ".o", ".f", ".t", ".err", ".lnt", ".lotos", ".svl", ".log", "_raw.bcg", "_work.bcg",
             "bisimulator", "bisimulator.bcg", "evaluator4", "evaluator.bcg", "generator"};
 
     // OPERATIONAL PATHS AND OTHER CONSTANTS
