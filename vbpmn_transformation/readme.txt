@@ -1,7 +1,7 @@
 VBPMN Transformation Project
 =============================
 
-This is a maven based web project host on the tomcat server. Project provides an interface to compare two BPMN models.
+This is a maven based web project hosted on the tomcat server. Project provides an interface to compare two BPMN models.
 
 Software Requirements to run the project locally
 * JDK 1.8+
@@ -14,6 +14,9 @@ Software Requirements to run the project locally
 In addition to libraries, additional folders need to be configured as part of the project.
 `resources/transformation.properties` file has the list of folders to be created (or change path to point to right folders)
 `scripts` folder contains the vbpmn scripts that need to be executed to perform comparison of models. 
+
+In the tomcat server.xml add location of output folder as follows (inside `<host>` tag), it is required if you need to view the postscript files.
+`<Context docBase="/tmp/vbpmn/output" path="/transformation/results"/>`
 
 Sample inputs are available in the data folder of the project. 
 
