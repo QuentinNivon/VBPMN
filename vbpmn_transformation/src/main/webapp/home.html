@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>VBPMN - Model Comparison</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript" src="media/js/jquery.js"></script>
+<!-- <script type="text/javascript" src="media/js/jquery-ui.js"></script>
+
+<link type="text/css" href="media/css/jquery-ui.css" rel="Stylesheet" />
+<link type="text/css" href="media/css/jquery-ui.structure.css"
+	rel="Stylesheet" />
+<link type="text/css" href="media/css/jquery-ui.theme.css"
+	rel="Stylesheet" /> -->
+
+<!-- Bootstrap -->
+<link href="media/css/bootstrap.css" rel="stylesheet" media="screen">
+
+<link type="text/css" href="media/css/styles.css" rel="Stylesheet" />
+
+<script type="text/javascript" src="media/js/bootstrap.js"></script>
+<!-- app scripts -->
+<script type="text/javascript" src="media/js/scripts.js"></script>
+</head>
+<body>
+	<div class="jumbotron col-text-center" style="margin-bottom: 25px">
+		<h1>VBPMN: BPMN Model Comparison</h1>
+		<p>Service for comparison and analysis of BPMN 2.0 models</p>
+	</div>
+	<div class="panel panel-default col-center" style="margin-bottom: 25px">
+		<div class="panel-heading">
+			<h4 class="panel-title">Request form</h4>
+		</div>
+
+		<div class="panel-body">
+
+			<form id="vform" name="vform" action="javascript:;"
+				enctype="multipart/form-data">
+
+
+				<fieldset class="form-group border">
+					<label for="inputFile1">File input 1</label> <input type="file"
+						class="form-control-file" id="file1" name="file1" required>
+					<small class="text-muted">BPMN 2.0 model xml file input </small>
+				</fieldset>
+
+
+				<fieldset class="form-group border">
+					<label for="inputFile2">File input 2</label> <input type="file"
+						class="form-control-file" id="file2" name="file2"> <small
+						class="text-muted">BPMN 2.0 model xml file input </small>
+				</fieldset>
+
+
+				<fieldset class="form-group border">
+					<label for="mode">Mode</label> <select class="form-control"
+						id="mode" name="mode">
+						<option selected="selected">conservative</option>
+						<option>inclusive</option>
+						<option>exclusive</option>
+						<option>property-and</option>
+						<option>property-implied</option>
+					</select>
+				</fieldset>
+
+				<fieldset class="form-group border">
+					<div id="optionContent">
+						<table id="opt">
+							<tr>
+								<td><label for="option">Options</label></td>
+							</tr>
+							<tr>
+								<td><label class="radio-inline control-label"><input
+										type="radio" name="option" value="none" id="noneOption" checked>None</label></td>
+								<td><label class="radio-inline control-label"
+									style="margin-left: 15px"><input type="radio"
+										name="option" value="hiding">Hide</label></td>
+								<td><label class="radio-inline control-label"
+									style="margin-left: 15px"><input type="radio"
+										name="option" value="renaming">Rename</label></td>
+						</table>
+						<br />
+						<div id="inpval-div">
+							<label for="inputValue">Value </label><input name="inputValue"
+								type="text" class="form-control"> <br />
+						</div>
+						<div id="exp-div">
+							<input type="checkbox" name="exposeMode" value=""> <label
+								class="checkbox-inline" for="exposeMode">Expose Mode</label>
+						</div>
+						<div id="rename-div">
+							<table id="renameOpt">
+								<tr>
+									<td><label class="radio-inline control-label"><input
+											type="radio" name="renameOption" value="none" checked>None</label></td>
+									<td><label class="radio-inline control-label"
+										style="margin-left: 15px"><input type="radio"
+											name=renameOption value="first">Rename First</label></td>
+									<td><label class="radio-inline control-label"
+										style="margin-left: 15px"><input type="radio"
+											name="renameOption" value="second">Rename Second</label></td>
+									<td><label class="radio-inline control-label"
+										style="margin-left: 15px"><input type="radio"
+											name="renameOption" value="all">Rename All</label></td>
+							</table>
+						</div>
+					</div>
+					<div id="formula-div">
+						<label for="formula">Formula </label><input name="formula"
+							type="text" class="form-control">
+					</div>
+				</fieldset>
+				<button type="submit" class="btn btn-primary"
+					style="margin-bottom: 20px">Submit</button>
+
+			</form>
+			<div class="loader" style="display: none" id="loader">
+				<div class="center-loader">
+					<img alt="" src="media/images/spinner.gif" />
+				</div>
+			</div>
+			<div id="resp-div" class="border">
+				<label for="response">Result:</label>
+				<div id="response"></div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
