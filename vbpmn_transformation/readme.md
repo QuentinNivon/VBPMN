@@ -6,8 +6,8 @@ Project Description
 
 VBPMN framework facilitates formal modelling and analysis of BPMN processes. The transformation project is a component in the framework that provides a web based graphical interface to compare BPMN 2.0 models.
 The comparison is a two step process. Firstly, the BPMN 2.0 compliant models are taken as input. Using the transformation logic, the BPMN 2.0 XML files are converted into XML based PIF format. 
-As a next step, these PIF files are given as an input to the VBPMN scripts. Internally, the project invokes the python scripts which in turn connects to CADP. The results of comparison are displayed on the UI.
-In case of a mismatch (i.e. False result), the counterexample models is generated (In postscript format).
+As a next step, these PIF files are given as an input to the VBPMN scripts. Internally, the project invokes the python scripts which in turn connects to CADP. The results of comparison are displayed on the UI (True or False).
+In case of a mismatch (i.e. False result), the counterexample model is generated (In postscript format).
 
 Developer Setup
 -------------------------------
