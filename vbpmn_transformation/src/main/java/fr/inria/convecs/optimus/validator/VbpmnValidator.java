@@ -56,7 +56,7 @@ public class VbpmnValidator implements ModelValidator {
 
 			logger.debug("The return value of execution of command is: {}", execResult);
 
-			String response = handleResponse(commandExecutor.getOutput(),commandExecutor.getErrors());
+			String response = handleResponse(commandExecutor.getOutput().trim(),commandExecutor.getErrors().trim());
 
 			if(response.equalsIgnoreCase("FALSE"))
 			{
@@ -103,7 +103,7 @@ public class VbpmnValidator implements ModelValidator {
 		if(null != stdOut) {
 			logger.debug("The stdout of command execution: {}",stdOut);
 			//TODO: crude method -cleaner approach required
-			if(stdOut.trim().contains("ERROR"))
+			if(stdOut.contains("ERROR"))
 				resultBuilder.append("Internal error executing the command: ")
 				.append(stdOut);
 			else 
