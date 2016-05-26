@@ -29,7 +29,8 @@ In addition to libraries, additional folders need to be configured as part of th
 In the tomcat server.xml add location of output folder as follows (inside `<host>` tag), it is required if you need to view the postscript files.
 `<Context docBase="/tmp/vbpmn/output" path="/transformation/results"/>`
 
-Sample inputs are available in the data folder of the project. The BPMN 2.0 models generated using Activiti, Bonita, jBPM or any other BPMN 2.0 compliant modelers can be given as input.
+Sample inputs are available in the data folder of the project. For testing you can use: `simple.bpmn`, `simple2.bpmn` and `ExpenseWorkflow.bpmn`. 
+The BPMN 2.0 models generated using Activiti, Bonita, jBPM or any other BPMN 2.0 compliant modelers can be given as input.
 
 The project is a quick implementation, things like exception handling, HMTL/JS code are bit messy. 
 Most of the exceptions are logged into console and log file. The location of the log file can be set in `resources/logback.xml`

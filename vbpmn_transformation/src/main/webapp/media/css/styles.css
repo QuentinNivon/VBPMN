@@ -17,6 +17,10 @@
 	padding-bottom: 20px;
 }
 
+.underline {
+	border-bottom: 1px solid #8ae234;
+}
+
 .red-text {
 	text-decoration: blink;
 	text-decoration-color: red;

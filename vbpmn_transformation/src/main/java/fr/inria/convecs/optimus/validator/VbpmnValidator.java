@@ -60,13 +60,9 @@ public class VbpmnValidator implements ModelValidator {
 
 			if(response.equalsIgnoreCase("FALSE"))
 			{
-				String bcgFileName1 = new StringBuilder()
-						.append(modelFile1.getName().replaceFirst("[.][^.]+$", ""))
-						.append(".bcg").toString();
-				String bcgFileName2 = new StringBuilder()
-						.append(modelFile2.getName().replaceFirst("[.][^.]+$", ""))
-						.append(".bcg").toString();
-				this.result = generatePostScriptFiles(bcgFileName1, bcgFileName2);
+				String bcgFileName = "bisimulator.bcg";
+				File bcgFile = new File(OUTPUT_FOLDER+bcgFileName);
+				this.result = generatePostScriptFiles(bcgFile);
 			}
 			else
 			{
@@ -133,22 +129,17 @@ public class VbpmnValidator implements ModelValidator {
 	 * @param name2
 	 * @return
 	 */
-	private String generatePostScriptFiles(String filename1, String filename2) {
+	private String generatePostScriptFiles(File bcgFile) {
 		String result = null;
 		try 
-		{
-			File file1 = new File(OUTPUT_FOLDER+filename1);
-			File file2 = new File(OUTPUT_FOLDER+filename2);
-
-			executeBcgDraw(file1.getAbsolutePath());
-			executeBcgDraw(file2.getAbsolutePath());
+		{	
+			executeBcgDraw(bcgFile.getAbsolutePath());
 
 			result = new StringBuilder()
 					.append("FALSE")
 					.append("|")
-					.append(filename1.replace(".bcg", ".ps"))
-					.append("|")
-					.append(filename2.replace(".bcg", ".ps")).toString();
+					.append(bcgFile.getName().replace(".bcg", ".ps"))
+					.toString();
 
 		} catch(Exception e)
 		{

@@ -99,9 +99,7 @@ $(document).ready(function() {
 					var url1 = "/transformation/results/"+status[1];
 					var url2 = "/transformation/results/"+status[2];
 					$("#response").html("FALSE <br />");
-					$("#response").append("<br /> <p>Output Files</p>")
-					$("#response").append("<br /> <p><a href=\""+url1+"\">"+status[1]+"</a> </p>")
-					$("#response").append("<br /> <p><a href=\""+url2+"\">"+status[2]+"</a> </p>")
+					$("#response").append("<br /> <p class=\"underline\">Counterexample: <a href=\""+url1+"\">"+status[1]+"</a></p>");
 					$("#response").addClass("alert alert-danger");
 				}
 				else {
