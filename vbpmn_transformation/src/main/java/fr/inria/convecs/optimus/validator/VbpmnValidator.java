@@ -78,7 +78,7 @@ public class VbpmnValidator implements ModelValidator {
 		catch(Exception e)
 		{
 			logger.error("Failed executing the command", e);
-			throw new RuntimeException("Failed executing the command", e);
+			throw new RuntimeException(e);
 		}
 
 	}

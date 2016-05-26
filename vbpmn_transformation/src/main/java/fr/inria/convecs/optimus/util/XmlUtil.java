@@ -47,7 +47,7 @@ public class XmlUtil {
 			}
 
 			isValid = true;
-		} catch (XMLStreamException | FactoryConfigurationError e) 
+		} catch (Exception e) 
 		{
 			logger.warn("Error while validating {} against the schema {}", inputXml.getName(), schema.getName(), e);
 		}

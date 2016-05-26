@@ -134,38 +134,39 @@ public class ValidationService {
 				}
 			}
 
-				if(fileList.size() > 2 || fileList.size() <= 0)
-				{
-					httpResponse = Response.status(Status.BAD_REQUEST).entity("You can only specify 1 or 2 files").build();
-				}
-				else 
-				{
-					ModelValidator validator = new VbpmnValidator();
-					String result;
-
-					if(fileList.size() == 2)
-					{
-						File input1 = parseAndTransform(fileList.get(0));
-						File input2 = parseAndTransform(fileList.get(1));
-						validator.validate(input1, input2, operationMode);
-					}
-					else
-					{
-						File input1 = parseAndTransform(fileList.get(0));
-						validator.validate(input1, operationMode);
-					}
-					result = validator.getResult();
-					httpResponse = Response.status(Status.OK).entity(result).build();
-				}
-			}catch(Exception e)
+			if(fileList.size() > 2 || fileList.size() <= 0)
 			{
-				logger.error("Exception while invoking VBPMN", e);
-				throw VbpmnExceptionMapper.createWebAppException(e);
+				httpResponse = Response.status(Status.BAD_REQUEST).entity("You can only specify 1 or 2 files").build();
 			}
-			return httpResponse;
-		}
+			else 
+			{
+				ModelValidator validator = new VbpmnValidator();
+				String result;
 
-		private File parseAndTransform(File input) {
+				if(fileList.size() == 2)
+				{
+					File input1 = parseAndTransform(fileList.get(0));
+					File input2 = parseAndTransform(fileList.get(1));
+					validator.validate(input1, input2, operationMode);
+				}
+				else
+				{
+					File input1 = parseAndTransform(fileList.get(0));
+					validator.validate(input1, operationMode);
+				}
+				result = validator.getResult();
+				httpResponse = Response.status(Status.OK).entity(result).build();
+			}
+		}catch(Exception e)
+		{
+			logger.error("Exception while invoking VBPMN", e);
+			throw new RuntimeException(e);
+		}
+		return httpResponse;
+	}
+
+	private File parseAndTransform(File input) {
+		try {
 			ContentHandler baseHandler = new BaseContentHandler(input);
 			baseHandler.handle();
 			Process processOutput =(Process)baseHandler.getOutput();
@@ -181,6 +182,11 @@ public class ValidationService {
 			if(XmlUtil.isDocumentValid(outputFile, new File(PIF_SCHEMA)))
 				return outputFile;
 			else
-				throw new RuntimeException("Unable to transform the file: "+input.getName());
+				throw new RuntimeException("Unable to transform the file <Schema Validation Error>: "+input.getName());
+		} catch(Exception e)
+		{
+			logger.error("Unable to parse and transform the file ", e);
+			throw new RuntimeException(e);
 		}
 	}
+}
