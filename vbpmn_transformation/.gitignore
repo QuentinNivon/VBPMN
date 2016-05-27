@@ -12,3 +12,6 @@ data/output/
 .idea/
 *.iml
 *.iws
+
+#checkstyle config
+/.checkstyle

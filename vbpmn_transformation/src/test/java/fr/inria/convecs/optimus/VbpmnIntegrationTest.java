@@ -1,6 +1,7 @@
 /**
  * 
  */
+
 package fr.inria.convecs.optimus;
 
 import java.io.File;
@@ -25,39 +26,38 @@ import fr.inria.convecs.optimus.validator.VbpmnValidator;
  */
 public class VbpmnIntegrationTest {
 
-	String inputFileName = "ExpenseWorkflow.bpmn";
-	String inputLocation = "data/input/"+inputFileName;
-	String outputLocation = "data/output/"+inputFileName+".pif";
-	String schemaLocation = "data/pif.xsd";
+  String inputFileName = "ExpenseWorkflow.bpmn";
+  String inputLocation = "data/input/" + inputFileName;
+  String outputLocation = "data/output/" + inputFileName + ".pif";
+  String schemaLocation = "data/pif.xsd";
 
-	List<String> vbpmnOptions = new ArrayList<String>();
+  List<String> vbpmnOptions = new ArrayList<String>();
 
-	@Test
-	public void testVbpmn()
-	{
-		File input = new File(inputLocation);
-		File output = new File(outputLocation);
-		
-		vbpmnOptions.add("conservative");
-		ContentHandler baseHandler = new BaseContentHandler(input);
-		baseHandler.handle();
-		Process actual =(Process)baseHandler.getOutput();
+  @Test
+  public void testVbpmn() {
+    File input = new File(inputLocation);
+    File output = new File(outputLocation);
 
-		ContentTransformer baseTransformer = new BaseContentTransformer(actual, output);
-		baseTransformer.transform();
-		//TODO: Multiple asserts!!
-		Assert.assertTrue(XmlUtil.isDocumentValid(new File(outputLocation), new File(schemaLocation)));
+    vbpmnOptions.add("conservative");
+    ContentHandler baseHandler = new BaseContentHandler(input);
+    baseHandler.handle();
+    Process actual = (Process) baseHandler.getOutput();
 
-		ModelValidator modelValidator = new VbpmnValidator();
+    ContentTransformer baseTransformer = new BaseContentTransformer(actual, output);
+    baseTransformer.transform();
+    // TODO: Multiple asserts!!
+    Assert.assertTrue(XmlUtil.isDocumentValid(new File(outputLocation), new File(schemaLocation)));
 
-		modelValidator.validate(output, vbpmnOptions);
+    ModelValidator modelValidator = new VbpmnValidator();
 
-		String result = modelValidator.getResult();
+    modelValidator.validate(output, vbpmnOptions);
 
-		System.out.println(result);
+    String result = modelValidator.getResult();
 
-		Assert.assertNotNull(result);
+    System.out.println(result);
 
-	}
+    Assert.assertNotNull(result);
+
+  }
 
 }

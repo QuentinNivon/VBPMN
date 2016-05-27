@@ -1,6 +1,7 @@
 /**
  * 
  */
+
 package fr.inria.convecs.optimus;
 
 import java.io.File;
@@ -17,18 +18,17 @@ import fr.inria.convecs.optimus.model.Process;
  *
  */
 public class BaseContentHandlerTest {
-	
-	String inputLocation = "data/input/ExpenseWorkflow.bpmn";
-	
-	@Test
-	public void testSimpleFile()
-	{
-		//TODO: write actual test
-		File input = new File(inputLocation);
-		ContentHandler baseHandler = new BaseContentHandler(input);
-		baseHandler.handle();
-		Process actual =(Process)baseHandler.getOutput();
-		Assert.assertSame(actual, actual);		//dummy
-	}
+
+  String inputLocation = "data/input/ExpenseWorkflow.bpmn";
+
+  @Test
+  public void testSimpleFile() {
+    // TODO: write actual test
+    File input = new File(inputLocation);
+    ContentHandler baseHandler = new BaseContentHandler(input);
+    baseHandler.handle();
+    Process actual = (Process) baseHandler.getOutput();
+    Assert.assertSame(actual, actual); // dummy
+  }
 
 }

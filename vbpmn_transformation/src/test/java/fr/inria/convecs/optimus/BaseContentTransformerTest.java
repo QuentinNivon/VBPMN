@@ -1,6 +1,7 @@
 /**
  * 
  */
+
 package fr.inria.convecs.optimus;
 
 import java.io.File;
@@ -16,32 +17,29 @@ import fr.inria.convecs.optimus.transformer.ContentTransformer;
 import fr.inria.convecs.optimus.util.XmlUtil;
 
 /**
- * @author ajayk
- * Test to generate the PIF file
+ * @author ajayk Test to generate the PIF file
  */
 public class BaseContentTransformerTest {
 
-	String inputFileName = "ExpenseWorkflow.bpmn";
+  String inputFileName = "ExpenseWorkflow.bpmn";
 
-	String inputLocation = "data/input/"+inputFileName;
-	String outputLocation = "data/output/"+inputFileName+".pif";
-	String schemaLocation = "data/pif.xsd";
+  String inputLocation = "data/input/" + inputFileName;
+  String outputLocation = "data/output/" + inputFileName + ".pif";
+  String schemaLocation = "data/pif.xsd";
 
-	@Test
-	public void testParseAndTransform()
-	{
-		//TODO: write actual test
-		File input = new File(inputLocation);
-		File output = new File(outputLocation);
-		ContentHandler baseHandler = new BaseContentHandler(input);
-		baseHandler.handle();
-		Process actual =(Process)baseHandler.getOutput();
+  @Test
+  public void testParseAndTransform() {
+    // TODO: write actual test
+    File input = new File(inputLocation);
+    File output = new File(outputLocation);
+    ContentHandler baseHandler = new BaseContentHandler(input);
+    baseHandler.handle();
+    Process actual = (Process) baseHandler.getOutput();
 
-		ContentTransformer baseTransformer = new BaseContentTransformer(actual, output);
-		baseTransformer.transform();
-		Assert.assertTrue(XmlUtil.isDocumentValid(new File(outputLocation), new File(schemaLocation)));
+    ContentTransformer baseTransformer = new BaseContentTransformer(actual, output);
+    baseTransformer.transform();
+    Assert.assertTrue(XmlUtil.isDocumentValid(new File(outputLocation), new File(schemaLocation)));
 
-	}
-
+  }
 
 }

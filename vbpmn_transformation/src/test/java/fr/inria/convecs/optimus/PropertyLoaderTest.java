@@ -1,6 +1,7 @@
 /**
  * 
  */
+
 package fr.inria.convecs.optimus;
 
 import org.junit.Assert;
@@ -14,14 +15,13 @@ import fr.inria.convecs.optimus.config.AppProperty;
  */
 public class PropertyLoaderTest {
 
-	@Test
-	public void testPropertyLoad()
-	{
-		String expected = "/tmp/vbpmn/input/";
+  @Test
+  public void testPropertyLoad() {
+    String expected = "/tmp/vbpmn/input/";
 
-		String actual = AppProperty.getInstance().getValue("UPLOAD_PATH");
+    String actual = AppProperty.getInstance().getValue("UPLOAD_PATH");
 
-		Assert.assertTrue(actual.equals(expected));
-	}
+    Assert.assertTrue(actual.equals(expected));
+  }
 
 }

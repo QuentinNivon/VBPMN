@@ -5,18 +5,18 @@
 // Generated on: 2016.03.10 at 04:11:44 PM CET 
 //
 
-
 package fr.inria.convecs.optimus.pif;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for XOrJoinGateway complex type.
+ * <p>
+ * Java class for XOrJoinGateway complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="XOrJoinGateway">
@@ -31,9 +31,6 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "XOrJoinGateway")
-public class XOrJoinGateway
-    extends JoinGateway
-{
-
+public class XOrJoinGateway extends JoinGateway {
 
 }

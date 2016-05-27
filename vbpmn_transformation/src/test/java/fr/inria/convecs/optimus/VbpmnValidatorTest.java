@@ -1,6 +1,7 @@
 /**
  * 
  */
+
 package fr.inria.convecs.optimus;
 
 import java.io.File;
@@ -19,20 +20,19 @@ import fr.inria.convecs.optimus.validator.VbpmnValidator;
  */
 public class VbpmnValidatorTest {
 
-	@Test
-	public void testVbpmnCall()
-	{
-		ModelValidator modelValidator = new VbpmnValidator();
+  @Test
+  public void testVbpmnCall() {
+    ModelValidator modelValidator = new VbpmnValidator();
 
-		File input = new File("data/output/ExpenseWorkflow.bpmn.pif");
-		List<String> option = new ArrayList<String>();
-		option.add("conservative");
-		modelValidator.validate(input, option);
+    File input = new File("data/output/ExpenseWorkflow.bpmn.pif");
+    List<String> option = new ArrayList<String>();
+    option.add("conservative");
+    modelValidator.validate(input, option);
 
-		String result = modelValidator.getResult();
+    String result = modelValidator.getResult();
 
-		System.out.println(result);
+    System.out.println(result);
 
-		Assert.assertNotNull(result);
-	}
+    Assert.assertNotNull(result);
+  }
 }

@@ -1,6 +1,7 @@
 /**
  * 
  */
+
 package fr.inria.convecs.optimus.parser;
 
 /**
@@ -8,15 +9,15 @@ package fr.inria.convecs.optimus.parser;
  *
  */
 public interface ContentHandler {
-	
-	/***
-	 * 
-	 */
-	public void handle();
-	
-	/**
-	 * @return *
-	 * 
-	 */
-	public Object getOutput();
+
+  /***
+   * 
+   */
+  public void handle();
+
+  /**
+   * @return *
+   * 
+   */
+  public Object getOutput();
 }

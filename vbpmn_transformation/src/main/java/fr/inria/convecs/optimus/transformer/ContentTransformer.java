@@ -1,6 +1,7 @@
 /**
  * 
  */
+
 package fr.inria.convecs.optimus.transformer;
 
 /**
@@ -8,12 +9,12 @@ package fr.inria.convecs.optimus.transformer;
  *
  */
 public interface ContentTransformer {
-	
-	public void transform();
-	
-	/**
-	 * 
-	 */
-	public void generateOutput();
+
+  public void transform();
+
+  /**
+   * 
+   */
+  public void generateOutput();
 
 }

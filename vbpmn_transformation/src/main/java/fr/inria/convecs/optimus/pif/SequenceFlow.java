@@ -5,18 +5,18 @@
 // Generated on: 2016.03.10 at 04:11:44 PM CET 
 //
 
-
 package fr.inria.convecs.optimus.pif;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-
 /**
- * <p>Java class for SequenceFlow complex type.
+ * <p>
+ * Java class for SequenceFlow complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="SequenceFlow">
@@ -34,95 +34,84 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SequenceFlow")
-@XmlSeeAlso({
-    ConditionalSequenceFlow.class
-})
+@XmlSeeAlso({ ConditionalSequenceFlow.class })
 public class SequenceFlow {
 
-    @XmlAttribute(name = "id", required = true)
-    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    @XmlID
-    @XmlSchemaType(name = "ID")
-    protected String id;
-    @XmlAttribute(name = "source", required = true)
-    @XmlIDREF
-    @XmlSchemaType(name = "IDREF")
-    protected WorkflowNode source;
-    @XmlAttribute(name = "target", required = true)
-    @XmlIDREF
-    @XmlSchemaType(name = "IDREF")
-    protected WorkflowNode target;
+  @XmlAttribute(name = "id", required = true)
+  @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+  @XmlID
+  @XmlSchemaType(name = "ID")
+  protected String id;
+  @XmlAttribute(name = "source", required = true)
+  @XmlIDREF
+  @XmlSchemaType(name = "IDREF")
+  protected WorkflowNode source;
+  @XmlAttribute(name = "target", required = true)
+  @XmlIDREF
+  @XmlSchemaType(name = "IDREF")
+  protected WorkflowNode target;
 
-    /**
-     * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getId() {
-        return id;
-    }
+  /**
+   * Gets the value of the id property.
+   * 
+   * @return possible object is {@link String }
+   * 
+   */
+  public String getId() {
+    return id;
+  }
 
-    /**
-     * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setId(String value) {
-        this.id = value;
-    }
+  /**
+   * Sets the value of the id property.
+   * 
+   * @param value
+   *          allowed object is {@link String }
+   * 
+   */
+  public void setId(String value) {
+    this.id = value;
+  }
 
-    /**
-     * Gets the value of the source property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Object }
-     *     
-     */
-    public WorkflowNode getSource() {
-        return source;
-    }
+  /**
+   * Gets the value of the source property.
+   * 
+   * @return possible object is {@link Object }
+   * 
+   */
+  public WorkflowNode getSource() {
+    return source;
+  }
 
-    /**
-     * Sets the value of the source property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Object }
-     *     
-     */
-    public void setSource(WorkflowNode value) {
-        this.source = value;
-    }
+  /**
+   * Sets the value of the source property.
+   * 
+   * @param value
+   *          allowed object is {@link Object }
+   * 
+   */
+  public void setSource(WorkflowNode value) {
+    this.source = value;
+  }
 
-    /**
-     * Gets the value of the target property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Object }
-     *     
-     */
-    public WorkflowNode getTarget() {
-        return target;
-    }
+  /**
+   * Gets the value of the target property.
+   * 
+   * @return possible object is {@link Object }
+   * 
+   */
+  public WorkflowNode getTarget() {
+    return target;
+  }
 
-    /**
-     * Sets the value of the target property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Object }
-     *     
-     */
-    public void setTarget(WorkflowNode value) {
-        this.target = value;
-    }
+  /**
+   * Sets the value of the target property.
+   * 
+   * @param value
+   *          allowed object is {@link Object }
+   * 
+   */
+  public void setTarget(WorkflowNode value) {
+    this.target = value;
+  }
 
 }
