@@ -108,9 +108,9 @@ public class BaseContentHandler implements ContentHandler {
       }
       this.output = process;
 
-    } catch (XMLStreamException e) {
-      logger.error("Error parsing the XML", e);
-      e.printStackTrace();
+    } catch (XMLStreamException xmle) {
+      logger.error("Error parsing the XML", xmle);
+      throw new RuntimeException(xmle);
     }
   }
 
@@ -208,7 +208,6 @@ public class BaseContentHandler implements ContentHandler {
    */
   @Override
   public Object getOutput() {
-
     return this.output;
   }
 

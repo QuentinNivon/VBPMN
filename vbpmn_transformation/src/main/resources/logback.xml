@@ -14,7 +14,8 @@
 		<file>/tmp/vbpmn/logs/transformation_log.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<!-- daily rollover -->
-			<fileNamePattern>transformation_log.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<fileNamePattern>transformation_log.%d{yyyy-MM-dd}.log
+			</fileNamePattern>
 
 			<!-- Keep history -->
 			<maxHistory>15</maxHistory>

@@ -26,10 +26,10 @@ public class VbpmnExceptionMapper {
   }
 
   /**
-   * Exception handler for the client requests which are operation specific and resource specific.
-   * 
+   * Custom exception handler.
+   * TODO: Cleanup exception handling across project
    * @param exception
-   *          Specifies the application exception type
+   *          app exception
    * @return WebApplicationException
    */
 

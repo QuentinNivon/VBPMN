@@ -16,7 +16,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author ajayk
- *
+ *     Utility class to execute system commands. 
+ *     Internally uses ProcessBuilder
  */
 public class CommandExecutor {
 
@@ -29,7 +30,8 @@ public class CommandExecutor {
 
   /**
    * 
-   * @param command
+   * @param command Command and list of options
+   * @param directory The directory context where command will be executed.
    */
   public CommandExecutor(List<String> command, File directory) {
     this.command = command;
@@ -50,13 +52,13 @@ public class CommandExecutor {
       stdError = IOUtils.toString(error, StandardCharsets.UTF_8.name());
 
       intValue = process.waitFor();
-    } catch (IOException e) {
-      logger.warn("Execption executing the system command", e);
-      throw new RuntimeException(e);
+    } catch (IOException ioe) {
+      logger.warn("Execption executing the system command", ioe);
+      throw new RuntimeException(ioe);
 
-    } catch (InterruptedException e) {
-      logger.warn("InterruptedException - Unable to get the exit value", e);
-      throw new RuntimeException(e);
+    } catch (InterruptedException ie) {
+      logger.warn("InterruptedException - Unable to get the exit value", ie);
+      throw new RuntimeException(ie);
     }
     return intValue;
   }

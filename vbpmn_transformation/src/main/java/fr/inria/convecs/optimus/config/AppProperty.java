@@ -37,7 +37,7 @@ public class AppProperty {
   }
 
   /**
-   * 
+   * Get instance of properties
    * @return
    */
   // thread safe static sync

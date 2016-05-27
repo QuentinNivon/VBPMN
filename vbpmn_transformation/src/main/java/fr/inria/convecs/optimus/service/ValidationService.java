@@ -37,8 +37,9 @@ import fr.inria.convecs.optimus.validator.ModelValidator;
 import fr.inria.convecs.optimus.validator.VbpmnValidator;
 
 /**
- * @author silverquick TODO: dirty implementation - add a resource interface to invoke service,
- *         implement JSON data
+ * @author silverquick 
+ *     TODO: dirty implementation - add a resource interface to invoke service,
+ *         implement JSON data.
  *
  */
 @Path("/validate")

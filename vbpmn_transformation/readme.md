@@ -64,7 +64,7 @@ In addition to the above mentioned software libraries, additional folders need t
 * --- !MODIFY! `resources/transformation.properties` - It has the list of folders to be available for the program to run (create new folders or change path to point to right folders)
 * Exceptions are logged into console and log file. The location of the log file location can be set in `resources/logback.xml`
 * `scripts` folder contains the vbpmn python scripts that need to be executed to perform comparison of models. 
-* In the tomcat `server.xml` add location of output folder as follows (inside `<host>` tag), it is required if you need to view the postscript files.
+* In the tomcat `server.xml` add location of output folder as follows (inside `<host>` tag), it is required if you need to view the postscript counterexample files. Alternatively, you can create a separate context file for the instance if you prefer. For more details: See [link](http://www.moreofless.co.uk/static-content-web-pages-images-tomcat-outside-war/)
 `<Context docBase="/tmp/vbpmn/output" path="/transformation/results"/>`
 
 Testing and Usage
@@ -83,4 +83,4 @@ As of now PIF generation code does not handle the following scenarios in BPMN mo
 The PIF generator assumes that the input is a BPMN model with only one process in it. For example: model with choreographies would fail.  
 All the tags/elements that do not have a corresponding tag/element in PIF are skipped during the PIF generation process. 
 
-The project is a quick implementation, things like exception handling, HMTL/JS code are bit messy. It might throw some exceptions. However, all the execeptions are logged to a file and the console to help debug the issue.
+The project is a quick implementation, things like exception handling, HMTL/JS code are bit messy. It might throw some exceptions. However, all the exceptions are logged to a file and the console to help debug the issue.

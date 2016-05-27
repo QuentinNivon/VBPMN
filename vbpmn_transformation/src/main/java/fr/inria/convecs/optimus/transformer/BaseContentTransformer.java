@@ -66,10 +66,10 @@ public class BaseContentTransformer implements ContentTransformer {
       xmlStreamWriter.writeEndElement();
       xmlStreamWriter.writeEndDocument();
 
-    } catch (XMLStreamException | IOException e) {
+    } catch (XMLStreamException | IOException ioe) {
       output.delete();
-      logger.error("Error transforming the input", e);
-      e.printStackTrace();
+      logger.error("Error transforming the input", ioe);
+      throw new RuntimeException(ioe);
     }
 
   }
@@ -161,7 +161,7 @@ public class BaseContentTransformer implements ContentTransformer {
    */
   @Override
   public void generateOutput() {
-
+    //TODO: implement handling of any specific type of output
   }
 
 }
