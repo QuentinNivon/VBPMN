@@ -4,23 +4,25 @@
 
 package fr.inria.convecs.optimus.parser;
 
-import fr.inria.convecs.optimus.model.Node;
-import fr.inria.convecs.optimus.model.Node.NodeType;
-import fr.inria.convecs.optimus.model.Process;
-import fr.inria.convecs.optimus.model.Sequence;
-import org.codehaus.stax2.XMLInputFactory2;
-import org.codehaus.stax2.XMLStreamReader2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.codehaus.stax2.XMLInputFactory2;
+import org.codehaus.stax2.XMLStreamReader2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import fr.inria.convecs.optimus.model.Node;
+import fr.inria.convecs.optimus.model.Node.NodeType;
+import fr.inria.convecs.optimus.model.Process;
+import fr.inria.convecs.optimus.model.Sequence;
 
 /**
  * @author ajayk
@@ -76,9 +78,11 @@ public class BaseContentHandler implements ContentHandler {
         if (streamReader.getEventType() == XMLStreamReader.END_ELEMENT) {
           String elementName = streamReader.getLocalName();
           if (elementName.equals(PROCESS)) {
+            // update flows if they are not listed as incoming/outgoing flows in the input
+            List<Node> updatedNodeList = verfiyAndUpdateNodes(nodeList, sequenceList);
             // quick fix: dot is not handled at backend
             processId = processId.replace(".", "_");
-            process = new Process(processId, nodeList, sequenceList);
+            process = new Process(processId, updatedNodeList, sequenceList);
             break;
           }
 
@@ -209,6 +213,64 @@ public class BaseContentHandler implements ContentHandler {
   @Override
   public Object getOutput() {
     return this.output;
+  }
+
+  private List<Node> verfiyAndUpdateNodes(final List<Node> nodeList,
+      final List<Sequence> sequenceList) {
+    /*
+     * List<Node> gateways = nodeList.stream() .filter(node ->
+     * node.getType().equals(NodeType.XOR_JOIN_GATEWAY) ||
+     * node.getType().equals(NodeType.OR_JOIN_GATEWAY) ||
+     * node.getType().equals(NodeType.AND_JOIN_GATEWAY)) .collect(Collectors.toList());
+     */
+
+    List<Node> newNodeList = new ArrayList<Node>();
+
+    for (Node node : nodeList) {
+      Node updatedNode = updateFlows(node, sequenceList);
+      if (updatedNode.getType().equals(NodeType.XOR_JOIN_GATEWAY)) {
+        if (updatedNode.getIncomingFlows().size() < updatedNode.getOutgoingFlows().size()) {
+          updatedNode.setType(NodeType.XOR_SPLIT_GATEWAY);
+          logger.debug("Updated node gateway!! {}", updatedNode.toString());
+        }
+      }
+      if (updatedNode.getType().equals(NodeType.OR_JOIN_GATEWAY)) {
+        if (updatedNode.getIncomingFlows().size() < updatedNode.getOutgoingFlows().size()) {
+          updatedNode.setType(NodeType.OR_SPLIT_GATEWAY);
+          logger.debug("Updated node gateway!! {}", updatedNode.toString());
+        }
+      }
+      if (updatedNode.getType().equals(NodeType.AND_JOIN_GATEWAY)) {
+        if (updatedNode.getIncomingFlows().size() < updatedNode.getOutgoingFlows().size()) {
+          updatedNode.setType(NodeType.AND_SPLIT_GATEWAY);
+          logger.debug("Updated node gateway!! {}", updatedNode.toString());
+        }
+      }
+      newNodeList.add(updatedNode);
+    }
+
+    return newNodeList;
+  }
+
+  private Node updateFlows(Node node, List<Sequence> sequenceList) {
+    String nodeName = node.getId();
+    Node updatedNode = node;
+    List<String> incomingFlows = new ArrayList<>();
+    List<String> outgoingFlows = new ArrayList<>();
+    // update flows only if flows are not captured during initial parsing
+    if (node.getIncomingFlows() == null || node.getIncomingFlows().isEmpty()) {
+      for (Sequence sequence : sequenceList) {
+        if (sequence.getSource().equals(nodeName)) {
+          outgoingFlows.add(sequence.getId());
+        }
+        if (sequence.getTarget().equals(nodeName)) {
+          incomingFlows.add(sequence.getId());
+        }
+      }
+      updatedNode.setIncomingFlows(incomingFlows);
+      updatedNode.setOutgoingFlows(outgoingFlows);
+    }
+    return updatedNode;
   }
 
 }
