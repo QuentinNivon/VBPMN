@@ -1,114 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<model:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bonitaConnector="http://www.bonitasoft.org/studio/connector/definition/6.0" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di_1="http://www.omg.org/spec/DD/20100524/DI" xmlns:java="http://jcp.org/en/jsr/detail?id=270" xmlns:model="http://www.omg.org/spec/BPMN/20100524/MODEL" xsi:schemaLocation="schemaLocation http://www.omg.org/spec/BPMN/20100524/MODEL schemas/BPMN20.xsd" exporter="BonitaSoft" exporterVersion="7.2.0" expressionLanguage="http://groovy.codehaus.org/" targetNamespace="http://bonitasoft.com/_c10_oCdAEeasC9nUw-jylw">
-  <model:collaboration id="_c10_oCdAEeasC9nUw-jylw">
-    <model:participant id="_0dje4CdAEeasC9nUw-jylw" name="Pool1" processRef="_c10_oSdAEeasC9nUw-jylw"/>
-    <model:participant id="_c10_3SdAEeasC9nUw-jylw" name="Employee actor">
-      <model:documentation>This is an example of actor that is mapped to any ACME users</model:documentation>
-    </model:participant>
-  </model:collaboration>
-  <model:process id="_c10_oSdAEeasC9nUw-jylw" name="Pool1">
-    <model:ioSpecification id="_0do-cCdAEeasC9nUw-jylw">
-      <model:inputSet id="_0dplgCdAEeasC9nUw-jylw"/>
-      <model:outputSet id="_0dplgSdAEeasC9nUw-jylw"/>
-    </model:ioSpecification>
-    <model:laneSet id="Pool1_laneSet">
-      <model:lane id="_c10_oidAEeasC9nUw-jylw" name="Employee lane">
-        <model:flowNodeRef>_c10_qCdAEeasC9nUw-jylw</model:flowNodeRef>
-        <model:flowNodeRef>_c10_oydAEeasC9nUw-jylw</model:flowNodeRef>
-        <model:flowNodeRef>_c10_tydAEeasC9nUw-jylw</model:flowNodeRef>
-        <model:flowNodeRef>_c10_vCdAEeasC9nUw-jylw</model:flowNodeRef>
-        <model:flowNodeRef>_c10_xidAEeasC9nUw-jylw</model:flowNodeRef>
-      </model:lane>
-    </model:laneSet>
-    <model:userTask id="_c10_qCdAEeasC9nUw-jylw" name="Task 1" default="_eRoPQCdAEeasC9nUw-jylw"/>
-    <model:startEvent id="_c10_oydAEeasC9nUw-jylw" name="Start"/>
-    <model:endEvent id="_c10_tydAEeasC9nUw-jylw" name="End"/>
-    <model:task id="_c10_vCdAEeasC9nUw-jylw" name="Task 3"/>
-    <model:task id="_c10_xidAEeasC9nUw-jylw" name="Task 2"/>
-    <model:sequenceFlow id="_c10_2idAEeasC9nUw-jylw" name="" sourceRef="_c10_oydAEeasC9nUw-jylw" targetRef="_c10_qCdAEeasC9nUw-jylw"/>
-    <model:sequenceFlow id="_eRoPQCdAEeasC9nUw-jylw" name="" sourceRef="_c10_qCdAEeasC9nUw-jylw" targetRef="_c10_vCdAEeasC9nUw-jylw">
-      <model:conditionExpression xsi:type="model:tFormalExpression" id="_0d1ywCdAEeasC9nUw-jylw" evaluatesToTypeRef="java:java.lang.Boolean" language="http://www.w3.org/1999/XPath"></model:conditionExpression>
-    </model:sequenceFlow>
-    <model:sequenceFlow id="_gHp8wCdAEeasC9nUw-jylw" name="" sourceRef="_c10_qCdAEeasC9nUw-jylw" targetRef="_c10_xidAEeasC9nUw-jylw">
-      <model:conditionExpression xsi:type="model:tFormalExpression" id="_0d1ywSdAEeasC9nUw-jylw" evaluatesToTypeRef="java:java.lang.Boolean" language="http://www.w3.org/1999/XPath">FALSE</model:conditionExpression>
-    </model:sequenceFlow>
-    <model:sequenceFlow id="_k2Py0CdAEeasC9nUw-jylw" name="" sourceRef="_c10_xidAEeasC9nUw-jylw" targetRef="_c10_vCdAEeasC9nUw-jylw">
-      <model:conditionExpression xsi:type="model:tFormalExpression" id="_0d1ywidAEeasC9nUw-jylw" evaluatesToTypeRef="java:java.lang.Boolean" language="http://www.w3.org/1999/XPath"></model:conditionExpression>
-    </model:sequenceFlow>
-    <model:sequenceFlow id="_mMYfUCdAEeasC9nUw-jylw" name="" sourceRef="_c10_vCdAEeasC9nUw-jylw" targetRef="_c10_tydAEeasC9nUw-jylw">
-      <model:conditionExpression xsi:type="model:tFormalExpression" id="_0d1ywydAEeasC9nUw-jylw" evaluatesToTypeRef="java:java.lang.Boolean" language="http://www.w3.org/1999/XPath"></model:conditionExpression>
-    </model:sequenceFlow>
-  </model:process>
-  <di:BPMNDiagram name="MultipleIncoming">
-    <di:BPMNPlane id="plane__c10_oCdAEeasC9nUw-jylw" bpmnElement="_c10_oCdAEeasC9nUw-jylw">
-      <di:BPMNShape id="_c10_-CdAEeasC9nUw-jylw" bpmnElement="_c10_oSdAEeasC9nUw-jylw" isHorizontal="true">
-        <dc:Bounds height="290.0" width="2802.0" x="30.0" y="30.0"/>
-      </di:BPMNShape>
-      <di:BPMNShape id="_c10_-ydAEeasC9nUw-jylw" bpmnElement="_c10_oidAEeasC9nUw-jylw" isHorizontal="true">
-        <dc:Bounds height="290.0" width="2800.0" x="62.0" y="30.0"/>
-      </di:BPMNShape>
-      <di:BPMNShape id="_c11msCdAEeasC9nUw-jylw" bpmnElement="_c10_qCdAEeasC9nUw-jylw">
-        <dc:Bounds height="50.0" width="100.0" x="222.0" y="90.0"/>
-      </di:BPMNShape>
-      <di:BPMNShape id="_c11msydAEeasC9nUw-jylw" bpmnElement="_c10_oydAEeasC9nUw-jylw">
-        <dc:Bounds height="30.0" width="30.0" x="122.0" y="98.0"/>
-        <di:BPMNLabel id="_0dxhUCdAEeasC9nUw-jylw" labelStyle="_0dnJQCdAEeasC9nUw-jylw">
-          <dc:Bounds height="25.0" width="37.0" x="119.0" y="133.0"/>
-        </di:BPMNLabel>
-      </di:BPMNShape>
-      <di:BPMNShape id="_c11mtydAEeasC9nUw-jylw" bpmnElement="_c10_tydAEeasC9nUw-jylw">
-        <dc:Bounds height="30.0" width="30.0" x="728.0" y="100.0"/>
-        <di:BPMNLabel id="_0dyIYCdAEeasC9nUw-jylw" labelStyle="_0dnJQCdAEeasC9nUw-jylw">
-          <dc:Bounds height="25.0" width="30.0" x="728.0" y="135.0"/>
-        </di:BPMNLabel>
-      </di:BPMNShape>
-      <di:BPMNShape id="_c11muydAEeasC9nUw-jylw" bpmnElement="_c10_vCdAEeasC9nUw-jylw">
-        <dc:Bounds height="50.0" width="100.0" x="448.0" y="88.0"/>
-      </di:BPMNShape>
-      <di:BPMNShape id="_c11mvidAEeasC9nUw-jylw" bpmnElement="_c10_xidAEeasC9nUw-jylw">
-        <dc:Bounds height="50.0" width="100.0" x="321.0" y="205.0"/>
-      </di:BPMNShape>
-      <di:BPMNEdge id="_c11mzCdAEeasC9nUw-jylw" bpmnElement="_c10_2idAEeasC9nUw-jylw">
-        <di_1:waypoint x="151.0" y="114.0"/>
-        <di_1:waypoint x="222.0" y="114.0"/>
-        <di:BPMNLabel>
-          <dc:Bounds height="0.0" width="0.0" x="187.0" y="104.0"/>
-        </di:BPMNLabel>
-      </di:BPMNEdge>
-      <di:BPMNEdge id="_eRtHwCdAEeasC9nUw-jylw" bpmnElement="_eRoPQCdAEeasC9nUw-jylw">
-        <di_1:waypoint x="322.0" y="109.0"/>
-        <di_1:waypoint x="448.0" y="109.0"/>
-        <di:BPMNLabel>
-          <dc:Bounds height="0.0" width="0.0" x="385.0" y="99.0"/>
-        </di:BPMNLabel>
-      </di:BPMNEdge>
-      <di:BPMNEdge id="_gHqj0CdAEeasC9nUw-jylw" bpmnElement="_gHp8wCdAEeasC9nUw-jylw">
-        <di_1:waypoint x="273.0" y="140.0"/>
-        <di_1:waypoint x="273.0" y="172.0"/>
-        <di_1:waypoint x="343.0" y="172.0"/>
-        <di_1:waypoint x="343.0" y="205.0"/>
-        <di:BPMNLabel>
-          <dc:Bounds height="0.0" width="0.0" x="309.0" y="162.0"/>
-        </di:BPMNLabel>
-      </di:BPMNEdge>
-      <di:BPMNEdge id="_k2RA8CdAEeasC9nUw-jylw" bpmnElement="_k2Py0CdAEeasC9nUw-jylw">
-        <di_1:waypoint x="421.0" y="213.0"/>
-        <di_1:waypoint x="502.0" y="213.0"/>
-        <di_1:waypoint x="502.0" y="138.0"/>
-        <di:BPMNLabel>
-          <dc:Bounds height="0.0" width="0.0" x="499.0" y="203.0"/>
-        </di:BPMNLabel>
-      </di:BPMNEdge>
-      <di:BPMNEdge id="_mMbioCdAEeasC9nUw-jylw" bpmnElement="_mMYfUCdAEeasC9nUw-jylw">
-        <di_1:waypoint x="548.0" y="106.0"/>
-        <di_1:waypoint x="730.0" y="106.0"/>
-        <di:BPMNLabel>
-          <dc:Bounds height="0.0" width="0.0" x="639.0" y="96.0"/>
-        </di:BPMNLabel>
-      </di:BPMNEdge>
-    </di:BPMNPlane>
-    <di:BPMNLabelStyle id="_0dnJQCdAEeasC9nUw-jylw">
-      <dc:Font isBold="false" isItalic="false" isStrikeThrough="false" isUnderline="false" name="Segoe UI" size="9.0"/>
-    </di:BPMNLabelStyle>
-  </di:BPMNDiagram>
-</model:definitions>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="MultipleIncoming" name="Multiple Incoming" isExecutable="true">
+    <startEvent id="startevent1" name="Start"></startEvent>
+    <userTask id="usertask1" name="Task 1"></userTask>
+    <userTask id="usertask2" name="Task 2"></userTask>
+    <userTask id="usertask3" name="Task 3"></userTask>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="usertask1"></sequenceFlow>
+    <sequenceFlow id="flow2" sourceRef="usertask1" targetRef="usertask2"></sequenceFlow>
+    <sequenceFlow id="flow3" sourceRef="usertask1" targetRef="usertask3"></sequenceFlow>
+    <sequenceFlow id="flow4" sourceRef="usertask3" targetRef="usertask2"></sequenceFlow>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <sequenceFlow id="flow5" sourceRef="usertask2" targetRef="endevent1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_MultipleIncoming">
+    <bpmndi:BPMNPlane bpmnElement="MultipleIncoming" id="BPMNPlane_MultipleIncoming">
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="120.0" y="270.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+        <omgdc:Bounds height="55.0" width="105.0" x="240.0" y="260.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask2" id="BPMNShape_usertask2">
+        <omgdc:Bounds height="55.0" width="105.0" x="480.0" y="260.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="usertask3" id="BPMNShape_usertask3">
+        <omgdc:Bounds height="55.0" width="105.0" x="360.0" y="390.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="710.0" y="270.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="155.0" y="287.0"></omgdi:waypoint>
+        <omgdi:waypoint x="240.0" y="287.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="345.0" y="287.0"></omgdi:waypoint>
+        <omgdi:waypoint x="480.0" y="287.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="292.0" y="315.0"></omgdi:waypoint>
+        <omgdi:waypoint x="412.0" y="390.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="412.0" y="390.0"></omgdi:waypoint>
+        <omgdi:waypoint x="532.0" y="315.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="585.0" y="287.0"></omgdi:waypoint>
+        <omgdi:waypoint x="710.0" y="287.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
