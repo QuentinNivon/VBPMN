@@ -34,13 +34,13 @@
     <exclusiveGateway id="exclusivegateway2" name="Application Status" default="flow19"></exclusiveGateway>
     <sequenceFlow id="flow17" sourceRef="usertask8" targetRef="exclusivegateway2"></sequenceFlow>
     <serviceTask id="mailtask1" name="Notify Rejection" activiti:type="mail"></serviceTask>
-    <serviceTask id="servicetask2" name="Generate Account Number"></serviceTask>
+    <serviceTask id="serviceTask3" name="Generate Account Number"></serviceTask>
     <sequenceFlow id="flow18" name="Reject" sourceRef="exclusivegateway2" targetRef="mailtask1"></sequenceFlow>
-    <sequenceFlow id="flow19" name="Accept" sourceRef="exclusivegateway2" targetRef="servicetask2"></sequenceFlow>
+    <sequenceFlow id="flow19" name="Accept" sourceRef="exclusivegateway2" targetRef="serviceTask3"></sequenceFlow>
     <inclusiveGateway id="inclusivegateway1" name="Inclusive Gateway" default="flow28"></inclusiveGateway>
     <userTask id="usertask9" name="Send Online Starter Kit"></userTask>
     <userTask id="usertask10" name="Send Offline Starter Kit"></userTask>
-    <sequenceFlow id="flow20" sourceRef="servicetask2" targetRef="inclusivegateway1"></sequenceFlow>
+    <sequenceFlow id="flow20" sourceRef="serviceTask3" targetRef="inclusivegateway1"></sequenceFlow>
     <endEvent id="endevent1" name="End"></endEvent>
     <sequenceFlow id="flow21" sourceRef="mailtask1" targetRef="endevent1"></sequenceFlow>
     <sequenceFlow id="flow22" sourceRef="inclusivegateway1" targetRef="usertask9"></sequenceFlow>
@@ -103,7 +103,7 @@
       <bpmndi:BPMNShape bpmnElement="mailtask1" id="BPMNShape_mailtask1">
         <omgdc:Bounds height="55.0" width="105.0" x="970.0" y="493.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="servicetask2" id="BPMNShape_servicetask2">
+      <bpmndi:BPMNShape bpmnElement="serviceTask3" id="BPMNShape_serviceTask3">
         <omgdc:Bounds height="71.0" width="106.0" x="808.0" y="650.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="inclusivegateway1" id="BPMNShape_inclusivegateway1">
