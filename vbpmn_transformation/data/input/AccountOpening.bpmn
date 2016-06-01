@@ -37,7 +37,7 @@
     <serviceTask id="servicetask2" name="Generate Account Number"></serviceTask>
     <sequenceFlow id="flow18" name="Reject" sourceRef="exclusivegateway2" targetRef="mailtask1"></sequenceFlow>
     <sequenceFlow id="flow19" name="Accept" sourceRef="exclusivegateway2" targetRef="servicetask2"></sequenceFlow>
-    <inclusiveGateway id="inclusivegateway1" name="Inclusive Gateway"></inclusiveGateway>
+    <inclusiveGateway id="inclusivegateway1" name="Inclusive Gateway" default="flow28"></inclusiveGateway>
     <userTask id="usertask9" name="Send Online Starter Kit"></userTask>
     <userTask id="usertask10" name="Send Offline Starter Kit"></userTask>
     <sequenceFlow id="flow20" sourceRef="servicetask2" targetRef="inclusivegateway1"></sequenceFlow>
@@ -51,6 +51,7 @@
     <scriptTask id="scripttask1" name="Activate Account" activiti:autoStoreVariables="false"></scriptTask>
     <sequenceFlow id="flow26" sourceRef="inclusivegateway2" targetRef="scripttask1"></sequenceFlow>
     <sequenceFlow id="flow27" sourceRef="scripttask1" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="flow28" name="Existing Profile (default)" sourceRef="inclusivegateway1" targetRef="inclusivegateway2"></sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_Account Opening">
     <bpmndi:BPMNPlane bpmnElement="Account Opening" id="BPMNPlane_Account Opening">
@@ -260,6 +261,13 @@
       <bpmndi:BPMNEdge bpmnElement="flow27" id="BPMNEdge_flow27">
         <omgdi:waypoint x="745.0" y="824.0"></omgdi:waypoint>
         <omgdi:waypoint x="1012.0" y="824.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow28" id="BPMNEdge_flow28">
+        <omgdi:waypoint x="224.0" y="824.0"></omgdi:waypoint>
+        <omgdi:waypoint x="510.0" y="824.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="42.0" width="100.0" x="313.0" y="823.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
