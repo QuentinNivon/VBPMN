@@ -296,8 +296,57 @@ class Task(Node):
 
     # Generates the (generic) process for task, only once
     def lnt(self, f):
-        f.write("process task [incf:any, task:any, outf:any] is\n")
-        f.write(" loop incf; task; outf end loop \n")
+        nbinc=len(self.incomingFlows)
+        nbout=len(self.outgoingFlows)
+        f.write("process task_"+str(nbinc)+"_"+str(nbout)+" [")
+        # we check the number of incoming / outgoing flows
+        if (nbinc==1):
+            f.write("incf:any,")
+        else:
+            cptinc=0
+            while (cptinc<nbinc):
+                f.write("incf"+str(cptinc)+":any,")
+                cptinc=cptinc+1
+        f.write("task:any,")
+        if (nbout==1):
+            f.write("outf:any")
+        else:
+            cptout=0
+            while (cptout<nbout):
+                f.write("outf"+str(cptout)+":any")
+                cptout=cptout+1
+                if (cptout<nbout):
+                    f.write(",")
+        f.write("] is\n")
+
+        f.write(" loop ")
+
+        if (nbinc==1):
+            f.write(" incf; ")
+        else:
+            cptinc=0
+            f.write(" select ")
+            while (cptinc<nbinc):
+                f.write("incf"+str(cptinc))
+                cptinc=cptinc+1
+                if (cptinc<nbinc):
+                    f.write(" [] ")
+            f.write(" end select ; \n")
+        f.write("task ; ")
+        if (nbout==1):
+            f.write(" outf ")
+        else:
+            cptout=0
+            f.write(" select ")
+            while (cptout<nbout):
+                f.write("outf"+str(cptout))
+                cptout=cptout+1
+                if (cptout<nbout):
+                    f.write(" [] ")
+            f.write(" end select \n")
+
+        f.write(" end loop \n")
+
         f.write("end process\n")
 
     # Computes alphabet for a task
@@ -307,9 +356,32 @@ class Task(Node):
     # Generates process instantiation for main LNT process
     def mainlnt(self, f):
         # we assume one incoming flow and one outgoing flow
-        f.write("task [" + self.incomingFlows[0].ident + "_finish,")
+        nbinc=len(self.incomingFlows)
+        nbout=len(self.outgoingFlows)
+        f.write(" task_"+str(nbinc)+"_"+str(nbout)+" [")
+
+        if (nbinc==1):
+            f.write(self.incomingFlows[0].ident + "_finish,")
+        else:
+            cptinc=0
+            while (cptinc<nbinc):
+                f.write(self.incomingFlows[cptinc].ident + "_finish,")
+                cptinc=cptinc+1
         f.write(self.ident + ",")
-        f.write(self.outgoingFlows[0].ident + "_begin]")
+        if (nbout==1):
+            f.write(self.outgoingFlows[0].ident + "_begin")
+        else:
+            cptout=0
+            while (cptout<nbout):
+                f.write(self.outgoingFlows[cptout].ident + "_begin")
+                cptout=cptout+1
+                if (cptout<nbout):
+                    f.write(",")
+        f.write("] ")
+
+        #f.write("task [" + self.incomingFlows[0].ident + "_finish,")
+        #f.write(self.ident + ",")
+        #f.write(self.outgoingFlows[0].ident + "_begin]")
 
     # For a task, if not visited yet, recursive call on the target node of the outgoing flow
     # Returns the list of reachable or joins
@@ -322,6 +394,7 @@ class Task(Node):
     # Dumps a Maude line of code into the given file
     def dumpMaude(self,f):
         t=random.randint(0,4) # we generate a random time !
+        # CAUTION : we assume one incoming flow and one outgoing flow
         f.write("        task("+self.ident+",\""+self.ident+"\","+self.incomingFlows[0].ident+","+self.outgoingFlows[0].ident+","+str(t)+")")
 
 
@@ -1001,9 +1074,20 @@ class Process:
             if isinstance(n, Interaction) or isinstance(n, MessageSending) or isinstance(n, MessageReception) or isinstance(n, Task):
                 if (n.__class__.__name__ in specialnodes):
                     pass
-                else: 
-                    specialnodes.append(n.__class__.__name__)
-                    n.lnt(f)
+                else:
+                    if isinstance(n, Task):
+                        # a task is identified with its number of incoming and outgoing flows
+                        nclass=n.__class__.__name__
+                        nclass=nclass+"_"+str(len(n.incomingFlows))+"_"+str(len(n.outgoingFlows))
+                        print nclass
+                        if (nclass in specialnodes):
+                            pass
+                        else:
+                            specialnodes.append(nclass)
+                            n.lnt(f)
+                    else:
+                        specialnodes.append(n.__class__.__name__)
+                        n.lnt(f)
             else:
                 n.lnt(f)
 
