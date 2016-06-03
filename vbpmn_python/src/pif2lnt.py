@@ -379,17 +379,20 @@ class Task(Node):
                     f.write(",")
         f.write("] ")
 
-        #f.write("task [" + self.incomingFlows[0].ident + "_finish,")
-        #f.write(self.ident + ",")
-        #f.write(self.outgoingFlows[0].ident + "_begin]")
-
     # For a task, if not visited yet, recursive call on the target node of the outgoing flow
     # Returns the list of reachable or joins
     def reachableOrJoin(self, visited, depth):
         if self.ident in visited:
             return []
         else:
-            return self.outgoingFlows[0].getTarget().reachableOrJoin(visited + [self.ident], depth)
+
+            if (len(self.outgoingFlows)==1):
+                return self.outgoingFlows[0].getTarget().reachableOrJoin(visited + [self.ident], depth)
+            else:
+                res = []
+                for f in self.outgoingFlows:
+                    res = res + f.getTarget().reachableOrJoin(visited + [self.ident], depth)
+                return res
 
     # Dumps a Maude line of code into the given file
     def dumpMaude(self,f):
