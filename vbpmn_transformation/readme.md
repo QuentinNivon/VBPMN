@@ -4,10 +4,17 @@ VBPMN Transformation Project
 Project Description
 -------------------------------
 
-VBPMN framework facilitates formal modelling and analysis of BPMN processes. The transformation project is a component in the framework that provides a web based graphical interface to compare BPMN 2.0 models.
-The comparison is a two step process. Firstly, the BPMN 2.0 compliant models are taken as input. Using the transformation logic, the BPMN 2.0 XML files are converted into XML based PIF format. 
-As a next step, these PIF files are given as an input to the VBPMN scripts. Internally, the project invokes the python scripts which in turn connects to CADP. The results of comparison are displayed on the UI (True or False).
-In case of a mismatch (i.e. False result), the counterexample model is generated (In postscript format).
+VBPMN framework facilitates formal modelling and analysis of BPMN
+processes. The transformation project is a component in the framework
+that provides a web based graphical interface to compare BPMN 2.0
+models.  The comparison is a two step process. Firstly, the BPMN 2.0
+compliant models are taken as input. Using the transformation logic,
+the BPMN 2.0 XML files are converted into XML based PIF format.  As a
+next step, these PIF files are given as an input to the VBPMN
+scripts. Internally, the project invokes the python scripts which in
+turn connects to CADP. The results of comparison are displayed on the
+UI (True or False).  In case of a mismatch (i.e. False result), the
+counterexample model is generated (In postscript format).
 
 Developer Setup
 -------------------------------
@@ -27,7 +34,9 @@ Software Requirements to run the project locally
 
 ### Application Configuration
 
-In addition to the above mentioned software libraries, additional folders need to be configured as part of the project. The current project structure is as follows
+In addition to the above mentioned software libraries, additional
+folders need to be configured as part of the project. The current
+project structure is as follows
 
 |transformation
 |-- data
@@ -61,26 +70,49 @@ In addition to the above mentioned software libraries, additional folders need t
         `-- java
             `-- fr
 
-* --- !MODIFY! `resources/transformation.properties` - It has the list of folders to be available for the program to run (create new folders or change path to point to right folders)
-* Exceptions are logged into console and log file. The location of the log file location can be set in `resources/logback.xml`
-* `scripts` folder contains the vbpmn python scripts that need to be executed to perform comparison of models. 
-* In the tomcat `server.xml` add location of output folder as follows (inside `<host>` tag), it is required if you need to view the postscript counterexample files. Alternatively, you can create a separate context file for the instance if you prefer. For more details: See [link](http://www.moreofless.co.uk/static-content-web-pages-images-tomcat-outside-war/)
-`<Context docBase="/tmp/vbpmn/output" path="/transformation/results"/>`
+* --- !MODIFY! `resources/transformation.properties` - It has the list
+       of folders to be available for the program to run (create new
+       folders or change path to point to right folders)
+
+* Exceptions are logged into console and log file. The location of the
+  log file location can be set in `resources/logback.xml`
+
+* `scripts` folder contains the vbpmn python scripts that need to be
+  executed to perform comparison of models.
+
+* In the tomcat `server.xml` add location of output folder as follows
+(inside `<host>` tag), it is required if you need to view the
+postscript counterexample files. Alternatively, you can create a
+separate context file for the instance if you prefer. For more
+details: See
+[link](http://www.moreofless.co.uk/static-content-web-pages-images-tomcat-outside-war/)
+`<Context docBase="/tmp/vbpmn/output"
+path="/transformation/results"/>`
+
 
 Testing and Usage
 --------------------------------------------
 
 ##Samples
 
-A few sample inputs are available in the data folder of the project. For testing you can use: `simple.bpmn`, `simple2.bpmn` and `ExpenseWorkflow.bpmn`. 
-The BPMN 2.0 models generated using Activiti, Bonita, jBPM or any other BPMN 2.0 compliant modelers can be given as input.
+A few sample inputs are available in the data folder of the
+project. For testing you can use: `simple.bpmn`, `simple2.bpmn` and
+`ExpenseWorkflow.bpmn`.  The BPMN 2.0 models generated using Activiti,
+Bonita, jBPM or any other BPMN 2.0 compliant modelers can be given as
+input.
 
 ###Restrictions and Limitations
 
 As of now PIF generation code does not handle the following scenarios in BPMN models (XML input).
 * Model with subprocess.
 * Single model with multiple processes.
-The PIF generator assumes that the input is a BPMN model with only one process in it. For example: model with choreographies would fail.  
-All the tags/elements that do not have a corresponding tag/element in PIF are skipped during the PIF generation process. 
 
-The project is a quick implementation, things like exception handling, HMTL/JS code are bit messy. It might throw some exceptions. However, all the exceptions are logged to a file and the console to help debug the issue.
+The PIF generator assumes that the input is a BPMN model with only one
+process in it. For example: model with choreographies would fail.  All
+the tags/elements that do not have a corresponding tag/element in PIF
+are skipped during the PIF generation process.
+
+The project is a quick implementation, things like exception handling,
+HMTL/JS code are bit messy. It might throw some exceptions. However,
+all the exceptions are logged to a file and the console to help debug
+the issue.
