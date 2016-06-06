@@ -17,11 +17,10 @@ public class PropertyLoaderTest {
 
   @Test
   public void testPropertyLoad() {
-    String expected = "/tmp/vbpmn/input/";
+	  
+    String actual = AppProperty.getInstance().getValue("SCRIPTS_PATH").trim();
 
-    String actual = AppProperty.getInstance().getValue("UPLOAD_PATH");
-
-    Assert.assertTrue(actual.equals(expected));
+    Assert.assertTrue(!actual.isEmpty());
   }
 
 }

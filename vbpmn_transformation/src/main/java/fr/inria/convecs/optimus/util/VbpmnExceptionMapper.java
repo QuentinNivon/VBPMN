@@ -35,18 +35,24 @@ public class VbpmnExceptionMapper {
 
   public static WebApplicationException createWebAppException(final Exception exception) {
     WebApplicationException webApplicationException = null;
+    String exceptionMessage = new StringBuilder("Error processing the request. Please contact the team")
+    		.append("\n \n")
+    		.append("The exception message is: ")
+    		.append("\n")
+    		.append(exception.getMessage()).toString();
     if (exception instanceof IllegalArgumentException) {
       logger.error("IllegalArgumentException ", exception);
       webApplicationException = new WebApplicationException(
-          Response.status(Response.Status.BAD_REQUEST).entity(exception.getMessage()).build());
+          Response.status(Response.Status.BAD_REQUEST).entity(exceptionMessage).build());
     } else if (exception instanceof IllegalStateException) {
       logger.error("IllegalStateException ", exception);
       webApplicationException = new WebApplicationException(
-          Response.status(Response.Status.CONFLICT).entity(exception.getMessage()).build());
+          Response.status(Response.Status.CONFLICT).entity(exceptionMessage).build());
     } else {
-      logger.error("System exception ", exception);
+      logger.error("Internal server errror", exception);
+  
       webApplicationException = new WebApplicationException(Response
-          .status(Response.Status.INTERNAL_SERVER_ERROR).entity(exception.getMessage()).build());
+          .status(Response.Status.INTERNAL_SERVER_ERROR).entity(exceptionMessage).build());
     }
     return webApplicationException;
   }

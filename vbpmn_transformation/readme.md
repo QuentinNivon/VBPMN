@@ -27,16 +27,27 @@ Software Requirements to run the project locally
 
 * JDK 1.8+ [link](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 * Tomcat 8.0+ [link](http://tomcat.apache.org/download-80.cgi)
-* Eclipse / Intellij / Maven [link](https://eclipse.org/downloads/packages/release/Mars/2)
+* Eclipse OR Intellij OR Maven [link](https://eclipse.org/downloads/packages/release/Mars/2)
 * Library dependencies mentioned in the maven pom.xml (if maven is available, these would be automatically resolved)
 * CADP inria [link](http://cadp.inria.fr/)
 * Python (with pyxb 1.1.5) (pip installer can be used)
 
 ### Application Configuration
 
-In addition to the above mentioned software libraries, additional
-folders need to be configured as part of the project. The current
-project structure is as follows
+If you are using Eclipse, use the following steps to import the project into workspace
+1. Open Eclipse
+2. Click on File -> Import
+3. Type **Maven** in the searchbox available in the wizard
+4. Select **Existing Maven Projects**
+5. Click **Next**
+6. Browse to the transformation code location and select the **pom.xml** file
+7. Click finish
+
+For Intellij, please follow the following tutorial [link](https://www.jetbrains.com/help/idea/2016.1/importing-project-from-maven-model.html)
+
+For installing `tomcat server` in Eclispe, follow the tutorial [link](https://www.eclipse.org/webtools/jst/components/ws/1.0/tutorials/InstallTomcat/InstallTomcat.html)
+
+The current project structure is as follows
 
 |transformation
 |-- data
@@ -70,24 +81,16 @@ project structure is as follows
         `-- java
             `-- fr
 
-* --- !MODIFY! `resources/transformation.properties` - It has the list
-       of folders to be available for the program to run (create new
-       folders or change path to point to right folders)
+* --- !MODIFY! `resources/transformation.properties` - Change the location of `SCRIPTS_PATH` to point to the location where VBPMN python scripts are located
 
-* Exceptions are logged into console and log file. The location of the
-  log file location can be set in `resources/logback.xml`
-
-* `scripts` folder contains the vbpmn python scripts that need to be
-  executed to perform comparison of models.
-
-* In the tomcat `server.xml` add location of output folder as follows
-(inside `<host>` tag), it is required if you need to view the
+* --- !MODIFY! In the tomcat `server.xml` (found in the servers project in Eclipse) add the following line: 
+`<Context docBase="/tmp/vbpmn/output" path="/transformation/results"/>`
+Append it inside `<host>` tag, it is required if you need to view the
 postscript counterexample files. Alternatively, you can create a
 separate context file for the instance if you prefer. For more
 details: See
 [link](http://www.moreofless.co.uk/static-content-web-pages-images-tomcat-outside-war/)
-`<Context docBase="/tmp/vbpmn/output"
-path="/transformation/results"/>`
+
 
 
 Testing and Usage
