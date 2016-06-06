@@ -18,7 +18,7 @@ public class PropertyLoaderTest {
   @Test
   public void testPropertyLoad() {
 	  
-    String actual = AppProperty.getInstance().getValue("SCRIPTS_PATH").trim();
+    String actual = AppProperty.getInstance().getFolder("SCRIPTS_PATH").trim();
 
     Assert.assertTrue(!actual.isEmpty());
   }

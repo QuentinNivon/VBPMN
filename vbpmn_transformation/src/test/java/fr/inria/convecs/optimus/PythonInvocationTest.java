@@ -26,7 +26,7 @@ public class PythonInvocationTest {
   String outputLocation = "data/output/" + inputFileName + ".pif";
   String schemaLocation = "data/pif.xsd";
   
-  String scriptsFolder = AppProperty.getInstance().getValue("SCRIPTS_PATH");
+  String scriptsFolder = AppProperty.getInstance().getFolder("SCRIPTS_PATH");
 
   @Test
   public void testVbpmnCall() {
