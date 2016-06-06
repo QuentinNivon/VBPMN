@@ -1082,7 +1082,7 @@ class Process:
                         # a task is identified with its number of incoming and outgoing flows
                         nclass=n.__class__.__name__
                         nclass=nclass+"_"+str(len(n.incomingFlows))+"_"+str(len(n.outgoingFlows))
-                        print nclass
+                        #print nclass
                         if (nclass in specialnodes):
                             pass
                         else:
