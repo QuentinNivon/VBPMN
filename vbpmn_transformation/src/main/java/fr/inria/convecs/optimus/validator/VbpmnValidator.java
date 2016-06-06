@@ -97,6 +97,15 @@ public class VbpmnValidator implements ModelValidator {
    */
   private String handleResponse(final String stdOut, final String stdErr) {
     StringBuilder resultBuilder = new StringBuilder();
+
+    if (null != stdErr) {
+      logger.debug("The stderr of command execution: {}", stdErr);
+      if (stdErr.contains("Error")) {
+        resultBuilder.append("*** Unable to process request - Standard Erorr *** \n")
+            .append(stdErr);
+      }
+    }
+
     if (null != stdOut) {
       logger.debug("The stdout of command execution: {}", stdOut);
       // TODO: crude method -cleaner approach required
@@ -114,9 +123,6 @@ public class VbpmnValidator implements ModelValidator {
       resultBuilder.append("*** Unable to process request - No Stdout Result Available ***");
     }
 
-    if (null != stdErr) {
-      logger.debug("The stderr of command execution: {}", stdErr);
-    }
     return resultBuilder.toString();
   }
 
