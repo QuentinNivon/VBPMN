@@ -1201,6 +1201,12 @@ class Process:
             "\"" + self.name + ".bcg\" = tau*.a reduction of branching reduction of " + "\"" + self.name + "_raw.bcg\";\n\n")
         f.close()
 
+        # make the SVL file executable
+        #import os
+        #import stat
+        #st = os.stat(filename)
+        #os.chmod(filename, st.st_mode | 0111)
+
     # This method takes as input a file.pif and generates a PIF Python object
     def buildProcessFromFile(self, filename, debug=False):
         # open xml document specified in fileName
@@ -1303,7 +1309,7 @@ class Generator:
         proc.genLNT()
         # compute the LTS from the LNT code using SVL, possibly with a smart reduction
         proc.genSVL(smartReduction)
-        pr = Popen(["svl", pifModelName], shell=False, stdout=sys.stdout)
+        pr = Popen(["svl", pifModelName], shell=True, stdout=sys.stdout) 
         pr.communicate()
         # return name and alphabet
         return (ReturnCodes.TERM_OK, pifModelName,proc.alpha()) # TODO: use return value from SVL call
