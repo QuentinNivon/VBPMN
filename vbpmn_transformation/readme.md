@@ -86,8 +86,8 @@ The current project structure is as follows
 * --- !MODIFY! In the tomcat `server.xml` (found in the servers project in Eclipse) add the following line: 
 `<Context docBase="/tmp/vbpmn/output" path="/transformation/results"/>`
 Append it inside `<host>` tag, it is required if you need to view the
-postscript counterexample files. Alternatively, you can create a
-separate context file for the instance if you prefer. For more
+postscript counterexample files.For windows systems you will have to modify `<Context docBase = "C:/Users/<username>/AppData/Local/Temp" path="/transformation/results"/>` 
+Alternatively, you can create a separate context file for the instance if you prefer. For more
 details: See
 [link](http://www.moreofless.co.uk/static-content-web-pages-images-tomcat-outside-war/)
 
