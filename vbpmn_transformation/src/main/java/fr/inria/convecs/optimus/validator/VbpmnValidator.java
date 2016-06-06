@@ -101,8 +101,7 @@ public class VbpmnValidator implements ModelValidator {
     if (null != stdErr) {
       logger.debug("The stderr of command execution: {}", stdErr);
       if (stdErr.contains("Error")) {
-        resultBuilder.append("*** Unable to process request - Standard Erorr *** \n")
-            .append(stdErr);
+       throw new RuntimeException(stdErr);
       }
     }
 
