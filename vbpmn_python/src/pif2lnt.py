@@ -1202,10 +1202,10 @@ class Process:
         f.close()
 
         # make the SVL file executable
-        #import os
-        #import stat
-        #st = os.stat(filename)
-        #os.chmod(filename, st.st_mode | 0111)
+        import os
+        import stat
+        st = os.stat(filename)
+        os.chmod(filename, st.st_mode | 0111)
 
     # This method takes as input a file.pif and generates a PIF Python object
     def buildProcessFromFile(self, filename, debug=False):
@@ -1299,6 +1299,8 @@ class Generator:
     # @param debug boolean, true to get debug information, false else
     # @return (Integer, String, Collection<String>), return code, name of the model (can be different from the filename) and its alphabet
     def __call__(self, pifFilename, smartReduction=True, debug=False):
+
+        import subprocess
         proc = Process()
         # load PIF model
         proc.buildProcessFromFile(pifFilename)
@@ -1309,8 +1311,9 @@ class Generator:
         proc.genLNT()
         # compute the LTS from the LNT code using SVL, possibly with a smart reduction
         proc.genSVL(smartReduction)
-        pr = Popen(["svl", pifModelName], shell=True, stdout=sys.stdout) 
+        pr = Popen(["svl", pifModelName], shell=False, stdout=sys.stdout) 
         pr.communicate()
+        #check_output(["svl", pifModelName])
         # return name and alphabet
         return (ReturnCodes.TERM_OK, pifModelName,proc.alpha()) # TODO: use return value from SVL call
 
