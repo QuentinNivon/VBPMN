@@ -30,7 +30,7 @@ Software Requirements to run the project locally
 * Eclipse OR Intellij OR Maven [link](https://eclipse.org/downloads/packages/release/Mars/2)
 * Library dependencies mentioned in the maven pom.xml (if maven is available, these would be automatically resolved)
 * CADP inria [link](http://cadp.inria.fr/)
-* Python (with pyxb 1.1.5) (pip installer can be used)
+* Python (with pyxb 1.1.5 or lower) (pip installer can be used)
 
 ### Application Configuration
 
@@ -53,17 +53,10 @@ The current project structure is as follows
 |-- data
 |   |-- input
 |   |-- output
-|   `-- pif.xsd
+|  
 |-- logs
 |-- pom.xml
 |-- readme.md
-|-- **scripts**
-|   |-- __init__.py
-|   |-- pif2lnt.py
-|   |-- pif2lnt.pyc
-|   |-- pif.py
-|   |-- pif.pyc
-|   `-- vbpmn.py
 `-- src
     |-- main
     |   |-- java
@@ -83,15 +76,13 @@ The current project structure is as follows
 
 * --- !MODIFY! `resources/transformation.properties` - Change the location of `SCRIPTS_PATH` to point to the location where VBPMN python scripts are located
 
-* --- !MODIFY! In the tomcat `server.xml` (found in the servers project in Eclipse) add the following line: 
-`<Context docBase="/tmp/vbpmn/output" path="/transformation/results"/>`
-Append it inside `<host>` tag, it is required if you need to view the
-postscript counterexample files.For windows systems you will have to modify `<Context docBase = "C:/Users/<username>/AppData/Local/Temp" path="/transformation/results"/>` 
-Alternatively, you can create a separate context file for the instance if you prefer. For more
-details: See
-[link](http://www.moreofless.co.uk/static-content-web-pages-images-tomcat-outside-war/)
 
-
+To run the web application
+1. Right Click on the project
+2. Select **Run as -> Run on server**
+3. Select the existing server and click **finish**
+4. If the server start is successful, the application can be typically accessed
+at [URL](http://localhost:8080/transformation/home.html)
 
 Testing and Usage
 --------------------------------------------

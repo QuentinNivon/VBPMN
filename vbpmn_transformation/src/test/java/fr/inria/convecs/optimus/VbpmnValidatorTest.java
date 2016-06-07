@@ -23,10 +23,14 @@ import fr.inria.convecs.optimus.validator.VbpmnValidator;
  */
 public class VbpmnValidatorTest {
 
+	private static final String OUTPUT_PATH = AppProperty.getInstance().getFolder("OUTPUT_PATH");
+
+	private static final String SCRIPTS_PATH = AppProperty.getInstance().getFolder("SCRIPTS_PATH");
+	
 	@Test
 	public void testVbpmnCall() {
 		try {
-			ModelValidator modelValidator = new VbpmnValidator();
+			ModelValidator modelValidator = new VbpmnValidator(SCRIPTS_PATH, OUTPUT_PATH);
 
 			File input = new File("data/output/ExpenseWorkflow.bpmn.pif");
 			List<String> option = new ArrayList<String>();

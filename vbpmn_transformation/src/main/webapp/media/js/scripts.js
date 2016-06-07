@@ -97,9 +97,8 @@ $(document).ready(function() {
 				}
 				else if (status[0].trim().toUpperCase() === "FALSE") {
 					var url1 = "/transformation/results/"+status[1];
-					var url2 = "/transformation/results/"+status[2];
 					$("#response").html("FALSE <br />");
-					$("#response").append("<br /> <p class=\"underline\">Counterexample: <a href=\""+url1+"\">"+status[1]+"</a></p>");
+					$("#response").append("<br /> <p class=\"underline\">Counterexample is available at: "+status[1]+"</p>");
 					$("#response").addClass("alert alert-danger");
 				}
 				else {

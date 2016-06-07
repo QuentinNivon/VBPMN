@@ -29,6 +29,10 @@ import fr.inria.convecs.optimus.validator.VbpmnValidator;
  */
 public class VbpmnIntegrationTest {
 
+	private static final String OUTPUT_PATH = AppProperty.getInstance().getFolder("OUTPUT_PATH");
+
+	private static final String SCRIPTS_PATH = AppProperty.getInstance().getFolder("SCRIPTS_PATH");
+
 	String inputFileName = "ExpenseWorkflow.bpmn";
 	String inputLocation = "data/input/" + inputFileName;
 	String outputLocation = "data/output/" + inputFileName + ".pif";
@@ -51,7 +55,7 @@ public class VbpmnIntegrationTest {
 			// TODO: Multiple asserts!!
 			Assert.assertTrue(XmlUtil.isDocumentValid(new File(outputLocation), new File(schemaLocation)));
 
-			ModelValidator modelValidator = new VbpmnValidator();
+			ModelValidator modelValidator = new VbpmnValidator(SCRIPTS_PATH, OUTPUT_PATH);
 
 			modelValidator.validate(output, vbpmnOptions);
 
