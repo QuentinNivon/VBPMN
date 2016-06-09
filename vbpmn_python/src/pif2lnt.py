@@ -1311,7 +1311,8 @@ class Generator:
         proc.genLNT()
         # compute the LTS from the LNT code using SVL, possibly with a smart reduction
         proc.genSVL(smartReduction)
-        pr = Popen(["svl", pifModelName], stdout=sys.stdout)
+        pr = Popen("svl "+pifModelName, shell=True, stdout=sys.stdout)
+        #pr = Popen("env", shell=True, stdout=sys.stdout)
         pr.communicate()
         # return name and alphabet
         return (ReturnCodes.TERM_OK, pifModelName,proc.alpha()) # TODO: use return value from SVL call
