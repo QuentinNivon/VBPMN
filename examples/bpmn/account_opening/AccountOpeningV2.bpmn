@@ -2,132 +2,136 @@
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
   <process id="AccountOpeningV2" name="Account Opening" isExecutable="true">
     <startEvent id="startevent1" name="Start"></startEvent>
-    <serviceTask id="servicetask1" name="Process Application"></serviceTask>
+    <serviceTask id="processApplication" name="Process Application"></serviceTask>
     <exclusiveGateway id="exclusivegateway1" name="Existing Customer" default="flow3"></exclusiveGateway>
-    <serviceTask id="serviceTask2" name="Retrieve Customer Profile"></serviceTask>
-    <userTask id="usertask1" name="Create Profile"></userTask>
-    <userTask id="usertask2" name="Identify Account Type"></userTask>
-    <userTask id="usertask3" name="Analyse Customer Profile"></userTask>
-    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="servicetask1"></sequenceFlow>
-    <sequenceFlow id="flow2" name="Existing Customer?" sourceRef="servicetask1" targetRef="exclusivegateway1"></sequenceFlow>
-    <sequenceFlow id="flow3" name="No" sourceRef="exclusivegateway1" targetRef="usertask1"></sequenceFlow>
-    <sequenceFlow id="flow4" name="Yes" sourceRef="exclusivegateway1" targetRef="serviceTask2"></sequenceFlow>
-    <sequenceFlow id="flow5" sourceRef="serviceTask2" targetRef="usertask3"></sequenceFlow>
-    <sequenceFlow id="flow6" sourceRef="usertask3" targetRef="exclusivegateway3"></sequenceFlow>
-    <sequenceFlow id="flow7" sourceRef="usertask1" targetRef="exclusivegateway3"></sequenceFlow>
-    <userTask id="usertask4" name="Prepare Account Opening"></userTask>
-    <sequenceFlow id="flow8" sourceRef="usertask2" targetRef="usertask4"></sequenceFlow>
+    <serviceTask id="retrieveProfile" name="Retrieve Customer Profile"></serviceTask>
+    <userTask id="createProfile" name="Create Profile"></userTask>
+    <userTask id="identifyAccount" name="Identify Account Type"></userTask>
+    <userTask id="analyseProfile" name="Analyse Customer Profile"></userTask>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="processApplication"></sequenceFlow>
+    <sequenceFlow id="flow2" name="Existing Customer?" sourceRef="processApplication" targetRef="exclusivegateway1"></sequenceFlow>
+    <sequenceFlow id="flow3" name="No" sourceRef="exclusivegateway1" targetRef="createProfile"></sequenceFlow>
+    <sequenceFlow id="flow4" name="Yes" sourceRef="exclusivegateway1" targetRef="retrieveProfile"></sequenceFlow>
+    <sequenceFlow id="flow5" sourceRef="retrieveProfile" targetRef="analyseProfile"></sequenceFlow>
+    <sequenceFlow id="flow6" sourceRef="analyseProfile" targetRef="exclusivegateway3"></sequenceFlow>
+    <sequenceFlow id="flow7" sourceRef="createProfile" targetRef="exclusivegateway3"></sequenceFlow>
+    <userTask id="prepareAccOpening" name="Prepare Account Opening"></userTask>
+    <sequenceFlow id="flow8" sourceRef="identifyAccount" targetRef="prepareAccOpening"></sequenceFlow>
     <parallelGateway id="parallelgateway1" name="Parallel Gateway"></parallelGateway>
-    <sequenceFlow id="flow9" sourceRef="usertask4" targetRef="parallelgateway1"></sequenceFlow>
-    <userTask id="usertask5" name="Receive Support Documents"></userTask>
-    <userTask id="usertask6" name="Update Info Records"></userTask>
-    <userTask id="usertask7" name="Background Verification"></userTask>
-    <sequenceFlow id="flow10" sourceRef="parallelgateway1" targetRef="usertask5"></sequenceFlow>
-    <sequenceFlow id="flow11" sourceRef="parallelgateway1" targetRef="usertask6"></sequenceFlow>
-    <sequenceFlow id="flow12" sourceRef="parallelgateway1" targetRef="usertask7"></sequenceFlow>
+    <sequenceFlow id="flow9" sourceRef="prepareAccOpening" targetRef="parallelgateway1"></sequenceFlow>
+    <userTask id="receiveSupportDocuments" name="Receive Support Documents"></userTask>
+    <userTask id="updateRecords" name="Update Info Records"></userTask>
+    <userTask id="backgroundVerification" name="Background Verification"></userTask>
+    <sequenceFlow id="flow10" sourceRef="parallelgateway1" targetRef="receiveSupportDocuments"></sequenceFlow>
+    <sequenceFlow id="flow11" sourceRef="parallelgateway1" targetRef="updateRecords"></sequenceFlow>
+    <sequenceFlow id="flow12" sourceRef="parallelgateway1" targetRef="backgroundVerification"></sequenceFlow>
     <parallelGateway id="parallelgateway2" name="Parallel Gateway"></parallelGateway>
-    <sequenceFlow id="flow13" sourceRef="usertask6" targetRef="parallelgateway2"></sequenceFlow>
-    <sequenceFlow id="flow14" sourceRef="usertask5" targetRef="parallelgateway2"></sequenceFlow>
-    <sequenceFlow id="flow15" sourceRef="usertask7" targetRef="parallelgateway2"></sequenceFlow>
-    <userTask id="usertask8" name="Review Application"></userTask>
-    <sequenceFlow id="flow16" sourceRef="parallelgateway2" targetRef="usertask8"></sequenceFlow>
+    <sequenceFlow id="flow13" sourceRef="updateRecords" targetRef="parallelgateway2"></sequenceFlow>
+    <sequenceFlow id="flow14" sourceRef="receiveSupportDocuments" targetRef="parallelgateway2"></sequenceFlow>
+    <sequenceFlow id="flow15" sourceRef="backgroundVerification" targetRef="parallelgateway2"></sequenceFlow>
+    <userTask id="reviewApplication" name="Review Application"></userTask>
+    <sequenceFlow id="flow16" sourceRef="parallelgateway2" targetRef="reviewApplication"></sequenceFlow>
     <exclusiveGateway id="exclusivegateway2" name="Application Status" default="flow19"></exclusiveGateway>
-    <sequenceFlow id="flow17" sourceRef="usertask8" targetRef="exclusivegateway2"></sequenceFlow>
-    <serviceTask id="mailtask1" name="Notify Rejection" activiti:type="mail"></serviceTask>
-    <serviceTask id="serviceTask3" name="Generate Account Number"></serviceTask>
-    <sequenceFlow id="flow18" name="Reject" sourceRef="exclusivegateway2" targetRef="mailtask1"></sequenceFlow>
-    <sequenceFlow id="flow19" name="Accept" sourceRef="exclusivegateway2" targetRef="serviceTask3"></sequenceFlow>
+    <sequenceFlow id="flow17" sourceRef="reviewApplication" targetRef="exclusivegateway2"></sequenceFlow>
+    <serviceTask id="notifyRejection" name="Notify Rejection" activiti:type="mail"></serviceTask>
+    <serviceTask id="generateAccountnumber" name="Generate Account Number"></serviceTask>
+    <sequenceFlow id="flow18" name="Reject" sourceRef="exclusivegateway2" targetRef="notifyRejection"></sequenceFlow>
+    <sequenceFlow id="flow19" name="Accept" sourceRef="exclusivegateway2" targetRef="generateAccountnumber"></sequenceFlow>
     <inclusiveGateway id="inclusivegateway1" name="Inclusive Gateway" default="flow28"></inclusiveGateway>
-    <userTask id="usertask9" name="Send Online Starter Kit"></userTask>
-    <userTask id="usertask10" name="Send Offline Starter Kit"></userTask>
-    <sequenceFlow id="flow20" sourceRef="serviceTask3" targetRef="inclusivegateway1"></sequenceFlow>
+    <userTask id="sendOnlineKit" name="Send Online Starter Kit"></userTask>
+    <userTask id="sendOfflineKit" name="Send Offline Starter Kit"></userTask>
+    <sequenceFlow id="flow20" sourceRef="generateAccountnumber" targetRef="inclusivegateway1"></sequenceFlow>
     <endEvent id="endevent1" name="End"></endEvent>
-    <sequenceFlow id="flow21" sourceRef="mailtask1" targetRef="endevent1"></sequenceFlow>
-    <sequenceFlow id="flow22" sourceRef="inclusivegateway1" targetRef="usertask9"></sequenceFlow>
-    <sequenceFlow id="flow23" sourceRef="inclusivegateway1" targetRef="usertask10"></sequenceFlow>
+    <sequenceFlow id="flow21" sourceRef="notifyRejection" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="flow22" sourceRef="inclusivegateway1" targetRef="sendOnlineKit"></sequenceFlow>
+    <sequenceFlow id="flow23" sourceRef="inclusivegateway1" targetRef="sendOfflineKit"></sequenceFlow>
     <inclusiveGateway id="inclusivegateway2" name="Inclusive Gateway"></inclusiveGateway>
-    <sequenceFlow id="flow24" sourceRef="usertask9" targetRef="inclusivegateway2"></sequenceFlow>
-    <sequenceFlow id="flow25" sourceRef="usertask10" targetRef="inclusivegateway2"></sequenceFlow>
-    <scriptTask id="scripttask1" name="Activate Account" activiti:autoStoreVariables="false"></scriptTask>
-    <sequenceFlow id="flow26" sourceRef="inclusivegateway2" targetRef="scripttask1"></sequenceFlow>
-    <sequenceFlow id="flow27" sourceRef="scripttask1" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="flow24" sourceRef="sendOnlineKit" targetRef="inclusivegateway2"></sequenceFlow>
+    <sequenceFlow id="flow25" sourceRef="sendOfflineKit" targetRef="inclusivegateway2"></sequenceFlow>
+    <scriptTask id="activateAccount" name="Activate Account" activiti:autoStoreVariables="false"></scriptTask>
+    <sequenceFlow id="flow26" sourceRef="inclusivegateway2" targetRef="activateAccount"></sequenceFlow>
+    <sequenceFlow id="flow27" sourceRef="activateAccount" targetRef="endevent2"></sequenceFlow>
     <sequenceFlow id="flow28" name="Existing Profile (default)" sourceRef="inclusivegateway1" targetRef="inclusivegateway2"></sequenceFlow>
     <exclusiveGateway id="exclusivegateway3" name="Exclusive Gateway"></exclusiveGateway>
-    <sequenceFlow id="flow29" sourceRef="exclusivegateway3" targetRef="usertask2"></sequenceFlow>
+    <sequenceFlow id="flow29" sourceRef="exclusivegateway3" targetRef="identifyAccount"></sequenceFlow>
+    <endEvent id="endevent2" name="End"></endEvent>
   </process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_AccountOpening">
-    <bpmndi:BPMNPlane bpmnElement="AccountOpening" id="BPMNPlane_AccountOpening">
+  <bpmndi:BPMNDiagram id="BPMNDiagram_AccountOpeningV2">
+    <bpmndi:BPMNPlane bpmnElement="AccountOpeningV2" id="BPMNPlane_AccountOpeningV2">
       <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
         <omgdc:Bounds height="35.0" width="35.0" x="40.0" y="60.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="servicetask1" id="BPMNShape_servicetask1">
+      <bpmndi:BPMNShape bpmnElement="processApplication" id="BPMNShape_processApplication">
         <omgdc:Bounds height="75.0" width="121.0" x="140.0" y="40.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
         <omgdc:Bounds height="40.0" width="40.0" x="330.0" y="57.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="serviceTask2" id="BPMNShape_serviceTask2">
+      <bpmndi:BPMNShape bpmnElement="retrieveProfile" id="BPMNShape_retrieveProfile">
         <omgdc:Bounds height="75.0" width="131.0" x="480.0" y="40.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+      <bpmndi:BPMNShape bpmnElement="createProfile" id="BPMNShape_createProfile">
         <omgdc:Bounds height="55.0" width="105.0" x="298.0" y="180.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask2" id="BPMNShape_usertask2">
+      <bpmndi:BPMNShape bpmnElement="identifyAccount" id="BPMNShape_identifyAccount">
         <omgdc:Bounds height="72.0" width="141.0" x="680.0" y="285.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask3" id="BPMNShape_usertask3">
+      <bpmndi:BPMNShape bpmnElement="analyseProfile" id="BPMNShape_analyseProfile">
         <omgdc:Bounds height="72.0" width="141.0" x="680.0" y="43.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask4" id="BPMNShape_usertask4">
+      <bpmndi:BPMNShape bpmnElement="prepareAccOpening" id="BPMNShape_prepareAccOpening">
         <omgdc:Bounds height="81.0" width="131.0" x="285.0" y="280.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="parallelgateway1" id="BPMNShape_parallelgateway1">
         <omgdc:Bounds height="40.0" width="40.0" x="172.0" y="613.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask5" id="BPMNShape_usertask5">
+      <bpmndi:BPMNShape bpmnElement="receiveSupportDocuments" id="BPMNShape_receiveSupportDocuments">
         <omgdc:Bounds height="71.0" width="131.0" x="298.0" y="490.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask6" id="BPMNShape_usertask6">
-        <omgdc:Bounds height="59.0" width="131.0" x="298.0" y="603.0"></omgdc:Bounds>
+      <bpmndi:BPMNShape bpmnElement="updateRecords" id="BPMNShape_updateRecords">
+        <omgdc:Bounds height="59.0" width="130.0" x="298.0" y="603.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask7" id="BPMNShape_usertask7">
+      <bpmndi:BPMNShape bpmnElement="backgroundVerification" id="BPMNShape_backgroundVerification">
         <omgdc:Bounds height="67.0" width="131.0" x="298.0" y="715.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="parallelgateway2" id="BPMNShape_parallelgateway2">
         <omgdc:Bounds height="40.0" width="40.0" x="531.0" y="613.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask8" id="BPMNShape_usertask8">
+      <bpmndi:BPMNShape bpmnElement="reviewApplication" id="BPMNShape_reviewApplication">
         <omgdc:Bounds height="68.0" width="111.0" x="651.0" y="599.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="BPMNShape_exclusivegateway2">
         <omgdc:Bounds height="40.0" width="40.0" x="849.0" y="612.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="mailtask1" id="BPMNShape_mailtask1">
+      <bpmndi:BPMNShape bpmnElement="notifyRejection" id="BPMNShape_notifyRejection">
         <omgdc:Bounds height="68.0" width="111.0" x="970.0" y="599.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="serviceTask3" id="BPMNShape_serviceTask3">
+      <bpmndi:BPMNShape bpmnElement="generateAccountnumber" id="BPMNShape_generateAccountnumber">
         <omgdc:Bounds height="71.0" width="123.0" x="808.0" y="820.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="inclusivegateway1" id="BPMNShape_inclusivegateway1">
         <omgdc:Bounds height="40.0" width="40.0" x="172.0" y="990.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask9" id="BPMNShape_usertask9">
-        <omgdc:Bounds height="65.0" width="139.0" x="302.0" y="900.0"></omgdc:Bounds>
+      <bpmndi:BPMNShape bpmnElement="sendOnlineKit" id="BPMNShape_sendOnlineKit">
+        <omgdc:Bounds height="65.0" width="129.0" x="302.0" y="900.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask10" id="BPMNShape_usertask10">
-        <omgdc:Bounds height="65.0" width="129.0" x="299.0" y="1080.0"></omgdc:Bounds>
+      <bpmndi:BPMNShape bpmnElement="sendOfflineKit" id="BPMNShape_sendOfflineKit">
+        <omgdc:Bounds height="65.0" width="132.0" x="299.0" y="1080.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
-        <omgdc:Bounds height="35.0" width="35.0" x="1009.0" y="993.0"></omgdc:Bounds>
+        <omgdc:Bounds height="35.0" width="35.0" x="1008.0" y="820.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="inclusivegateway2" id="BPMNShape_inclusivegateway2">
         <omgdc:Bounds height="40.0" width="40.0" x="531.0" y="990.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="scripttask1" id="BPMNShape_scripttask1">
+      <bpmndi:BPMNShape bpmnElement="activateAccount" id="BPMNShape_activateAccount">
         <omgdc:Bounds height="66.0" width="105.0" x="666.0" y="978.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway3" id="BPMNShape_exclusivegateway3">
         <omgdc:Bounds height="40.0" width="40.0" x="730.0" y="187.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent2" id="BPMNShape_endevent2">
+        <omgdc:Bounds height="35.0" width="35.0" x="1019.0" y="993.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
         <omgdi:waypoint x="75.0" y="77.0"></omgdi:waypoint>
@@ -144,14 +148,14 @@
         <omgdi:waypoint x="350.0" y="97.0"></omgdi:waypoint>
         <omgdi:waypoint x="350.0" y="180.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="322.0" y="115.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="20.0" x="322.0" y="115.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
         <omgdi:waypoint x="370.0" y="77.0"></omgdi:waypoint>
         <omgdi:waypoint x="480.0" y="77.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="389.0" y="77.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="26.0" x="389.0" y="77.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
@@ -194,7 +198,7 @@
         <omgdi:waypoint x="298.0" y="748.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow13" id="BPMNEdge_flow13">
-        <omgdi:waypoint x="429.0" y="632.0"></omgdi:waypoint>
+        <omgdi:waypoint x="428.0" y="632.0"></omgdi:waypoint>
         <omgdi:waypoint x="531.0" y="633.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow14" id="BPMNEdge_flow14">
@@ -220,14 +224,14 @@
         <omgdi:waypoint x="889.0" y="632.0"></omgdi:waypoint>
         <omgdi:waypoint x="970.0" y="633.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="899.0" y="633.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="44.0" x="899.0" y="633.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow19" id="BPMNEdge_flow19">
         <omgdi:waypoint x="869.0" y="652.0"></omgdi:waypoint>
         <omgdi:waypoint x="869.0" y="820.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="871.0" y="697.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="49.0" x="871.0" y="697.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow20" id="BPMNEdge_flow20">
@@ -239,7 +243,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow21" id="BPMNEdge_flow21">
         <omgdi:waypoint x="1025.0" y="667.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1026.0" y="993.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1025.0" y="820.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow22" id="BPMNEdge_flow22">
         <omgdi:waypoint x="192.0" y="990.0"></omgdi:waypoint>
@@ -252,13 +256,13 @@
         <omgdi:waypoint x="299.0" y="1112.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow24" id="BPMNEdge_flow24">
-        <omgdi:waypoint x="441.0" y="932.0"></omgdi:waypoint>
+        <omgdi:waypoint x="431.0" y="932.0"></omgdi:waypoint>
         <omgdi:waypoint x="495.0" y="931.0"></omgdi:waypoint>
         <omgdi:waypoint x="550.0" y="931.0"></omgdi:waypoint>
         <omgdi:waypoint x="551.0" y="990.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow25" id="BPMNEdge_flow25">
-        <omgdi:waypoint x="428.0" y="1112.0"></omgdi:waypoint>
+        <omgdi:waypoint x="431.0" y="1112.0"></omgdi:waypoint>
         <omgdi:waypoint x="428.0" y="1116.0"></omgdi:waypoint>
         <omgdi:waypoint x="551.0" y="1116.0"></omgdi:waypoint>
         <omgdi:waypoint x="551.0" y="1063.0"></omgdi:waypoint>
@@ -270,7 +274,7 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow27" id="BPMNEdge_flow27">
         <omgdi:waypoint x="771.0" y="1011.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1009.0" y="1010.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1019.0" y="1010.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow28" id="BPMNEdge_flow28">
         <omgdi:waypoint x="212.0" y="1010.0"></omgdi:waypoint>
