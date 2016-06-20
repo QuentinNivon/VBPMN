@@ -2,7 +2,7 @@
 logs/
 target/
 data/output/
-ter_docs
+ter_docs/
 
 # Eclipse
 .classpath
