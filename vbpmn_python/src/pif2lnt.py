@@ -1197,8 +1197,8 @@ class Process:
         dumpAlphabet(alpha, f, False)
         f.write("\";\n\n")
         # reduction of the raw bcg
-        f.write(
-            "\"" + self.name + ".bcg\" = tau*.a reduction of branching reduction of " + "\"" + self.name + "_raw.bcg\";\n\n")
+        #f.write("\"" + self.name + ".bcg\" = tau*.a reduction of branching reduction of " + "\"" + self.name + "_raw.bcg\";\n\n")
+        f.write("\"" + self.name + ".bcg\" = branching reduction of " + "\"" + self.name + "_raw.bcg\";\n\n")
         f.close()
 
         # make the SVL file executable
@@ -1311,7 +1311,7 @@ class Generator:
         proc.genLNT()
         # compute the LTS from the LNT code using SVL, possibly with a smart reduction
         proc.genSVL(smartReduction)
-        pr = Popen("svl "+pifModelName, shell=True, stdout=sys.stdout)
+        pr = Popen(["svl", pifModelName], shell=False, stdout=sys.stdout)
         #pr = Popen("env", shell=True, stdout=sys.stdout)
         pr.communicate()
         # return name and alphabet
