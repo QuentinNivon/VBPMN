@@ -9,7 +9,7 @@
     <inclusiveGateway id="inclusivegateway1" name="Inclusive Gateway"></inclusiveGateway>
     <userTask id="handleContentError" name="Handle Error"></userTask>
     <userTask id="handleMmError" name="Handle Error"></userTask>
-    <userTask id="usertask1" name="Publish to Internet"></userTask>
+    <userTask id="publishToInternet" name="Publish to Internet"></userTask>
     <scriptTask id="facebook" name="Facebook" activiti:autoStoreVariables="false"></scriptTask>
     <scriptTask id="twitter" name="Twitter" activiti:autoStoreVariables="false"></scriptTask>
     <scriptTask id="subscriberNotification" name="Subscriber Notification" activiti:autoStoreVariables="false"></scriptTask>
@@ -22,8 +22,8 @@
     <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="collectInfo"></sequenceFlow>
     <sequenceFlow id="flow2" sourceRef="collectInfo" targetRef="preparePublishing"></sequenceFlow>
     <sequenceFlow id="flow7" sourceRef="multimediaStore" targetRef="exclusivegateway3"></sequenceFlow>
-    <sequenceFlow id="flow8" sourceRef="exclusivegateway3" targetRef="usertask1"></sequenceFlow>
-    <sequenceFlow id="flow9" sourceRef="usertask1" targetRef="inclusivegateway1"></sequenceFlow>
+    <sequenceFlow id="flow8" sourceRef="exclusivegateway3" targetRef="publishToInternet"></sequenceFlow>
+    <sequenceFlow id="flow9" sourceRef="publishToInternet" targetRef="inclusivegateway1"></sequenceFlow>
     <sequenceFlow id="flow10" sourceRef="inclusivegateway1" targetRef="twitter"></sequenceFlow>
     <sequenceFlow id="flow11" sourceRef="inclusivegateway1" targetRef="facebook"></sequenceFlow>
     <sequenceFlow id="flow12" sourceRef="inclusivegateway1" targetRef="site"></sequenceFlow>
@@ -88,7 +88,7 @@
       <bpmndi:BPMNShape bpmnElement="handleMmError" id="BPMNShape_handleMmError">
         <omgdc:Bounds height="55.0" width="105.0" x="1218.0" y="461.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+      <bpmndi:BPMNShape bpmnElement="publishToInternet" id="BPMNShape_publishToInternet">
         <omgdc:Bounds height="65.0" width="120.0" x="1430.0" y="275.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="facebook" id="BPMNShape_facebook">
@@ -222,7 +222,7 @@
         <omgdi:waypoint x="1270.0" y="327.0"></omgdi:waypoint>
         <omgdi:waypoint x="1270.0" y="461.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="1280.0" y="389.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="35.0" x="1280.0" y="389.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow24" id="BPMNEdge_flow24">
@@ -253,7 +253,7 @@
         <omgdi:waypoint x="878.0" y="327.0"></omgdi:waypoint>
         <omgdi:waypoint x="878.0" y="461.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="881.0" y="389.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="35.0" x="881.0" y="389.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow31" id="BPMNEdge_flow31">
@@ -265,7 +265,7 @@
         <omgdi:waypoint x="1000.0" y="610.0"></omgdi:waypoint>
         <omgdi:waypoint x="1000.0" y="327.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="1061.0" y="590.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="66.0" x="1061.0" y="590.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow33" id="BPMNEdge_flow33">
@@ -273,21 +273,21 @@
         <omgdi:waypoint x="600.0" y="610.0"></omgdi:waypoint>
         <omgdi:waypoint x="600.0" y="327.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="651.0" y="590.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="66.0" x="651.0" y="590.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow34" id="BPMNEdge_flow34">
         <omgdi:waypoint x="878.0" y="630.0"></omgdi:waypoint>
         <omgdi:waypoint x="878.0" y="690.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="881.0" y="649.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="70.0" x="881.0" y="649.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow35" id="BPMNEdge_flow35">
         <omgdi:waypoint x="1270.0" y="630.0"></omgdi:waypoint>
         <omgdi:waypoint x="1270.0" y="690.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="1270.0" y="649.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="70.0" x="1270.0" y="649.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>

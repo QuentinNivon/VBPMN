@@ -4,13 +4,13 @@
     <startEvent id="startevent1" name="Start"></startEvent>
     <userTask id="fillApplication" name="Fill Application"></userTask>
     <userTask id="submitApplication" name="Submit Application"></userTask>
-    <userTask id="usertask1" name="Manager Review"></userTask>
+    <userTask id="managerReview" name="Manager Review"></userTask>
     <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway"></exclusiveGateway>
     <userTask id="hrProcess" name="HR Process"></userTask>
     <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="fillApplication"></sequenceFlow>
     <sequenceFlow id="flow2" sourceRef="fillApplication" targetRef="exclusivegateway3"></sequenceFlow>
-    <sequenceFlow id="flow3" sourceRef="submitApplication" targetRef="usertask1"></sequenceFlow>
-    <sequenceFlow id="flow4" sourceRef="usertask1" targetRef="exclusivegateway1"></sequenceFlow>
+    <sequenceFlow id="flow3" sourceRef="submitApplication" targetRef="managerReview"></sequenceFlow>
+    <sequenceFlow id="flow4" sourceRef="managerReview" targetRef="exclusivegateway1"></sequenceFlow>
     <sequenceFlow id="flow5" name="Approved" sourceRef="exclusivegateway1" targetRef="hrProcess"></sequenceFlow>
     <endEvent id="endevent1" name="End"></endEvent>
     <sequenceFlow id="flow6" name="Rejected" sourceRef="exclusivegateway1" targetRef="endevent1"></sequenceFlow>
@@ -19,17 +19,17 @@
     <serviceTask id="reviewDates" name="Review Dates" activiti:type="mail"></serviceTask>
     <sequenceFlow id="flow8" sourceRef="exclusivegateway1" targetRef="reviewDates"></sequenceFlow>
     <exclusiveGateway id="exclusivegateway2" name="Exclusive Gateway"></exclusiveGateway>
-    <userTask id="usertask2" name="Modify Application"></userTask>
-    <sequenceFlow id="flow9" sourceRef="reviewDates" targetRef="usertask2"></sequenceFlow>
-    <sequenceFlow id="flow10" sourceRef="usertask2" targetRef="exclusivegateway2"></sequenceFlow>
+    <userTask id="modifyApplication" name="Modify Application"></userTask>
+    <sequenceFlow id="flow9" sourceRef="reviewDates" targetRef="modifyApplication"></sequenceFlow>
+    <sequenceFlow id="flow10" sourceRef="modifyApplication" targetRef="exclusivegateway2"></sequenceFlow>
     <sequenceFlow id="flow11" name="Re-apply" sourceRef="exclusivegateway2" targetRef="exclusivegateway3"></sequenceFlow>
     <exclusiveGateway id="exclusivegateway3" name="Exclusive Gateway"></exclusiveGateway>
     <sequenceFlow id="flow12" sourceRef="exclusivegateway3" targetRef="submitApplication"></sequenceFlow>
     <endEvent id="endevent3" name="End"></endEvent>
     <sequenceFlow id="flow13" sourceRef="exclusivegateway2" targetRef="endevent3"></sequenceFlow>
   </process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_leaveManagement">
-    <bpmndi:BPMNPlane bpmnElement="leaveManagement" id="BPMNPlane_leaveManagement">
+  <bpmndi:BPMNDiagram id="BPMNDiagram_leaveManagementV2">
+    <bpmndi:BPMNPlane bpmnElement="leaveManagementV2" id="BPMNPlane_leaveManagementV2">
       <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
         <omgdc:Bounds height="35.0" width="35.0" x="120.0" y="100.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
@@ -39,7 +39,7 @@
       <bpmndi:BPMNShape bpmnElement="submitApplication" id="BPMNShape_submitApplication">
         <omgdc:Bounds height="55.0" width="141.0" x="568.0" y="190.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+      <bpmndi:BPMNShape bpmnElement="managerReview" id="BPMNShape_managerReview">
         <omgdc:Bounds height="55.0" width="135.0" x="652.0" y="440.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
@@ -60,7 +60,7 @@
       <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="BPMNShape_exclusivegateway2">
         <omgdc:Bounds height="40.0" width="40.0" x="1018.0" y="102.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="usertask2" id="BPMNShape_usertask2">
+      <bpmndi:BPMNShape bpmnElement="modifyApplication" id="BPMNShape_modifyApplication">
         <omgdc:Bounds height="55.0" width="145.0" x="966.0" y="190.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway3" id="BPMNShape_exclusivegateway3">
@@ -119,7 +119,7 @@
         <omgdi:waypoint x="1018.0" y="122.0"></omgdi:waypoint>
         <omgdi:waypoint x="658.0" y="122.0"></omgdi:waypoint>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="18.0" width="100.0" x="851.0" y="100.0"></omgdc:Bounds>
+          <omgdc:Bounds height="18.0" width="62.0" x="851.0" y="100.0"></omgdc:Bounds>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow12" id="BPMNEdge_flow12">
