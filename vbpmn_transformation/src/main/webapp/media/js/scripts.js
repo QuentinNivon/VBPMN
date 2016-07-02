@@ -66,7 +66,6 @@ $(document).ready(function() {
 			url: 'http://localhost:8080/transformation/vbpmn/validate/bpmn',
 			type: 'POST',
 			data: formData,
-			async: false,
 			cache: false,
 			beforeSend: function () {
 				$("#loader").show();
