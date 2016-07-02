@@ -132,7 +132,8 @@ class ComparisonChecker(Checker):
     # generates SVL script to check the property on both models
     # @param filename String, filename of the SVL script to create
     def __genSVL(self, filename):
-        equivalence_version = "strong"
+#        equivalence_version = "strong"
+        equivalence_version = "branching"
         svl_commands = ""
         # add commands to make copies of the models and not change them
         workmodel1 = self.model1 + WORK_SUFFIX
