@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,16 +136,10 @@ public class VbpmnValidator implements ModelValidator {
 	private String generatePostScriptFile(File bcgFile) {
 		String result = null;
 		try {
-			executeBcgDraw(bcgFile.getAbsolutePath());
+			String output = executeBcgIo(bcgFile.getAbsolutePath());
 
-			String psFile = new StringBuilder()
-					.append(outputFolder)
-					.append(File.separator)
-					.append(bcgFile.getName().replace(".bcg", ".ps")).toString();
-			
-			
 			result = new StringBuilder().append("FALSE").append("|")
-					.append(psFile).toString();
+					.append(output).toString();
 		} catch (Exception e) {
 			logger.warn("Error generating postscript files {}", e);
 			result = "FALSE \n (Could not generate the postscript files)";
@@ -154,11 +149,13 @@ public class VbpmnValidator implements ModelValidator {
 		return result;
 	}
 
-	private void executeBcgDraw(String absolutePath) throws IOException, InterruptedException {
+	private String executeBcgIo(String absolutePath) throws IOException, InterruptedException {
+		String dotFile = absolutePath.replace(".bcg", ".dot");
+		logger.debug("dot file: {}", dotFile);
 		List<String> command = new ArrayList<String>();
-		command.add("bcg_draw");
-		command.add("-ps");
+		command.add("bcg_io");
 		command.add(absolutePath);
+		command.add(dotFile);
 
 		CommandExecutor commandExecutor = new CommandExecutor(command, new File(outputFolder));
 		int execResult = commandExecutor.executeCommand();
@@ -168,6 +165,12 @@ public class VbpmnValidator implements ModelValidator {
 		if (execResult != 0) {
 			throw new RuntimeException("Erorr executing BCG draw - " + commandExecutor.getErrors());
 		}
-
+		
+		File outputFile = new File(dotFile);
+		
+		String dotOutput = FileUtils.readFileToString(outputFile, "UTF-8");
+		dotOutput = dotOutput.replaceAll("\\R", " ");			//Java 8 carriage return replace
+		
+		return dotOutput.trim();
 	}
 }

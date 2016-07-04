@@ -61,6 +61,8 @@ $(document).ready(function() {
 		var formData = new FormData($(this)[0]);
 
 		$("#resp-div").hide();
+		$("#graphContainer").html("");
+		$("#graphContainer").hide();
 
 		$.ajax({
 			url: 'http://localhost:8080/transformation/vbpmn/validate/bpmn',
@@ -95,9 +97,26 @@ $(document).ready(function() {
 					$("#response").addClass("alert alert-success");
 				}
 				else if (status[0].trim().toUpperCase() === "FALSE") {
-					var url1 = "/transformation/results/"+status[1];
+					$("#graphContainer").show();
 					$("#response").html("FALSE <br />");
-					$("#response").append("<br /> <p class=\"underline\">Counterexample is available at: "+status[1]+"</p>");
+					var container = document.getElementById('graphContainer');
+					var parsedData = vis.network.convertDot(status[1]);
+					var data = {
+							nodes: parsedData.nodes,
+							edges: parsedData.edges
+					}
+
+					console.log(data);
+
+					var options = parsedData.options;
+
+					options.nodes = {
+							color: 'lime'
+					}
+					options.edges = {
+							color: 'red'
+					}
+					var network = new vis.Network(container, data, options);
 					$("#response").addClass("alert alert-danger");
 				}
 				else {

@@ -60,3 +60,9 @@
 	height: 128px;
 	width: 128px;
 }
+
+ #graphContainer {
+   width: 900px;
+   height: 600px;
+   border: 1px solid lightgray;
+ }
