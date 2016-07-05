@@ -111,7 +111,7 @@ $(document).ready(function() {
 					var options = parsedData.options;
 
 					options.nodes = {
-							color: 'd3d3d3'
+							color: '#d3d3d3'
 					}
 					options.edges = {
 							color: 'black'
