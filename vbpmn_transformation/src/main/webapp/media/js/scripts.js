@@ -111,11 +111,27 @@ $(document).ready(function() {
 					var options = parsedData.options;
 
 					options.nodes = {
-							color: 'lime'
+							color: 'd3d3d3'
 					}
 					options.edges = {
-							color: 'red'
+							color: 'black'
 					}
+					
+					for(edge of data.edges)
+					 {
+					 		var label = edge.label;
+					    if(label.includes("Present in"))
+					    {
+					    	edge.color = 'blue';
+					      data.nodes[edge.to].color = 'lime';
+					    }
+					    if(label.includes("Absent in"))
+					    {
+					    	edge.color = 'blue';
+					      data.nodes[edge.to].color = 'red';
+					    }
+					 }
+					 
 					var network = new vis.Network(container, data, options);
 					$("#response").addClass("alert alert-danger");
 				}
