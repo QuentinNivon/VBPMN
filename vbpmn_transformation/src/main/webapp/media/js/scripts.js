@@ -3,6 +3,43 @@
  */
 $(document).ready(function() {
 
+	window.visualise = function(container, dotData, edgeColor, nodeColor){  
+		var container = document.getElementById(container);
+		var parsedData = vis.network.convertDot(dotData);
+		var data = {
+				nodes: parsedData.nodes,
+				edges: parsedData.edges
+		}
+
+		console.log(data);
+
+		var options = parsedData.options;
+
+		options.nodes = {
+				color: nodeColor
+		}
+		options.edges = {
+				color: edgeColor
+		}
+
+		for(edge of data.edges)
+		{
+			var label = edge.label;
+			if(label.includes("Present in"))
+			{
+				edge.color = 'blue';
+				data.nodes[edge.to].color = 'lime';
+			}
+			if(label.includes("Absent in"))
+			{
+				edge.color = 'blue';
+				data.nodes[edge.to].color = 'red';
+			}
+		}
+
+		var network = new vis.Network(container, data, options);
+	}  
+
 	$("#resp-div").hide();
 	$("#formula-div").hide();
 	$("#exp-div").hide();
@@ -63,7 +100,10 @@ $(document).ready(function() {
 		$("#resp-div").hide();
 		$("#graphContainer").html("");
 		$("#graphContainer").hide();
-
+		$("#model1Container").html("");
+		$("#model1Container").hide();
+		$("#model2Container").html("");
+		$("#model2Container").hide();
 		$.ajax({
 			url: 'http://localhost:8080/transformation/vbpmn/validate/bpmn',
 			type: 'POST',
@@ -89,55 +129,37 @@ $(document).ready(function() {
 			success: function (returnData) {
 				var resp = returnData.trim();
 				var status = resp.split('|');
+				var ceContainer = 'graphContainer';
+				var model1Container ='model1Container';
+				var model2Container = 'model2Container';
 				$("#loader").hide();
 				$("#resp-div").show();
-				$("#response").text(resp);
+				$("#response").text(status[0]);
 				console.log(status)
 				if(status[0].trim().toUpperCase() === "TRUE") {
 					$("#response").addClass("alert alert-success");
+					$("#model1Container").show();
+					$("#model2Container").show();
+					$('label[for="graphContainer"]').hide();
+					visualise(model1Container, status[1], 'saddlebrown', 'peachpuff');
+					visualise(model2Container, status[2], 'saddlebrown', 'peachpuff');
 				}
 				else if (status[0].trim().toUpperCase() === "FALSE") {
 					$("#graphContainer").show();
+					$("#model1Container").show();
+					$("#model2Container").show();
 					$("#response").html("FALSE <br />");
-					var container = document.getElementById('graphContainer');
-					var parsedData = vis.network.convertDot(status[1]);
-					var data = {
-							nodes: parsedData.nodes,
-							edges: parsedData.edges
-					}
-
-					console.log(data);
-
-					var options = parsedData.options;
-
-					options.nodes = {
-							color: '#d3d3d3'
-					}
-					options.edges = {
-							color: 'black'
-					}
-					
-					for(edge of data.edges)
-					 {
-					 		var label = edge.label;
-					    if(label.includes("Present in"))
-					    {
-					    	edge.color = 'blue';
-					      data.nodes[edge.to].color = 'lime';
-					    }
-					    if(label.includes("Absent in"))
-					    {
-					    	edge.color = 'blue';
-					      data.nodes[edge.to].color = 'red';
-					    }
-					 }
-					 
-					var network = new vis.Network(container, data, options);
+					visualise(model1Container, status[1], 'saddlebrown', 'peachpuff');
+					visualise(model2Container, status[2], 'saddlebrown', 'peachpuff');
+					visualise(ceContainer, status[3], 'black', 'lightgrey');
 					$("#response").addClass("alert alert-danger");
 				}
 				else {
 					$("#response").html("<br /><p><strong>ERROR</strong> Unable to process. Please contact the team</p><br /><p>"+resp+"</p>");
 					$("#response").addClass("alert alert-warning");
+					$('label[for="graphContainer"]').hide();
+					$('label[for="model1Container"]').hide();
+					$('label[for="model2Container"]').hide();
 				}
 			}
 		});

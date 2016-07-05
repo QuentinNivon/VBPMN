@@ -61,7 +61,7 @@
 	width: 128px;
 }
 
- #graphContainer {
+ .visContainer {
    width: 900px;
    height: 600px;
    border: 1px solid lightgray;
