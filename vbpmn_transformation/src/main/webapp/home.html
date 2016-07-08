@@ -20,14 +20,22 @@
 
 <link type="text/css" href="media/css/vis.min.css" rel="Stylesheet" />
 
+<link type="text/css" href="media/css/bootstrap-toggle.min.css"
+	rel="Stylesheet" />
+
 <script type="text/javascript" src="media/js/bootstrap.js"></script>
+
+<script type="text/javascript" src="media/js/bootstrap-toggle.min.js"></script>
 
 <script type="text/javascript" src="media/js/vis.min.js"></script>
 <!-- app scripts -->
 <script type="text/javascript" src="media/js/scripts.js"></script>
 </head>
 <body>
- <div><span class="viewongithub"><a href="https://github.com/pascalpoizat/vbpmn">View on GitHub</a></span></div>
+	<div>
+		<span class="viewongithub"><a
+			href="https://github.com/pascalpoizat/vbpmn">View on GitHub</a></span>
+	</div>
 	<div class="jumbotron col-text-center" style="margin-bottom: 25px">
 		<h1>VBPMN: BPMN Model Comparison</h1>
 		<p>Service for comparison and analysis of BPMN 2.0 models</p>
@@ -76,7 +84,8 @@
 							</tr>
 							<tr>
 								<td><label class="radio-inline control-label"><input
-										type="radio" name="option" value="none" id="noneOption" checked>None</label></td>
+										type="radio" name="option" value="none" id="noneOption"
+										checked>None</label></td>
 								<td><label class="radio-inline control-label"
 									style="margin-left: 15px"><input type="radio"
 										name="option" value="hiding">Hide</label></td>
@@ -126,14 +135,21 @@
 			</div>
 			<div id="resp-div" class="border">
 				<label for="response">Result:</label>
-				<div id="response">
+				<div id="response"></div>
+				<div class="checkbox" id="ltsbtn">
+					<label> <input type="checkbox" data-toggle="toggle" id="ltscheckbox">
+						View Input LTS
+					</label>
 				</div>
-				<label for="model1Container">Model 1 LTS:</label>
-				<div id="model1Container" class="visContainer"></div> <br />
-				<label for="model2Container">Model 2 LTS:</label>
-				<div id="model2Container" class="visContainer"></div> <br />
-				<label for="graphContainer">Counter Example:</label>
+				<br /> <br /> <label for="graphContainer">Counter Example:</label>
 				<div id="graphContainer" class="visContainer"></div>
+				<div id="ltsdisplay">
+					<label for="model1Container">Model 1 LTS:</label>
+					<div id="model1Container" class="visContainer"></div>
+					<br /> <label for="model2Container">Model 2 LTS:</label>
+					<div id="model2Container" class="visContainer"></div>
+					<br />
+				</div>
 			</div>
 		</div>
 	</div>
