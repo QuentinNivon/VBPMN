@@ -20,7 +20,7 @@
     <sequenceFlow id="flow11" sourceRef="task3" targetRef="exclusivegateway3"></sequenceFlow>
     <sequenceFlow id="flow12" sourceRef="task4" targetRef="exclusivegateway3"></sequenceFlow>
     <sequenceFlow id="flow13" sourceRef="exclusivegateway3" targetRef="endevent1"></sequenceFlow>
-    <sequenceFlow id="flow14" sourceRef="exclusivegateway1" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="flow14" sourceRef="exclusivegateway1" targetRef="exclusivegateway3"></sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_multipleInV8">
     <bpmndi:BPMNPlane bpmnElement="multipleInV8" id="BPMNPlane_multipleInV8">
@@ -101,7 +101,8 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow14" id="BPMNEdge_flow14">
         <omgdi:waypoint x="682.0" y="327.0"></omgdi:waypoint>
-        <omgdi:waypoint x="1160.0" y="327.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1069.0" y="327.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1070.0" y="210.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
