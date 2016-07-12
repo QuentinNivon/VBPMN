@@ -11,7 +11,7 @@ $(document).ready(function() {
 				edges: parsedData.edges
 		}
 
-		console.log(data);
+		//console.log(data);
 
 		var options = parsedData.options;
 
@@ -38,7 +38,8 @@ $(document).ready(function() {
 		}
 
 		var network = new vis.Network(container, data, options);
-		//network.fit();
+
+		return network;
 	}  
 
 	$("#resp-div").hide();
@@ -91,6 +92,10 @@ $(document).ready(function() {
 		}
 	});
 
+	var status = null;
+	var model1 = null;
+	var model2 = null;
+	var counterExample = null;
 
 	$("#vform").submit(function(event){
 
@@ -131,10 +136,8 @@ $(document).ready(function() {
 			},
 			success: function (returnData) {
 				var resp = returnData.trim();
-				var status = resp.split('|');
+				status = resp.split('|');
 				var ceContainer = 'graphContainer';
-				var model1Container ='model1Container';
-				var model2Container = 'model2Container';
 				$("#loader").hide();
 				$("#resp-div").show();
 				$("#response").text(status[0]);
@@ -145,20 +148,7 @@ $(document).ready(function() {
 					$("#model2Container").show();
 					$('label[for="graphContainer"]').hide();
 					$("#ltsdisplay").hide();
-					$('#ltscheckbox').change(function() {
-						if($(this).prop('checked'))
-						{
-							$("#ltsdisplay").show();
-							$("#model1Container").html("");
-							$("#model2Container").html("");
-							visualise(model1Container, status[1], 'saddlebrown', 'peachpuff');
-							visualise(model2Container, status[2], 'saddlebrown', 'peachpuff');
-						}
-						else {
-							$("#ltsdisplay").hide();
-						}
-							
-					});
+					$("#resetVis").hide();
 				}
 				else if (status[0].trim().toUpperCase() === "FALSE") {
 					$("#graphContainer").show();
@@ -166,27 +156,15 @@ $(document).ready(function() {
 					$("#model2Container").show();
 					$('label[for="graphContainer"]').show();
 					$("#ltsdisplay").hide();
-					$('#ltscheckbox').change(function() {
-						if($(this).prop('checked'))
-						{
-							$("#ltsdisplay").show();
-							$("#model1Container").html("");
-							$("#model2Container").html("");
-							visualise(model1Container, status[1], 'saddlebrown', 'peachpuff');
-							visualise(model2Container, status[2], 'saddlebrown', 'peachpuff');
-						}
-						else {
-							$("#ltsdisplay").hide();
-						}
-							
-					});
-					visualise(ceContainer, status[3], 'black', 'lightgrey');
+					$("#resetVis").show();
+					counterExample = visualise(ceContainer, status[3], 'black', 'lightgrey');
 					$("#response").addClass("alert alert-danger");
 				}
 				else {
 					$("#response").html("<br /><p><strong>ERROR</strong> Unable to process. Please contact the team</p><br /><p>"+resp+"</p>");
 					$("#response").addClass("alert alert-warning");
 					$("#ltsbtn").hide();
+					$("#resetVis").hide();
 					$('label[for="graphContainer"]').hide();
 					$('label[for="model1Container"]').hide();
 					$('label[for="model2Container"]').hide();
@@ -194,9 +172,41 @@ $(document).ready(function() {
 			}
 		});
 
+		$('#ltscheckbox').change(function() {
+			var model1Container ='model1Container';
+			var model2Container = 'model2Container';
+			if($(this).prop('checked'))
+			{
+				$("#ltsdisplay").show();
+				$("#resetVis").show();
+				$("#model1Container").html("");
+				$("#model2Container").html("");
+				model1 = visualise(model1Container, status[1], 'saddlebrown', 'peachpuff');
+				model2 = visualise(model2Container, status[2], 'saddlebrown', 'peachpuff');
+			}
+			else {
+				$("#ltsdisplay").hide();
+				if(status[0].trim().toUpperCase() === "TRUE")
+				{
+					$("#resetVis").hide();
+				}
+			}
+
+		});
+
 		//event.unbind();
+		$('#resetVis').click(function() {
+			if(null != counterExample)
+				counterExample.fit();
+			if(null != model1)
+				model1.fit();
+			if(null != model2)
+				model2.fit();
+		});
+
 
 		return false;
 	});
+
 
 });
