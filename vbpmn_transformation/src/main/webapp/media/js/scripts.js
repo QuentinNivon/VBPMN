@@ -3,6 +3,19 @@
  */
 $(document).ready(function() {
 
+	$("[data-toggle=popover]")
+	.popover({title: "Options Usage", 
+		content: "- <i>hide</i> a task, provide the " +
+				"task id in the input field <br />" +
+				"- <i>rename</i> a task, use the following syntax: " +
+				"<i>taskId</i>:<i>newTaskId</i> <br />" +
+				"- while renaming you can also indicate to which model the renaming applies (both by default) <br />" +
+				"- <i>propery-implied</i> and <i>property-and</i> verifies the temporal logic formula. " +
+				" For e.g. <i>mu X  . (< true > true and [ not B ] X)</i>", 
+		trigger: "hover",
+		html : true
+	});
+
 	window.visualise = function(container, dotData, edgeColor, nodeColor){  
 		var container = document.getElementById(container);
 		var parsedData = vis.network.convertDot(dotData);
@@ -44,9 +57,7 @@ $(document).ready(function() {
 
 	$("#resp-div").hide();
 	$("#formula-div").hide();
-	$("#exp-div").hide();
-	$("#rename-div").hide();
-	$("#inpval-div").hide();
+	$("#hide-rename-div").hide();
 
 	$("#ltsdisplay").hide();
 
@@ -56,23 +67,13 @@ $(document).ready(function() {
 	$('input[type=radio][name=option]').change(function() {
 		if ($(this).is(':checked')) {
 			var opt = ($(this).val());
-			if(opt === 'renaming')
+			if(opt === 'hiding')
 			{
-				$("#rename-div").show();
-				$("#inpval-div").show();
-				$("#exp-div").hide();
-			}
-			else if(opt === 'hiding')
-			{
-				$("#exp-div").show();
-				$("#inpval-div").show();
-				$("#rename-div").hide();
+				$("#hide-rename-div").show();
 			}
 			else 
 			{
-				$("#exp-div").hide();
-				$("#inpval-div").hide();
-				$("#rename-div").hide();
+				$("#hide-rename-div").hide();
 			}
 		}
 	});
@@ -132,6 +133,11 @@ $(document).ready(function() {
 				$("#loader").hide();
 				$("#resp-div").show();
 				$("#response").text(returnData.responseText); 
+				$("#ltsbtn").hide();
+				$("#resetVis").hide();
+				$('label[for="graphContainer"]').hide();
+				$('label[for="model1Container"]').hide();
+				$('label[for="model2Container"]').hide();
 				$("#response").addClass("alert alert-danger");
 			},
 			success: function (returnData) {

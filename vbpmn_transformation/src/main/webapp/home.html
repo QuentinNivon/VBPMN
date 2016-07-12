@@ -80,7 +80,8 @@
 					<div id="optionContent">
 						<table id="opt">
 							<tr>
-								<td><label for="option">Options</label></td>
+								<td><label for="option">Options<a class="btn popovers" data-toggle="popover">?</a></label>
+								</td>
 							</tr>
 							<tr>
 								<td><label class="radio-inline control-label"><input
@@ -88,21 +89,15 @@
 										checked>None</label></td>
 								<td><label class="radio-inline control-label"
 									style="margin-left: 15px"><input type="radio"
-										name="option" value="hiding">Hide</label></td>
-								<td><label class="radio-inline control-label"
-									style="margin-left: 15px"><input type="radio"
-										name="option" value="renaming">Rename</label></td>
-						</table>
-						<br />
-						<div id="inpval-div">
-							<label for="inputValue">Value </label><input name="inputValue"
-								type="text" class="form-control"> <br />
-						</div>
-						<div id="exp-div">
-							<input type="checkbox" name="exposeMode" value=""> <label
+										name="option" value="hiding">Hide/Rename</label></td>
+						</table> <br />
+						<div id="hide-rename-div">
+							<label for="hidingVal">Hide </label><input name="hidingVal"
+								type="text" class="form-control"> <input
+								type="checkbox" name="exposeMode" value=""> <label
 								class="checkbox-inline" for="exposeMode">Expose Mode</label>
-						</div>
-						<div id="rename-div">
+							<br /> <br /><label for="renameVal">Rename </label><input name="renameVal"
+								type="text" class="form-control"> <br />
 							<table id="renameOpt">
 								<tr>
 									<td><label class="radio-inline control-label"><input
@@ -137,14 +132,14 @@
 				<label for="response">Result:</label>
 				<div id="response"></div>
 				<div class="checkbox" id="ltsbtn">
-					<label> <input type="checkbox" data-toggle="toggle" id="ltscheckbox">
-						View Input LTS
+					<label> <input type="checkbox" data-toggle="toggle"
+						id="ltscheckbox"> View Input LTS
 					</label>
 				</div>
-				<button id="resetVis" class="btn btn-warning btn-sm pull-right">Reset Figures</button>
+				<button id="resetVis" class="btn btn-warning btn-sm pull-right">Reset
+					Figures</button>
 				<br /> <br /> <label for="graphContainer">Counter Example:</label>
-				<div id="graphContainer" class="visContainer">
-				</div>
+				<div id="graphContainer" class="visContainer"></div>
 				<div id="ltsdisplay">
 					<label for="model1Container">Model 1 LTS:</label>
 					<div id="model1Container" class="visContainer"></div>
