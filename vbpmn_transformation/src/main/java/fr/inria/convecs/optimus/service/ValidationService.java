@@ -113,7 +113,7 @@ public class ValidationService {
 				operationMode.add(formula);
 			} else if (option.equals("hiding")) {
 				String hidingValue = formData.getField("hidingVal").getValue();
-				if(hidingValue != null && hidingValue !="") {
+				if(hidingValue != null && !hidingValue.isEmpty()) {
 					operationMode.add("--hiding");
 					operationMode.add(hidingValue);
 					if (null != formData.getField("exposeMode")) {
@@ -121,7 +121,7 @@ public class ValidationService {
 					}
 				}
 				String renameValue = formData.getField("renameVal").getValue();
-				if(renameValue != null && renameValue !="")
+				if(renameValue != null && !renameValue.isEmpty())
 				{
 					String renameOption = formData.getField("renameOption").getValue();
 					operationMode.add("--renaming");
