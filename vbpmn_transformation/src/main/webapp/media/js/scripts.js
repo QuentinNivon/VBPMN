@@ -5,14 +5,15 @@ $(document).ready(function() {
 
 	$("[data-toggle=popover]")
 	.popover({title: "Options Usage", 
-		content: "- <i>hide</i> a task, provide the " +
-				"task id in the input field <br />" +
-				"- <i>rename</i> a task, use the following syntax: " +
+		content: "- <b>hide</b> a task, provide the " +
+				"<i>taskId</i> in the input field <br />" +
+				"- <b>expose mode</b> can be used to specify elements to keep instead of those to hide <br />"+
+				"- <b>rename</b> a task, use the following syntax: " +
 				"<i>taskId</i>:<i>newTaskId</i> <br />" +
 				"- while renaming you can also indicate to which model the renaming applies (both by default) <br />" +
-				"- <i>propery-implied</i> and <i>property-and</i> verifies the temporal logic formula. " +
+				"- <b>propery-implied</b> and <b>property-and</b> verifies the temporal logic formula. " +
 				" For e.g. <i>mu X  . (< true > true and [ not B ] X)</i>", 
-		trigger: "hover",
+		trigger: "focus",
 		html : true
 	});
 

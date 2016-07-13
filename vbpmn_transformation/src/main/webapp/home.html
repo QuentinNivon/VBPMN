@@ -34,7 +34,7 @@
 <body>
 	<div>
 		<span class="viewongithub"><a
-			href="https://github.com/pascalpoizat/vbpmn">View on GitHub</a></span>
+			href="https://github.com/pascalpoizat/vbpmn" target="_blank">View on GitHub</a></span>
 	</div>
 	<div class="jumbotron col-text-center" style="margin-bottom: 25px">
 		<h1>VBPMN: BPMN Model Comparison</h1>
@@ -80,8 +80,8 @@
 					<div id="optionContent">
 						<table id="opt">
 							<tr>
-								<td><label for="option">Options<a class="btn popovers" data-toggle="popover">?</a></label>
-								</td>
+								<td><label for="option">Options<a
+										class="btn popovers" data-toggle="popover" tabindex="0">?</a></label></td>
 							</tr>
 							<tr>
 								<td><label class="radio-inline control-label"><input
@@ -90,18 +90,19 @@
 								<td><label class="radio-inline control-label"
 									style="margin-left: 15px"><input type="radio"
 										name="option" value="hiding">Hide/Rename</label></td>
-						</table> <br />
+						</table>
+						<br />
 						<div id="hide-rename-div">
 							<label for="hidingVal">Hide </label><input name="hidingVal"
-								type="text" class="form-control" placeholder="taskId"> <input
+								type="text" class="form-control" placeholder="taskId1 taskId2 taskId3 ..."> <input
 								type="checkbox" name="exposeMode" value=""> <label
-								class="checkbox-inline" for="exposeMode">Expose Mode</label>
-							<br /> <br /><label for="renameVal">Rename </label><input name="renameVal"
-								type="text" class="form-control" placeholder="taskId:newTaskId"> <br />
+								class="checkbox-inline" for="exposeMode">Expose Mode</label> <br />
+							<br />
+							<label for="renameVal">Rename </label><input name="renameVal"
+								type="text" class="form-control" placeholder="taskId:newTaskId taskId2:newTaskId2 ...">
+							<br />
 							<table id="renameOpt">
 								<tr>
-									<td><label class="radio-inline control-label"><input
-											type="radio" name="renameOption" value="none" checked>None</label></td>
 									<td><label class="radio-inline control-label"
 										style="margin-left: 15px"><input type="radio"
 											name=renameOption value="first">Rename First</label></td>
@@ -116,7 +117,8 @@
 					</div>
 					<div id="formula-div">
 						<label for="formula">Formula </label><input name="formula"
-							type="text" class="form-control" placeholder="mu X  . (< true > true and [ not B ] X)">
+							type="text" class="form-control"
+							placeholder="mu X  . (< true > true and [ not B ] X)">
 					</div>
 				</fieldset>
 				<button type="submit" class="btn btn-primary"
