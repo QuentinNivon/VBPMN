@@ -112,8 +112,8 @@ class Flow:
 
     # Generates the (generic) process for flows, only once
     def lnt(self, f):
-        f.write("process flow [begin:any, finish:any] is\n")
-        f.write(" loop begin ; finish end loop\n")
+        f.write("process flow [begin:any, finish:any] (ident: ID) is\n")
+        f.write(" loop begin (!ident) ; finish (!ident) end loop\n")
         f.write("end process\n")
 
     # A normal flow cannot be a default flow
@@ -139,8 +139,8 @@ class ConditionalFlow(Flow):
     # Generates the process for conditional flows
     def lnt(self, f):
         # TODO: translate the condition too
-        f.write("process conditionalflow [begin:any, finish:any] is\n")
-        f.write(" loop begin ; finish end loop\n")
+        f.write("process conditionalflow [begin:any, finish:any] (ident: ID) is\n")
+        f.write(" loop begin (!ident) ; finish (!ident) end loop\n")
         f.write("end process\n")
 
     # A conditional flow is default iff the condition attribute contains "default"
@@ -157,7 +157,7 @@ class InitialEvent(Node):
     # Generates the (generic) process for the initial event, only once
     def lnt(self, f):
         f.write("process init [begin:any, outf:any] is\n")
-        f.write(" begin ; outf \n")
+        f.write(" var ident: ID in begin ; outf (?ident of ID) end var \n")
         f.write("end process\n")
 
     # Seeks or joins, for an initial event, just a recursive call on the target node of the outgoing flow
@@ -175,7 +175,7 @@ class EndEvent(Node):
     # Generates the (generic) process for final events, only once
     def lnt(self, f):
         f.write("process final [incf:any, finish:any] is\n")
-        f.write(" incf; finish\n")
+        f.write(" var ident: ID in incf (?ident of ID); finish end var\n")
         f.write("end process\n")
 
     # Seeks an or join, for an initial event, just a recursive call on the target node of the outgoing flow
@@ -209,7 +209,7 @@ class Interaction(Communication):
     # Generates the (generic) process for interactions, only once
     def lnt(self, f):
         f.write("process interaction [incf:any, inter:any, outf:any] is\n")
-        f.write(" loop incf; inter; outf end loop \n")
+        f.write(" var ident: ID in loop incf (?ident of ID); inter; outf (?ident of ID) end loop end var \n")
         f.write("end process\n")
 
     # Computes alphabet for an interaction
@@ -248,7 +248,7 @@ class MessageSending(MessageCommunication):
     # Generates the (generic) process for message sending, only once
     def lnt(self, f):
         f.write("process messagesending [incf:any, msg:any, outf:any] is\n")
-        f.write(" loop incf; msg; outf end loop \n")
+        f.write(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var \n")
         f.write("end process\n")
 
     # Computes alphabet for a message sending
@@ -272,7 +272,7 @@ class MessageReception(MessageCommunication):
     # Generates the (generic) process for message reception, only once
     def lnt(self, f):
         f.write("process messagereception [incf:any, msg:any, outf:any] is\n")
-        f.write(" loop incf; msg; outf end loop \n")
+        f.write(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var \n")
         f.write("end process\n")
 
     # Computes alphabet for a message reception
@@ -319,33 +319,33 @@ class Task(Node):
                     f.write(",")
         f.write("] is\n")
 
-        f.write(" loop ")
+        f.write(" var ident: ID in loop ")
 
         if (nbinc==1):
-            f.write(" incf; ")
+            f.write(" incf (?ident of ID); ")
         else:
             cptinc=0
             f.write(" select ")
             while (cptinc<nbinc):
-                f.write("incf"+str(cptinc))
+                f.write("incf"+str(cptinc)+" (?ident of ID)")
                 cptinc=cptinc+1
                 if (cptinc<nbinc):
                     f.write(" [] ")
             f.write(" end select ; \n")
         f.write("task ; ")
         if (nbout==1):
-            f.write(" outf ")
+            f.write(" outf (?ident of ID)")
         else:
             cptout=0
             f.write(" select ")
             while (cptout<nbout):
-                f.write("outf"+str(cptout))
+                f.write("outf"+str(cptout)+" (?ident of ID)")
                 cptout=cptout+1
                 if (cptout<nbout):
                     f.write(" [] ")
             f.write(" end select \n")
 
-        f.write(" end loop \n")
+        f.write(" end loop end var\n")
 
         f.write("end process\n")
 
@@ -507,7 +507,16 @@ class OrSplitGateway(SplitGateway):
                     f.write(",")
 
         f.write(" ] is \n")
-        f.write(" loop incf; \n")
+
+        ctervar=len(allcombi)
+        f.write(" var ")
+        while (ctervar>0):
+            f.write("ident"+str(ctervar)+":ID")
+            ctervar=ctervar-1
+            if (ctervar>0):
+                f.write(",")
+        f.write(" in ")
+        f.write(" var ident: ID in loop incf (?ident of ID); \n") # TODO: we generate unnecessary variables..
         f.write(" select ")
 
         nb = 1
@@ -517,15 +526,17 @@ class OrSplitGateway(SplitGateway):
             nbelem = len(t)
             nb2 = 1
             if (nbelem > 1):
+                ctervar=len(allcombi)
                 f.write(" par ")
                 for e in t:
-                    f.write(e)
+                    f.write(e+" (?ident"+str(ctervar)+" of ID)")
+                    ctervar=ctervar-1
                     nb2 = nb2 + 1
                     if (nb2 <= nbelem):
                         f.write("||")
                 f.write(" end par ")
             else:
-                f.write(t[0])
+                f.write(t[0]+" (?ident of ID)")
             # add synchronization points if there's a corresponding join
             if (self.correspOrJoin != ""):
                 f.write(" ; " + self.correspOrJoin + "_" + str(cter))
@@ -559,7 +570,7 @@ class OrSplitGateway(SplitGateway):
                 #    if (nb<=nboutf):
                 #        f.write("[]")
 
-        f.write(" end select end loop\n")
+        f.write(" end select end loop end var end var\n")
         f.write("end process\n")
 
     # Generates process instantiation for main LNT process
@@ -647,15 +658,15 @@ class XOrSplitGateway(SplitGateway):
             if (nb <= nboutf):
                 f.write(",")
         f.write(" ] is \n")
-        f.write(" loop incf; \n")
+        f.write(" var ident: ID in loop incf (?ident of ID); \n")
         f.write(" select ")
         nb = 1
         while (nb <= nboutf):
-            f.write("outf_" + str(nb) + "")
+            f.write("outf_" + str(nb) + "(?ident of ID)")
             nb = nb + 1
             if (nb <= nboutf):
                 f.write("[]")
-        f.write(" end select end loop \n")
+        f.write(" end select end loop end var\n")
         f.write("end process\n")
 
     # Generates process instantiation for main LNT process
@@ -689,15 +700,27 @@ class AndSplitGateway(SplitGateway):
             if (nb <= nboutf):
                 f.write(",")
         f.write(" ] is \n")
-        f.write(" loop incf; \n")
+
+        ctervar=nboutf
+        f.write(" var ")
+        while (ctervar>0):
+            f.write("ident"+str(ctervar)+":ID")
+            ctervar=ctervar-1
+            if (ctervar>0):
+                f.write(",")
+        f.write(" in ")
+
+        f.write(" var ident: ID in loop incf (?ident of ID); \n")
         f.write(" par ")
         nb = 1
+        ctervar=nboutf
         while (nb <= nboutf):
-            f.write("outf_" + str(nb) + "")
+            f.write("outf_" + str(nb) + "(?ident"+str(ctervar)+" of ID)")
+            ctervar=ctervar-1
             nb = nb + 1
             if (nb <= nboutf):
                 f.write("||")
-        f.write(" end par end loop \n")
+        f.write(" end par end loop end var end var\n")
         f.write("end process\n")
 
     # Generates process instantiation for main LNT process
@@ -791,7 +814,17 @@ class OrJoinGateway(JoinGateway):
                     f.write(",")
 
         f.write("] is \n")
-        f.write(" loop select ")
+
+        ctervar=len(allcombi)
+        f.write(" var ")
+        while (ctervar>0):      # TODO: we generate unnecessary variables
+            f.write("ident"+str(ctervar)+":ID")
+            ctervar=ctervar-1
+            if (ctervar>0):
+                f.write(",")
+        f.write(" in ")
+
+        f.write(" var ident: ID in loop select ")
 
         nb = 1
         cter = 1
@@ -805,15 +838,17 @@ class OrJoinGateway(JoinGateway):
                 cter = cter + 1
 
             if (nbelem > 1):
+                ctervar=len(allcombi)
                 f.write(" par ")
                 for e in t:
-                    f.write(e)
+                    f.write(e+" (?ident"+str(ctervar)+" of ID)")
+                    ctervar=ctervar-1
                     nb2 = nb2 + 1
                     if (nb2 <= nbelem):
                         f.write("||")
                 f.write(" end par ")
             else:
-                f.write(t[0])
+                f.write(t[0]+" (?ident of ID)")
 
             nb = nb + 1
             if (nb <= nbt):
@@ -838,7 +873,7 @@ class OrJoinGateway(JoinGateway):
                 #    if (nb<=nbincf):
                 #        f.write("[]")
 
-        f.write(" end select ; outf end loop \n")
+        f.write(" end select ; outf (?ident of ID) end loop end var end var \n")
 
         f.write("end process\n")
 
@@ -924,14 +959,14 @@ class XOrJoinGateway(JoinGateway):
             nb = nb + 1
             f.write(",")
         f.write("outf:any] is \n")
-        f.write(" loop select ")
+        f.write(" var ident: ID in loop select ")
         nb = 1
         while (nb <= nbincf):
-            f.write("incf_" + str(nb))
+            f.write("incf_" + str(nb)+" (?ident of ID)")
             nb = nb + 1
             if (nb <= nbincf):
                 f.write("[]")
-        f.write(" end select ; outf end loop \n")
+        f.write(" end select ; outf (?ident of ID) end loop end var \n")
         f.write("end process\n")
 
     # Generates process instantiation for main LNT process
@@ -964,14 +999,26 @@ class AndJoinGateway(JoinGateway):
             nb = nb + 1
             f.write(",")
         f.write("outf:any] is \n")
-        f.write(" loop par ")
+
+        ctervar=nbincf
+        f.write(" var ")
+        while (ctervar>0):
+            f.write("ident"+str(ctervar)+":ID")
+            ctervar=ctervar-1
+            if (ctervar>0):
+                f.write(",")
+        f.write(" in ")
+
+        f.write(" var ident:ID in loop par ")
         nb = 1
+        ctervar=nbincf
         while (nb <= nbincf):
-            f.write("incf_" + str(nb) + "")
+            f.write("incf_" + str(nb) + " (?ident"+str(ctervar)+" of ID)")
+            ctervar=ctervar-1
             nb = nb + 1
             if (nb <= nbincf):
                 f.write("||")
-        f.write(" end par ; outf end loop \n")
+        f.write(" end par ; outf (?ident of ID) end loop end var end var \n")
         f.write("end process\n")
 
     # Generates process instantiation for main LNT process
@@ -1063,6 +1110,19 @@ class Process:
         f = open(filename, 'w')
         f.write("module " + self.name + " with \"get\" is\n\n")
 
+        # Generates an ID type for all flow identifiers
+        f.write("(* Data type for flow identifiers, useful for scheduling purposes *)\n")
+        f.write("type ID is\n")
+        counter=len(self.flows)
+        for fl in self.flows:
+            f.write(fl.ident)
+            counter=counter-1
+            if (counter>0):
+                f.write(",")
+        f.write("\n")
+        f.write("with \"==\",\"!=\"\n")
+        f.write("end type\n\n")
+
         if (self.initial != None):
             self.initial.lnt(f)
         # Generates one process for final events and events, this is enough because generic processes
@@ -1144,7 +1204,7 @@ class Process:
         cter = 1
         for fl in self.flows:
             # TODO: take ConditionalFlow into account
-            f.write("flow [" + fl.ident + "_begin, " + fl.ident + "_finish]")
+            f.write("flow [" + fl.ident + "_begin, " + fl.ident + "_finish] ("+fl.ident+")")
             cter = cter + 1
             if (cter <= nbflows):
                 f.write(" || ")
