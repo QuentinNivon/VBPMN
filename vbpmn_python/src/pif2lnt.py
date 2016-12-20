@@ -817,7 +817,7 @@ class OrJoinGateway(JoinGateway):
 
         ctervar=len(allcombi)
         f.write(" var ")
-        while (ctervar>0):      # TODO: we generate unnecessary variables
+        while (ctervar>0):      # TODO: we generate unnecessary variables..
             f.write("ident"+str(ctervar)+":ID")
             ctervar=ctervar-1
             if (ctervar>0):
