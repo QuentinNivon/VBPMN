@@ -1101,6 +1101,34 @@ class Process:
                         cter = cter + 1
         return res
 
+    # Generates the scheduler process
+    def generateScheduler(self,f):
+        f.write("\nprocess scheduler [")
+        nbflows = len(self.flows)
+        cter = 1
+        for fl in self.flows:
+            f.write(fl.ident + "_begin:any, " + fl.ident + "_finish:any")
+            cter = cter + 1
+            if (cter <= nbflows):
+                f.write(", ")
+        f.write("] (activeflows: IDS) is\n") # this parameter stores the set of active flows / tokens
+
+        f.write("var ident: ID in\n")
+        f.write("select \n")
+        cter = 1
+        for fl in self.flows:
+            f.write(fl.ident + "_begin (?ident of ID) \n") # TODO : add ident activeflows + rec. call
+            f.write(" []\n")
+            f.write(fl.ident + "_finish (?ident of ID) \n") # TODO : remove ident from activeflows + rec. call
+            cter = cter + 1
+            if (cter <= nbflows):
+                f.write("[]\n")
+        f.write("end select\n")
+        f.write("end var\n")
+
+        f.write("end process\n")
+
+
     # Generates an LNT module and process for a BPMN 2.0 process
     def genLNT(self, name=""):
         if name == "":
@@ -1121,6 +1149,12 @@ class Process:
                 f.write(",")
         f.write("\n")
         f.write("with \"==\",\"!=\"\n")
+        f.write("end type\n\n")
+
+        # Generates an type for identifier set
+        f.write("type IDS is\n")
+        f.write("    set of ID\n")
+        f.write("with \"==\", \"!=\"\n")
         f.write("end type\n\n")
 
         if (self.initial != None):
@@ -1154,9 +1188,12 @@ class Process:
             else:
                 n.lnt(f)
 
-                # Note: up to here, translation patterns are independent of the actual tasks, comm, etc.
+        # Note: up to here, translation patterns are independent of the actual tasks, comm, etc.
         # The actual names will be used only in the MAIN process when computing the process alphabet
         #  and instantiating processes
+
+        # scheduler process generation
+        self.generateScheduler(f)
 
         f.write("\nprocess MAIN ")
         alph = self.alpha()
