@@ -114,7 +114,7 @@ class Flow:
     def lnt(self, f):
         f.write("process flow [begin:any, finish:any] (ident: ID) is\n")
         f.write(" loop begin (!ident) ; finish (!ident) end loop\n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # A normal flow cannot be a default flow
     def isDefault(self):
@@ -141,7 +141,7 @@ class ConditionalFlow(Flow):
         # TODO: translate the condition too
         f.write("process conditionalflow [begin:any, finish:any] (ident: ID) is\n")
         f.write(" loop begin (!ident) ; finish (!ident) end loop\n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # A conditional flow is default iff the condition attribute contains "default"
     def isDefault(self):
@@ -158,7 +158,7 @@ class InitialEvent(Node):
     def lnt(self, f):
         f.write("process init [begin:any, outf:any] is\n")
         f.write(" var ident: ID in begin ; outf (?ident of ID) end var \n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Seeks or joins, for an initial event, just a recursive call on the target node of the outgoing flow
     # Returns the list of reachable or joins
@@ -176,7 +176,7 @@ class EndEvent(Node):
     def lnt(self, f):
         f.write("process final [incf:any, finish:any] is\n")
         f.write(" var ident: ID in incf (?ident of ID); finish end var\n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Seeks an or join, for an initial event, just a recursive call on the target node of the outgoing flow
     def reachableOrJoin(self, visited, depth):
@@ -210,7 +210,7 @@ class Interaction(Communication):
     def lnt(self, f):
         f.write("process interaction [incf:any, inter:any, outf:any] is\n")
         f.write(" var ident: ID in loop incf (?ident of ID); inter; outf (?ident of ID) end loop end var \n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Computes alphabet for an interaction
     def alpha(self):
@@ -249,7 +249,7 @@ class MessageSending(MessageCommunication):
     def lnt(self, f):
         f.write("process messagesending [incf:any, msg:any, outf:any] is\n")
         f.write(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var \n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Computes alphabet for a message sending
     def alpha(self):
@@ -273,7 +273,7 @@ class MessageReception(MessageCommunication):
     def lnt(self, f):
         f.write("process messagereception [incf:any, msg:any, outf:any] is\n")
         f.write(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var \n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Computes alphabet for a message reception
     def alpha(self):
@@ -347,7 +347,7 @@ class Task(Node):
 
         f.write(" end loop end var\n")
 
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Computes alphabet for a task
     def alpha(self):
@@ -571,7 +571,7 @@ class OrSplitGateway(SplitGateway):
                 #        f.write("[]")
 
         f.write(" end select end loop end var end var\n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self, f):
@@ -667,7 +667,7 @@ class XOrSplitGateway(SplitGateway):
             if (nb <= nboutf):
                 f.write("[]")
         f.write(" end select end loop end var\n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self, f):
@@ -721,7 +721,7 @@ class AndSplitGateway(SplitGateway):
             if (nb <= nboutf):
                 f.write("||")
         f.write(" end par end loop end var end var\n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self, f):
@@ -875,7 +875,7 @@ class OrJoinGateway(JoinGateway):
 
         f.write(" end select ; outf (?ident of ID) end loop end var end var \n")
 
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self, f):
@@ -967,7 +967,7 @@ class XOrJoinGateway(JoinGateway):
             if (nb <= nbincf):
                 f.write("[]")
         f.write(" end select ; outf (?ident of ID) end loop end var \n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self, f):
@@ -1019,7 +1019,7 @@ class AndJoinGateway(JoinGateway):
             if (nb <= nbincf):
                 f.write("||")
         f.write(" end par ; outf (?ident of ID) end loop end var end var \n")
-        f.write("end process\n")
+        f.write("end process\n\n")
 
     # Generates process instantiation for main LNT process
     def mainlnt(self, f):
@@ -1101,32 +1101,47 @@ class Process:
                         cter = cter + 1
         return res
 
-    # Generates the scheduler process
-    def generateScheduler(self,f):
-        f.write("\nprocess scheduler [")
+    # Dumps the alphabet for the scheduler process
+    def dumpFlowsMsgs(self,f,withany):
         nbflows = len(self.flows)
         cter = 1
         for fl in self.flows:
-            f.write(fl.ident + "_begin:any, " + fl.ident + "_finish:any")
+            f.write(fl.ident + "_begin")
+            if withany:
+                f.write(":any")
+            f.write(", " + fl.ident + "_finish")
+            if withany:
+                f.write(":any")
             cter = cter + 1
             if (cter <= nbflows):
                 f.write(", ")
+
+
+    # Generates the scheduler process
+    def generateScheduler(self,f):
+        f.write("\nprocess scheduler [")
+        self.dumpFlowsMsgs(f,True)
         f.write("] (activeflows: IDS) is\n") # this parameter stores the set of active flows / tokens
+        nbflows = len(self.flows)
 
         f.write("var ident: ID in\n")
         f.write("select \n")
         cter = 1
         for fl in self.flows:
-            f.write(fl.ident + "_begin (?ident of ID) \n") # TODO : add ident activeflows + rec. call
+            f.write(fl.ident + "_begin (?ident of ID) ; scheduler [")
+            self.dumpFlowsMsgs(f,False)
+            f.write("] (add(ident, activeflows))\n")
             f.write(" []\n")
-            f.write(fl.ident + "_finish (?ident of ID) \n") # TODO : remove ident from activeflows + rec. call
+            f.write(fl.ident + "_finish (?ident of ID) ; scheduler [")
+            self.dumpFlowsMsgs(f,False)
+            f.write("] (remove(ident, activeflows))\n")
             cter = cter + 1
             if (cter <= nbflows):
                 f.write("[]\n")
         f.write("end select\n")
         f.write("end var\n")
 
-        f.write("end process\n")
+        f.write("end process\n\n")
 
 
     # Generates an LNT module and process for a BPMN 2.0 process
@@ -1156,6 +1171,25 @@ class Process:
         f.write("    set of ID\n")
         f.write("with \"==\", \"!=\"\n")
         f.write("end type\n\n")
+
+        # Generates add function for type IDS
+        f.write("(* s of type IDS is a set, so does not store twice the same value *)\n")
+        f.write("function add (v: ID, s: IDS): IDS is\n")
+        f.write("  case s in\n")
+        f.write("  var hd: ID, tl: IDS in\n")
+        f.write("      nil -> return cons(v,nil)\n")
+        f.write("    | cons(hd,tl) -> if (v==hd) then return tl else return cons(hd,add(v,tl)) end if\n")
+        f.write("  end case\n")
+        f.write("end function\n\n")
+
+        # Generates remove function for type IDS
+        f.write("function remove (v: ID, s: IDS): IDS is\n")
+        f.write("  case s in\n")
+        f.write("  var hd: ID, tl: IDS in\n")
+        f.write("      nil -> return nil\n")
+        f.write("    | cons(hd,tl) -> if (v==hd) then return tl else return cons(hd,remove(v,tl)) end if\n")
+        f.write("  end case\n")
+        f.write("end function\n\n")
 
         if (self.initial != None):
             self.initial.lnt(f)
@@ -1198,7 +1232,7 @@ class Process:
         f.write("\nprocess MAIN ")
         alph = self.alpha()
         dumpAlphabet(alph, f, True)
-        f.write(" is\n")
+        f.write(" is\n\n")
         # computes additional synchros for or splits/joins
         addSynchro = self.computeAddSynchroPoints()
         nbsync = len(addSynchro)
@@ -1207,13 +1241,8 @@ class Process:
         nbflows = len(self.flows)
         if (nbflows > 0):
             f.write(", ")
-            cter = 1
-            for fl in self.flows:
-                f.write(fl.ident + "_begin:any, " + fl.ident + "_finish:any")
-                cter = cter + 1
-                if (cter <= nbflows):
-                    f.write(", ")
-                    # we hide additional synchros for or splits/joins as well
+            self.dumpFlowsMsgs(f,True)
+            # we hide additional synchros for or splits/joins as well
             nb = 0
             if (nbsync > 0):
                 f.write(", ")
@@ -1222,22 +1251,37 @@ class Process:
                     nb = nb + 1
                     if (nb < nbsync):
                         f.write(", ")
-
         f.write(" in\n")
+
+        # we start with the scheduler
         f.write("par ")
         # synchronizations on all begin/finish flows 
         if (nbflows > 0):
-            cter = 1
-            for fl in self.flows:
-                f.write(fl.ident + "_begin, " + fl.ident + "_finish")
-                cter = cter + 1
-                if (cter <= nbflows):
-                    f.write(", ")
+            self.dumpFlowsMsgs(f,False)
+        f.write(" in\n")
+        f.write("  (* we first generate the scheduler, necessary for keeping track of tokens, and triggering inclusive merge gateways *)\n")
+        f.write("    scheduler [")
+        self.dumpFlowsMsgs(f,False)
+        f.write("] (nil) \n")
+        f.write("||\n")
+
+        f.write("par   ")
+        f.write(" (* synchronizations on all begin/finish flow messages *)\n")
+        # synchronizations on all begin/finish flows 
+        if (nbflows > 0):
+            self.dumpFlowsMsgs(f,False)
+            #cter = 1
+            #for fl in self.flows:
+            #    f.write(fl.ident + "_begin, " + fl.ident + "_finish")
+            #    cter = cter + 1
+            #    if (cter <= nbflows):
+            #        f.write(", ")
 
         f.write(" in\n")
 
         # interleaving of all flow processes
-        f.write(" par \n")
+        f.write(" par   ")
+        f.write(" (* we then generate interleaving of all flow processes *)\n")
         cter = 1
         for fl in self.flows:
             # TODO: take ConditionalFlow into account
@@ -1249,8 +1293,8 @@ class Process:
         f.write("\n||\n")
 
         # interleaving of all node processes
-        f.write(" par ")
-
+        f.write(" par   ")
+        f.write(" (* we finally generate interleaving of all node processes *)\n")
         # process instantiation for initial node
         f.write("init [begin," + self.initial.outgoingFlows[0].ident + "_begin] || ")  # we assume a single output flow
         nbfinals = len(self.finals)
@@ -1270,10 +1314,10 @@ class Process:
             if (cter <= nbnodes):
                 f.write(" || ")
         f.write("\n end par \n")
-
-        f.write("\n end par\n")
+        f.write(" end par\n")
+        f.write(" end par\n")
         f.write(" end hide\n")
-        f.write("\nend process\n")
+        f.write("\nend process\n\n")
 
         f.write("\nend module\n")
 
