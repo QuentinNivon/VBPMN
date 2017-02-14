@@ -698,7 +698,7 @@ class OrSplitGateway(SplitGateway):
         f.write("(")
         # proba=1./cpt
         for ofl in self.outgoingFlows:
-            proba=random.uniform(0, 1) 
+            proba=round(random.uniform(0, 1),1) 
             cpt = cpt - 1
             f.write("("+ofl.ident+","+str(proba)+")")
             if (cpt > 0):
@@ -749,7 +749,7 @@ class XOrSplitGateway(SplitGateway):
         f.write("        split(" + self.ident + ",exclusive," + self.incomingFlows[0].ident + ",")
         cpt = len(self.outgoingFlows)
         f.write("(")
-        proba=1./cpt
+        proba=round(1./cpt,3)
         for ofl in self.outgoingFlows:
             cpt = cpt - 1
             f.write("("+ofl.ident+","+str(proba)+")")
