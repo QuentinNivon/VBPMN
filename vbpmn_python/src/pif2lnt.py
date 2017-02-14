@@ -1,6 +1,6 @@
 #
 # Name:    pif2lnt.py - Classes for loading a PIF model
-#                        and translating it to LNT 
+#                        and translating it to LNT
 # Authors: Pascal Poizat, Gwen Salaun
 # Date:    2014-2015
 ###############################################################################
@@ -17,9 +17,11 @@ import pif
 LTS_SUFFIX = ".bcg"
 LNT_SUFFIX = ".lnt"
 
+
 # TODO: use values that must exist in some python library instead
 class ReturnCodes:
     TERM_OK, TERM_ERROR, TERM_PROBLEM = (0, 1, 2)
+
 
 # Dumps alphabet (list of strings) in the given file
 # Inputs: a list of strings, a file identifier, a Boolean indicating whether to add "any" or not
@@ -53,10 +55,10 @@ def computeAllCombinations(l):
 
 
 # Takes a list of couple (ident,depth) resulting from the reachableOrJoin method call
-#  and a number of outgoing flows. Checks if all flows lead to a same join. 
-# If yes, returns that join identifier, else returns "". 
+#  and a number of outgoing flows. Checks if all flows lead to a same join.
+# If yes, returns that join identifier, else returns "".
 def analyzeReachabilityResults(lc, nbflows):
-    # first we check whether there is at least a corresponding join with depth 0 
+    # first we check whether there is at least a corresponding join with depth 0
     # (there is at most one)
     existjoin = False
     for c in lc:
@@ -128,6 +130,9 @@ class Flow:
     def getTarget(self):
         return self.target
 
+    def processLNT(self, f):
+        f.write("flow("+self.ident+","+self.source.ident+","+self.target.ident+")")
+
 
 ##
 # Class for ConditionalFlows
@@ -165,6 +170,9 @@ class InitialEvent(Node):
     def reachableOrJoin(self, visited, depth):
         return self.outgoingFlows[0].getTarget().reachableOrJoin(visited + [self.ident], depth)
 
+    def processLnt(self, f):
+        f.write("initial(" + self.ident + "," + self.outgoingFlows[0].ident+")")
+
 
 ##
 # Class for End Event
@@ -182,7 +190,16 @@ class EndEvent(Node):
     def reachableOrJoin(self, visited, depth):
         return []
 
-
+    def processLnt(self, f):
+        f.write("final(" + self.ident + ",{")
+        first = True
+        for inflow in self.incomingFlows:
+            if(first):
+                first = False
+            else:
+                f.write(",")
+            f.write(inflow.ident)
+        f.write("})")
 ##
 # Abstract Class for Communication
 class Communication(Node):
@@ -287,7 +304,6 @@ class MessageReception(MessageCommunication):
         f.write(self.msg + "_REC,")
         f.write(self.outgoingFlows[0].ident + "_begin]")
 
-
 ##
 # Class for Task
 class Task(Node):
@@ -296,52 +312,52 @@ class Task(Node):
 
     # Generates the (generic) process for task, only once
     def lnt(self, f):
-        nbinc=len(self.incomingFlows)
-        nbout=len(self.outgoingFlows)
-        f.write("process task_"+str(nbinc)+"_"+str(nbout)+" [")
+        nbinc = len(self.incomingFlows)
+        nbout = len(self.outgoingFlows)
+        f.write("process task_" + str(nbinc) + "_" + str(nbout) + " [")
         # we check the number of incoming / outgoing flows
-        if (nbinc==1):
+        if (nbinc == 1):
             f.write("incf:any,")
         else:
-            cptinc=0
-            while (cptinc<nbinc):
-                f.write("incf"+str(cptinc)+":any,")
-                cptinc=cptinc+1
+            cptinc = 0
+            while (cptinc < nbinc):
+                f.write("incf" + str(cptinc) + ":any,")
+                cptinc = cptinc + 1
         f.write("task:any,")
-        if (nbout==1):
+        if (nbout == 1):
             f.write("outf:any")
         else:
-            cptout=0
-            while (cptout<nbout):
-                f.write("outf"+str(cptout)+":any")
-                cptout=cptout+1
-                if (cptout<nbout):
+            cptout = 0
+            while (cptout < nbout):
+                f.write("outf" + str(cptout) + ":any")
+                cptout = cptout + 1
+                if (cptout < nbout):
                     f.write(",")
         f.write("] is\n")
 
         f.write(" var ident: ID in loop ")
 
-        if (nbinc==1):
+        if (nbinc == 1):
             f.write(" incf (?ident of ID); ")
         else:
-            cptinc=0
+            cptinc = 0
             f.write(" select ")
-            while (cptinc<nbinc):
-                f.write("incf"+str(cptinc)+" (?ident of ID)")
-                cptinc=cptinc+1
-                if (cptinc<nbinc):
+            while (cptinc < nbinc):
+                f.write("incf" + str(cptinc) + " (?ident of ID)")
+                cptinc = cptinc + 1
+                if (cptinc < nbinc):
                     f.write(" [] ")
             f.write(" end select ; \n")
         f.write("task ; ")
-        if (nbout==1):
+        if (nbout == 1):
             f.write(" outf (?ident of ID)")
         else:
-            cptout=0
+            cptout = 0
             f.write(" select ")
-            while (cptout<nbout):
-                f.write("outf"+str(cptout)+" (?ident of ID)")
-                cptout=cptout+1
-                if (cptout<nbout):
+            while (cptout < nbout):
+                f.write("outf" + str(cptout) + " (?ident of ID)")
+                cptout = cptout + 1
+                if (cptout < nbout):
                     f.write(" [] ")
             f.write(" end select \n")
 
@@ -356,26 +372,26 @@ class Task(Node):
     # Generates process instantiation for main LNT process
     def mainlnt(self, f):
         # we assume one incoming flow and one outgoing flow
-        nbinc=len(self.incomingFlows)
-        nbout=len(self.outgoingFlows)
-        f.write(" task_"+str(nbinc)+"_"+str(nbout)+" [")
+        nbinc = len(self.incomingFlows)
+        nbout = len(self.outgoingFlows)
+        f.write(" task_" + str(nbinc) + "_" + str(nbout) + " [")
 
-        if (nbinc==1):
+        if (nbinc == 1):
             f.write(self.incomingFlows[0].ident + "_finish,")
         else:
-            cptinc=0
-            while (cptinc<nbinc):
+            cptinc = 0
+            while (cptinc < nbinc):
                 f.write(self.incomingFlows[cptinc].ident + "_finish,")
-                cptinc=cptinc+1
+                cptinc = cptinc + 1
         f.write(self.ident + ",")
-        if (nbout==1):
+        if (nbout == 1):
             f.write(self.outgoingFlows[0].ident + "_begin")
         else:
-            cptout=0
-            while (cptout<nbout):
+            cptout = 0
+            while (cptout < nbout):
                 f.write(self.outgoingFlows[cptout].ident + "_begin")
-                cptout=cptout+1
-                if (cptout<nbout):
+                cptout = cptout + 1
+                if (cptout < nbout):
                     f.write(",")
         f.write("] ")
 
@@ -386,7 +402,7 @@ class Task(Node):
             return []
         else:
 
-            if (len(self.outgoingFlows)==1):
+            if (len(self.outgoingFlows) == 1):
                 return self.outgoingFlows[0].getTarget().reachableOrJoin(visited + [self.ident], depth)
             else:
                 res = []
@@ -395,10 +411,31 @@ class Task(Node):
                 return res
 
     # Dumps a Maude line of code into the given file
-    def dumpMaude(self,f):
-        t=random.randint(0,4) # we generate a random time !
+    def dumpMaude(self, f):
+        t = random.randint(0, 4)  # we generate a random time !
         # CAUTION : we assume one incoming flow and one outgoing flow
-        f.write("        task("+self.ident+",\""+self.ident+"\","+self.incomingFlows[0].ident+","+self.outgoingFlows[0].ident+","+str(t)+")")
+        f.write("        task(" + self.ident + ",\"" + self.ident + "\"," + self.incomingFlows[0].ident + "," +
+                self.outgoingFlows[0].ident + "," + str(t) + ")")
+
+    def processLnt(self, f):
+        f.write("task(" + self.ident + ",{")
+        first = True
+        for inflow in self.incomingFlows:
+            if first:
+                first = False
+            else:
+                f.write(",")
+            f.write(inflow.ident)
+        f.write("},")
+        first = True
+        f.write("{")
+        for outflow in self.outgoingFlows:
+            if first:
+                first = False
+            else:
+                f.write(",")
+            f.write(outflow.ident)
+        f.write("})")
 
 
 ##
@@ -411,6 +448,25 @@ class Gateway(Node):
     def alpha(self):
         return []
 
+    def processLnt(self, f, pattern, type):
+        f.write("gateway(" + self.ident + ","+pattern+","+type+",{")
+        first = True
+        for inflow in self.incomingFlows:
+            if first:
+                first = False
+            else:
+                f.write(",")
+            f.write(inflow.ident)
+        f.write("},")
+        first = True
+        f.write("{")
+        for outflow in self.outgoingFlows:
+            if first:
+                first = False
+            else:
+                f.write(",")
+            f.write(outflow.ident)
+        f.write("})")
 
 
 # Abstract Class for SplitGateway
@@ -420,7 +476,7 @@ class SplitGateway(Gateway):
 
     # Generates process instantiation for all split gateways
     def mainlnt(self, f):
-        # we assume one incoming flow 
+        # we assume one incoming flow
         nboutf = len(self.outgoingFlows)
         f.write("[")
         f.write(self.incomingFlows[0].ident + "_finish,")
@@ -444,14 +500,14 @@ class SplitGateway(Gateway):
             return res
 
     # Dumps a Maude line of code into the given file
-    def dumpMaude(self,f,nameop):
-        f.write("        split("+self.ident+","+nameop+","+self.incomingFlows[0].ident+",")
-        cpt=len(self.outgoingFlows)
+    def dumpMaude(self, f, nameop):
+        f.write("        split(" + self.ident + "," + nameop + "," + self.incomingFlows[0].ident + ",")
+        cpt = len(self.outgoingFlows)
         f.write("(")
         for ofl in self.outgoingFlows:
-            cpt=cpt-1
+            cpt = cpt - 1
             f.write(ofl.ident)
-            if (cpt>0):
+            if (cpt > 0):
                 f.write(",")
         f.write("))")
 
@@ -508,15 +564,15 @@ class OrSplitGateway(SplitGateway):
 
         f.write(" ] is \n")
 
-        ctervar=len(allcombi)
+        ctervar = len(allcombi)
         f.write(" var ")
-        while (ctervar>0):
-            f.write("ident"+str(ctervar)+":ID")
-            ctervar=ctervar-1
-            if (ctervar>0):
+        while (ctervar > 0):
+            f.write("ident" + str(ctervar) + ":ID")
+            ctervar = ctervar - 1
+            if (ctervar > 0):
                 f.write(",")
         f.write(" in ")
-        f.write(" var ident: ID in loop incf (?ident of ID); \n") # TODO: we generate unnecessary variables..
+        f.write(" var ident: ID in loop incf (?ident of ID); \n")  # TODO: we generate unnecessary variables..
         f.write(" select ")
 
         nb = 1
@@ -526,17 +582,17 @@ class OrSplitGateway(SplitGateway):
             nbelem = len(t)
             nb2 = 1
             if (nbelem > 1):
-                ctervar=len(allcombi)
+                ctervar = len(allcombi)
                 f.write(" par ")
                 for e in t:
-                    f.write(e+" (?ident"+str(ctervar)+" of ID)")
-                    ctervar=ctervar-1
+                    f.write(e + " (?ident" + str(ctervar) + " of ID)")
+                    ctervar = ctervar - 1
                     nb2 = nb2 + 1
                     if (nb2 <= nbelem):
                         f.write("||")
                 f.write(" end par ")
             else:
-                f.write(t[0]+" (?ident of ID)")
+                f.write(t[0] + " (?ident of ID)")
             # add synchronization points if there's a corresponding join
             if (self.correspOrJoin != ""):
                 f.write(" ; " + self.correspOrJoin + "_" + str(cter))
@@ -636,9 +692,8 @@ class OrSplitGateway(SplitGateway):
             return res
 
     # Dumps a Maude line of code into the given file
-    def dumpMaude(self,f):
-        SplitGateway.dumpMaude(self,f,"inclusive")
-
+    def dumpMaude(self, f):
+        SplitGateway.dumpMaude(self, f, "inclusive")
 
 ##
 # Class for XOrSplitGateway
@@ -679,8 +734,8 @@ class XOrSplitGateway(SplitGateway):
         return SplitGateway.reachableOrJoin(self, visited, depth)
 
     # Dumps a Maude line of code into the given file
-    def dumpMaude(self,f):
-        SplitGateway.dumpMaude(self,f,"exclusive")
+    def dumpMaude(self, f):
+        SplitGateway.dumpMaude(self, f, "exclusive")
 
 ##
 # Class for AndSplitGateway
@@ -701,22 +756,22 @@ class AndSplitGateway(SplitGateway):
                 f.write(",")
         f.write(" ] is \n")
 
-        ctervar=nboutf
+        ctervar = nboutf
         f.write(" var ")
-        while (ctervar>0):
-            f.write("ident"+str(ctervar)+":ID")
-            ctervar=ctervar-1
-            if (ctervar>0):
+        while (ctervar > 0):
+            f.write("ident" + str(ctervar) + ":ID")
+            ctervar = ctervar - 1
+            if (ctervar > 0):
                 f.write(",")
         f.write(" in ")
 
         f.write(" var ident: ID in loop incf (?ident of ID); \n")
         f.write(" par ")
         nb = 1
-        ctervar=nboutf
+        ctervar = nboutf
         while (nb <= nboutf):
-            f.write("outf_" + str(nb) + "(?ident"+str(ctervar)+" of ID)")
-            ctervar=ctervar-1
+            f.write("outf_" + str(nb) + "(?ident" + str(ctervar) + " of ID)")
+            ctervar = ctervar - 1
             nb = nb + 1
             if (nb <= nboutf):
                 f.write("||")
@@ -733,8 +788,9 @@ class AndSplitGateway(SplitGateway):
         return SplitGateway.reachableOrJoin(self, visited, depth)
 
     # Dumps a Maude line of code into the given file
-    def dumpMaude(self,f):
-        SplitGateway.dumpMaude(self,f,"parallel")
+    def dumpMaude(self, f):
+        SplitGateway.dumpMaude(self, f, "parallel")
+
 
 ##
 # Abstract Class for JoinGateway
@@ -744,7 +800,7 @@ class JoinGateway(Gateway):
 
     # Generates process instantiation for all join gateways
     def mainlnt(self, f):
-        # we assume one outgoing flow 
+        # we assume one outgoing flow
         nbincf = len(self.incomingFlows)
         f.write("[")
         i = 0
@@ -763,16 +819,16 @@ class JoinGateway(Gateway):
             return self.outgoingFlows[0].getTarget().reachableOrJoin(visited + [self.ident], depth)
 
     # Dumps a Maude line of code into the given file
-    def dumpMaude(self,f,nameop):
-        f.write("        merge("+self.ident+","+nameop+",")
-        cpt=len(self.incomingFlows)
+    def dumpMaude(self, f, nameop):
+        f.write("        merge(" + self.ident + "," + nameop + ",")
+        cpt = len(self.incomingFlows)
         f.write("(")
         for ofl in self.incomingFlows:
-            cpt=cpt-1
+            cpt = cpt - 1
             f.write(ofl.ident)
-            if (cpt>0):
+            if (cpt > 0):
                 f.write(",")
-        f.write("),"+self.outgoingFlows[0].ident+")")
+        f.write(")," + self.outgoingFlows[0].ident + ")")
 
 
 ##
@@ -815,12 +871,12 @@ class OrJoinGateway(JoinGateway):
 
         f.write("] is \n")
 
-        ctervar=len(allcombi)
+        ctervar = len(allcombi)
         f.write(" var ")
-        while (ctervar>0):      # TODO: we generate unnecessary variables..
-            f.write("ident"+str(ctervar)+":ID")
-            ctervar=ctervar-1
-            if (ctervar>0):
+        while (ctervar > 0):  # TODO: we generate unnecessary variables..
+            f.write("ident" + str(ctervar) + ":ID")
+            ctervar = ctervar - 1
+            if (ctervar > 0):
                 f.write(",")
         f.write(" in ")
 
@@ -838,17 +894,17 @@ class OrJoinGateway(JoinGateway):
                 cter = cter + 1
 
             if (nbelem > 1):
-                ctervar=len(allcombi)
+                ctervar = len(allcombi)
                 f.write(" par ")
                 for e in t:
-                    f.write(e+" (?ident"+str(ctervar)+" of ID)")
-                    ctervar=ctervar-1
+                    f.write(e + " (?ident" + str(ctervar) + " of ID)")
+                    ctervar = ctervar - 1
                     nb2 = nb2 + 1
                     if (nb2 <= nbelem):
                         f.write("||")
                 f.write(" end par ")
             else:
-                f.write(t[0]+" (?ident of ID)")
+                f.write(t[0] + " (?ident of ID)")
 
             nb = nb + 1
             if (nb <= nbt):
@@ -938,8 +994,8 @@ class OrJoinGateway(JoinGateway):
                                                                                              depth - 1)
 
     # Dumps a Maude line of code into the given file
-    def dumpMaude(self,f):
-        JoinGateway.dumpMaude(self,f,"inclusive")
+    def dumpMaude(self, f):
+        JoinGateway.dumpMaude(self, f, "inclusive")
 
 
 ##
@@ -962,7 +1018,7 @@ class XOrJoinGateway(JoinGateway):
         f.write(" var ident: ID in loop select ")
         nb = 1
         while (nb <= nbincf):
-            f.write("incf_" + str(nb)+" (?ident of ID)")
+            f.write("incf_" + str(nb) + " (?ident of ID)")
             nb = nb + 1
             if (nb <= nbincf):
                 f.write("[]")
@@ -979,8 +1035,8 @@ class XOrJoinGateway(JoinGateway):
         return JoinGateway.reachableOrJoin(self, visited, depth)
 
     # Dumps a Maude line of code into the given file
-    def dumpMaude(self,f):
-        JoinGateway.dumpMaude(self,f,"exclusive")
+    def dumpMaude(self, f):
+        JoinGateway.dumpMaude(self, f, "exclusive")
 
 ##
 # Class for AndJoinGateway
@@ -1000,21 +1056,21 @@ class AndJoinGateway(JoinGateway):
             f.write(",")
         f.write("outf:any] is \n")
 
-        ctervar=nbincf
+        ctervar = nbincf
         f.write(" var ")
-        while (ctervar>0):
-            f.write("ident"+str(ctervar)+":ID")
-            ctervar=ctervar-1
-            if (ctervar>0):
+        while (ctervar > 0):
+            f.write("ident" + str(ctervar) + ":ID")
+            ctervar = ctervar - 1
+            if (ctervar > 0):
                 f.write(",")
         f.write(" in ")
 
         f.write(" var ident:ID in loop par ")
         nb = 1
-        ctervar=nbincf
+        ctervar = nbincf
         while (nb <= nbincf):
-            f.write("incf_" + str(nb) + " (?ident"+str(ctervar)+" of ID)")
-            ctervar=ctervar-1
+            f.write("incf_" + str(nb) + " (?ident" + str(ctervar) + " of ID)")
+            ctervar = ctervar - 1
             nb = nb + 1
             if (nb <= nbincf):
                 f.write("||")
@@ -1031,8 +1087,9 @@ class AndJoinGateway(JoinGateway):
         return JoinGateway.reachableOrJoin(self, visited, depth)
 
     # Dumps a Maude line of code into the given file
-    def dumpMaude(self,f):
-        JoinGateway.dumpMaude(self,f,"parallel")
+    def dumpMaude(self, f):
+        JoinGateway.dumpMaude(self, f, "parallel")
+
 
 ##
 # Class for Processes described in PIF
@@ -1102,7 +1159,7 @@ class Process:
         return res
 
     # Dumps the alphabet for the scheduler process
-    def dumpFlowsMsgs(self,f,withany):
+    def dumpFlowsMsgs(self, f, withany):
         nbflows = len(self.flows)
         cter = 1
         for fl in self.flows:
@@ -1116,12 +1173,85 @@ class Process:
             if (cter <= nbflows):
                 f.write(", ")
 
+    #generate the process LNT
+    def processDump(self, f):
+        f.write("\nfunction p1(): BPROCESS is \n")
+        f.write("\n return proc ( \n")
+        f.write(self.name+",\n")
+        f.write("{\n")
+        f.write("\ti ( ")
+        self.initial.processLnt(f)
+        f.write(" ),\n")
+
+        #handle final
+        first = True
+        f.write("\tf ( { ")
+        for fnode in self.finals:
+            if(first):
+                first=False
+            else:
+                f.write(",")
+            fnode.processLnt(f)
+        f.write(" } ),\n")
+
+        # TODO: eliminate iterating twice / Separate printer class?
+        #handle tasks
+        f.write("\tt ( { ")
+        first = True
+        for pNode in self.nodes:
+            if isinstance(pNode, Task):
+                if(first):
+                    first = False
+                else:
+                    f.write(",")
+                pNode.processLnt(f)
+        f.write(" } ), \n")
+
+        #handle gateways
+        f.write("\tg ( { ")
+        first = True
+        for pNode in self.nodes:
+            if isinstance(pNode, Gateway):
+                if first:
+                    first = False
+                else:
+                    f.write(",")
+                if isinstance(pNode, XOrJoinGateway):
+                    pNode.processLnt(f, "xor", "merge")
+                if isinstance(pNode, XOrSplitGateway):
+                    pNode.processLnt(f, "xor", "split")
+                if isinstance(pNode, OrJoinGateway):
+                    pNode.processLnt(f, "or", "merge")
+                if isinstance(pNode, OrSplitGateway):
+                    pNode.processLnt(f, "or", "split")
+                if isinstance(pNode, AndJoinGateway):
+                    pNode.processLnt(f, "and", "merge")
+                if isinstance(pNode, AndSplitGateway):
+                    pNode.processLnt(f, "and", "split")
+        f.write(" } )\n")
+        
+        f.write("},\n")
+        #flows
+        f.write("{ \n")
+        first = True
+        for flow in self.flows:
+            if(first):
+                first = False
+            else:
+                f.write(",")
+            flow.processLNT(f)
+        f.write("\n}\n")
+
+        f.write(")\n")
+        f.write("end function\n\n")
+
+
 
     # Generates the scheduler process
-    def generateScheduler(self,f):
+    def generateScheduler(self, f):
         f.write("\nprocess scheduler [")
-        self.dumpFlowsMsgs(f,True)
-        f.write("] (activeflows: IDS) is\n") # this parameter stores the set of active flows / tokens
+        self.dumpFlowsMsgs(f, True)
+        f.write("] (activeflows: IDS) is\n")  # this parameter stores the set of active flows / tokens
         nbflows = len(self.flows)
 
         f.write("var ident: ID in\n")
@@ -1129,11 +1259,11 @@ class Process:
         cter = 1
         for fl in self.flows:
             f.write(fl.ident + "_begin (?ident of ID) ; scheduler [")
-            self.dumpFlowsMsgs(f,False)
+            self.dumpFlowsMsgs(f, False)
             f.write("] (add(ident, activeflows))\n")
             f.write(" []\n")
             f.write(fl.ident + "_finish (?ident of ID) ; scheduler [")
-            self.dumpFlowsMsgs(f,False)
+            self.dumpFlowsMsgs(f, False)
             f.write("] (remove(ident, activeflows))\n")
             cter = cter + 1
             if (cter <= nbflows):
@@ -1143,53 +1273,42 @@ class Process:
 
         f.write("end process\n\n")
 
+    #generates file with process element ids
+    def generateIdfile(self):
+        filename = "id.lnt"
+        idfile = open(filename, 'w')
+        # Generates an ID type for all identifiers
+        idfile.write("module id with \"get\" is\n\n")
+        idfile.write("(* Data type for identifiers, useful for scheduling purposes *)\n")
+        idfile.write("type ID is\n")
 
+        idfile.write(self.name)
+        for n in self.nodes:
+            idfile.write(",")
+            idfile.write(n.ident)
+        idfile.write(","+self.initial.ident)
+        for fNode in self.finals:
+            idfile.write(",")
+            idfile.write(fNode.ident)
+        for f in self.flows:
+            idfile.write(",")
+            idfile.write(f.ident)
+        idfile.write("\n")
+        idfile.write("with \"==\",\"!=\"\n")
+        idfile.write("end type\n\n")
+        idfile.write("\nend module\n")
+    
     # Generates an LNT module and process for a BPMN 2.0 process
     def genLNT(self, name=""):
+
+        self.generateIdfile()
+
         if name == "":
             filename = self.name + ".lnt"
         else:
             filename = name + ".lnt"
         f = open(filename, 'w')
-        f.write("module " + self.name + " with \"get\" is\n\n")
-
-        # Generates an ID type for all flow identifiers
-        f.write("(* Data type for flow identifiers, useful for scheduling purposes *)\n")
-        f.write("type ID is\n")
-        counter=len(self.flows)
-        for fl in self.flows:
-            f.write(fl.ident)
-            counter=counter-1
-            if (counter>0):
-                f.write(",")
-        f.write("\n")
-        f.write("with \"==\",\"!=\"\n")
-        f.write("end type\n\n")
-
-        # Generates an type for identifier set
-        f.write("type IDS is\n")
-        f.write("    set of ID\n")
-        f.write("with \"==\", \"!=\"\n")
-        f.write("end type\n\n")
-
-        # Generates add function for type IDS
-        f.write("(* s of type IDS is a set, so does not store twice the same value *)\n")
-        f.write("function add (v: ID, s: IDS): IDS is\n")
-        f.write("  case s in\n")
-        f.write("  var hd: ID, tl: IDS in\n")
-        f.write("      nil -> return cons(v,nil)\n")
-        f.write("    | cons(hd,tl) -> if (v==hd) then return tl else return cons(hd,add(v,tl)) end if\n")
-        f.write("  end case\n")
-        f.write("end function\n\n")
-
-        # Generates remove function for type IDS
-        f.write("function remove (v: ID, s: IDS): IDS is\n")
-        f.write("  case s in\n")
-        f.write("  var hd: ID, tl: IDS in\n")
-        f.write("      nil -> return nil\n")
-        f.write("    | cons(hd,tl) -> if (v==hd) then return tl else return cons(hd,remove(v,tl)) end if\n")
-        f.write("  end case\n")
-        f.write("end function\n\n")
+        f.write("module " + self.name + "(bpmntypes) with \"get\" is\n\n")
 
         if (self.initial != None):
             self.initial.lnt(f)
@@ -1208,9 +1327,9 @@ class Process:
                 else:
                     if isinstance(n, Task):
                         # a task is identified with its number of incoming and outgoing flows
-                        nclass=n.__class__.__name__
-                        nclass=nclass+"_"+str(len(n.incomingFlows))+"_"+str(len(n.outgoingFlows))
-                        #print nclass
+                        nclass = n.__class__.__name__
+                        nclass = nclass + "_" + str(len(n.incomingFlows)) + "_" + str(len(n.outgoingFlows))
+                        # print nclass
                         if (nclass in specialnodes):
                             pass
                         else:
@@ -1229,6 +1348,9 @@ class Process:
         # scheduler process generation
         self.generateScheduler(f)
 
+        #generate process
+        self.processDump(f)
+
         f.write("\nprocess MAIN ")
         alph = self.alpha()
         dumpAlphabet(alph, f, True)
@@ -1241,7 +1363,7 @@ class Process:
         nbflows = len(self.flows)
         if (nbflows > 0):
             f.write(", ")
-            self.dumpFlowsMsgs(f,True)
+            self.dumpFlowsMsgs(f, True)
             # we hide additional synchros for or splits/joins as well
             nb = 0
             if (nbsync > 0):
@@ -1255,23 +1377,24 @@ class Process:
 
         # we start with the scheduler
         f.write("par ")
-        # synchronizations on all begin/finish flows 
+        # synchronizations on all begin/finish flows
         if (nbflows > 0):
-            self.dumpFlowsMsgs(f,False)
+            self.dumpFlowsMsgs(f, False)
         f.write(" in\n")
-        f.write("  (* we first generate the scheduler, necessary for keeping track of tokens, and triggering inclusive merge gateways *)\n")
+        f.write(
+            "  (* we first generate the scheduler, necessary for keeping track of tokens, and triggering inclusive merge gateways *)\n")
         f.write("    scheduler [")
-        self.dumpFlowsMsgs(f,False)
+        self.dumpFlowsMsgs(f, False)
         f.write("] (nil) \n")
         f.write("||\n")
 
         f.write("par   ")
         f.write(" (* synchronizations on all begin/finish flow messages *)\n")
-        # synchronizations on all begin/finish flows 
+        # synchronizations on all begin/finish flows
         if (nbflows > 0):
-            self.dumpFlowsMsgs(f,False)
-            #cter = 1
-            #for fl in self.flows:
+            self.dumpFlowsMsgs(f, False)
+            # cter = 1
+            # for fl in self.flows:
             #    f.write(fl.ident + "_begin, " + fl.ident + "_finish")
             #    cter = cter + 1
             #    if (cter <= nbflows):
@@ -1285,7 +1408,7 @@ class Process:
         cter = 1
         for fl in self.flows:
             # TODO: take ConditionalFlow into account
-            f.write("flow [" + fl.ident + "_begin, " + fl.ident + "_finish] ("+fl.ident+")")
+            f.write("flow [" + fl.ident + "_begin, " + fl.ident + "_finish] (" + fl.ident + ")")
             cter = cter + 1
             if (cter <= nbflows):
                 f.write(" || ")
@@ -1305,7 +1428,7 @@ class Process:
             cter = cter + 1
             if (cter <= nbflows):
                 f.write(" || ")
-        # processes instantiation for all other nodes 
+        # processes instantiation for all other nodes
         nbnodes = len(self.nodes)
         cter = 1
         for n in self.nodes:
@@ -1338,7 +1461,7 @@ class Process:
         dumpAlphabet(alpha, f, False)
         f.write("\";\n\n")
         # reduction of the raw bcg
-        #f.write("\"" + self.name + ".bcg\" = tau*.a reduction of branching reduction of " + "\"" + self.name + "_raw.bcg\";\n\n")
+        # f.write("\"" + self.name + ".bcg\" = tau*.a reduction of branching reduction of " + "\"" + self.name + "_raw.bcg\";\n\n")
         f.write("\"" + self.name + ".bcg\" = branching reduction of " + "\"" + self.name + "_raw.bcg\";\n\n")
         f.close()
 
@@ -1369,12 +1492,12 @@ class Process:
                 # tasks / emissions / receptions / interactions
                 if isinstance(n, pif.Task_):
                     node = Task(n.id, [], [])
-                if isinstance(n, pif.MessageSending_):
-                    node = MessageSending(n.id, [], [], n.message)
-                if isinstance(n, pif.MessageReception_):
-                    node = MessageReception(n.id, [], [], n.message)
-                if isinstance(n, pif.Interaction_):
-                    node = Interaction(n.id, [], [], n.message, n.initiatingPeer, n.receivingPeers)
+                # if isinstance(n, pif.MessageSending_):
+                #     node = MessageSending(n.id, [], [], n.message)
+                # if isinstance(n, pif.MessageReception_):
+                #     node = MessageReception(n.id, [], [], n.message)
+                # if isinstance(n, pif.Interaction_):
+                #     node = Interaction(n.id, [], [], n.message, n.initiatingPeer, n.receivingPeers)
 
                 # split gateways
                 if isinstance(n, pif.AndSplitGateway_):
@@ -1439,8 +1562,7 @@ class Generator:
     # @param smartReduction boolean, true if a smart reduction is done on the LTS when loading it, false else
     # @param debug boolean, true to get debug information, false else
     # @return (Integer, String, Collection<String>), return code, name of the model (can be different from the filename) and its alphabet
-    def __call__(self, pifFilename, smartReduction=True, debug=False):
-
+    def __call__(self, pifFilename, smartReduction=True, debug=True):
         import subprocess
         proc = Process()
         # load PIF model
@@ -1453,10 +1575,10 @@ class Generator:
         # compute the LTS from the LNT code using SVL, possibly with a smart reduction
         proc.genSVL(smartReduction)
         pr = Popen(["svl", pifModelName], shell=False, stdout=sys.stdout)
-        #pr = Popen("env", shell=True, stdout=sys.stdout)
+        # pr = Popen("env", shell=True, stdout=sys.stdout)
         pr.communicate()
         # return name and alphabet
-        return (ReturnCodes.TERM_OK, pifModelName,proc.alpha()) # TODO: use return value from SVL call
+        return (ReturnCodes.TERM_OK, pifModelName, proc.alpha())  # TODO: use return value from SVL call
 
 
 # This class gets loads an LTS (BCG format) for a PIF model
@@ -1468,7 +1590,7 @@ class Loader:
     # @param smartReduction boolean, true if a smart reduction is done on the LTS when loading it, false else
     # @param debug boolean, true to get debug information, false else
     # @return (Integer, String, Collection<String>), return code, name of the model (can be different from the filename) and its alphabet
-    def __call__(self, pifFilename, smartReduction=True, debug=False):
+    def __call__(self, pifFilename, smartReduction=True, debug=True):
         proc = Process()
         proc.buildProcessFromFile(pifFilename)
         pifModelName = proc.name
@@ -1496,15 +1618,16 @@ class Loader:
         # else -> no need to rebuild
         return False
 
+
 if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(prog='pif2lnt', description='Computes a BCG model from a PIF model.')
     parser.add_argument('--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('model', metavar='Model',
-                    help='the PIF model to transform (filename of PIF file)')
+                        help='the PIF model to transform (filename of PIF file)')
     parser.add_argument('--lazy', action='store_true',
-                    help='does not recompute the BCG model if it already exists and is more recent than the PIF model')
+                        help='does not recompute the BCG model if it already exists and is more recent than the PIF model')
 
     # parse arguments
     try:
