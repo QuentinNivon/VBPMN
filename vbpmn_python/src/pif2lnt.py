@@ -412,7 +412,7 @@ class Task(Node):
 
     # Dumps a Maude line of code into the given file
     def dumpMaude(self, f):
-        t = random.randint(0, 4)  # we generate a random time !
+        t = random.randint(0, 50)  # we generate a random time !
         # CAUTION : we assume one incoming flow and one outgoing flow
         f.write("        task(" + self.ident + ",\"" + self.ident + "\"," + self.incomingFlows[0].ident + "," +
                 self.outgoingFlows[0].ident + "," + str(t) + ")")
@@ -693,7 +693,18 @@ class OrSplitGateway(SplitGateway):
 
     # Dumps a Maude line of code into the given file
     def dumpMaude(self, f):
-        SplitGateway.dumpMaude(self, f, "inclusive")
+        f.write("        split(" + self.ident + ",inclusive," + self.incomingFlows[0].ident + ",")
+        cpt = len(self.outgoingFlows)
+        f.write("(")
+        # proba=1./cpt
+        for ofl in self.outgoingFlows:
+            proba=random.uniform(0, 1) 
+            cpt = cpt - 1
+            f.write("("+ofl.ident+","+str(proba)+")")
+            if (cpt > 0):
+                f.write(" ")
+        f.write("))")
+
 
 ##
 # Class for XOrSplitGateway
@@ -735,7 +746,17 @@ class XOrSplitGateway(SplitGateway):
 
     # Dumps a Maude line of code into the given file
     def dumpMaude(self, f):
-        SplitGateway.dumpMaude(self, f, "exclusive")
+        f.write("        split(" + self.ident + ",exclusive," + self.incomingFlows[0].ident + ",")
+        cpt = len(self.outgoingFlows)
+        f.write("(")
+        proba=1./cpt
+        for ofl in self.outgoingFlows:
+            cpt = cpt - 1
+            f.write("("+ofl.ident+","+str(proba)+")")
+            if (cpt > 0):
+                f.write(" ")
+        f.write("))")
+
 
 ##
 # Class for AndSplitGateway

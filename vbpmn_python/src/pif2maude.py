@@ -31,7 +31,7 @@ class MaudeDumper:
 
     def dumpMaude(self,f,proc):
         f.write("---- Example "+proc.name+" in BPMN\n\n")
-        f.write("load bpmn.maude\n\n")
+        f.write("--- load bpmn.maude\n\n")
         f.write("mod BPMN-EX is \n")
         f.write("  pr BPMN-SEM . \n")
         f.write("  ops ")
@@ -58,7 +58,7 @@ class MaudeDumper:
         countfls=len(proc.flows)
         for fl in proc.flows:
             countfls=countfls-1
-            t=random.randint(0,1000)
+            t=random.randint(0,50)
             f.write("        flow("+fl.ident+","+str(t)+")")  # we generate a random time !
             if (countfls>0):
                 f.write(",")
@@ -119,7 +119,8 @@ if __name__ == '__main__':
     # script format -> python pif2maude.py x.pif OR python pif2maude.py all
     #  the second option translates all pif files in the current directory
 
-    firstarg = sys.argv[1]
+    firstarg=sys.argv[1]
+    print firstarg
     md=MaudeDumper(firstarg)
     md.main()
 
