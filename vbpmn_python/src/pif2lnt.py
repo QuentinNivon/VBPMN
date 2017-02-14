@@ -1217,17 +1217,17 @@ class Process:
                 else:
                     f.write(",")
                 if isinstance(pNode, XOrJoinGateway):
-                    pNode.processLnt(f, "xor", "merge")
+                    pNode.processLnt(f, "merge", "xor")
                 if isinstance(pNode, XOrSplitGateway):
-                    pNode.processLnt(f, "xor", "split")
+                    pNode.processLnt(f, "split", "xor")
                 if isinstance(pNode, OrJoinGateway):
-                    pNode.processLnt(f, "or", "merge")
+                    pNode.processLnt(f, "merge", "or")
                 if isinstance(pNode, OrSplitGateway):
-                    pNode.processLnt(f, "or", "split")
+                    pNode.processLnt(f, "split", "or")
                 if isinstance(pNode, AndJoinGateway):
-                    pNode.processLnt(f, "and", "merge")
+                    pNode.processLnt(f, "merge", "and")
                 if isinstance(pNode, AndSplitGateway):
-                    pNode.processLnt(f, "and", "split")
+                    pNode.processLnt(f, "split", "and")
         f.write(" } )\n")
         
         f.write("},\n")
@@ -1251,7 +1251,7 @@ class Process:
     def generateScheduler(self, f):
         f.write("\nprocess scheduler [")
         self.dumpFlowsMsgs(f, True)
-        f.write("] (activeflows: IDS) is\n")  # this parameter stores the set of active flows / tokens
+        f.write("] (activeflows: IDS, bpmn: BPROCESS) is\n")  # this parameter stores the set of active flows / tokens
         nbflows = len(self.flows)
 
         f.write("var ident: ID in\n")
@@ -1260,11 +1260,11 @@ class Process:
         for fl in self.flows:
             f.write(fl.ident + "_begin (?ident of ID) ; scheduler [")
             self.dumpFlowsMsgs(f, False)
-            f.write("] (add(ident, activeflows))\n")
+            f.write("] (add(ident, activeflows), p1())\n")
             f.write(" []\n")
             f.write(fl.ident + "_finish (?ident of ID) ; scheduler [")
             self.dumpFlowsMsgs(f, False)
-            f.write("] (remove(ident, activeflows))\n")
+            f.write("] (remove(ident, activeflows), p1())\n")
             cter = cter + 1
             if (cter <= nbflows):
                 f.write("[]\n")
@@ -1385,7 +1385,7 @@ class Process:
             "  (* we first generate the scheduler, necessary for keeping track of tokens, and triggering inclusive merge gateways *)\n")
         f.write("    scheduler [")
         self.dumpFlowsMsgs(f, False)
-        f.write("] (nil) \n")
+        f.write("] (nil, p1()) \n")
         f.write("||\n")
 
         f.write("par   ")
