@@ -1,109 +1,118 @@
 
------ BPMN data types (FACS'16), necessary for encoding unbalanced workflows
------ Author: Gwen Salaun
+(* BPMN data types (FACS'16), necessary for encoding unbalanced workflows
+Author: Gwen Salaun *)
 
-module bpmntypes with "get" is
+module bpmntypes(id) with "get" is
 
--- identifier
-
-type ID is
-    myproc, i1, i2, i3, i4, i5, i6,
-    sf1, sf2, sf3, sf4, sf5, sf6
-with "==", "!="
-end type
-
--- set of identifiers
+(* set of identifiers *)
 
 type IDS is
     set of ID 
 with "==", "!="
 end type
 
--- flow
+(* s of type IDS is a set, so does not store twice the same value *)
+function add (v: ID, s: IDS): IDS is
+  case s in
+  var hd: ID, tl: IDS in
+      nil -> return cons(v,nil)
+    | cons(hd,tl) -> if (v==hd) then return tl else return cons(hd,add(v,tl)) end if
+  end case
+end function
+
+function remove (v: ID, s: IDS): IDS is
+  case s in
+  var hd: ID, tl: IDS in
+      nil -> return nil
+    | cons(hd,tl) -> if (v==hd) then return tl else return cons(hd,remove(v,tl)) end if
+  end case
+end function
+
+(* flow *)
 
 type FLOW is
     flow ( ident: ID, source: ID, target: ID )
 end type
 
--- set of flows 
+(* set of flows *) 
 
 type FLOWS is
     set of FLOW
 end type
 
--- task 
+(* task *) 
 
 type TASK is 
     task ( ident: ID, incf: IDS, outf: IDS )
 end type
 
--- set of tasks
+(* set of tasks *)
 
 type TASKS is
     set of TASK
 end type
 
--- initial event
+(* initial event *)
 
 type INITIAL is 
-    initial ( ident: ID, outf: ID )  --- just one outgoing flow (?)
+    initial ( ident: ID, outf: ID )   (* several outgoing flows (?) *)
 end type
 
--- final event
+(* final event *)
 
 type FINAL is 
-    final ( ident: ID, incf: IDS )     --- several incoming flows (?)
+    final ( ident: ID, incf: IDS )     (* several incoming flows (?) *)
 end type
 
--- set of final events
+(* set of final events *)
 
 type FINALS is
     set of FINAL
 end type
 
--- type of gateway 
+(* type of gateway *) 
 
 type GSORT is 
     xor, and, or
 end type
 
--- gateway pattern
+(* gateway pattern *)
 
 type GPATTERN is 
     split, merge
 end type
 
--- gateway
+(* gateway *)
 
 type GATEWAY is
     gateway ( ident: ID, pattern: GPATTERN, sort: GSORT, incf: IDS, outf: IDS )
 end type
 
--- set of gateways
+(* set of gateways *)
 
 type GATEWAYS is
     set of GATEWAY
 end type
 
--- node
+(* node *)
 
-type NODE is    --- could it be simpler ?
+type NODE is    (* could it be simpler ? *)
     i ( initial: INITIAL ), 
     f ( finals: FINALS ),
     g ( gateways: GATEWAYS ),
     t ( tasks: TASKS )
 end type
 
--- set of nodes
+(* set of nodes *)
 
 type NODES is
     set of NODE
 end type
 
--- bpmn process
+(* bpmn process *)
 
 type BPROCESS is
-    proc ( name: ID, nodes: NODES, flows: FLOWS )  --- not the most optimized encoding for traversals
+    proc ( name: ID, nodes: NODES, flows: FLOWS )  (* not the most optimized encoding for traversals *)
 end type
 
 end module
