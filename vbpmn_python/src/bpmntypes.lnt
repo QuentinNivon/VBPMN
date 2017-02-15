@@ -8,7 +8,7 @@ module bpmntypes(id) with "get" is
 
 type IDS is
     set of ID 
-with "==", "!="
+with "==", "!=", "inter", "length"
 end type
 
 (* s of type IDS is a set, so does not store twice the same value *)
@@ -115,33 +115,49 @@ type BPROCESS is
     proc ( name: ID, nodes: NODES, flows: FLOWS )  (* not the most optimized encoding for traversals *)
 end type
 
-function is_merge_possible(process:BPROCESS, activeflows:IDS, mergeid:ID): Nat is 
-	var incf:IDS, active_merge:Nat in
-        incf := find_incf(process, mergeid);
+function is_merge_possible(p: BPROCESS, activeflows:IDS, mergeid:ID): Nat is
+     var incf:IDS, active_merge:Nat in
+        incf := find_incf(p, mergeid);
         active_merge := find_active_tokens(activeflows, incf);
         return active_merge
     end var
 end function
 
-function find_incf(process:BPROCESS, mergeid:ID): IDS is 
-	var incf:IDS, gateway:GATEWAY in
-    case mergeid in
-         process(any ID, NODE(any ID, ) , any FLOWS) -> gateway :=node 
-        |any -> gateway := null;
-    end case;
-    case gateway in 
-        gateway(any ID, merge, inclusive, inflows: IDS, any IDS ) -> incf = inflows
-        |null ->
-        |any -> incf = null;
-    end case;
-    return IDSl
-    end var
+function find_incf(p: BPROCESS, mergeid:ID): IDS is 
+	case p in
+	var name: ID, nodes: NODES, flows: FLOWS in
+           proc (name, nodes, flows) -> return find_incf_nodes(nodes, mergeid)
+        end case
+end function
+
+function find_incf_nodes (nodes: NODES, mergeid: ID): IDS is 
+	case nodes in
+	var gateways: GATEWAYS, initial: INITIAL, finals: FINALS, tasks: TASKS, tl: NODES in
+           cons(g(gateways), tl) -> return find_incf_gateways(gateways, mergeid)
+	|  cons(i(initial), tl) 
+	|  cons(f(finals), tl) 
+	|  cons(t(tasks), tl)    -> return find_incf_nodes(tl, mergeid)
+        |  nil -> return nil
+        end case
+end function
+
+function find_incf_gateways (gateways: GATEWAYS, mergeid: ID): IDS is 
+	case gateways in
+	var ident: ID, pattern: GPATTERN, sort: GSORT, incf: IDS, outf: IDS, tl: GATEWAYS in
+           cons(gateway(ident, pattern, sort, incf, outf), tl) -> 
+	   		   if (ident==mergeid) then 
+			      return incf
+			   else
+			      return find_incf_gateways(tl,mergeid)
+			   end if
+        |  nil -> return nil
+        end case
 end function
 
 function find_active_tokens(activeflows:IDS, incf:IDS): Nat is 
-	var tokens:IDS, count:Nat in
+    var tokens:IDS, count:Nat in
         tokens := inter(activeflows, incf);
-        count := tokens.length()
+        count := length(tokens);
         return count 
     end var
 end function
