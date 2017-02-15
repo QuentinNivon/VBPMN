@@ -115,4 +115,35 @@ type BPROCESS is
     proc ( name: ID, nodes: NODES, flows: FLOWS )  (* not the most optimized encoding for traversals *)
 end type
 
+function is_merge_possible(process:BPROCESS, activeflows:IDS, mergeid:ID): Nat is 
+	var incf:IDS, active_merge:Nat in
+        incf := find_incf(process, mergeid);
+        active_merge := find_active_tokens(activeflows, incf);
+        return active_merge
+    end var
+end function
+
+function find_incf(process:BPROCESS, mergeid:ID): IDS is 
+	var incf:IDS, gateway:GATEWAY in
+    case mergeid in
+         process(any ID, NODE(any ID, ) , any FLOWS) -> gateway :=node 
+        |any -> gateway := null;
+    end case;
+    case gateway in 
+        gateway(any ID, merge, inclusive, inflows: IDS, any IDS ) -> incf = inflows
+        |null ->
+        |any -> incf = null;
+    end case;
+    return IDSl
+    end var
+end function
+
+function find_active_tokens(activeflows:IDS, incf:IDS): Nat is 
+	var tokens:IDS, count:Nat in
+        tokens := inter(activeflows, incf);
+        count := tokens.length()
+        return count 
+    end var
+end function
+
 end module
