@@ -20,11 +20,11 @@
       <bpmn:outgoing>SequenceFlow_0wc746v</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_10jt92b</bpmn:outgoing>
     </bpmn:inclusiveGateway>
-    <bpmn:exclusiveGateway id="InclusiveGateway_2">
+    <bpmn:inclusiveGateway id="InclusiveGateway_2">
       <bpmn:incoming>SequenceFlow_15v3uqw</bpmn:incoming>
       <bpmn:incoming>SequenceFlow_08i09yo</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_109xq7a</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
+    </bpmn:inclusiveGateway>
     <bpmn:sequenceFlow id="SequenceFlow_15v3uqw" sourceRef="Task_1" targetRef="InclusiveGateway_2" />
     <bpmn:sequenceFlow id="SequenceFlow_08i09yo" sourceRef="Task_2" targetRef="InclusiveGateway_2" />
     <bpmn:endEvent id="EndEvent_0x35vvg">
