@@ -521,6 +521,7 @@ class SplitGateway(Gateway):
 class OrSplitGateway(SplitGateway):
     def __init__(self, ident, inc, out):
         SplitGateway.__init__(self, ident, inc, out)
+        self.correspOrJoin = ""
 
     # Checks whether the set of outgoing flows contains a default flow
     # Returns a Boolean value
