@@ -244,7 +244,7 @@ function find_incf_gatewaysv2(gateways: GATEWAYS, id: ID, nextnodes: NODES): IDS
 	   		   if (ident==id) then 
 			      return incf
 			   else
-			      return find_incf_gateways(tl,id)
+			      return find_incf_gatewaysv2(tl,id, nextnodes)
 			   end if
         |  nil -> return find_incf_nodes_all(nextnodes, id)
         end case
