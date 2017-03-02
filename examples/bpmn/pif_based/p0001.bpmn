@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="p0001" name="p0001" isExecutable="true">
+    <startEvent id="initial"/>
+    <endEvent id="final"/>
+    <sequenceFlow id="sequenceFlow-45c2103e-4cf1-4939-b1ae-85646e1170b2" sourceRef="initial" targetRef="final"/>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_p0001">
+    <bpmndi:BPMNPlane bpmnElement="p0001" id="BPMNPlane_p0001">
+      <bpmndi:BPMNShape bpmnElement="initial" id="BPMNShape_initial">
+        <omgdc:Bounds height="30.0" width="30.0" x="0.0" y="0.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="final" id="BPMNShape_final">
+        <omgdc:Bounds height="30.0" width="30.0" x="80.0" y="0.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="sequenceFlow-45c2103e-4cf1-4939-b1ae-85646e1170b2" id="BPMNEdge_sequenceFlow-45c2103e-4cf1-4939-b1ae-85646e1170b2">
+        <omgdi:waypoint x="30.0" y="15.0"/>
+        <omgdi:waypoint x="42.0" y="15.0"/>
+        <omgdi:waypoint x="42.0" y="15.000000000000002"/>
+        <omgdi:waypoint x="80.0" y="15.000000000000002"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
