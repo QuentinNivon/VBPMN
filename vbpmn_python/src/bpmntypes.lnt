@@ -210,6 +210,7 @@ function find_all_upstream_flows(p: BPROCESS, incf: IDS): IDS is
          cons(hd, tl) ->  
                     upfset := append_to_set(get_incf_by_id(p, hd), upfset);
                     incfset :=tl
+         |  nil -> return upfset
     end case
     end loop;
     return upfset
