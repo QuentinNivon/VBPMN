@@ -8,7 +8,7 @@ module bpmntypes(id) with "get" is
 
 type IDS is
     set of ID 
-with "==", "!=", "inter", "length", "empty"
+with "==", "!=", "inter", "length", "empty", "member"
 end type
 
 (* s of type IDS is a set, so does not store twice the same value *)
@@ -34,15 +34,15 @@ type FLOW is
     flow ( ident: ID, source: ID, target: ID )
 end type
 
-(* set of flows *) 
+(* set of flows *)
 
 type FLOWS is
     set of FLOW
 end type
 
-(* task *) 
+(* task *)
 
-type TASK is 
+type TASK is
     task ( ident: ID, incf: IDS, outf: IDS )
 end type
 
@@ -54,13 +54,13 @@ end type
 
 (* initial event *)
 
-type INITIAL is 
+type INITIAL is
     initial ( ident: ID, outf: ID )   (* several outgoing flows (?) *)
 end type
 
 (* final event *)
 
-type FINAL is 
+type FINAL is
     final ( ident: ID, incf: IDS )     (* several incoming flows (?) *)
 end type
 
@@ -70,15 +70,15 @@ type FINALS is
     set of FINAL
 end type
 
-(* type of gateway *) 
+(* type of gateway *)
 
-type GSORT is 
+type GSORT is
     xor, and, or
 end type
 
 (* gateway pattern *)
 
-type GPATTERN is 
+type GPATTERN is
     split, merge
 end type
 
@@ -97,7 +97,7 @@ end type
 (* node *)
 
 type NODE is    (* could it be simpler ? *)
-    i ( initial: INITIAL ), 
+    i ( initial: INITIAL ),
     f ( finals: FINALS ),
     g ( gateways: GATEWAYS ),
     t ( tasks: TASKS )
@@ -142,7 +142,7 @@ function find_incf_nodes (nodes: NODES, mergeid: ID): IDS is
 	|  cons(i(initial), tl)
 	|  cons(f(finals), tl)
 	|  cons(t(tasks), tl)    -> return find_incf_nodes(tl, mergeid)
-        |  nil -> return nil
+    |  nil -> return nil
         end case
 end function
 
@@ -172,8 +172,9 @@ end function
 (*-------------------------------------------------------------------------------*)
 
 function is_merge_possible_v2(p: BPROCESS, activeflows:IDS, mergeid:ID): Bool is
-     var incf:IDS, inactiveincf:IDS, active_merge:Nat in
-        incf := find_incf(p, mergeid);
+     var incf:IDS, inactiveincf:IDS, active_merge:Nat, visited: IDS, result: Bool in
+        visited := nil;
+        incf := find_incf(p, mergeid);          (* just iterate through gateways instead of all nodes*)
         active_merge := find_active_tokens(activeflows, incf);
         (*--check if all the incf have tokens--*)
         if(active_merge == length(incf)) then
@@ -181,44 +182,39 @@ function is_merge_possible_v2(p: BPROCESS, activeflows:IDS, mergeid:ID): Bool is
         else
             (*--first remove incf with active tokens--*)
             inactiveincf := remove_Ids_from_set(activeflows, incf);
+
             (*--then check upstream for remaining flows--*)
-            return check_tokens_upstream(p, activeflows, inactiveincf)
+            eval result := check_af_upstream(!?visited, p, activeflows, inactiveincf);
+            return result
         end if
     end var
 end function
+
 
 (*------------ finds all the upstream flows and checks for tokens -----------*)
-function check_tokens_upstream(p: BPROCESS, activeflows:IDS, incf:IDS): Bool is
-    var upstreamincf: IDS, count: Nat in
-        if(empty(incf)) then
-            return True
-        else
-            count := find_active_tokens(activeflows, incf);
-            if(count > 0) then
-                return False
-            else
-                upstreamincf := find_all_upstream_flows(p, incf);
-                return check_tokens_upstream(p, activeflows, upstreamincf)
-            end if
-        end if
-    end var
-end function
 
-(*------------ finds all the upstream flows for a set of incf and return it as a list -----------*)
-function find_all_upstream_flows(p: BPROCESS, incf: IDS): IDS is
-    var upfset:IDS, incfset:IDS in
-    incfset := incf;
-    upfset := nil;
-    while incfset != nil loop
-    case incfset in
-        var hd:ID, tl:IDS in
-         cons(hd, tl) ->
-                    upfset := append_to_set(get_incf_by_id(p, hd), upfset);
-                    incfset :=tl
-         |  nil -> return upfset
-    end case
-    end loop;
-    return upfset
+function check_af_upstream(in out visited:IDS, p:BPROCESS, activeflows:IDS, incf:IDS): Bool is
+    var count:Nat, result:Bool, result2:Bool in
+        case incf in
+            var hd:ID, tl:IDS, upflow:IDS in
+            cons(hd, tl) ->
+                        if (member(hd, visited)) then
+                            eval result := check_af_upstream(!?visited, p, activeflows, tl);
+                            return result
+                        else
+                            visited := add(hd, visited);
+                            upflow := get_incf_by_id(p, hd);
+                            count := find_active_tokens(activeflows, upflow);
+                            if(count == 0 of Nat) then
+                                eval result := check_af_upstream(!?visited, p, activeflows, upflow);
+                                eval result2 := check_af_upstream(!?visited, p, activeflows, tl);
+                                return result and result2
+                            else
+                                return False
+                            end if
+                        end if
+            | nil -> return True
+        end case
     end var
 end function
 
@@ -226,9 +222,121 @@ end function
 function get_incf_by_id(p:BPROCESS, nodeid:ID): IDS is
     case p in
 	var name: ID, nodes: NODES, flows: FLOWS in
-           proc (name, nodes, flows) -> return find_incf_nodes_all(nodes, nodeid)
+           proc (name, nodes, flows) -> return traverse_nodes(nodes, nodeid)
     end case
 end function
+
+
+(*------ Traverse across all nodes in search of the node ------*)
+function traverse_nodes(nodes: NODES, id:ID): IDS is
+    case nodes in
+        var gateways: GATEWAYS, initial: INITIAL, finals: FINALS, tasks: TASKS, tl: NODES, incf:IDS in
+        cons(g(gateways), tl) ->
+                                incf := traverse_gateways(gateways, id);
+                                    if (nil == incf) then
+                                        return traverse_nodes(tl, id)
+                                    else
+                                        return incf
+                                    end if
+        |  cons(i(initial), tl) -> return traverse_nodes(tl, id)
+        |  cons(f(finals), tl) ->
+                                incf := traverse_finals(finals, id);
+                                    if (nil == incf) then
+                                        return traverse_nodes(tl, id)
+                                    else
+                                        return incf
+                                    end if
+        |  cons(t(tasks), tl) ->
+                                incf := traverse_tasks(tasks, id);
+                                    if (nil == incf) then
+                                        return traverse_nodes(tl, id)
+                                    else
+                                        return incf
+                                    end if
+        |  nil -> return nil
+    end case
+end function
+
+
+(*-------- Find incf of gateways ------------*)
+function traverse_gateways(gateways: GATEWAYS, id: ID): IDS is
+	case gateways in
+	var ident: ID, pattern: GPATTERN, sort: GSORT, incf: IDS, outf: IDS, tl: GATEWAYS in
+           cons(gateway(ident, pattern, sort, incf, outf), tl) ->
+	   		   if (ident==id) then
+			      return incf
+			   else
+			      return traverse_gateways(tl, id)
+			   end if
+        |  nil -> return nil
+        end case
+end function
+
+(*-------- Find incf of finals ------------*)
+function traverse_finals(finals: FINALS, id: ID): IDS is
+	case finals in
+	var ident: ID, incf: IDS, tl: FINALS in
+           cons(final(ident, incf), tl) ->
+	   		   if (ident==id) then
+			      return incf
+			   else
+			      return traverse_finals(tl, id)
+			   end if
+        |  nil -> return nil
+    end case
+end function
+
+(*-------- Find incf of taks ------------*)
+function traverse_tasks(tasks: TASKS, id: ID): IDS is
+	case tasks in
+	var ident: ID, incf: IDS, outf: IDS, tl: TASKS in
+           cons(task(ident, incf, outf), tl) ->
+	   		   if (ident==id) then
+			      return incf
+			   else
+			      return traverse_tasks(tl, id)
+			   end if
+        |  nil -> return nil
+        end case
+end function
+
+
+(*---------- Remove Incoming flows from activetokens ----------------------*)
+function remove_incf(bpmn:BPROCESS, activeflows:IDS, mergeid:ID): IDS is
+    var incf:IDS in
+        incf := get_incf_by_id(bpmn, mergeid);
+        return remove_Ids_from_set(incf, activeflows)
+    end var
+end function
+
+
+(*--------- Helper functions to remove a set of IDS from the set ---------------- *)
+function remove_Ids_from_set(toremove:IDS, inputset: IDS): IDS is
+case toremove in
+  var hd: ID, tl: IDS in
+      nil -> return inputset
+    | cons(hd,tl) -> return remove_Ids_from_set(tl, remove(hd, inputset))
+end case
+end function
+
+(*--------- Helper functions to add a set of IDS to the set ---------------- *)
+function append_to_set(toappend:IDS, inputset:IDS): IDS is
+case toappend in
+  var hd: ID, tl: IDS in
+      nil -> return inputset
+    | cons(hd,tl) -> return append_to_set(tl, add(hd, inputset))
+end case
+end function
+
+(*----------------------------------------------------------------------------------------------*)
+(*----------------------------------------------------------------------------------------------*)
+(*----------------------------------------------------------------------------------------------*)
+(*-----------------Another version of code for process node traversal---------------------------*)
+(*---------------- Fix: Remove the code from final version -------------------------------------*)
+(*----------------------------------------------------------------------------------------------*)
+(*----------------------------------------------------------------------------------------------*)
+(*----------------------------------------------------------------------------------------------*)
+(*----------------------------------------------------------------------------------------------*)
 
 (*------ Traverse across all nodes in search of the node ------*)
 function find_incf_nodes_all(nodes: NODES, id:ID): IDS is
@@ -282,33 +390,6 @@ function find_incf_tasks(tasks: TASKS, id: ID, nextnodes: NODES): IDS is
 			   end if
         |  nil -> return find_incf_nodes_all(nextnodes, id)
         end case
-end function
-
-(*---------- Remove Incoming flows from activetokens ----------------------*)
-function remove_incf(bpmn:BPROCESS, activeflows:IDS, mergeid:ID): IDS is
-    var incf:IDS in
-        incf := get_incf_by_id(bpmn, mergeid);
-        return remove_Ids_from_set(incf, activeflows)
-    end var
-end function
-
-
-(*--------- Helper functions to remove a set of IDS from the set ---------------- *)
-function remove_Ids_from_set(toremove:IDS, inputset: IDS): IDS is
-case toremove in
-  var hd: ID, tl: IDS in
-      nil -> return inputset
-    | cons(hd,tl) -> return remove_Ids_from_set(tl, remove(hd, inputset))
-end case
-end function
-
-(*--------- Helper functions to remove a set of IDS from the set ---------------- *)
-function append_to_set(toappend:IDS, inputset:IDS): IDS is
-case toappend in
-  var hd: ID, tl: IDS in
-      nil -> return inputset
-    | cons(hd,tl) -> return append_to_set(tl, add(hd, inputset))
-end case
 end function
 
 end module

@@ -1269,14 +1269,14 @@ class Process:
             f.write(", ")
             self.dumpFlowsMsgs(f, True)
             # we hide additional synchros for or splits/joins as well
-            nb = 0
-            if (nbsync > 0):
-                f.write(", ")
-                for e in addSynchro:
-                    f.write(e + ":any")
-                    nb = nb + 1
-                    if (nb < nbsync):
-                        f.write(", ")
+            # nb = 0
+            # if (nbsync > 0):
+            #     f.write(", ")
+            #     for e in addSynchro:
+            #         f.write(e + ":any")
+            #         nb = nb + 1
+            #         if (nb < nbsync):
+            #             f.write(", ")
         f.write(", QueryProcess:any, ProcessResponse:any ")
         f.write(" in\n")
 
