@@ -181,7 +181,7 @@ function is_merge_possible_v2(p: BPROCESS, activeflows:IDS, mergeid:ID): Bool is
             return True
         else
             (*--first remove incf with active tokens--*)
-            inactiveincf := remove_Ids_from_set(activeflows, incf);
+            inactiveincf := remove_ids_from_set_2(activeflows, incf);
 
             (*--then check upstream for remaining flows--*)
             eval result := check_af_upstream(!?visited, p, activeflows, inactiveincf);
@@ -190,20 +190,39 @@ function is_merge_possible_v2(p: BPROCESS, activeflows:IDS, mergeid:ID): Bool is
     end var
 end function
 
+function is_sync_done(p:BPROCESS, activeflows: IDS, syncstore: IDS, mergeid:ID): Bool is 
+    var incf:IDS, activesync: IDS in
+        incf := find_incf(p, mergeid);          (* just iterate through gateways instead of all nodes*)
+        activesync := inter(syncstore, incf); 
+        if (empty(activesync)) then
+            return False
+        elsif (inter(activesync, activeflows) == activesync) then
+            return True
+        else
+            return False
+        end if
+    end var
+end function
 
 (*------------ finds all the upstream flows and checks for tokens -----------*)
 
 function check_af_upstream(in out visited:IDS, p:BPROCESS, activeflows:IDS, incf:IDS): Bool is
     var count:Nat, result:Bool, result2:Bool in
         case incf in
-            var hd:ID, tl:IDS, upflow:IDS in
+            var hd:ID, tl:IDS, upflow:IDS, source:ID in
             cons(hd, tl) ->
-                        if (member(hd, visited)) then
+                        source := find_flow_source(p, hd);
+                        if(source == DummyId) then
+                                return True
+                        elsif (member(source, visited)) then
                             eval result := check_af_upstream(!?visited, p, activeflows, tl);
                             return result
                         else
-                            visited := add(hd, visited);
-                            upflow := get_incf_by_id(p, hd);
+                            visited := add(source, visited);
+                            upflow := get_incf_by_id(p, source);
+                            if (upflow == nil) then
+                                return True
+                            end if;
                             count := find_active_tokens(activeflows, upflow);
                             if(count == 0 of Nat) then
                                 eval result := check_af_upstream(!?visited, p, activeflows, upflow);
@@ -215,6 +234,29 @@ function check_af_upstream(in out visited:IDS, p:BPROCESS, activeflows:IDS, incf
                         end if
             | nil -> return True
         end case
+    end var
+end function
+
+function find_flow_source(bpmn: BPROCESS, flowid: ID): ID is
+    case bpmn in
+	var name: ID, nodes: NODES, flows: FLOWS in
+           proc (name, nodes, flows) -> return traverse_flows(flows, flowid)
+    end case
+end function
+
+function traverse_flows(flows: FLOWS, flowid:ID): ID is
+    var dummySource:ID in 
+    dummySource := DummyId;
+    case flows in 
+        var ident: ID, source: ID, target: ID, tl:FLOWS in
+          cons(flow(ident, source, target), tl) ->  
+                                        if (ident==flowid) then
+                                            return source
+                                        else
+                                            return traverse_flows(tl, flowid)
+                                        end if
+        | nil -> return dummySource
+    end case
     end var
 end function
 
@@ -305,18 +347,38 @@ end function
 function remove_incf(bpmn:BPROCESS, activeflows:IDS, mergeid:ID): IDS is
     var incf:IDS in
         incf := get_incf_by_id(bpmn, mergeid);
-        return remove_Ids_from_set(incf, activeflows)
+        return remove_ids_from_set_2(incf, activeflows)
     end var
+end function
+
+function remove_sync(bpmn:BPROCESS, syncstore:IDS, mergeid:ID): IDS is
+    return remove_incf(bpmn, syncstore, mergeid)
 end function
 
 
 (*--------- Helper functions to remove a set of IDS from the set ---------------- *)
-function remove_Ids_from_set(toremove:IDS, inputset: IDS): IDS is
+function remove_ids_from_set(toremove:IDS, inputset: IDS): IDS is
 case toremove in
   var hd: ID, tl: IDS in
       nil -> return inputset
-    | cons(hd,tl) -> return remove_Ids_from_set(tl, remove(hd, inputset))
+    | cons(hd,tl) -> return remove_ids_from_set(tl, remove(hd, inputset))
 end case
+end function
+
+(*--------- Helper functions to remove a set of IDS from the set: Loop version ---------------- *)
+function remove_ids_from_set_2(in var toremove:IDS, inputset: IDS): IDS is
+var newset:IDS in
+newset := inputset;
+while (toremove != nil) loop
+    case toremove in
+    var hd: ID, tl: IDS in
+        nil -> return newset
+        | cons(hd,tl) -> newset := remove(hd, newset);
+                         toremove := tl
+    end case
+end loop;
+return newset
+end var
 end function
 
 (*--------- Helper functions to add a set of IDS to the set ---------------- *)
