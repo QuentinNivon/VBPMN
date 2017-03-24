@@ -1284,31 +1284,27 @@ class Process:
                         first = False
                     else:
                         flowString.append("[]\n")
-                    flowString.appendin(flow.ident + "_begin (?ident" + str(counter) + " of ID); ")
+                    flowString.append(flow.ident + "_begin (?ident" + str(counter) + " of ID); ")
                     identSet.append("ident" + str(counter))
-                    flowString.append(self.getSchedulerString("{ident1}", "{ident" + counter + "}", "syncstore"))
+                    flowString.append(self.getSchedulerString("{ident1}", "{ident" + str(counter )+ "}", "syncstore"))
                     counter += 1
                 flowString.append("\nend select ")
 
             elif isinstance(node, XOrJoinGateway):
                 flowString.append("\n(*----  XOrJoinGateway with ID: " + str(node.ident) + "------*)\n")
                 first = True
-                counter = 2
-                incIds = []
                 flowString.append(" select\n")
                 for flow in node.incomingFlows:
                     if first:
                         first = False
                     else:
                         flowString.append("\n[]\n")
-                    flowString.append(flow.ident + "_finish (?ident" + str(counter) + " of ID); ")
-                    identSet.append("ident" + str(counter))
-                    incIds.append("ident" + str(counter))
-                    counter += 1
+                    flowString.append(flow.ident + "_finish (?ident2 of ID) ")
                 flowString.append("\nend select; ")
                 flowString.append(node.outgoingFlows[0].ident + "_begin (?ident1 of ID);")
                 identSet.append("ident1")
-                flowString.append(self.getSchedulerString("{" + ','.join(incIds) + "}", "{ident1}"), "syncstore")
+                identSet.append("ident2")
+                flowString.append(self.getSchedulerString("{ident2}", "{ident1}", "syncstore"))
 
             elif isinstance(node, AndSplitGateway):
                 flowString.append("\n(*----  AndSplitGateway with ID: " + str(node.ident) + "------*)\n")
@@ -1316,17 +1312,19 @@ class Process:
                 identSet.append("ident1")
                 first = True
                 counter = 2
+                outIds = []
                 flowString.append("par\n")
                 for flow in node.outgoingFlows:
                     if first:
                         first = False
                     else:
                         flowString.append("\n||")
-                    flowString.append(flow.ident + "_begin (?ident" + str(counter) + " of ID);")
+                    flowString.append(flow.ident + "_begin (?ident" + str(counter) + " of ID) ")
                     identSet.append("ident" + str(counter))
-                    flowString.append(self.getSchedulerString("{ident1}", "{ident" + str(counter) + "}", "syncstore"))
+                    outIds.append("ident" + str(counter))
                     counter += 1
-                flowString.join("\nend par ")
+                flowString.append("\nend par;")
+                flowString.append(self.getSchedulerString("{ident1}", "{" +",".join(outIds)+ "}", "syncstore"))
 
             elif isinstance(node, AndJoinGateway):
                 flowString.append("(*----  AndJoinGateway with ID: " + str(node.ident) + "------*)\n")
@@ -1472,9 +1470,12 @@ class Process:
             "\n[]\n QueryProcess(?mergeid of ID);\n"
             "if (is_merge_possible_v2(bpmn,activeflows,mergeid) and is_sync_done(bpmn, activeflows, syncstore, mergeid)) then \n")
         f.write("ProcessResponse(!True of Bool);\n")
-        f.write("select \n")
-        f.write("[]\n".join(incJoinBeginList))
-        f.write("end select \n")
+        if(len(incJoinBeginList) > 0):
+            f.write("select \n")
+            f.write("[]\n".join(incJoinBeginList))
+            f.write("end select \n")
+        else:
+            f.write(self.getSchedulerString("{}", "{}", "syncstore"))
         f.write("else \n")
         f.write("ProcessResponse(!False of Bool);\nscheduler [")
         f.write(self.getFlowMsgs(False))
@@ -1614,7 +1615,7 @@ class Process:
         # synchronizations on all begin/finish flows
         if (nbflows > 0):
             f.write(self.getFlowMsgs(False))
-        if len(addSynchro) != 0:   
+        if len(addSynchro) != 0:
             f.write(",")
             f.write(",".join(addSynchro))
         f.write(" in\n")
