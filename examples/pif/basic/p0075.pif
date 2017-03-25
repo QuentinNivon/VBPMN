@@ -7,19 +7,19 @@
         multi-split/join balanced with multiple nested subgraphs
         INIT  = 
 
-            SPLIT-AND { t111.t222 ; t333 ; t444.t555 ; t666 ; t777 } JOIN-AND
+            SPLIT-OR { t111.t222 ; t333 ; t444.t555 ; t666 ; t777 } JOIN-OR
 
-            task0 . task1 . SPLIT-OR {
+            task0 . task1 . SPLIT-AND {
             task2 . task22 . task222 . JO1 ;
-            task3 . SPLIT-OR {
+            task3 . SPLIT-AND {
                 task5 . JO2 ;
-                SPLIT-OR { task18 . JO3 ; task19 . JO3 ; task20 . JO3 ; 
+                SPLIT-AND { task18 . JO3 ; task19 . JO3 ; task20 . JO3 ; 
                            task21 . JO3 ; t1000. JO3}
             }
         }
-        JO1 = JOIN-OR . task4 . 0
-        JO2 = JOIN-OR . JO1
-        JO3 = JOIN-OR . JO2
+        JO1 = JOIN-AND . task4 . 0
+        JO2 = JOIN-AND . JO1
+        JO3 = JOIN-AND . JO2
     </pif:documentation>
 
     <!--  WORKFLOW -->
@@ -67,7 +67,7 @@
             <pif:outgoingFlows>sf71</pif:outgoingFlows>
         </pif:nodes>
 
-        <pif:nodes xsi:type="pif:AndSplitGateway" id="SAND">
+        <pif:nodes xsi:type="pif:OrSplitGateway" id="SAND">
             <pif:incomingFlows>sf0</pif:incomingFlows>
             <pif:outgoingFlows>sf50</pif:outgoingFlows>
             <pif:outgoingFlows>sf53</pif:outgoingFlows>
@@ -76,7 +76,7 @@
             <pif:outgoingFlows>sf60</pif:outgoingFlows>
         </pif:nodes>
 
-        <pif:nodes xsi:type="pif:AndJoinGateway" id="JAND">
+        <pif:nodes xsi:type="pif:OrJoinGateway" id="JAND">
             <pif:incomingFlows>sf52</pif:incomingFlows>
             <pif:incomingFlows>sf54</pif:incomingFlows>
             <pif:incomingFlows>sf57</pif:incomingFlows>
@@ -159,7 +159,7 @@
             <pif:outgoingFlows>sf12</pif:outgoingFlows>
         </pif:nodes>
 
-        <pif:nodes xsi:type="pif:OrSplitGateway" id="S3">
+        <pif:nodes xsi:type="pif:AndSplitGateway" id="S3">
             <pif:incomingFlows>sf9</pif:incomingFlows>
             <pif:outgoingFlows>sf31</pif:outgoingFlows>
             <pif:outgoingFlows>sf32</pif:outgoingFlows>
@@ -168,7 +168,7 @@
             <pif:outgoingFlows>sf70</pif:outgoingFlows>
         </pif:nodes>
 
-        <pif:nodes xsi:type="pif:OrJoinGateway" id="J3">
+        <pif:nodes xsi:type="pif:AndJoinGateway" id="J3">
             <pif:incomingFlows>sf33</pif:incomingFlows>
             <pif:incomingFlows>sf34</pif:incomingFlows>
             <pif:incomingFlows>sf37</pif:incomingFlows>
