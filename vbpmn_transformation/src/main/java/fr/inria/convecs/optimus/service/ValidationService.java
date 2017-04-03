@@ -93,6 +93,38 @@ public class ValidationService {
 
 	}
 
+	@POST
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces("text/plain")
+	@Path("/verify")
+	public Response verifyProperties(@FormDataParam("file1") InputStream fileStream1,
+			@FormDataParam("file1") FormDataContentDisposition fileInfo1, 
+			FormDataMultiPart formData) {
+
+		Response httpResponse = null;
+		try {      
+
+			String outputDir = Files.createTempDirectory(Paths.get(OUTPUT_PATH), "vbpmn_")
+					.toAbsolutePath().toString();
+
+			File file1 = new File(outputDir + File.separator + fileInfo1.getFileName());
+
+			Files.copy(fileStream1, file1.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+			List<File> fileList = new ArrayList<File>();
+
+			fileList.add(file1);
+
+			httpResponse = processRequest(fileList, formData, outputDir);
+
+		} catch (Exception e) {
+			logger.error("Error processing request: ", e);
+			throw VbpmnExceptionMapper.createWebAppException(e);
+		}
+		return httpResponse;
+
+	}
+
 	// TODO:Cleanup
 	private Response processRequest(final List<File> fileList, final FormDataMultiPart formData,
 			final String outputDir) {
@@ -101,50 +133,56 @@ public class ValidationService {
 
 		Response httpResponse;
 		try {
-			String mode = formData.getField("mode").getValue();
-			String option = formData.getField("option").getValue();
-
-			List<String> operationMode = new ArrayList<String>();
-			operationMode.add(mode);
-
-			if (mode.equals("property-and") || mode.equals("property-implied")) {
-				String formula = formData.getField("formula").getValue();
-				operationMode.add("--formula");
-				operationMode.add(formula);
-			} else if (option.equals("hiding")) {
-				String hidingValue = formData.getField("hidingVal").getValue();
-				if(hidingValue != null && !hidingValue.isEmpty()) {
-					operationMode.add("--hiding");
-					operationMode.add(hidingValue);
-					if (null != formData.getField("exposeMode")) {
-						operationMode.add("--exposemode");
-					}
-				}
-				String renameValue = formData.getField("renameVal").getValue();
-				if(renameValue != null && !renameValue.isEmpty())
-				{
-					String renameOption = formData.getField("renameOption").getValue();
-					operationMode.add("--renaming");
-					operationMode.add(renameValue);
-					if (!(renameOption.equals("none"))) {
-						operationMode.add("--renamed");
-						operationMode.add(renameOption);
-					}
-				}
-			}
-
 			if (fileList.size() > 2 || fileList.size() <= 0) {
 				httpResponse = Response.status(Status.BAD_REQUEST)
 						.entity("You can only specify 1 or 2 files").build();
 			} else {
 				ModelValidator validator = new VbpmnValidator(scriptsPath, outputDir);
 				String result;
-
+				List<String> operationMode = new ArrayList<String>();
 				if (fileList.size() == 2) {
+					String mode = formData.getField("mode").getValue();
+					String option = formData.getField("option").getValue();
+
+					
+					operationMode.add(mode);
+
+					if (mode.equals("property-and") || mode.equals("property-implied")) {
+						String formula = formData.getField("formula").getValue();
+						operationMode.add("--formula");
+						operationMode.add(formula);
+					} else if (option.equals("hiding")) {
+						String hidingValue = formData.getField("hidingVal").getValue();
+						if(hidingValue != null && !hidingValue.isEmpty()) {
+							operationMode.add("--hiding");
+							operationMode.add(hidingValue);
+							if (null != formData.getField("exposeMode")) {
+								operationMode.add("--exposemode");
+							}
+						}
+						String renameValue = formData.getField("renameVal").getValue();
+						if(renameValue != null && !renameValue.isEmpty())
+						{
+							String renameOption = formData.getField("renameOption").getValue();
+							operationMode.add("--renaming");
+							operationMode.add(renameValue);
+							if (!(renameOption.equals("none"))) {
+								operationMode.add("--renamed");
+								operationMode.add(renameOption);
+							}
+						}
+					}
 					File input1 = parseAndTransform(fileList.get(0));
 					File input2 = parseAndTransform(fileList.get(1));
 					validator.validate(input1, input2, operationMode);
-				} else {
+				} 
+				else 
+				{
+					operationMode.add("property-implied");
+					String formula = formData.getField("formula").getValue();
+					operationMode.add("--formula");
+					operationMode.add(formula);
+					
 					File input1 = parseAndTransform(fileList.get(0));
 					validator.validate(input1, operationMode);
 				}
