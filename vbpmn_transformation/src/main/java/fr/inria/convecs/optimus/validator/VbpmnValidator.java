@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.inria.convecs.optimus.util.CommandExecutor;
+import fr.inria.convecs.optimus.util.PifUtil;
 
 /**
  * @author silverquick
@@ -21,158 +22,165 @@ import fr.inria.convecs.optimus.util.CommandExecutor;
  */
 public class VbpmnValidator implements ModelValidator {
 
-  private Logger logger = LoggerFactory.getLogger(ModelValidator.class);
+	private Logger logger = LoggerFactory.getLogger(ModelValidator.class);
 
-  private String scriptsFolder;
+	private String scriptsFolder;
 
-  private String outputFolder;
+	private String outputFolder;
 
-  private String result;
+	private String result;
 
-  public VbpmnValidator(String scriptsFolder, String outputFolder) {
-    this.scriptsFolder = scriptsFolder;
-    this.outputFolder = outputFolder;
-  }
+	public VbpmnValidator(String scriptsFolder, String outputFolder) {
+		this.scriptsFolder = scriptsFolder;
+		this.outputFolder = outputFolder;
+	}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see fr.inria.convecs.optimus.validator.ModelValidator#validate(java.io.File, java.lang.String)
-   */
-  @Override
-  public void validate(final File modelFile, final List<String> options) {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see fr.inria.convecs.optimus.validator.ModelValidator#validate(java.io.File, java.lang.String)
+	 */
+	@Override
+	public void validate(final File modelFile, final List<String> options) {
 
-    validate(modelFile, modelFile, options);
+		validate(modelFile, modelFile, options);
 
-  }
+	}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see fr.inria.convecs.optimus.validator.ModelValidator#validate(java.io.File, java.io.File,
-   * java.lang.String)
-   */
-  @Override
-  public void validate(final File modelFile1, final File modelFile2, final List<String> options) {
-    List<String> vbpmnCommand = new ArrayList<String>();
-    vbpmnCommand.add("python");
-    vbpmnCommand.add(scriptsFolder + File.separator + "vbpmn.pyc");
-    vbpmnCommand.add(modelFile1.getAbsolutePath());
-    vbpmnCommand.add(modelFile2.getAbsolutePath());
-    vbpmnCommand.addAll(options);
-    logger.debug("The command is: {}", vbpmnCommand.toString());
-    try {
-      CommandExecutor commandExecutor = new CommandExecutor(vbpmnCommand, new File(outputFolder));
-      int execResult = commandExecutor.executeCommand();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see fr.inria.convecs.optimus.validator.ModelValidator#validate(java.io.File, java.io.File,
+	 * java.lang.String)
+	 */
+	@Override
+	public void validate(final File modelFile1, final File modelFile2, final List<String> options) {
+		Boolean isBalanced = false;
+		isBalanced = PifUtil.isPifBalanced(modelFile1);
+		isBalanced = isBalanced && PifUtil.isPifBalanced(modelFile2);
+		logger.debug("The input isBalanced? : {}", isBalanced);
+		List<String> vbpmnCommand = new ArrayList<String>();
+		vbpmnCommand.add("python");
+		if(isBalanced)
+			vbpmnCommand.add(scriptsFolder + File.separator + "vbpmn.pyc");
+		else
+			vbpmnCommand.add(scriptsFolder + File.separator + "vbpmn2.pyc");
+		vbpmnCommand.add(modelFile1.getAbsolutePath());
+		vbpmnCommand.add(modelFile2.getAbsolutePath());
+		vbpmnCommand.addAll(options);
+		logger.debug("The command is: {}", vbpmnCommand.toString());
+		try {
+			CommandExecutor commandExecutor = new CommandExecutor(vbpmnCommand, new File(outputFolder));
+			int execResult = commandExecutor.executeCommand();
 
-      logger.debug("The return value of execution of command is: {}", execResult);
+			logger.debug("The return value of execution of command is: {}", execResult);
 
-      String response = handleResponse(commandExecutor.getOutput().trim(),
-          commandExecutor.getErrors().trim());
+			String response = handleResponse(commandExecutor.getOutput().trim(),
+					commandExecutor.getErrors().trim());
 
-      StringBuilder resultBuilder = new StringBuilder();
-      if(response.equalsIgnoreCase("TRUE") || response.equalsIgnoreCase("FALSE"))
-      {
-        resultBuilder.append(response).append("|");
-        String dotModel1 = generateDotFile(modelFile1.getAbsolutePath().replace(".pif", ".bcg"));
-        String dotModel2 = generateDotFile(modelFile2.getAbsolutePath().replace(".pif", ".bcg"));
-        resultBuilder.append(dotModel1).append("|");
-        resultBuilder.append(dotModel2);
-        if (response.equalsIgnoreCase("FALSE")) {
-          String bcgFileName = "bisimulator.bcg";
-          File bcgFile = new File(outputFolder + File.separator + bcgFileName);
-          String dotBcg = generateDotFile(bcgFile.getAbsolutePath());
-          resultBuilder.append("|").append(dotBcg);
-        }
-        this.result = resultBuilder.toString();
-      }
-      else 
-      {
-        this.result = response;
-      }
+			StringBuilder resultBuilder = new StringBuilder();
+			if(response.equalsIgnoreCase("TRUE") || response.equalsIgnoreCase("FALSE"))
+			{
+				resultBuilder.append(response).append("|");
+				String dotModel1 = generateDotFile(modelFile1.getAbsolutePath().replace(".pif", ".bcg"));
+				String dotModel2 = generateDotFile(modelFile2.getAbsolutePath().replace(".pif", ".bcg"));
+				resultBuilder.append(dotModel1).append("|");
+				resultBuilder.append(dotModel2);
+				if (response.equalsIgnoreCase("FALSE")) {
+					String bcgFileName = "bisimulator.bcg";
+					File bcgFile = new File(outputFolder + File.separator + bcgFileName);
+					String dotBcg = generateDotFile(bcgFile.getAbsolutePath());
+					resultBuilder.append("|").append(dotBcg);
+				}
+				this.result = resultBuilder.toString();
+			}
+			else 
+			{
+				this.result = response;
+			}
 
-    } catch (Exception e) {
-      logger.error("Failed executing the command", e);
-      throw new RuntimeException(e);
-    }
+		} catch (Exception e) {
+			logger.error("Failed executing the command", e);
+			throw new RuntimeException(e);
+		}
 
-  }
+	}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see fr.inria.convecs.optimus.validator.ModelValidator#getResult()
-   */
-  @Override
-  public String getResult() {
-    return this.result;
-  }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see fr.inria.convecs.optimus.validator.ModelValidator#getResult()
+	 */
+	@Override
+	public String getResult() {
+		return this.result;
+	}
 
-  /**
-   * 
-   * @param commandExecutor
-   * @return
-   */
-  private String handleResponse(final String stdOut, final String stdErr) {
-    StringBuilder responseBuilder = new StringBuilder();
+	/**
+	 * 
+	 * @param commandExecutor
+	 * @return
+	 */
+	private String handleResponse(final String stdOut, final String stdErr) {
+		StringBuilder responseBuilder = new StringBuilder();
 
-    if (null != stdErr && !stdErr.isEmpty()) 
-    {
-      logger.debug("The stderr of command execution: {}", stdErr);
-      responseBuilder.append("Std error executing the command: ").append(stdErr);
+		if (null != stdErr && !stdErr.isEmpty()) 
+		{
+			logger.debug("The stderr of command execution: {}", stdErr);
+			responseBuilder.append("Std error executing the command: ").append(stdErr);
 
-    } 
-    else if (null != stdOut && !stdOut.isEmpty()) 
-    {
-      logger.debug("The stdout of command execution: {}", stdOut);
-      // TODO: crude method -cleaner approach required
-      if (stdOut.contains("ERROR")) 
-      {
-        responseBuilder.append("Internal error executing the command: ").append(stdOut);
-      } 
-      else 
-      {
-        String lastLine = stdOut.substring(stdOut.lastIndexOf("\n")).trim();
-        if (!(lastLine.equalsIgnoreCase("TRUE") || lastLine.equalsIgnoreCase("FALSE"))) 
-        {
-          responseBuilder.append(stdOut);
-        } 
-        else 
-        {
-          responseBuilder.append(lastLine);
-        }
-      }
-    } 
-    else 
-    {
-      responseBuilder.append("*** Unable to process request - No Result Available ***");
-    }
+		} 
+		else if (null != stdOut && !stdOut.isEmpty()) 
+		{
+			logger.debug("The stdout of command execution: {}", stdOut);
+			// TODO: crude method -cleaner approach required
+			if (stdOut.contains("ERROR")) 
+			{
+				responseBuilder.append("Internal error executing the command: ").append(stdOut);
+			} 
+			else 
+			{
+				String lastLine = stdOut.substring(stdOut.lastIndexOf("\n")).trim();
+				if (!(lastLine.equalsIgnoreCase("TRUE") || lastLine.equalsIgnoreCase("FALSE"))) 
+				{
+					responseBuilder.append(stdOut);
+				} 
+				else 
+				{
+					responseBuilder.append(lastLine);
+				}
+			}
+		} 
+		else 
+		{
+			responseBuilder.append("*** Unable to process request - No Result Available ***");
+		}
 
-    return responseBuilder.toString();
-  }
+		return responseBuilder.toString();
+	}
 
-  private String generateDotFile(String absolutePath) throws IOException, InterruptedException {
-    String dotFile = absolutePath.replace(".bcg", ".dot");
-    logger.debug("dot file: {}", dotFile);
-    List<String> command = new ArrayList<String>();
-    command.add("bcg_io");
-    command.add(absolutePath);
-    command.add(dotFile);
+	private String generateDotFile(String absolutePath) throws IOException, InterruptedException {
+		String dotFile = absolutePath.replace(".bcg", ".dot");
+		logger.debug("dot file: {}", dotFile);
+		List<String> command = new ArrayList<String>();
+		command.add("bcg_io");
+		command.add(absolutePath);
+		command.add(dotFile);
 
-    CommandExecutor commandExecutor = new CommandExecutor(command, new File(outputFolder));
-    int execResult = commandExecutor.executeCommand();
+		CommandExecutor commandExecutor = new CommandExecutor(command, new File(outputFolder));
+		int execResult = commandExecutor.executeCommand();
 
-    logger.debug("The exec result of command [ {} ] is {}", command, execResult);
+		logger.debug("The exec result of command [ {} ] is {}", command, execResult);
 
-    if (execResult != 0) {
-      throw new RuntimeException("Erorr executing BCG draw - " + commandExecutor.getErrors());
-    }
+		if (execResult != 0) {
+			throw new RuntimeException("Erorr executing BCG draw - " + commandExecutor.getErrors());
+		}
 
-    File outputFile = new File(dotFile);
+		File outputFile = new File(dotFile);
 
-    String dotOutput = FileUtils.readFileToString(outputFile, "UTF-8");
-    dotOutput = dotOutput.replaceAll("\\R", " "); // Java 8 carriage return replace
+		String dotOutput = FileUtils.readFileToString(outputFile, "UTF-8");
+		dotOutput = dotOutput.replaceAll("\\R", " "); // Java 8 carriage return replace
 
-    return dotOutput.trim();
-  }
+		return dotOutput.trim();
+	}
 }
