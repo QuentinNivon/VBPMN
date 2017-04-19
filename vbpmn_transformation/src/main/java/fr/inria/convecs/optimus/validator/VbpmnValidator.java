@@ -6,6 +6,7 @@ package fr.inria.convecs.optimus.validator;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +71,10 @@ public class VbpmnValidator implements ModelValidator {
 		vbpmnCommand.addAll(options);
 		logger.debug("The command is: {}", vbpmnCommand.toString());
 		try {
-			CommandExecutor commandExecutor = new CommandExecutor(vbpmnCommand, new File(outputFolder));
+			File outputDirectory = new File(outputFolder);
+			Files.copy(new File(scriptsFolder+ File.separator + "bpmntypes.lnt").toPath(), 
+					new File(outputFolder+ File.separator +"bpmntypes.lnt").toPath());
+			CommandExecutor commandExecutor = new CommandExecutor(vbpmnCommand, outputDirectory);
 			int execResult = commandExecutor.executeCommand();
 
 			logger.debug("The return value of execution of command is: {}", execResult);

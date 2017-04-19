@@ -16,7 +16,7 @@
 # TODO: perform cleaning in SVL scripts
 
 import sys
-from pif2lntv1 import *  # this library allows to go from PIF to LNT and LTS
+from pif2lntv5 import *  # this library allows to go from PIF to LNT and LTS
 
 # command to call SVL
 # first argument is the script, second one is the result file
@@ -223,7 +223,8 @@ class FormulaChecker(Checker):
     def __genSVL(self, filename):
         svl_commands = ""
         svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model1, "formula.mcl")
-        svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model2, "formula.mcl")
+        if self.model1 != self.model2 :
+            svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model2, "formula.mcl")
         template = SVL_CAESAR_TEMPLATE % svl_commands
         #
         f = open(filename, 'w')
@@ -238,7 +239,7 @@ class FormulaChecker(Checker):
     def __call__(self, *args, **kwargs):
         import sys
         f = open(FormulaChecker.FORMULA_FILE, 'w')
-        f.write(self.formula[1:-1]) # TODO: not very clean ...
+        f.write(self.formula) # TODO: not very clean ...
         f.close()
         self.__genSVL(Checker.CHECKER_FILE)
         call(SVL_CALL_COMMAND % (Checker.CHECKER_FILE, Checker.DIAGNOSTIC_FILE), shell=True, stdout=sys.stdout)
