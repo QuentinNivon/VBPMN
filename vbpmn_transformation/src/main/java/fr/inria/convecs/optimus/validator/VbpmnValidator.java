@@ -63,7 +63,7 @@ public class VbpmnValidator implements ModelValidator {
 		List<String> vbpmnCommand = new ArrayList<String>();
 		vbpmnCommand.add("python");
 		if(isBalanced)
-			vbpmnCommand.add(scriptsFolder + File.separator + "vbpmn.pyc");
+			vbpmnCommand.add(scriptsFolder + File.separator + "vbpmn2.pyc");
 		else
 			vbpmnCommand.add(scriptsFolder + File.separator + "vbpmn2.pyc");
 		vbpmnCommand.add(modelFile1.getAbsolutePath());
