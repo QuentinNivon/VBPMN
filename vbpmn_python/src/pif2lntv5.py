@@ -1828,9 +1828,9 @@ class Generator:
         proc.reachableOrJoin()
 
         # check for cycles in processes involving inclusive Gateway
-        cycle = proc.check_inclusive_cycle()
-        if cycle:
-            return (ReturnCodes.TERM_ERROR, pifModelName, proc.alpha())
+        # cycle = proc.check_inclusive_cycle()
+        # if cycle:
+        #     return (ReturnCodes.TERM_ERROR, pifModelName, proc.alpha())
 
         # generate the LNT code for the model
         proc.genLNT()

@@ -92,6 +92,8 @@ public class VbpmnValidator implements ModelValidator {
 				resultBuilder.append(dotModel2);
 				if (response.equalsIgnoreCase("FALSE")) {
 					String bcgFileName = "bisimulator.bcg";
+					if(options.contains("property-implied") || options.contains("property-and"))
+						bcgFileName = "evaluator.bcg";
 					File bcgFile = new File(outputFolder + File.separator + bcgFileName);
 					String dotBcg = generateDotFile(bcgFile.getAbsolutePath());
 					resultBuilder.append("|").append(dotBcg);
