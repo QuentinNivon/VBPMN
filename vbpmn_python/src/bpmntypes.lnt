@@ -16,7 +16,7 @@ function add (v: ID, s: IDS): IDS is
   case s in
   var hd: ID, tl: IDS in
       nil -> return cons(v,nil)
-    | cons(hd,tl) -> if (v==hd) then return tl else return cons(hd,add(v,tl)) end if
+    | cons(hd,tl) -> if (v==hd) then return add(v,tl) else return cons(hd,add(v,tl)) end if
   end case
 end function
 
@@ -193,10 +193,10 @@ end function
 function is_sync_done(p:BPROCESS, activeflows: IDS, syncstore: IDS, mergeid:ID): Bool is 
     var incf:IDS, activesync: IDS in
         incf := find_incf(p, mergeid);          (* just iterate through gateways instead of all nodes*)
-        activesync := inter(syncstore, incf); 
+        activesync := inter(activeflows, incf); 
         if (empty(activesync)) then
             return False
-        elsif (inter(activesync, activeflows) == activesync) then
+        elsif (inter(activesync, syncstore) == activesync) then
             return True
         else
             return False

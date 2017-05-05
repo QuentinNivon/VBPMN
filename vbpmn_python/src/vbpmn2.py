@@ -16,7 +16,7 @@
 # TODO: perform cleaning in SVL scripts
 
 import sys
-from pif2lntv5 import *  # this library allows to go from PIF to LNT and LTS
+from pif2lntv6 import *  # this library allows to go from PIF to LNT and LTS
 
 # command to call SVL
 # first argument is the script, second one is the result file
