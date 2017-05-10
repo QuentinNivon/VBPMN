@@ -67,3 +67,25 @@ if __name__ == '__main__':
             print "TRUE: PIF is balanced"
         else:
             print "FALSE: PIF is unbalanced"
+
+def checkInclusiveUnbalanced(file1 , file2):
+    result1 = checkPifFile(file1)
+    result2 = checkPifFile(file2)
+
+    return result1 and result2
+
+
+def checkPifFile(pifFile):
+    result = False
+    initialNode = None
+    with open(pifFile) as f:
+        xml = f.read()
+        proc = pif.CreateFromDocument(xml)
+        for n in proc.behaviour.nodes:
+            if isinstance(n, pif.InitialEvent_):
+                initialNode = n
+        visited = []
+        stack = []
+        pifTraversal = PifTraversal()
+        result = pifTraversal.traverseNode(proc, initialNode, visited, stack)
+        return result
