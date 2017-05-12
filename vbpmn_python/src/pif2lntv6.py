@@ -1236,7 +1236,7 @@ class Process:
             if d['type'] == 'orjoin':
                 try:
                     edgeList = nx.find_cycle(pGraph, source=n)
-                    if edgeList.count != 0:
+                    if edgeList.count != 0 and n in edgeList:
                         cycle = True
                         break
                 except:
@@ -1830,6 +1830,7 @@ class Generator:
 
         # check for cycles in processes involving inclusive Gateway
         cycle = proc.check_inclusive_cycle()
+        #cycle = False
         if cycle:
             return (ReturnCodes.TERM_ERROR, pifModelName, proc.alpha())
 

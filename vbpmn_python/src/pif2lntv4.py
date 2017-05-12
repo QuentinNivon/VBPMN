@@ -1178,7 +1178,7 @@ class Process:
             if d['type'] == 'orjoin':
                 try:
                     edgeList = nx.find_cycle(pGraph, source=n)
-                    if edgeList.count != 0:
+                    if edgeList.count != 0 and n in edgeList:
                         cycle = True
                         break
                 except:
