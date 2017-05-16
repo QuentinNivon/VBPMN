@@ -8,25 +8,9 @@ module bpmntypes(id) with "get" is
 
 type IDS is
     set of ID 
-with "==", "!=", "inter", "length", "empty", "member"
+with "==", "!=", "inter", "length", "empty", "member", "insert", "union", "remove", "diff"
 end type
 
-(* s of type IDS is a set, so does not store twice the same value *)
-function add (v: ID, s: IDS): IDS is
-  case s in
-  var hd: ID, tl: IDS in
-      nil -> return cons(v,nil)
-    | cons(hd,tl) -> if (v==hd) then return add(v,tl) else return cons(hd,add(v,tl)) end if
-  end case
-end function
-
-function remove (v: ID, s: IDS): IDS is
-  case s in
-  var hd: ID, tl: IDS in
-      nil -> return nil
-    | cons(hd,tl) -> if (v==hd) then return tl else return cons(hd,remove(v,tl)) end if
-  end case
-end function
 
 (* flow *)
 
@@ -181,7 +165,7 @@ function is_merge_possible_v2(p: BPROCESS, activeflows:IDS, mergeid:ID): Bool is
             return True
         else
             (*--first remove incf with active tokens--*)
-            inactiveincf := remove_ids_from_set_2(activeflows, incf);
+            inactiveincf := remove_ids_from_set(activeflows, incf);
 
             (*--then check upstream for remaining flows--*)
             eval result := check_af_upstream(!?visited, p, activeflows, inactiveincf);
@@ -218,7 +202,7 @@ function check_af_upstream(in out visited:IDS, p:BPROCESS, activeflows:IDS, incf
                             eval result := check_af_upstream(!?visited, p, activeflows, tl);
                             return result
                         else
-                            visited := add(source, visited);
+                            visited := insert(source, visited);
                             upflow := get_incf_by_id(p, source);
                             if (upflow == nil) then
                                 return True
@@ -347,7 +331,7 @@ end function
 function remove_incf(bpmn:BPROCESS, activeflows:IDS, mergeid:ID): IDS is
     var incf:IDS in
         incf := get_incf_by_id(bpmn, mergeid);
-        return remove_ids_from_set_2(incf, activeflows)
+        return remove_ids_from_set(incf, activeflows)
     end var
 end function
 
@@ -358,37 +342,9 @@ end function
 
 (*--------- Helper functions to remove a set of IDS from the set ---------------- *)
 function remove_ids_from_set(toremove:IDS, inputset: IDS): IDS is
-case toremove in
-  var hd: ID, tl: IDS in
-      nil -> return inputset
-    | cons(hd,tl) -> return remove_ids_from_set(tl, remove(hd, inputset))
-end case
+return diff (inputset, toremove) 
 end function
 
-(*--------- Helper functions to remove a set of IDS from the set: Loop version ---------------- *)
-function remove_ids_from_set_2(in var toremove:IDS, inputset: IDS): IDS is
-var newset:IDS in
-newset := inputset;
-while (toremove != nil) loop
-    case toremove in
-    var hd: ID, tl: IDS in
-        nil -> return newset
-        | cons(hd,tl) -> newset := remove(hd, newset);
-                         toremove := tl
-    end case
-end loop;
-return newset
-end var
-end function
-
-(*--------- Helper functions to add a set of IDS to the set ---------------- *)
-function append_to_set(toappend:IDS, inputset:IDS): IDS is
-case toappend in
-  var hd: ID, tl: IDS in
-      nil -> return inputset
-    | cons(hd,tl) -> return append_to_set(tl, add(hd, inputset))
-end case
-end function
 
 (*----------------------------------------------------------------------------------------------*)
 (*----------------------------------------------------------------------------------------------*)

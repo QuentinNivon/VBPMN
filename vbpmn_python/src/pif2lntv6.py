@@ -1407,7 +1407,7 @@ class Process:
                     else:
                         flowString.append("\n[]\n")
                     flowString.append(flow.ident + "_finish (?ident of ID); ")
-                    flowString.append(self.getSchedulerString("{}", "{}", "add(ident, syncstore)", "add("+node.ident+", mergestore)"))
+                    flowString.append(self.getSchedulerString("{}", "{}", "insert(ident, syncstore)", "insert("+node.ident+", mergestore)"))
 
                 identSet.append("ident1")
                 # inclusive merge join TODO: Clean up
@@ -1421,7 +1421,7 @@ class Process:
                     incJoinString.append(",".join(res))
                 incJoinString.append(", MoveOn]")
                 incJoinString.append(
-                    "(append_to_set({ident1}, remove_incf(bpmn, activeflows, mergeid)), bpmn, remove_sync(bpmn, syncstore, mergeid), remove(mergeid, mergestore))\n")
+                    "(union({ident1}, remove_incf(bpmn, activeflows, mergeid)), bpmn, remove_sync(bpmn, syncstore, mergeid), remove(mergeid, mergestore))\n")
 
                 incJoinBeginList.append("".join(incJoinString))
 
@@ -1502,7 +1502,7 @@ class Process:
             schedulerString.append(",".join(res))
         schedulerString.append(", MoveOn]")
         schedulerString.append(
-            "(append_to_set(" + outIds + ", remove_ids_from_set(" + incIds + ", activeflows)), bpmn, " + syncString +", "+mergeStoreString+")\n")
+            "(union(" + outIds + ", remove_ids_from_set(" + incIds + ", activeflows)), bpmn, " + syncString +", "+mergeStoreString+")\n")
         return "".join(schedulerString)
 
     # generates file with process element ids
@@ -1516,19 +1516,18 @@ class Process:
 
         idfile.write(self.name)
         for n in self.nodes:
-            idfile.write(",")
+            idfile.write(",\n")
             idfile.write(n.ident)
-        idfile.write("," + self.initial.ident)
+        idfile.write(",\n" + self.initial.ident)
         for fNode in self.finals:
-            idfile.write(",")
+            idfile.write(",\n")
             idfile.write(fNode.ident)
         for f in self.flows:
-            idfile.write(",")
+            idfile.write(", \n")
             idfile.write(f.ident)
         idfile.write(", DummyId\n")
-        idfile.write("\n")
         idfile.write("with \"==\",\"!=\"\n")
-        idfile.write("end type\n\n")
+        idfile.write("end type\n")
         idfile.write("\nend module\n")
 
     # Generates an LNT module and process for a BPMN 2.0 process
@@ -1708,7 +1707,7 @@ class Process:
         filename = self.name + ".svl"
         f = open(filename, 'w')
         f.write(
-            "% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")  # \"% CADP_TIME=\"memtime\"\n\n")
+            "% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat -gc\"\n\n")  # \"% CADP_TIME=\"memtime\"\n\n")
         f.write("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
         # process generation (LTS)
         # f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN")

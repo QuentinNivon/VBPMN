@@ -1407,7 +1407,7 @@ class Process:
                     else:
                         flowString.append("\n[]\n")
                     flowString.append(flow.ident + "_finish (?ident of ID); ")
-                    flowString.append(self.getSchedulerString("{}", "{}", "add(ident, syncstore)"))
+                    flowString.append(self.getSchedulerString("{}", "{}", "insert(ident, syncstore)"))
 
                 identSet.append("ident1")
                 # inclusive merge join TODO: Clean up
@@ -1421,7 +1421,7 @@ class Process:
                     incJoinString.append(",".join(res))
                 incJoinString.append(", QueryProcess, ProcessResponse]")
                 incJoinString.append(
-                    "(append_to_set({ident1}, remove_incf(bpmn, activeflows, mergeid)), bpmn, remove_sync(bpmn, syncstore, mergeid))\n")
+                    "(union({ident1}, remove_incf(bpmn, activeflows, mergeid)), bpmn, remove_sync(bpmn, syncstore, mergeid))\n")
 
                 incJoinBeginList.append("".join(incJoinString))
 
@@ -1501,7 +1501,7 @@ class Process:
             schedulerString.append(",".join(res))
         schedulerString.append(", QueryProcess, ProcessResponse]")
         schedulerString.append(
-            "(append_to_set(" + outIds + ", remove_ids_from_set(" + incIds + ", activeflows)), bpmn, " + syncString + ")\n")
+            "(union(" + outIds + ", remove_ids_from_set(" + incIds + ", activeflows)), bpmn, " + syncString + ")\n")
         return "".join(schedulerString)
 
     # generates file with process element ids
