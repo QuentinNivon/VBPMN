@@ -297,8 +297,8 @@ if __name__ == '__main__':
         from pif2lntv1 import *
         print "\n ------- Using VBPMN with pif2lntv1 ---------- \n"
     else:
-        from pif2lntv6 import *
-        print "\n ------- Using VBPMN with pif2lntv6 ---------- \n"
+        from pif2lntv7 import *
+        print "\n ------- Using VBPMN with pif2lntv7 ---------- \n"
 
     # if in lazy mode, rebuild the BCG files only if needed
     if args.lazy:

@@ -1,5 +1,5 @@
 
-(* BPMN data types (FACS'16), necessary for encoding unbalanced workflows
+(*  BPMN data types (FACS'16), necessary for encoding unbalanced workflows
 Author: Gwen Salaun *)
 
 module bpmntypes(id) with "get" is
@@ -181,6 +181,18 @@ function is_sync_done(p:BPROCESS, activeflows: IDS, syncstore: IDS, mergeid:ID):
         if (empty(activesync)) then
             return False
         elsif (inter(activesync, syncstore) == activesync) then
+            return True
+        else
+            return False
+        end if
+    end var
+end function
+
+(*-------------------------- Merge check for parallel gateways----------------------------- *)
+function is_merge_possible_par(p:BPROCESS, syncstore: IDS, mergeid:ID): Bool is 
+    var incf:IDS, activesync: IDS in
+        incf := find_incf(p, mergeid);          (* just iterate through gateways instead of all nodes*)
+        if (inter(incf, syncstore) == incf) then
             return True
         else
             return False
