@@ -1,0 +1,266 @@
+<?xml version='1.0' encoding='utf-8'?>
+<pif:Process xmlns:pif="http://www.example.org/PIF" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<pif:name>onlineOrderV4</pif:name>
+	<pif:documentation>Dummy text for documentation</pif:documentation>
+	<pif:behaviour>
+		<pif:nodes id="startevent1" xsi:type="pif:InitialEvent">
+			<pif:outgoingFlows>flow7</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="exclusivegateway1" xsi:type="pif:XOrSplitGateway">
+			<pif:incomingFlows>flow8</pif:incomingFlows>
+			<pif:outgoingFlows>flow3</pif:outgoingFlows>
+			<pif:outgoingFlows>flow4</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="signIn" xsi:type="pif:Task">
+			<pif:incomingFlows>flow3</pif:incomingFlows>
+			<pif:outgoingFlows>flow6</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="signUp" xsi:type="pif:Task">
+			<pif:incomingFlows>flow4</pif:incomingFlows>
+			<pif:outgoingFlows>flow5</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="exclusivegateway2" xsi:type="pif:XOrJoinGateway">
+			<pif:incomingFlows>flow5</pif:incomingFlows>
+			<pif:incomingFlows>flow6</pif:incomingFlows>
+			<pif:incomingFlows>flow62</pif:incomingFlows>
+			<pif:outgoingFlows>flow9</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="selectItems" xsi:type="pif:Task">
+			<pif:incomingFlows>flow7</pif:incomingFlows>
+			<pif:outgoingFlows>flow8</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="Payment" xsi:type="pif:Task">
+			<pif:incomingFlows>flow9</pif:incomingFlows>
+			<pif:outgoingFlows>flow10</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="exgateway1" xsi:type="pif:XOrSplitGateway">
+			<pif:incomingFlows>flow10</pif:incomingFlows>
+			<pif:outgoingFlows>flow11</pif:outgoingFlows>
+			<pif:outgoingFlows>flow12</pif:outgoingFlows>
+			<pif:outgoingFlows>flow13</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="giftVoucher" xsi:type="pif:Task">
+			<pif:incomingFlows>flow11</pif:incomingFlows>
+			<pif:outgoingFlows>flow14</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="card" xsi:type="pif:Task">
+			<pif:incomingFlows>flow12</pif:incomingFlows>
+			<pif:outgoingFlows>flow15</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="payOnDelivery" xsi:type="pif:Task">
+			<pif:incomingFlows>flow13</pif:incomingFlows>
+			<pif:outgoingFlows>flow21</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="exgateway2" xsi:type="pif:XOrJoinGateway">
+			<pif:incomingFlows>flow14</pif:incomingFlows>
+			<pif:incomingFlows>flow15</pif:incomingFlows>
+			<pif:outgoingFlows>flow56</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="exclusivegateway4" xsi:type="pif:XOrJoinGateway">
+			<pif:incomingFlows>flow21</pif:incomingFlows>
+			<pif:incomingFlows>flow57</pif:incomingFlows>
+			<pif:outgoingFlows>flow59</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="errorendevent1" xsi:type="pif:EndEvent">
+			<pif:incomingFlows>flow60</pif:incomingFlows>
+		</pif:nodes>
+		<pif:nodes id="checkInventory" xsi:type="pif:Task">
+			<pif:incomingFlows>flow61</pif:incomingFlows>
+			<pif:outgoingFlows>flow63</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="procureItems" xsi:type="pif:Task">
+			<pif:incomingFlows>flow68</pif:incomingFlows>
+			<pif:outgoingFlows>flow26</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="identifyWarehouse" xsi:type="pif:Task">
+			<pif:incomingFlows>flow67</pif:incomingFlows>
+			<pif:outgoingFlows>flow69</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="updateInventory" xsi:type="pif:Task">
+			<pif:incomingFlows>flow26</pif:incomingFlows>
+			<pif:outgoingFlows>flow71</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="initiateShipping" xsi:type="pif:Task">
+			<pif:incomingFlows>flow70</pif:incomingFlows>
+			<pif:outgoingFlows>flow30</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="parallelgateway1" xsi:type="pif:AndSplitGateway">
+			<pif:incomingFlows>flow30</pif:incomingFlows>
+			<pif:outgoingFlows>flow31</pif:outgoingFlows>
+			<pif:outgoingFlows>flow32</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="generateTrackingInfo" xsi:type="pif:Task">
+			<pif:incomingFlows>flow32</pif:incomingFlows>
+			<pif:outgoingFlows>flow33</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="packageItems" xsi:type="pif:Task">
+			<pif:incomingFlows>flow31</pif:incomingFlows>
+			<pif:outgoingFlows>flow34</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="parallelgateway2" xsi:type="pif:AndJoinGateway">
+			<pif:incomingFlows>flow33</pif:incomingFlows>
+			<pif:incomingFlows>flow34</pif:incomingFlows>
+			<pif:outgoingFlows>flow35</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="initiateDelivery" xsi:type="pif:Task">
+			<pif:incomingFlows>flow35</pif:incomingFlows>
+			<pif:outgoingFlows>flow39</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="inclusivegateway3" xsi:type="pif:OrSplitGateway">
+			<pif:incomingFlows>flow42</pif:incomingFlows>
+			<pif:outgoingFlows>flow37</pif:outgoingFlows>
+			<pif:outgoingFlows>flow40</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="email" xsi:type="pif:Task">
+			<pif:incomingFlows>flow37</pif:incomingFlows>
+			<pif:outgoingFlows>flow44</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="parallelgateway3" xsi:type="pif:AndSplitGateway">
+			<pif:incomingFlows>flow39</pif:incomingFlows>
+			<pif:outgoingFlows>flow41</pif:outgoingFlows>
+			<pif:outgoingFlows>flow43</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="notifyUser" xsi:type="pif:Task">
+			<pif:incomingFlows>flow41</pif:incomingFlows>
+			<pif:outgoingFlows>flow42</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="sms" xsi:type="pif:Task">
+			<pif:incomingFlows>flow40</pif:incomingFlows>
+			<pif:outgoingFlows>flow45</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="transport" xsi:type="pif:Task">
+			<pif:incomingFlows>flow43</pif:incomingFlows>
+			<pif:outgoingFlows>flow47</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="inclusivegateway4" xsi:type="pif:OrJoinGateway">
+			<pif:incomingFlows>flow44</pif:incomingFlows>
+			<pif:incomingFlows>flow45</pif:incomingFlows>
+			<pif:outgoingFlows>flow46</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="parallelgateway4" xsi:type="pif:AndJoinGateway">
+			<pif:incomingFlows>flow46</pif:incomingFlows>
+			<pif:incomingFlows>flow47</pif:incomingFlows>
+			<pif:outgoingFlows>flow48</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="deliverItems" xsi:type="pif:Task">
+			<pif:incomingFlows>flow48</pif:incomingFlows>
+			<pif:incomingFlows>flow55</pif:incomingFlows>
+			<pif:outgoingFlows>flow49</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="exclusivegateway7" xsi:type="pif:XOrSplitGateway">
+			<pif:incomingFlows>flow49</pif:incomingFlows>
+			<pif:outgoingFlows>flow50</pif:outgoingFlows>
+			<pif:outgoingFlows>flow51</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="endevent1" xsi:type="pif:EndEvent">
+			<pif:incomingFlows>flow50</pif:incomingFlows>
+		</pif:nodes>
+		<pif:nodes id="failureCheck" xsi:type="pif:Task">
+			<pif:incomingFlows>flow51</pif:incomingFlows>
+			<pif:outgoingFlows>flow52</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="exclusivegateway8" xsi:type="pif:XOrSplitGateway">
+			<pif:incomingFlows>flow52</pif:incomingFlows>
+			<pif:outgoingFlows>flow54</pif:outgoingFlows>
+			<pif:outgoingFlows>flow55</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="cancelendevent1" xsi:type="pif:EndEvent">
+			<pif:incomingFlows>flow54</pif:incomingFlows>
+		</pif:nodes>
+		<pif:nodes id="handlePayment" xsi:type="pif:Task">
+			<pif:incomingFlows>flow56</pif:incomingFlows>
+			<pif:outgoingFlows>flow57</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="validatePayment" xsi:type="pif:Task">
+			<pif:incomingFlows>flow59</pif:incomingFlows>
+			<pif:outgoingFlows>flow58</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="exclusivegateway9" xsi:type="pif:XOrSplitGateway">
+			<pif:incomingFlows>flow58</pif:incomingFlows>
+			<pif:outgoingFlows>flow61</pif:outgoingFlows>
+			<pif:outgoingFlows>flow62</pif:outgoingFlows>
+            <pif:outgoingFlows>flow60</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="itemsUnavailable" xsi:type="pif:Task">
+			<pif:incomingFlows>flow64</pif:incomingFlows>
+			<pif:outgoingFlows>flow65</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="notifyUnavailibility" xsi:type="pif:Task">
+			<pif:incomingFlows>flow65</pif:incomingFlows>
+			<pif:outgoingFlows>flow66</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="inclusivegateway5" xsi:type="pif:OrJoinGateway">
+			<pif:incomingFlows>flow69</pif:incomingFlows>
+			<pif:incomingFlows>flow71</pif:incomingFlows>
+			<pif:outgoingFlows>flow70</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="inclusivegateway6" xsi:type="pif:OrSplitGateway">
+			<pif:incomingFlows>flow63</pif:incomingFlows>
+			<pif:outgoingFlows>flow67</pif:outgoingFlows>
+			<pif:outgoingFlows>flow68</pif:outgoingFlows>
+			<pif:outgoingFlows>flow64</pif:outgoingFlows>
+		</pif:nodes>
+		<pif:nodes id="cancelendevent2" xsi:type="pif:EndEvent">
+			<pif:incomingFlows>flow66</pif:incomingFlows>
+		</pif:nodes>
+		<pif:sequenceFlows id="flow3" source="exclusivegateway1" target="signIn"/>
+		<pif:sequenceFlows id="flow4" source="exclusivegateway1" target="signUp"/>
+		<pif:sequenceFlows id="flow5" source="signUp" target="exclusivegateway2"/>
+		<pif:sequenceFlows id="flow6" source="signIn" target="exclusivegateway2"/>
+		<pif:sequenceFlows id="flow7" source="startevent1" target="selectItems"/>
+		<pif:sequenceFlows id="flow8" source="selectItems" target="exclusivegateway1"/>
+		<pif:sequenceFlows id="flow9" source="exclusivegateway2" target="Payment"/>
+		<pif:sequenceFlows id="flow10" source="Payment" target="exgateway1"/>
+		<pif:sequenceFlows id="flow11" source="exgateway1" target="giftVoucher"/>
+		<pif:sequenceFlows id="flow12" source="exgateway1" target="card"/>
+		<pif:sequenceFlows id="flow13" source="exgateway1" target="payOnDelivery"/>
+		<pif:sequenceFlows id="flow14" source="giftVoucher" target="exgateway2"/>
+		<pif:sequenceFlows id="flow15" source="card" target="exgateway2"/>
+		<pif:sequenceFlows id="flow21" source="payOnDelivery" target="exclusivegateway4"/>
+		<pif:sequenceFlows id="flow26" source="procureItems" target="updateInventory"/>
+		<pif:sequenceFlows id="flow30" source="initiateShipping" target="parallelgateway1"/>
+		<pif:sequenceFlows id="flow31" source="parallelgateway1" target="packageItems"/>
+		<pif:sequenceFlows id="flow32" source="parallelgateway1" target="generateTrackingInfo"/>
+		<pif:sequenceFlows id="flow33" source="generateTrackingInfo" target="parallelgateway2"/>
+		<pif:sequenceFlows id="flow34" source="packageItems" target="parallelgateway2"/>
+		<pif:sequenceFlows id="flow35" source="parallelgateway2" target="initiateDelivery"/>
+		<pif:sequenceFlows id="flow37" source="inclusivegateway3" target="email"/>
+		<pif:sequenceFlows id="flow39" source="initiateDelivery" target="parallelgateway3"/>
+		<pif:sequenceFlows id="flow40" source="inclusivegateway3" target="sms"/>
+		<pif:sequenceFlows id="flow41" source="parallelgateway3" target="notifyUser"/>
+		<pif:sequenceFlows id="flow42" source="notifyUser" target="inclusivegateway3"/>
+		<pif:sequenceFlows id="flow43" source="parallelgateway3" target="transport"/>
+		<pif:sequenceFlows id="flow44" source="email" target="inclusivegateway4"/>
+		<pif:sequenceFlows id="flow45" source="sms" target="inclusivegateway4"/>
+		<pif:sequenceFlows id="flow46" source="inclusivegateway4" target="parallelgateway4"/>
+		<pif:sequenceFlows id="flow47" source="transport" target="parallelgateway4"/>
+		<pif:sequenceFlows id="flow48" source="parallelgateway4" target="deliverItems"/>
+		<pif:sequenceFlows id="flow49" source="deliverItems" target="exclusivegateway7"/>
+		<pif:sequenceFlows id="flow50" source="exclusivegateway7" target="endevent1"/>
+		<pif:sequenceFlows id="flow51" source="exclusivegateway7" target="failureCheck"/>
+		<pif:sequenceFlows id="flow52" source="failureCheck" target="exclusivegateway8"/>
+		<pif:sequenceFlows id="flow54" source="exclusivegateway8" target="cancelendevent1"/>
+		<pif:sequenceFlows id="flow55" source="exclusivegateway8" target="deliverItems"/>
+		<pif:sequenceFlows id="flow56" source="exgateway2" target="handlePayment"/>
+		<pif:sequenceFlows id="flow57" source="handlePayment" target="exclusivegateway4"/>
+		<pif:sequenceFlows id="flow58" source="validatePayment" target="exclusivegateway9"/>
+		<pif:sequenceFlows id="flow59" source="exclusivegateway4" target="validatePayment"/>
+		<pif:sequenceFlows id="flow60" source="exclusivegateway9" target="errorendevent1"/>
+		<pif:sequenceFlows id="flow61" source="exclusivegateway9" target="checkInventory"/>
+		<pif:sequenceFlows id="flow62" source="exclusivegateway9" target="exclusivegateway2"/>
+		<pif:sequenceFlows id="flow63" source="checkInventory" target="inclusivegateway6"/>
+		<pif:sequenceFlows id="flow67" source="inclusivegateway6" target="identifyWarehouse"/>
+		<pif:sequenceFlows id="flow68" source="inclusivegateway6" target="procureItems"/>
+		<pif:sequenceFlows id="flow69" source="identifyWarehouse" target="inclusivegateway5"/>
+		<pif:sequenceFlows id="flow64" source="inclusivegateway6" target="itemsUnavailable"/>
+		<pif:sequenceFlows id="flow65" source="itemsUnavailable" target="notifyUnavailibility"/>
+		<pif:sequenceFlows id="flow66" source="notifyUnavailibility" target="cancelendevent2"/>
+		<pif:sequenceFlows id="flow70" source="inclusivegateway5" target="initiateShipping"/>
+		<pif:sequenceFlows id="flow71" source="updateInventory" target="inclusivegateway5"/>
+		<pif:initialNode>startevent1</pif:initialNode>
+		<pif:finalNodes>errorendevent1</pif:finalNodes>
+		<pif:finalNodes>endevent1</pif:finalNodes>
+		<pif:finalNodes>cancelendevent1</pif:finalNodes>
+		<pif:finalNodes>cancelendevent2</pif:finalNodes>
+	</pif:behaviour>
+</pif:Process>
