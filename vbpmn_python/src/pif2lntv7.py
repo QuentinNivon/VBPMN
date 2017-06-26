@@ -163,7 +163,7 @@ class InitialEvent(Node):
     # Generates the (generic) process for the initial event, only once
     def lnt(self, f):
         f.write("process init [begin:any, outf:any] is\n")
-        f.write(" var ident: ID in begin ; outf (?ident of ID) end var \n")
+        f.write(" var ident: ID in begin ; outf (?ident of ID); exit end var \n")
         f.write("end process\n\n")
 
     # Seeks or joins, for an initial event, just a recursive call on the target node of the outgoing flow
@@ -1525,14 +1525,14 @@ class Process:
 
     def getSchedulerString(self, incIds, outIds, syncString, mergeStoreString, parStoreString):
         schedulerString = []
-        schedulerString.append('scheduler [')
-        schedulerString.append(self.getFlowMsgs(False))
-        #add split synchro params
-        res = self.computeAddSynchroPoints(False)
-        if len(res)!= 0:
-            schedulerString.append(",")
-            schedulerString.append(",".join(res))
-        schedulerString.append(", MoveOn]")
+        schedulerString.append('scheduler [...]')
+        # schedulerString.append(self.getFlowMsgs(False))
+        # #add split synchro params
+        # res = self.computeAddSynchroPoints(False)
+        # if len(res)!= 0:
+        #     schedulerString.append(",")
+        #     schedulerString.append(",".join(res))
+        # schedulerString.append(", MoveOn]")
         schedulerString.append(
             "(union(" + outIds + ", remove_ids_from_set(" + incIds + ", activeflows)), bpmn, " + syncString +", "+mergeStoreString+", "+parStoreString+")\n")
         return "".join(schedulerString)
@@ -1653,27 +1653,27 @@ class Process:
         f.write(" in\n")
         f.write(
             "  (* we first generate the scheduler, necessary for keeping track of tokens, and triggering inclusive merge gateways *)\n")
-        f.write("    scheduler [")
-        f.write(self.getFlowMsgs(False))
-          #add split synchro params
-        res = []
-        for n in self.nodes:
-            if isinstance(n, OrSplitGateway):
-                alphaout = []
-                nb = 1
-                while (nb <= len(n.outgoingFlows)):
-                    alphaout.append("outf_" + str(nb))
-                    nb = nb + 1
-                allcombi = computeAllCombinations(alphaout)
-                nbt = len(allcombi)
-                cter = 1
-                for elem in allcombi:
-                    res.append(n.ident + "_" + str(cter))
-                    cter = cter + 1
-        if len(res)!= 0:
-            f.write(",")
-            f.write(",".join(res))
-        f.write(", MoveOn] (nil, p1(), nil, nil, nil) \n")
+        f.write("    scheduler [...](nil, p1(), nil, nil, nil) \n")
+        # f.write(self.getFlowMsgs(False))
+        #   #add split synchro params
+        # res = []
+        # for n in self.nodes:
+        #     if isinstance(n, OrSplitGateway):
+        #         alphaout = []
+        #         nb = 1
+        #         while (nb <= len(n.outgoingFlows)):
+        #             alphaout.append("outf_" + str(nb))
+        #             nb = nb + 1
+        #         allcombi = computeAllCombinations(alphaout)
+        #         nbt = len(allcombi)
+        #         cter = 1
+        #         for elem in allcombi:
+        #             res.append(n.ident + "_" + str(cter))
+        #             cter = cter + 1
+        # if len(res)!= 0:
+        #     f.write(",")
+        #     f.write(",".join(res))
+        # f.write(", MoveOn] (nil, p1(), nil, nil, nil) \n")
         f.write("||\n")
 
         f.write("par   ")

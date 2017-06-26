@@ -6,7 +6,7 @@ module bpmntypes(id) with "get" is
 
 (* set of identifiers *)
 
-type IDS is
+type IDS is !card 48000
     set of ID 
 with "==", "!=", "inter", "length", "empty", "member", "insert", "union", "remove", "diff"
 end type
@@ -14,43 +14,43 @@ end type
 
 (* flow *)
 
-type FLOW is
+type FLOW is !card 100
     flow ( ident: ID, source: ID, target: ID )
 end type
 
 (* set of flows *)
 
-type FLOWS is
+type FLOWS is !card 100
     set of FLOW
 end type
 
 (* task *)
 
-type TASK is
+type TASK is !card 100
     task ( ident: ID, incf: IDS, outf: IDS )
 end type
 
 (* set of tasks *)
 
-type TASKS is
+type TASKS is !card 100
     set of TASK
 end type
 
 (* initial event *)
 
-type INITIAL is
+type INITIAL is !card 100
     initial ( ident: ID, outf: ID )   (* several outgoing flows (?) *)
 end type
 
 (* final event *)
 
-type FINAL is
+type FINAL is !card 100
     final ( ident: ID, incf: IDS )     (* several incoming flows (?) *)
 end type
 
 (* set of final events *)
 
-type FINALS is
+type FINALS is !card 100
     set of FINAL
 end type
 
@@ -68,19 +68,19 @@ end type
 
 (* gateway *)
 
-type GATEWAY is
+type GATEWAY is !card 100
     gateway ( ident: ID, pattern: GPATTERN, sort: GSORT, incf: IDS, outf: IDS )
 end type
 
 (* set of gateways *)
 
-type GATEWAYS is
+type GATEWAYS is !card 100
     set of GATEWAY
 end type
 
 (* node *)
 
-type NODE is    (* could it be simpler ? *)
+type NODE is !card 100   (* could it be simpler ? *)
     i ( initial: INITIAL ),
     f ( finals: FINALS ),
     g ( gateways: GATEWAYS ),
@@ -89,13 +89,13 @@ end type
 
 (* set of nodes *)
 
-type NODES is
+type NODES is !card 100
     set of NODE
 end type
 
 (* bpmn process *)
 
-type BPROCESS is
+type BPROCESS is !card 100
     proc ( name: ID, nodes: NODES, flows: FLOWS )  (* not the most optimized encoding for traversals *)
 end type
 
