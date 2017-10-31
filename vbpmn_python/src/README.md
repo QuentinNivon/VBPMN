@@ -32,6 +32,12 @@ There are different options:
 - `--renamed` can be used (in conjunction with `--renaming`) to indicate to which model the renaming applies (both by default)
 - `--lazy` does not recompute the BCG models for the PIF models if not needed (= if BCG file exists and is newer than the PIF file)
 
+## Versions
+
+There are three different versions of vbpmn available. They can be used depending on the type of the input BPMN model.
+- vbpmn.py : Uses initial version of vbpmn (pif2lntv1) and does not support inclusive unbalanced workflows
+- vbpmn2.py: Uses latest version of vbpmn (pif2lntv7) and it supports inclusive unbalanced workflows. However, it is more expensive to run compared to the initial version
+- vbpmn3.py: Automatically detects the type of the model (balanced/unbalanced) and invokes the appropriate version of the code
 ## Examples
 
 ```bash
