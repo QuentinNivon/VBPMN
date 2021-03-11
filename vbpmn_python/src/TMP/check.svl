@@ -1,0 +1,6 @@
+% CAESAR_OPEN_OPTIONS="-silent -warning"
+% CAESAR_OPTIONS="-more cat"
+% bcg_io "shopOnline.bcg" "shopOnline_work.bcg"
+% bcg_io "shopOnlineV2.bcg" "shopOnlineV2_work.bcg"
+% bcg_open "shopOnline_work.bcg" bisimulator -equal -branching -diag "shopOnlineV2_work.bcg"
+

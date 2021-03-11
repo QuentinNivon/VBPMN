@@ -1,0 +1,58 @@
+// TESTS PARAMETERS
+
+//
+// FASE16
+//
+
+// basics
+
+// x( x( a, b ), c ) <--conservative--> x ( a, b ,c )
++ fase16/f0001.pif fase16/f0002.pif conservative
++ fase16/f0002.pif fase16/f0001.pif conservative
+
+// +( a, b ) -/-conservative--> + ( a, x( b, c ) )
+// +( a, b ) --inclusive--> + ( a, x( b, c ) )
+- fase16/f0003.pif fase16/f0004.pif conservative
++ fase16/f0003.pif fase16/f0004.pif inclusive
++ fase16/f0004.pif fase16/f0003.pif exclusive
+
+// hiding
+
+// a ; b -/-inclusive--> +( a, log ) ; b
+// a ; b --selective conservative--> +( a, log ) ; b
+- fase16/f0005.pif fase16/f0006.pif conservative
+- fase16/f0005.pif fase16/f0006.pif inclusive
++ fase16/f0005.pif fase16/f0006.pif conservative --hiding log
++ fase16/f0005.pif fase16/f0006.pif conservative --hiding a b --exposemode
+
+// renaming
+
+// a ; b --conservative with renaming {b:c}--> a ; c
+// a ; b ; c --conservative with renaming {a:a, b:b}--> a ; b ; c
+// a ; b ; c --conservative with renaming {a:b, b:c, c:a}--> b ; c ; a
+// a ; b --conservative with renaming {a:b, b:a}--> b ; a
++ fase16/f0007.pif fase16/f0007.pif conservative --renaming
++ fase16/f0005.pif fase16/f0010.pif conservative --renaming "b:c"
++ fase16/f0007.pif fase16/f0007.pif conservative --renaming "a:a" "b:b"
+- fase16/f0007.pif fase16/f0008.pif conservative --renaming "a:b" "b:c" "c:a"
++ fase16/f0007.pif fase16/f0008.pif conservative --renaming "a:b" "b:c" "c:a" --renamed first
++ fase16/f0007.pif fase16/f0008.pif conservative --renaming "b:a" "c:b" "a:c" --renamed second
++ fase16/f0009.pif fase16/f0009.pif conservative --renaming "b:c" --renamed all
+
+// formula
+
+// a ; b --property-and "AF {B}"--> +( a, log ) ; b
++ fase16/f0005.pif fase16/f0006.pif property-and --formula "mu X  . (< true > true and [ not B ] X)"
+
+// renaming + hiding
+
+// case study
+
+- fase16/booking16a.pif fase16/booking16b.pif conservative
++ fase16/booking16a.pif fase16/booking16b.pif inclusive
++ fase16/booking16b.pif fase16/booking16a.pif exclusive
+
+- fase16/booking16a.pif fase16/booking16c.pif conservative
+- fase16/booking16a.pif fase16/booking16c.pif inclusive
+- fase16/booking16a.pif fase16/booking16c.pif exclusive
++ fase16/booking16a.pif fase16/booking16c.pif conservative --hiding update

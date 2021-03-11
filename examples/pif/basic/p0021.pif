@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pif:Process xmlns:pif="http://www.example.org/PIF"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.example.org/PIF ../pif.xsd">
+    <pif:name>p0021</pif:name>
+    <pif:documentation>
+        exclusive split with more than 2 branches, no join gateway, join on a final event
+        INIT  = task0 . task1 . SPLIT
+        SPLIT = SPLIT-XOR { task2 . 0 ; task3 . 0 ; task4 . 0 }
+    </pif:documentation>
+
+    <!--  WORKFLOW -->
+    <pif:behaviour>
+
+        <!--  NODES -->
+        <pif:nodes id="initial" xsi:type="pif:InitialEvent">
+            <pif:outgoingFlows>sf1</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="final" xsi:type="pif:EndEvent">
+            <pif:incomingFlows>sf6</pif:incomingFlows>
+            <pif:incomingFlows>sf7</pif:incomingFlows>
+            <pif:incomingFlows>sf8</pif:incomingFlows>
+        </pif:nodes>
+        <pif:nodes id="task0" xsi:type="pif:Task">
+            <pif:incomingFlows>sf1</pif:incomingFlows>
+            <pif:outgoingFlows>sf2</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="task1" xsi:type="pif:Task">
+            <pif:incomingFlows>sf2</pif:incomingFlows>
+            <pif:outgoingFlows>sf3</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="task2" xsi:type="pif:Task">
+            <pif:incomingFlows>sf4</pif:incomingFlows>
+            <pif:outgoingFlows>sf6</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="task3" xsi:type="pif:Task">
+            <pif:incomingFlows>sf5</pif:incomingFlows>
+            <pif:outgoingFlows>sf7</pif:outgoingFlows>
+        </pif:nodes>
+        <pif:nodes id="task4" xsi:type="pif:Task">
+            <pif:incomingFlows>sf9</pif:incomingFlows>
+            <pif:outgoingFlows>sf8</pif:outgoingFlows>
+        </pif:nodes>
+
+        <pif:nodes xsi:type="pif:XOrSplitGateway" id="OS1">
+            <pif:incomingFlows>sf3</pif:incomingFlows>
+            <pif:outgoingFlows>sf4</pif:outgoingFlows>
+            <pif:outgoingFlows>sf5</pif:outgoingFlows>
+            <pif:outgoingFlows>sf9</pif:outgoingFlows>
+        </pif:nodes>
+
+        <!--  SEQUENCE FLOWS -->
+        <pif:sequenceFlows id="sf1" source="initial" target="task0"/>
+        <pif:sequenceFlows id="sf2" source="task0" target="task1"/>
+        <pif:sequenceFlows id="sf3" source="task1" target="OS1"/>
+        <pif:sequenceFlows id="sf4" source="OS1" target="task2"/>
+        <pif:sequenceFlows id="sf5" source="OS1" target="task3"/>
+        <pif:sequenceFlows id="sf9" source="OS1" target="task4"/>
+        <pif:sequenceFlows id="sf6" source="task2" target="final"/>
+        <pif:sequenceFlows id="sf7" source="task3" target="final"/>
+        <pif:sequenceFlows id="sf8" source="task4" target="final"/>
+
+        <!--  INITIAL AND FINAL NODES -->
+        <pif:initialNode>initial</pif:initialNode>
+        <pif:finalNodes>final</pif:finalNodes>
+
+    </pif:behaviour>
+
+</pif:Process>

@@ -1,0 +1,6 @@
+bcg_open: using ``/Users/salaung/WORK/TOOLS/CADP/bin.mac86/bisimulator.a''
+bcg_open: running ``bisimulator -equal -branching -diag shopOnlineV2_work.bcg'' for ``./shopOnline_work.bcg''
+
+FALSE
+(consult diagnostic in file ``bisimulator.bcg'')
+

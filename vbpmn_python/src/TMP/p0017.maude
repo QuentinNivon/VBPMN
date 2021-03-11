@@ -1,0 +1,55 @@
+---- Example p0017 in BPMN
+
+--- load bpmn.maude
+
+mod BPMN-EX is 
+  pr BPMN-SEM . 
+  ops sf1 sf2 sf3 sf4 sf5 sf6 sf7 sf8 sf9 sf10 sf11 sf12 sf13 sf14 sf22 sf23 : -> FId . 
+  ops initial final task0 task1 task2 task3 task4 task5 task55 task6 task66 S1 J1 S2 J2 : -> NId . 
+
+  op fls : -> Set{Flow} . 
+  op nds : -> Set{Node} . 
+  op init : -> Token . 
+
+  eq init = token(sf1,0) . 
+
+  eq fls 
+    = ( 
+        flow(sf1,19),
+        flow(sf2,19),
+        flow(sf3,42),
+        flow(sf4,11),
+        flow(sf5,2),
+        flow(sf6,14),
+        flow(sf7,8),
+        flow(sf8,34),
+        flow(sf9,14),
+        flow(sf10,25),
+        flow(sf11,28),
+        flow(sf12,6),
+        flow(sf13,28),
+        flow(sf14,19),
+        flow(sf22,6),
+        flow(sf23,47)
+      ) . 
+
+  eq nds 
+    = ( 
+        start(initial,sf1),
+        end(final,sf14),
+        task(task0,"task0",sf1,sf2,41),
+        task(task1,"task1",sf2,sf3,31),
+        task(task2,"task2",sf4,sf6,5),
+        task(task3,"task3",sf5,sf7,46),
+        task(task4,"task4",sf8,sf9,30),
+        task(task5,"task5",sf10,sf22,27),
+        task(task55,"task55",sf22,sf12,27),
+        task(task6,"task6",sf11,sf23,6),
+        task(task66,"task66",sf23,sf13,6),
+        split(S1,parallel,sf3,(sf4,sf5)),
+        merge(J1,parallel,(sf6,sf7),sf8),
+        split(S2,parallel,sf9,(sf10,sf11)),
+        merge(J2,parallel,(sf12,sf13),sf14)
+      ) . 
+
+endm

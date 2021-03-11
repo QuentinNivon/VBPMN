@@ -1,0 +1,18 @@
+# Code
+logs/
+target/
+data/output/
+ter_docs/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+#checkstyle config
+/.checkstyle

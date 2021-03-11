@@ -1,0 +1,9 @@
+% CAESAR_OPEN_OPTIONS="-silent -warning"
+% CAESAR_OPTIONS="-more cat -gc"
+
+% DEFAULT_PROCESS_FILE=shopOnline.lnt
+
+"shopOnline_raw.bcg" = generation of "MAIN[signIn, signUp, chooseItems, payment, card, giftVoucher, payOnDelivery, validate, checkTxn, checkInventory, identifyWarehouse, procureItems, updateInventory, unavailableItem, notifyUnavailableItems, shipItems, deliverItems, reattempt, searchItems, partialRefund, notifyFailedDelivery, refundReturn]";
+
+"shopOnline.bcg" = branching reduction of "shopOnline_raw.bcg";
+

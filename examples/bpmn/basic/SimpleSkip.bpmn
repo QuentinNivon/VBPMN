@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="simpleSkip" name="SimpleSkip" isExecutable="true">
+    <serviceTask id="checkInventory" name="Check Inventory"></serviceTask>
+    <exclusiveGateway id="exclusivegateway5" name="Exclusive Gateway"></exclusiveGateway>
+    <userTask id="procureItems" name="Procure Items"></userTask>
+    <serviceTask id="identifyWarehouse" name="Identify Warehouse"></serviceTask>
+    <scriptTask id="updateInventory" name="Update Inventory" activiti:autoStoreVariables="false"></scriptTask>
+    <sequenceFlow id="flow23" sourceRef="checkInventory" targetRef="exclusivegateway5"></sequenceFlow>
+    <sequenceFlow id="flow24" name="Available" sourceRef="exclusivegateway5" targetRef="identifyWarehouse"></sequenceFlow>
+    <sequenceFlow id="flow25" name="Unavailable" sourceRef="exclusivegateway5" targetRef="procureItems"></sequenceFlow>
+    <sequenceFlow id="flow26" sourceRef="procureItems" targetRef="updateInventory"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway6" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow27" sourceRef="identifyWarehouse" targetRef="exclusivegateway6"></sequenceFlow>
+    <sequenceFlow id="flow28" sourceRef="updateInventory" targetRef="exclusivegateway6"></sequenceFlow>
+    <serviceTask id="initiateShipping" name="Initiate Shipping"></serviceTask>
+    <sequenceFlow id="flow29" sourceRef="exclusivegateway6" targetRef="initiateShipping"></sequenceFlow>
+    <startEvent id="startevent1" name="Start"></startEvent>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <sequenceFlow id="flow60" sourceRef="startevent1" targetRef="checkInventory"></sequenceFlow>
+    <sequenceFlow id="flow61" sourceRef="initiateShipping" targetRef="endevent1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_simpleSkip">
+    <bpmndi:BPMNPlane bpmnElement="simpleSkip" id="BPMNPlane_simpleSkip">
+      <bpmndi:BPMNShape bpmnElement="checkInventory" id="BPMNShape_checkInventory">
+        <omgdc:Bounds height="55.0" width="141.0" x="114.0" y="311.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway5" id="BPMNShape_exclusivegateway5">
+        <omgdc:Bounds height="40.0" width="40.0" x="384.0" y="318.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="procureItems" id="BPMNShape_procureItems">
+        <omgdc:Bounds height="55.0" width="105.0" x="464.0" y="451.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="identifyWarehouse" id="BPMNShape_identifyWarehouse">
+        <omgdc:Bounds height="55.0" width="160.0" x="557.0" y="311.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="updateInventory" id="BPMNShape_updateInventory">
+        <omgdc:Bounds height="75.0" width="125.0" x="640.0" y="441.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway6" id="BPMNShape_exclusivegateway6">
+        <omgdc:Bounds height="40.0" width="40.0" x="824.0" y="318.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="initiateShipping" id="BPMNShape_initiateShipping">
+        <omgdc:Bounds height="71.0" width="125.0" x="980.0" y="303.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="4.0" y="321.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="1174.0" y="321.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow23" id="BPMNEdge_flow23">
+        <omgdi:waypoint x="255.0" y="338.0"></omgdi:waypoint>
+        <omgdi:waypoint x="384.0" y="338.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow24" id="BPMNEdge_flow24">
+        <omgdi:waypoint x="424.0" y="338.0"></omgdi:waypoint>
+        <omgdi:waypoint x="557.0" y="338.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="16.0" width="51.0" x="445.0" y="338.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow25" id="BPMNEdge_flow25">
+        <omgdi:waypoint x="404.0" y="358.0"></omgdi:waypoint>
+        <omgdi:waypoint x="404.0" y="478.0"></omgdi:waypoint>
+        <omgdi:waypoint x="464.0" y="478.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="16.0" width="65.0" x="314.0" y="410.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow26" id="BPMNEdge_flow26">
+        <omgdi:waypoint x="569.0" y="478.0"></omgdi:waypoint>
+        <omgdi:waypoint x="640.0" y="478.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow27" id="BPMNEdge_flow27">
+        <omgdi:waypoint x="717.0" y="338.0"></omgdi:waypoint>
+        <omgdi:waypoint x="824.0" y="338.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow28" id="BPMNEdge_flow28">
+        <omgdi:waypoint x="765.0" y="478.0"></omgdi:waypoint>
+        <omgdi:waypoint x="844.0" y="478.0"></omgdi:waypoint>
+        <omgdi:waypoint x="844.0" y="358.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow29" id="BPMNEdge_flow29">
+        <omgdi:waypoint x="864.0" y="338.0"></omgdi:waypoint>
+        <omgdi:waypoint x="980.0" y="338.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow60" id="BPMNEdge_flow60">
+        <omgdi:waypoint x="39.0" y="338.0"></omgdi:waypoint>
+        <omgdi:waypoint x="114.0" y="338.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow61" id="BPMNEdge_flow61">
+        <omgdi:waypoint x="1105.0" y="338.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1174.0" y="338.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

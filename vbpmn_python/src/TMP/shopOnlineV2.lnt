@@ -1,0 +1,439 @@
+module shopOnlineV2(bpmntypes) with "get" is
+
+process init [begin:any, outf:any] is
+ var ident: ID in begin ; outf (?ident of ID); exit end var 
+end process
+
+process final [incf:any, finish:any] is
+var ident: ID in 
+loop 
+incf (?ident of ID); finish 
+end loop
+end var
+end process
+
+process flow [begin:any, finish:any] (ident: ID) is
+ loop begin (!ident) ; finish (!ident) end loop
+end process
+
+process task_1_1 [incf:any,task:any,outf:any] is
+ var ident: ID in loop  incf (?ident of ID); task ;  outf (?ident of ID) end loop end var
+end process
+
+process xorsplit_exclusivegateway3 [incf:any,outf_1:any,outf_2:any,outf_3:any ] is 
+ var ident: ID in loop incf (?ident of ID); 
+ select outf_1(?ident of ID)[]outf_2(?ident of ID)[]outf_3(?ident of ID) end select end loop end var
+end process
+
+process xorjoin_exclusivegateway4 [incf_1:any,incf_2:any,outf:any] is 
+ var ident: ID in loop select incf_1 (?ident of ID)[]incf_2 (?ident of ID) end select ; outf (?ident of ID) end loop end var 
+end process
+
+process xorjoin_exclusivegateway5 [incf_1:any,incf_2:any,outf:any] is 
+ var ident: ID in loop select incf_1 (?ident of ID)[]incf_2 (?ident of ID) end select ; outf (?ident of ID) end loop end var 
+end process
+
+process orsplit_inclusivegateway1 [incf:any,outf_1:any,outf_2:any,outf_3:any, inclusivegateway1_1:any,inclusivegateway1_2:any,inclusivegateway1_3:any,inclusivegateway1_4:any,inclusivegateway1_5:any,inclusivegateway1_6:any,inclusivegateway1_7:any ] is 
+ var ident7:ID,ident6:ID,ident5:ID,ident4:ID,ident3:ID,ident2:ID,ident1:ID in 
+var ident: ID in loop 
+incf (?ident of ID); 
+select 
+inclusivegateway1_1; outf_1 (?ident of ID)
+[] 
+inclusivegateway1_2; outf_2 (?ident of ID)
+[] 
+inclusivegateway1_3; outf_3 (?ident of ID)
+[] 
+inclusivegateway1_4; 
+par
+outf_1(?ident7 of ID)
+||
+outf_2(?ident6 of ID)
+end par
+[] 
+inclusivegateway1_5; 
+par
+outf_1(?ident7 of ID)
+||
+outf_3(?ident6 of ID)
+end par
+[] 
+inclusivegateway1_6; 
+par
+outf_2(?ident7 of ID)
+||
+outf_3(?ident6 of ID)
+end par
+[] 
+inclusivegateway1_7; 
+par
+outf_1(?ident7 of ID)
+||
+outf_2(?ident6 of ID)
+||
+outf_3(?ident5 of ID)
+end par
+end select 
+end loop 
+end var
+end var
+end process
+
+process orjoin_inclusivegateway2 [incf_1:any,incf_2:any,outf:any, MoveOn:any] (mergeid: ID) is 
+var mergestatus:Bool, ident:ID in 
+ loop
+mergestatus := False;
+while mergestatus == False loop 
+select
+incf_1 (?ident of ID)
+[]incf_2 (?ident of ID)
+[] MoveOn(!mergeid); mergestatus := True
+end select
+end loop;
+outf (?ident of ID)
+end loop
+end var
+end process
+
+process task_2_1 [incf0:any,incf1:any,task:any,outf:any] is
+ var ident: ID in loop  select incf0 (?ident of ID) [] incf1 (?ident of ID) end select ; 
+task ;  outf (?ident of ID) end loop end var
+end process
+
+process xorsplit_exclusivegateway6 [incf:any,outf_1:any,outf_2:any ] is 
+ var ident: ID in loop incf (?ident of ID); 
+ select outf_1(?ident of ID)[]outf_2(?ident of ID) end select end loop end var
+end process
+
+process xorsplit_exclusivegateway7 [incf:any,outf_1:any,outf_2:any ] is 
+ var ident: ID in loop incf (?ident of ID); 
+ select outf_1(?ident of ID)[]outf_2(?ident of ID) end select end loop end var
+end process
+
+process andsplit_parallelgateway1 [incf:any,outf_1:any,outf_2:any ] is 
+ var ident2:ID,ident1:ID in  var ident: ID in loop incf (?ident of ID); 
+ par outf_1(?ident2 of ID)||outf_2(?ident1 of ID) end par end loop end var end var
+end process
+
+process andjoin_parallelgateway2 [incf_1:any,incf_2:any,outf:any] is 
+ var ident2:ID,ident1:ID in  var ident:ID in loop par incf_1 (?ident2 of ID)||incf_2 (?ident1 of ID) end par ; outf (?ident of ID) end loop end var end var 
+end process
+
+process xorsplit_exclusivegateway8 [incf:any,outf_1:any,outf_2:any ] is 
+ var ident: ID in loop incf (?ident of ID); 
+ select outf_1(?ident of ID)[]outf_2(?ident of ID) end select end loop end var
+end process
+
+process xorjoin_exclusivegateway9 [incf_1:any,incf_2:any,outf:any] is 
+ var ident: ID in loop select incf_1 (?ident of ID)[]incf_2 (?ident of ID) end select ; outf (?ident of ID) end loop end var 
+end process
+
+process xorsplit_exclusivegateway10 [incf:any,outf_1:any,outf_2:any ] is 
+ var ident: ID in loop incf (?ident of ID); 
+ select outf_1(?ident of ID)[]outf_2(?ident of ID) end select end loop end var
+end process
+
+
+process scheduler [flow9_begin:any, flow9_finish:any, flow10_begin:any, flow10_finish:any, flow11_begin:any, flow11_finish:any, flow12_begin:any, flow12_finish:any, flow13_begin:any, flow13_finish:any, flow14_begin:any, flow14_finish:any, flow15_begin:any, flow15_finish:any, flow16_begin:any, flow16_finish:any, flow17_begin:any, flow17_finish:any, flow18_begin:any, flow18_finish:any, flow19_begin:any, flow19_finish:any, flow20_begin:any, flow20_finish:any, flow21_begin:any, flow21_finish:any, flow22_begin:any, flow22_finish:any, flow23_begin:any, flow23_finish:any, flow24_begin:any, flow24_finish:any, flow25_begin:any, flow25_finish:any, flow26_begin:any, flow26_finish:any, flow27_begin:any, flow27_finish:any, flow28_begin:any, flow28_finish:any, flow29_begin:any, flow29_finish:any, flow30_begin:any, flow30_finish:any, flow31_begin:any, flow31_finish:any, flow32_begin:any, flow32_finish:any, flow33_begin:any, flow33_finish:any, flow34_begin:any, flow34_finish:any, flow35_begin:any, flow35_finish:any, flow36_begin:any, flow36_finish:any, flow37_begin:any, flow37_finish:any, flow38_begin:any, flow38_finish:any, flow39_begin:any, flow39_finish:any, flow40_begin:any, flow40_finish:any, flow41_begin:any, flow41_finish:any, flow42_begin:any, flow42_finish:any, flow43_begin:any, flow43_finish:any, flow44_begin:any, flow44_finish:any, flow45_begin:any, flow45_finish:any, flow46_begin:any, flow46_finish:any, flow47_begin:any, flow47_finish:any, flow48_begin:any, flow48_finish:any, flow49_begin:any, flow49_finish:any, flow50_begin:any, flow50_finish:any, flow51_begin:any, flow51_finish:any, flow52_begin:any, flow52_finish:any,inclusivegateway1_1:any,inclusivegateway1_2:any,inclusivegateway1_3:any,inclusivegateway1_4:any,inclusivegateway1_5:any,inclusivegateway1_6:any,inclusivegateway1_7:any, MoveOn:any] (activeflows: IDS, bpmn: BPROCESS, syncstore: IDS, mergestore:IDS, parstore:IDS) is
+var ident4: ID,ident5: ID,ident6: ID,ident: ID,ident1: ID,ident2: ID,ident3: ID,ident7: ID, mergeid: ID in 
+select 
+(*---------- Initial node ---------------------*)
+flow37_begin (?ident1 of ID);scheduler [...](union({ident1}, remove_ids_from_set({}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+
+(*----  Task with ID: searchItems------*)
+flow37_finish (?ident1 of ID); flow40_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: chooseItems------*)
+flow39_finish (?ident1 of ID); flow41_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: payment------*)
+flow47_finish (?ident1 of ID); flow9_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: card------*)
+flow10_finish (?ident1 of ID); flow13_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: giftVoucher------*)
+flow11_finish (?ident1 of ID); flow14_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: payOnDelivery------*)
+flow12_finish (?ident1 of ID); flow17_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  XOrSplitGateway with ID: exclusivegateway3------*)
+flow9_finish (?ident1 of ID);  select
+flow10_begin (?ident2 of ID); scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+[]
+flow11_begin (?ident3 of ID); scheduler [...](union({ident3}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+[]
+flow12_begin (?ident4 of ID); scheduler [...](union({ident4}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+end select 
+[]
+(*----  XOrJoinGateway with ID: exclusivegateway4------*)
+ select
+flow13_finish (?ident2 of ID) 
+[]
+flow14_finish (?ident2 of ID) 
+end select; flow15_begin (?ident1 of ID);scheduler [...](union({ident1}, remove_ids_from_set({ident2}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  XOrJoinGateway with ID: exclusivegateway5------*)
+ select
+flow16_finish (?ident2 of ID) 
+[]
+flow17_finish (?ident2 of ID) 
+end select; flow18_begin (?ident1 of ID);scheduler [...](union({ident1}, remove_ids_from_set({ident2}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: validate------*)
+flow18_finish (?ident1 of ID); flow19_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: checkTxn------*)
+flow15_finish (?ident1 of ID); flow16_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: checkInventory------*)
+flow19_finish (?ident1 of ID); flow20_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  OrSplitGateway with ID: inclusivegateway1------*)
+flow20_finish (?ident1 of ID); 
+select  
+ inclusivegateway1_1; flow21_begin (?ident of ID);scheduler [...](union({ident}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]  
+ inclusivegateway1_2; flow22_begin (?ident of ID);scheduler [...](union({ident}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]  
+ inclusivegateway1_3; flow24_begin (?ident of ID);scheduler [...](union({ident}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]  
+ inclusivegateway1_4; 
+par
+flow21_begin(?ident7 of ID)
+||
+flow22_begin(?ident6 of ID)
+end par;scheduler [...](union({ident7,ident6}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]  
+ inclusivegateway1_5; 
+par
+flow21_begin(?ident7 of ID)
+||
+flow24_begin(?ident6 of ID)
+end par;scheduler [...](union({ident7,ident6,ident7,ident6}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]  
+ inclusivegateway1_6; 
+par
+flow22_begin(?ident7 of ID)
+||
+flow24_begin(?ident6 of ID)
+end par;scheduler [...](union({ident7,ident6,ident7,ident6,ident7,ident6}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]  
+ inclusivegateway1_7; 
+par
+flow21_begin(?ident7 of ID)
+||
+flow22_begin(?ident6 of ID)
+||
+flow24_begin(?ident5 of ID)
+end par;scheduler [...](union({ident7,ident6,ident7,ident6,ident7,ident6,ident7,ident6,ident5}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+end select
+
+[]
+(*----  Task with ID: identifyWarehouse------*)
+flow21_finish (?ident1 of ID); flow25_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: procureItems------*)
+flow22_finish (?ident1 of ID); flow23_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: updateInventory------*)
+flow23_finish (?ident1 of ID); flow26_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: unavailableItem------*)
+flow24_finish (?ident1 of ID); flow35_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  OrJoinGateway with ID: inclusivegateway2------*)
+flow25_finish (?ident of ID); scheduler [...](union({}, remove_ids_from_set({}, activeflows)), bpmn, insert(ident, syncstore), insert(inclusivegateway2, mergestore), parstore)
+
+[]
+flow26_finish (?ident of ID); scheduler [...](union({}, remove_ids_from_set({}, activeflows)), bpmn, insert(ident, syncstore), insert(inclusivegateway2, mergestore), parstore)
+
+[]
+(*----  Task with ID: notifyUnavailableItems------*)
+flow35_finish (?ident1 of ID); flow36_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: shipItems------*)
+flow27_finish (?ident1 of ID); flow28_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: deliverItems------*)
+flow28_finish (?ident1 of ID); flow29_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  XOrSplitGateway with ID: exclusivegateway6------*)
+flow29_finish (?ident1 of ID);  select
+flow30_begin (?ident2 of ID); scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+[]
+flow31_begin (?ident3 of ID); scheduler [...](union({ident3}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+end select 
+[]
+(*----  Task with ID: reattempt------*)
+flow31_finish (?ident1 of ID); flow32_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  XOrSplitGateway with ID: exclusivegateway7------*)
+flow32_finish (?ident1 of ID);  select
+flow33_begin (?ident2 of ID); scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+[]
+flow51_begin (?ident3 of ID); scheduler [...](union({ident3}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+end select 
+[]
+(*----  AndSplitGateway with ID: parallelgateway1------*)
+flow48_finish (?ident1 of ID);par
+flow38_begin (?ident2 of ID) 
+||flow39_begin (?ident3 of ID) 
+end par;scheduler [...](union({ident2,ident3}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  AndJoinGateway with ID: parallelgateway2------*)
+flow41_finish (?ident of ID); scheduler [...](union({}, remove_ids_from_set({}, activeflows)), bpmn, insert(ident, syncstore), mergestore, insert(parallelgateway2, parstore))
+
+[]
+flow46_finish (?ident of ID); scheduler [...](union({}, remove_ids_from_set({}, activeflows)), bpmn, insert(ident, syncstore), mergestore, insert(parallelgateway2, parstore))
+
+[]
+(*----  XOrSplitGateway with ID: exclusivegateway8------*)
+flow38_finish (?ident1 of ID);  select
+flow42_begin (?ident2 of ID); scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+[]
+flow43_begin (?ident3 of ID); scheduler [...](union({ident3}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+end select 
+[]
+(*----  XOrJoinGateway with ID: exclusivegateway9------*)
+ select
+flow44_finish (?ident2 of ID) 
+[]
+flow45_finish (?ident2 of ID) 
+end select; flow46_begin (?ident1 of ID);scheduler [...](union({ident1}, remove_ids_from_set({ident2}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: signIn------*)
+flow42_finish (?ident1 of ID); flow44_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: signUp------*)
+flow43_finish (?ident1 of ID); flow45_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  XOrSplitGateway with ID: exclusivegateway10------*)
+flow40_finish (?ident1 of ID);  select
+flow48_begin (?ident2 of ID); scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+[]
+flow49_begin (?ident3 of ID); scheduler [...](union({ident3}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+end select 
+[]
+(*----  Task with ID: partialRefund------*)
+flow36_finish (?ident1 of ID); flow50_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: refundReturn------*)
+flow52_finish (?ident1 of ID); flow34_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+(*----  Task with ID: notifyFailedDelivery------*)
+flow51_finish (?ident1 of ID); flow52_begin (?ident2 of ID);scheduler [...](union({ident2}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+
+(*----------------- Final node ----------------------*)
+flow30_finish (?ident1 of ID);scheduler [...](union({}, remove_ids_from_set({ident1}, activeflows)), bpmn, syncstore, mergestore, parstore)
+
+[]
+ mergeid := any ID where member(mergeid, mergestore);
+if (is_merge_possible_v2(bpmn,activeflows,mergeid) and is_sync_done(bpmn, activeflows, syncstore, mergeid)) then 
+MoveOn(!mergeid);select 
+flow27_begin (?ident1 of ID);scheduler [flow9_begin, flow9_finish, flow10_begin, flow10_finish, flow11_begin, flow11_finish, flow12_begin, flow12_finish, flow13_begin, flow13_finish, flow14_begin, flow14_finish, flow15_begin, flow15_finish, flow16_begin, flow16_finish, flow17_begin, flow17_finish, flow18_begin, flow18_finish, flow19_begin, flow19_finish, flow20_begin, flow20_finish, flow21_begin, flow21_finish, flow22_begin, flow22_finish, flow23_begin, flow23_finish, flow24_begin, flow24_finish, flow25_begin, flow25_finish, flow26_begin, flow26_finish, flow27_begin, flow27_finish, flow28_begin, flow28_finish, flow29_begin, flow29_finish, flow30_begin, flow30_finish, flow31_begin, flow31_finish, flow32_begin, flow32_finish, flow33_begin, flow33_finish, flow34_begin, flow34_finish, flow35_begin, flow35_finish, flow36_begin, flow36_finish, flow37_begin, flow37_finish, flow38_begin, flow38_finish, flow39_begin, flow39_finish, flow40_begin, flow40_finish, flow41_begin, flow41_finish, flow42_begin, flow42_finish, flow43_begin, flow43_finish, flow44_begin, flow44_finish, flow45_begin, flow45_finish, flow46_begin, flow46_finish, flow47_begin, flow47_finish, flow48_begin, flow48_finish, flow49_begin, flow49_finish, flow50_begin, flow50_finish, flow51_begin, flow51_finish, flow52_begin, flow52_finish,inclusivegateway1_1,inclusivegateway1_2,inclusivegateway1_3,inclusivegateway1_4,inclusivegateway1_5,inclusivegateway1_6,inclusivegateway1_7, MoveOn](union({ident1}, remove_incf(bpmn, activeflows, mergeid)), bpmn, remove_sync(bpmn, syncstore, mergeid), remove(mergeid, mergestore), parstore)
+end select 
+else 
+
+scheduler [flow9_begin, flow9_finish, flow10_begin, flow10_finish, flow11_begin, flow11_finish, flow12_begin, flow12_finish, flow13_begin, flow13_finish, flow14_begin, flow14_finish, flow15_begin, flow15_finish, flow16_begin, flow16_finish, flow17_begin, flow17_finish, flow18_begin, flow18_finish, flow19_begin, flow19_finish, flow20_begin, flow20_finish, flow21_begin, flow21_finish, flow22_begin, flow22_finish, flow23_begin, flow23_finish, flow24_begin, flow24_finish, flow25_begin, flow25_finish, flow26_begin, flow26_finish, flow27_begin, flow27_finish, flow28_begin, flow28_finish, flow29_begin, flow29_finish, flow30_begin, flow30_finish, flow31_begin, flow31_finish, flow32_begin, flow32_finish, flow33_begin, flow33_finish, flow34_begin, flow34_finish, flow35_begin, flow35_finish, flow36_begin, flow36_finish, flow37_begin, flow37_finish, flow38_begin, flow38_finish, flow39_begin, flow39_finish, flow40_begin, flow40_finish, flow41_begin, flow41_finish, flow42_begin, flow42_finish, flow43_begin, flow43_finish, flow44_begin, flow44_finish, flow45_begin, flow45_finish, flow46_begin, flow46_finish, flow47_begin, flow47_finish, flow48_begin, flow48_finish, flow49_begin, flow49_finish, flow50_begin, flow50_finish, flow51_begin, flow51_finish, flow52_begin, flow52_finish,inclusivegateway1_1,inclusivegateway1_2,inclusivegateway1_3,inclusivegateway1_4,inclusivegateway1_5,inclusivegateway1_6,inclusivegateway1_7, MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)
+end if
+
+[]
+ mergeid := any ID where member(mergeid, parstore);
+if (is_merge_possible_par(bpmn,syncstore,mergeid)) then 
+select 
+flow47_begin (?ident1 of ID);scheduler [flow9_begin, flow9_finish, flow10_begin, flow10_finish, flow11_begin, flow11_finish, flow12_begin, flow12_finish, flow13_begin, flow13_finish, flow14_begin, flow14_finish, flow15_begin, flow15_finish, flow16_begin, flow16_finish, flow17_begin, flow17_finish, flow18_begin, flow18_finish, flow19_begin, flow19_finish, flow20_begin, flow20_finish, flow21_begin, flow21_finish, flow22_begin, flow22_finish, flow23_begin, flow23_finish, flow24_begin, flow24_finish, flow25_begin, flow25_finish, flow26_begin, flow26_finish, flow27_begin, flow27_finish, flow28_begin, flow28_finish, flow29_begin, flow29_finish, flow30_begin, flow30_finish, flow31_begin, flow31_finish, flow32_begin, flow32_finish, flow33_begin, flow33_finish, flow34_begin, flow34_finish, flow35_begin, flow35_finish, flow36_begin, flow36_finish, flow37_begin, flow37_finish, flow38_begin, flow38_finish, flow39_begin, flow39_finish, flow40_begin, flow40_finish, flow41_begin, flow41_finish, flow42_begin, flow42_finish, flow43_begin, flow43_finish, flow44_begin, flow44_finish, flow45_begin, flow45_finish, flow46_begin, flow46_finish, flow47_begin, flow47_finish, flow48_begin, flow48_finish, flow49_begin, flow49_finish, flow50_begin, flow50_finish, flow51_begin, flow51_finish, flow52_begin, flow52_finish,inclusivegateway1_1,inclusivegateway1_2,inclusivegateway1_3,inclusivegateway1_4,inclusivegateway1_5,inclusivegateway1_6,inclusivegateway1_7, MoveOn](union({ident1}, remove_incf(bpmn, activeflows, mergeid)), bpmn, remove_sync(bpmn, syncstore, mergeid), mergestore, remove(mergeid, parstore))
+end select 
+else 
+
+scheduler [flow9_begin, flow9_finish, flow10_begin, flow10_finish, flow11_begin, flow11_finish, flow12_begin, flow12_finish, flow13_begin, flow13_finish, flow14_begin, flow14_finish, flow15_begin, flow15_finish, flow16_begin, flow16_finish, flow17_begin, flow17_finish, flow18_begin, flow18_finish, flow19_begin, flow19_finish, flow20_begin, flow20_finish, flow21_begin, flow21_finish, flow22_begin, flow22_finish, flow23_begin, flow23_finish, flow24_begin, flow24_finish, flow25_begin, flow25_finish, flow26_begin, flow26_finish, flow27_begin, flow27_finish, flow28_begin, flow28_finish, flow29_begin, flow29_finish, flow30_begin, flow30_finish, flow31_begin, flow31_finish, flow32_begin, flow32_finish, flow33_begin, flow33_finish, flow34_begin, flow34_finish, flow35_begin, flow35_finish, flow36_begin, flow36_finish, flow37_begin, flow37_finish, flow38_begin, flow38_finish, flow39_begin, flow39_finish, flow40_begin, flow40_finish, flow41_begin, flow41_finish, flow42_begin, flow42_finish, flow43_begin, flow43_finish, flow44_begin, flow44_finish, flow45_begin, flow45_finish, flow46_begin, flow46_finish, flow47_begin, flow47_finish, flow48_begin, flow48_finish, flow49_begin, flow49_finish, flow50_begin, flow50_finish, flow51_begin, flow51_finish, flow52_begin, flow52_finish,inclusivegateway1_1,inclusivegateway1_2,inclusivegateway1_3,inclusivegateway1_4,inclusivegateway1_5,inclusivegateway1_6,inclusivegateway1_7, MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)
+end if
+end select
+end var
+end process
+
+
+function p1(): BPROCESS is 
+
+ return proc ( 
+shopOnlineV2,
+{
+	i ( initial(startevent1,flow37) ),
+	f ( { final(endevent1,{flow30}),final(endevent2,{flow34}),final(endevent3,{flow50}),final(endevent4,{flow49}) } ),
+	t ( { task(searchItems,{flow37},{flow40}),task(chooseItems,{flow39},{flow41}),task(payment,{flow47},{flow9}),task(card,{flow10},{flow13}),task(giftVoucher,{flow11},{flow14}),task(payOnDelivery,{flow12},{flow17}),task(validate,{flow18},{flow19}),task(checkTxn,{flow15},{flow16}),task(checkInventory,{flow19},{flow20}),task(identifyWarehouse,{flow21},{flow25}),task(procureItems,{flow22},{flow23}),task(updateInventory,{flow23},{flow26}),task(unavailableItem,{flow24},{flow35}),task(notifyUnavailableItems,{flow35},{flow36}),task(shipItems,{flow27},{flow28}),task(deliverItems,{flow28,flow33},{flow29}),task(reattempt,{flow31},{flow32}),task(signIn,{flow42},{flow44}),task(signUp,{flow43},{flow45}),task(partialRefund,{flow36},{flow50}),task(refundReturn,{flow52},{flow34}),task(notifyFailedDelivery,{flow51},{flow52}) } ), 
+	g ( { gateway(exclusivegateway3,split,xor,{flow9},{flow10,flow11,flow12}),gateway(exclusivegateway4,merge,xor,{flow13,flow14},{flow15}),gateway(exclusivegateway5,merge,xor,{flow16,flow17},{flow18}),gateway(inclusivegateway1,split,or,{flow20},{flow21,flow22,flow24}),gateway(inclusivegateway2,merge,or,{flow25,flow26},{flow27}),gateway(exclusivegateway6,split,xor,{flow29},{flow30,flow31}),gateway(exclusivegateway7,split,xor,{flow32},{flow33,flow51}),gateway(parallelgateway1,split,and,{flow48},{flow38,flow39}),gateway(parallelgateway2,merge,and,{flow41,flow46},{flow47}),gateway(exclusivegateway8,split,xor,{flow38},{flow42,flow43}),gateway(exclusivegateway9,merge,xor,{flow44,flow45},{flow46}),gateway(exclusivegateway10,split,xor,{flow40},{flow48,flow49}) } )
+},
+{ 
+flow(flow9,payment,exclusivegateway3),flow(flow10,exclusivegateway3,card),flow(flow11,exclusivegateway3,giftVoucher),flow(flow12,exclusivegateway3,payOnDelivery),flow(flow13,card,exclusivegateway4),flow(flow14,giftVoucher,exclusivegateway4),flow(flow15,exclusivegateway4,checkTxn),flow(flow16,checkTxn,exclusivegateway5),flow(flow17,payOnDelivery,exclusivegateway5),flow(flow18,exclusivegateway5,validate),flow(flow19,validate,checkInventory),flow(flow20,checkInventory,inclusivegateway1),flow(flow21,inclusivegateway1,identifyWarehouse),flow(flow22,inclusivegateway1,procureItems),flow(flow23,procureItems,updateInventory),flow(flow24,inclusivegateway1,unavailableItem),flow(flow25,identifyWarehouse,inclusivegateway2),flow(flow26,updateInventory,inclusivegateway2),flow(flow27,inclusivegateway2,shipItems),flow(flow28,shipItems,deliverItems),flow(flow29,deliverItems,exclusivegateway6),flow(flow30,exclusivegateway6,endevent1),flow(flow31,exclusivegateway6,reattempt),flow(flow32,reattempt,exclusivegateway7),flow(flow33,exclusivegateway7,deliverItems),flow(flow34,refundReturn,endevent2),flow(flow35,unavailableItem,notifyUnavailableItems),flow(flow36,notifyUnavailableItems,partialRefund),flow(flow37,startevent1,searchItems),flow(flow38,parallelgateway1,exclusivegateway8),flow(flow39,parallelgateway1,chooseItems),flow(flow40,searchItems,exclusivegateway10),flow(flow41,chooseItems,parallelgateway2),flow(flow42,exclusivegateway8,signIn),flow(flow43,exclusivegateway8,signUp),flow(flow44,signIn,exclusivegateway9),flow(flow45,signUp,exclusivegateway9),flow(flow46,exclusivegateway9,parallelgateway2),flow(flow47,parallelgateway2,payment),flow(flow48,exclusivegateway10,parallelgateway1),flow(flow49,exclusivegateway10,endevent4),flow(flow50,partialRefund,endevent3),flow(flow51,exclusivegateway7,notifyFailedDelivery),flow(flow52,notifyFailedDelivery,refundReturn)
+}
+)
+end function
+
+
+process MAIN [searchItems:any, chooseItems:any, payment:any, card:any, giftVoucher:any, payOnDelivery:any, validate:any, checkTxn:any, checkInventory:any, identifyWarehouse:any, procureItems:any, updateInventory:any, unavailableItem:any, notifyUnavailableItems:any, shipItems:any, deliverItems:any, reattempt:any, signIn:any, signUp:any, partialRefund:any, refundReturn:any, notifyFailedDelivery:any] is
+
+ hide begin:any, finish:any, flow9_begin:any, flow9_finish:any, flow10_begin:any, flow10_finish:any, flow11_begin:any, flow11_finish:any, flow12_begin:any, flow12_finish:any, flow13_begin:any, flow13_finish:any, flow14_begin:any, flow14_finish:any, flow15_begin:any, flow15_finish:any, flow16_begin:any, flow16_finish:any, flow17_begin:any, flow17_finish:any, flow18_begin:any, flow18_finish:any, flow19_begin:any, flow19_finish:any, flow20_begin:any, flow20_finish:any, flow21_begin:any, flow21_finish:any, flow22_begin:any, flow22_finish:any, flow23_begin:any, flow23_finish:any, flow24_begin:any, flow24_finish:any, flow25_begin:any, flow25_finish:any, flow26_begin:any, flow26_finish:any, flow27_begin:any, flow27_finish:any, flow28_begin:any, flow28_finish:any, flow29_begin:any, flow29_finish:any, flow30_begin:any, flow30_finish:any, flow31_begin:any, flow31_finish:any, flow32_begin:any, flow32_finish:any, flow33_begin:any, flow33_finish:any, flow34_begin:any, flow34_finish:any, flow35_begin:any, flow35_finish:any, flow36_begin:any, flow36_finish:any, flow37_begin:any, flow37_finish:any, flow38_begin:any, flow38_finish:any, flow39_begin:any, flow39_finish:any, flow40_begin:any, flow40_finish:any, flow41_begin:any, flow41_finish:any, flow42_begin:any, flow42_finish:any, flow43_begin:any, flow43_finish:any, flow44_begin:any, flow44_finish:any, flow45_begin:any, flow45_finish:any, flow46_begin:any, flow46_finish:any, flow47_begin:any, flow47_finish:any, flow48_begin:any, flow48_finish:any, flow49_begin:any, flow49_finish:any, flow50_begin:any, flow50_finish:any, flow51_begin:any, flow51_finish:any, flow52_begin:any, flow52_finish:any, inclusivegateway1_1:any, inclusivegateway1_2:any, inclusivegateway1_3:any, inclusivegateway1_4:any, inclusivegateway1_5:any, inclusivegateway1_6:any, inclusivegateway1_7:any, MoveOn:any  in
+par MoveOn, flow9_begin, flow9_finish, flow10_begin, flow10_finish, flow11_begin, flow11_finish, flow12_begin, flow12_finish, flow13_begin, flow13_finish, flow14_begin, flow14_finish, flow15_begin, flow15_finish, flow16_begin, flow16_finish, flow17_begin, flow17_finish, flow18_begin, flow18_finish, flow19_begin, flow19_finish, flow20_begin, flow20_finish, flow21_begin, flow21_finish, flow22_begin, flow22_finish, flow23_begin, flow23_finish, flow24_begin, flow24_finish, flow25_begin, flow25_finish, flow26_begin, flow26_finish, flow27_begin, flow27_finish, flow28_begin, flow28_finish, flow29_begin, flow29_finish, flow30_begin, flow30_finish, flow31_begin, flow31_finish, flow32_begin, flow32_finish, flow33_begin, flow33_finish, flow34_begin, flow34_finish, flow35_begin, flow35_finish, flow36_begin, flow36_finish, flow37_begin, flow37_finish, flow38_begin, flow38_finish, flow39_begin, flow39_finish, flow40_begin, flow40_finish, flow41_begin, flow41_finish, flow42_begin, flow42_finish, flow43_begin, flow43_finish, flow44_begin, flow44_finish, flow45_begin, flow45_finish, flow46_begin, flow46_finish, flow47_begin, flow47_finish, flow48_begin, flow48_finish, flow49_begin, flow49_finish, flow50_begin, flow50_finish, flow51_begin, flow51_finish, flow52_begin, flow52_finish,inclusivegateway1_1,inclusivegateway1_2,inclusivegateway1_3,inclusivegateway1_4,inclusivegateway1_5,inclusivegateway1_6,inclusivegateway1_7 in
+  (* we first generate the scheduler, necessary for keeping track of tokens, and triggering inclusive merge gateways *)
+    scheduler [...](nil, p1(), nil, nil, nil) 
+||
+par    (* synchronizations on all begin/finish flow messages *)
+flow9_begin, flow9_finish, flow10_begin, flow10_finish, flow11_begin, flow11_finish, flow12_begin, flow12_finish, flow13_begin, flow13_finish, flow14_begin, flow14_finish, flow15_begin, flow15_finish, flow16_begin, flow16_finish, flow17_begin, flow17_finish, flow18_begin, flow18_finish, flow19_begin, flow19_finish, flow20_begin, flow20_finish, flow21_begin, flow21_finish, flow22_begin, flow22_finish, flow23_begin, flow23_finish, flow24_begin, flow24_finish, flow25_begin, flow25_finish, flow26_begin, flow26_finish, flow27_begin, flow27_finish, flow28_begin, flow28_finish, flow29_begin, flow29_finish, flow30_begin, flow30_finish, flow31_begin, flow31_finish, flow32_begin, flow32_finish, flow33_begin, flow33_finish, flow34_begin, flow34_finish, flow35_begin, flow35_finish, flow36_begin, flow36_finish, flow37_begin, flow37_finish, flow38_begin, flow38_finish, flow39_begin, flow39_finish, flow40_begin, flow40_finish, flow41_begin, flow41_finish, flow42_begin, flow42_finish, flow43_begin, flow43_finish, flow44_begin, flow44_finish, flow45_begin, flow45_finish, flow46_begin, flow46_finish, flow47_begin, flow47_finish, flow48_begin, flow48_finish, flow49_begin, flow49_finish, flow50_begin, flow50_finish, flow51_begin, flow51_finish, flow52_begin, flow52_finish in
+ par    (* we then generate interleaving of all flow processes *)
+flow [flow9_begin, flow9_finish] (flow9) || flow [flow10_begin, flow10_finish] (flow10) || flow [flow11_begin, flow11_finish] (flow11) || flow [flow12_begin, flow12_finish] (flow12) || flow [flow13_begin, flow13_finish] (flow13) || flow [flow14_begin, flow14_finish] (flow14) || flow [flow15_begin, flow15_finish] (flow15) || flow [flow16_begin, flow16_finish] (flow16) || flow [flow17_begin, flow17_finish] (flow17) || flow [flow18_begin, flow18_finish] (flow18) || flow [flow19_begin, flow19_finish] (flow19) || flow [flow20_begin, flow20_finish] (flow20) || flow [flow21_begin, flow21_finish] (flow21) || flow [flow22_begin, flow22_finish] (flow22) || flow [flow23_begin, flow23_finish] (flow23) || flow [flow24_begin, flow24_finish] (flow24) || flow [flow25_begin, flow25_finish] (flow25) || flow [flow26_begin, flow26_finish] (flow26) || flow [flow27_begin, flow27_finish] (flow27) || flow [flow28_begin, flow28_finish] (flow28) || flow [flow29_begin, flow29_finish] (flow29) || flow [flow30_begin, flow30_finish] (flow30) || flow [flow31_begin, flow31_finish] (flow31) || flow [flow32_begin, flow32_finish] (flow32) || flow [flow33_begin, flow33_finish] (flow33) || flow [flow34_begin, flow34_finish] (flow34) || flow [flow35_begin, flow35_finish] (flow35) || flow [flow36_begin, flow36_finish] (flow36) || flow [flow37_begin, flow37_finish] (flow37) || flow [flow38_begin, flow38_finish] (flow38) || flow [flow39_begin, flow39_finish] (flow39) || flow [flow40_begin, flow40_finish] (flow40) || flow [flow41_begin, flow41_finish] (flow41) || flow [flow42_begin, flow42_finish] (flow42) || flow [flow43_begin, flow43_finish] (flow43) || flow [flow44_begin, flow44_finish] (flow44) || flow [flow45_begin, flow45_finish] (flow45) || flow [flow46_begin, flow46_finish] (flow46) || flow [flow47_begin, flow47_finish] (flow47) || flow [flow48_begin, flow48_finish] (flow48) || flow [flow49_begin, flow49_finish] (flow49) || flow [flow50_begin, flow50_finish] (flow50) || flow [flow51_begin, flow51_finish] (flow51) || flow [flow52_begin, flow52_finish] (flow52)
+ end par 
+
+||
+ par    (* we finally generate interleaving of all node processes *)
+init [begin,flow37_begin] || final [flow30_finish, finish] || final [flow34_finish, finish] || final [flow50_finish, finish] || final [flow49_finish, finish] ||  task_1_1 [flow37_finish,searchItems,flow40_begin]  ||  task_1_1 [flow39_finish,chooseItems,flow41_begin]  ||  task_1_1 [flow47_finish,payment,flow9_begin]  ||  task_1_1 [flow10_finish,card,flow13_begin]  ||  task_1_1 [flow11_finish,giftVoucher,flow14_begin]  ||  task_1_1 [flow12_finish,payOnDelivery,flow17_begin]  || xorsplit_exclusivegateway3[flow9_finish,flow10_begin,flow11_begin,flow12_begin] || xorjoin_exclusivegateway4[flow13_finish,flow14_finish,flow15_begin] || xorjoin_exclusivegateway5[flow16_finish,flow17_finish,flow18_begin] ||  task_1_1 [flow18_finish,validate,flow19_begin]  ||  task_1_1 [flow15_finish,checkTxn,flow16_begin]  ||  task_1_1 [flow19_finish,checkInventory,flow20_begin]  || orsplit_inclusivegateway1[flow20_finish,flow21_begin,flow22_begin,flow24_begin, inclusivegateway1_1,inclusivegateway1_2,inclusivegateway1_3,inclusivegateway1_4,inclusivegateway1_5,inclusivegateway1_6,inclusivegateway1_7] ||  task_1_1 [flow21_finish,identifyWarehouse,flow25_begin]  ||  task_1_1 [flow22_finish,procureItems,flow23_begin]  ||  task_1_1 [flow23_finish,updateInventory,flow26_begin]  ||  task_1_1 [flow24_finish,unavailableItem,flow35_begin]  || orjoin_inclusivegateway2[flow25_finish,flow26_finish,flow27_begin, MoveOn] (inclusivegateway2) ||  task_1_1 [flow35_finish,notifyUnavailableItems,flow36_begin]  ||  task_1_1 [flow27_finish,shipItems,flow28_begin]  ||  task_2_1 [flow28_finish,flow33_finish,deliverItems,flow29_begin]  || xorsplit_exclusivegateway6[flow29_finish,flow30_begin,flow31_begin] ||  task_1_1 [flow31_finish,reattempt,flow32_begin]  || xorsplit_exclusivegateway7[flow32_finish,flow33_begin,flow51_begin] || andsplit_parallelgateway1[flow48_finish,flow38_begin,flow39_begin] || andjoin_parallelgateway2[flow41_finish,flow46_finish,flow47_begin] || xorsplit_exclusivegateway8[flow38_finish,flow42_begin,flow43_begin] || xorjoin_exclusivegateway9[flow44_finish,flow45_finish,flow46_begin] ||  task_1_1 [flow42_finish,signIn,flow44_begin]  ||  task_1_1 [flow43_finish,signUp,flow45_begin]  || xorsplit_exclusivegateway10[flow40_finish,flow48_begin,flow49_begin] ||  task_1_1 [flow36_finish,partialRefund,flow50_begin]  ||  task_1_1 [flow52_finish,refundReturn,flow34_begin]  ||  task_1_1 [flow51_finish,notifyFailedDelivery,flow52_begin] 
+ end par 
+ end par
+ end par
+ end hide
+
+end process
+
+
+end module
