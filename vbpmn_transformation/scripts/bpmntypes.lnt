@@ -8,7 +8,7 @@ module bpmntypes(id) with "get" is
 
 type IDS is !card 48000
     set of ID 
-with "==", "!=", "inter", "length", "empty", "member", "insert", "union", "remove", "diff"
+with ==, !=, inter, length, empty, member, insert, union, remove, diff
 end type
 
 
@@ -156,7 +156,7 @@ end function
 (*-------------------------------------------------------------------------------*)
 
 function is_merge_possible_v2(p: BPROCESS, activeflows:IDS, mergeid:ID): Bool is
-     var incf:IDS, inactiveincf:IDS, active_merge:Nat, visited: IDS, result: Bool in
+     var incf:IDS, inactiveincf:IDS, active_merge:Nat, visited: IDS, result1: Bool in
         visited := nil;
         incf := find_incf(p, mergeid);          (* just iterate through gateways instead of all nodes*)
         active_merge := find_active_tokens(activeflows, incf);
@@ -168,8 +168,8 @@ function is_merge_possible_v2(p: BPROCESS, activeflows:IDS, mergeid:ID): Bool is
             inactiveincf := remove_ids_from_set(activeflows, incf);
 
             (*--then check upstream for remaining flows--*)
-            eval result := check_af_upstream(!?visited, p, activeflows, inactiveincf);
-            return result
+            eval result1 := check_af_upstream(!?visited, p, activeflows, inactiveincf);
+            return result1
         end if
     end var
 end function
@@ -203,7 +203,7 @@ end function
 (*------------ finds all the upstream flows and checks for tokens -----------*)
 
 function check_af_upstream(in out visited:IDS, p:BPROCESS, activeflows:IDS, incf:IDS): Bool is
-    var count:Nat, result:Bool, result2:Bool in
+    var count:Nat, result1:Bool, result2:Bool in
         case incf in
             var hd:ID, tl:IDS, upflow:IDS, source:ID in
             cons(hd, tl) ->
@@ -211,8 +211,8 @@ function check_af_upstream(in out visited:IDS, p:BPROCESS, activeflows:IDS, incf
                         if(source == DummyId) then
                                 return True
                         elsif (member(source, visited)) then
-                            eval result := check_af_upstream(!?visited, p, activeflows, tl);
-                            return result
+                            eval result1 := check_af_upstream(!?visited, p, activeflows, tl);
+                            return result1
                         else
                             visited := insert(source, visited);
                             upflow := get_incf_by_id(p, source);
@@ -221,9 +221,9 @@ function check_af_upstream(in out visited:IDS, p:BPROCESS, activeflows:IDS, incf
                             end if;
                             count := find_active_tokens(activeflows, upflow);
                             if(count == 0 of Nat) then
-                                eval result := check_af_upstream(!?visited, p, activeflows, upflow);
+                                eval result1 := check_af_upstream(!?visited, p, activeflows, upflow);
                                 eval result2 := check_af_upstream(!?visited, p, activeflows, tl);
-                                return result and result2
+                                return result1 and result2
                             else
                                 return False
                             end if
