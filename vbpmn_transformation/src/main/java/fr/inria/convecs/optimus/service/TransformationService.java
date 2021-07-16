@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.inria.convecs.optimus.config.AppProperty;
+import fr.inria.convecs.optimus.transformer.BpmnContentTransformer;
 import fr.inria.convecs.optimus.transformer.ContentTransformer;
 import fr.inria.convecs.optimus.transformer.PifContentTransformer;
 import fr.inria.convecs.optimus.util.VbpmnExceptionMapper;
@@ -73,6 +74,28 @@ public class TransformationService {
 			
 			String bpmnResult = IOUtils.toString(new FileInputStream(bpmnOutput), StandardCharsets.UTF_8);
 			
+			httpResponse = Response.status(Status.OK).entity(bpmnResult).build();
+			
+			return httpResponse;
+
+		} catch (Exception e) {
+			logger.error("Error processing request: ", e);
+			throw VbpmnExceptionMapper.createWebAppException(e);
+		}
+	}
+	
+	@POST
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	@Path("/bpmn")
+	public Response generateBpmnLayout(String inputBpmn) {
+
+		Response httpResponse = null;
+		try {      
+
+			BpmnContentTransformer transformer = new BpmnContentTransformer(inputBpmn);
+			transformer.transform();
+			String bpmnResult = transformer.getBpmnLayout();
 			httpResponse = Response.status(Status.OK).entity(bpmnResult).build();
 			
 			return httpResponse;
