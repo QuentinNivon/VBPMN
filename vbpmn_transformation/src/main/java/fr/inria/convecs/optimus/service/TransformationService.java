@@ -92,7 +92,8 @@ public class TransformationService {
 
 		Response httpResponse = null;
 		try {      
-
+			
+			logger.info("bpmn xml {}", inputBpmn);
 			BpmnContentTransformer transformer = new BpmnContentTransformer(inputBpmn);
 			transformer.transform();
 			String bpmnResult = transformer.getBpmnLayout();
