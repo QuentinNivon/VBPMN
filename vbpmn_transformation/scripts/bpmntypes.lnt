@@ -2,7 +2,7 @@
 (*  BPMN data types (FACS'16), necessary for encoding unbalanced workflows
 Author: Gwen Salaun *)
 
-module bpmntypes(id) with "get" is
+module bpmntypes(id) with get is
 
 (* set of identifiers *)
 

@@ -163,7 +163,8 @@ class InitialEvent(Node):
     # Generates the (generic) process for the initial event, only once
     def lnt(self, f):
         f.write("process init [begin:any, outf:any] is\n")
-        f.write(" var ident: ID in begin ; outf (?ident of ID); exit end var \n")
+        #f.write(" var ident: ID in begin ; outf (?ident of ID); exit end var \n")
+        f.write(" var ident: ID in begin ; outf (?ident of ID) end var \n")
         f.write("end process\n\n")
 
     # Seeks or joins, for an initial event, just a recursive call on the target node of the outgoing flow
