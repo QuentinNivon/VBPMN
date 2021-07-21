@@ -187,7 +187,10 @@ public class ValidationService {
 					validator.validate(input1, operationMode);
 				}
 				result = validator.getResult();
-				httpResponse = Response.status(Status.OK).entity(result).build();
+				httpResponse = Response.status(Status.OK)
+						   .header("Access-Control-Allow-Origin", "*")
+				            .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+				            .entity(result).build();
 			}
 		} catch (Exception e) {
 			logger.error("Exception while invoking VBPMN", e);
