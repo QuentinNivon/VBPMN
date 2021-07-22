@@ -92,13 +92,13 @@ class Node:
 
     # This method dumps a textual version of a node (useful for debugging purposes)
     def dump(self):
-        print "Node " + self.ident + " in: ",
+        print("Node " + self.ident + " in: ", end=' ')
         for f in self.incomingFlows:
-            print f.ident + " ",
-        print " out: ",
+            print(f.ident + " ", end=' ')
+        print(" out: ", end=' ')
         for f in self.outgoingFlows:
-            print f.ident + " ",
-        print ""
+            print(f.ident + " ", end=' ')
+        print("")
 
 
 ##
@@ -111,7 +111,7 @@ class Flow:
 
     # This method dumps a textual version of a flow (useful for debugging purposes)
     def dump(self):
-        print "Flow " + self.source.ident + "--" + self.ident + "-->" + self.target.ident
+        print("Flow " + self.source.ident + "--" + self.ident + "-->" + self.target.ident)
 
     # Generates the (generic) process for flows, only once
     def lnt(self, f):
@@ -1046,16 +1046,16 @@ class Process:
 
     # This method dumps a textual version of a process (useful for debugging purposes)
     def dump(self):
-        print "NAME: " + self.name
-        print "INITIAL NODE"
+        print("NAME: " + self.name)
+        print("INITIAL NODE")
         self.initial.dump()
-        print "FINAL NODES"
+        print("FINAL NODES")
         for n in self.finals:
             n.dump()
-        print "NODES"
+        print("NODES")
         for n in self.nodes:
             n.dump()
-        print "FLOWS"
+        print("FLOWS")
         for f in self.flows:
             f.dump()
 
@@ -1758,12 +1758,12 @@ class Process:
         import os
         import stat
         st = os.stat(filename)
-        os.chmod(filename, st.st_mode | 0111)
+        os.chmod(filename, st.st_mode | 0o111)
 
     # This method takes as input a file.pif and generates a PIF Python object
     def buildProcessFromFile(self, filename, debug=False):
         # open xml document specified in fileName
-        xml = file(filename).read()
+        xml = open(filename, 'rb')
         try:
             proc = pif.CreateFromDocument(xml)
             self.name = proc.name
@@ -1813,9 +1813,9 @@ class Process:
                 self.flows.append(flow)
                 self.addFlow(flow)
 
-        except pyxb.UnrecognizedContentError, e:
-            print 'An error occured while parsing xml document ' + filename
-            print 'Unrecognized element, the message was "%s"' % (e.message)
+        except pyxb.UnrecognizedContentError as e:
+            print('An error occured while parsing xml document ' + filename)
+            print('Unrecognized element, the message was "%s"' % (e.message))
 
     # Takes as input a node identifier and returns the corresponding object
     def getNode(self, nident):
