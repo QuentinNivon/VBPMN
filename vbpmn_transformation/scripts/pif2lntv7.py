@@ -1233,7 +1233,7 @@ class Process:
             pGraph.add_edge(pFlow.source.ident, pFlow.target.ident, name=pFlow.ident)
 
         cycle = False
-        for n, d in pGraph.nodes_iter(data=True):
+        for n, d in list(pGraph.nodes(data=True)):
             if d['type'] == 'orjoin':
                 try:
                     edgeList = nx.find_cycle(pGraph, source=n)
@@ -1763,23 +1763,24 @@ class Process:
     # This method takes as input a file.pif and generates a PIF Python object
     def buildProcessFromFile(self, filename, debug=False):
         # open xml document specified in fileName
-        xml = open(filename, 'rb')
+        #xml = open(filename, 'r')
+        xml = open(filename, mode="r", encoding="utf-8")
         try:
-            proc = pif.CreateFromDocument(xml)
+            proc = pif.CreateFromDocument(xml.read())
             self.name = proc.name
 
             # we first create all nodes without incoming/outgoing flows
             for n in proc.behaviour.nodes:
                 # initial and final events
-                if isinstance(n, pif.InitialEvent_):
+                if isinstance(n, pif.InitialEvent):
                     node = InitialEvent(n.id, [], [])
                     self.initial = node
-                if isinstance(n, pif.EndEvent_):
+                if isinstance(n, pif.EndEvent):
                     node = EndEvent(n.id, [], [])
                     self.finals.append(node)
 
                 # tasks / emissions / receptions / interactions
-                if isinstance(n, pif.Task_):
+                if isinstance(n, pif.Task):
                     node = Task(n.id, [], [])
                 # if isinstance(n, pif.MessageSending_):
                 #     node = MessageSending(n.id, [], [], n.message)
@@ -1789,22 +1790,22 @@ class Process:
                 #     node = Interaction(n.id, [], [], n.message, n.initiatingPeer, n.receivingPeers)
 
                 # split gateways
-                if isinstance(n, pif.AndSplitGateway_):
+                if isinstance(n, pif.AndSplitGateway):
                     node = AndSplitGateway(n.id, [], [])
-                if isinstance(n, pif.OrSplitGateway_):
+                if isinstance(n, pif.OrSplitGateway):
                     node = OrSplitGateway(n.id, [], [])
-                if isinstance(n, pif.XOrSplitGateway_):
+                if isinstance(n, pif.XOrSplitGateway):
                     node = XOrSplitGateway(n.id, [], [])
 
                 # join gateways
-                if isinstance(n, pif.AndJoinGateway_):
+                if isinstance(n, pif.AndJoinGateway):
                     node = AndJoinGateway(n.id, [], [])
-                if isinstance(n, pif.OrJoinGateway_):
+                if isinstance(n, pif.OrJoinGateway):
                     node = OrJoinGateway(n.id, [], [])
-                if isinstance(n, pif.XOrJoinGateway_):
+                if isinstance(n, pif.XOrJoinGateway):
                     node = XOrJoinGateway(n.id, [], [])
 
-                if not (isinstance(n, pif.InitialEvent_)) and not (isinstance(n, pif.EndEvent_)):
+                if not (isinstance(n, pif.InitialEvent)) and not (isinstance(n, pif.EndEvent)):
                     self.nodes.append(node)
 
             # creation of flow Objects
@@ -1870,7 +1871,7 @@ class Generator:
         proc.genLNT()
         # compute the LTS from the LNT code using SVL, possibly with a smart reduction
         proc.genSVL(smartReduction)
-        pr = Popen(["svl", pifModelName], shell=False, stdout=sys.stdout)
+        pr = Popen(["svl", pifModelName], shell=True, stdout=sys.stdout)
         # pr = Popen("env", shell=True, stdout=sys.stdout)
         pr.communicate()
         # return name and alphabet
