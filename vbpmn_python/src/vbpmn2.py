@@ -284,10 +284,10 @@ if __name__ == '__main__':
     try:
         args = parser.parse_args()
         if args.operation in OPERATIONS_PROPERTY and args.formula is None:
-            print "missing formula in presence of property based comparison"
+            print("missing formula in presence of property based comparison")
             raise Exception()
         if args.operation not in OPERATIONS_PROPERTY and args.formula is not None:
-            print "formula in presence of equivalence based comparison will not be used"
+            print("formula in presence of equivalence based comparison will not be used")
     except:
         parser.print_help()
         sys.exit(ReturnCodes.TERM_PROBLEM)
@@ -307,7 +307,7 @@ if __name__ == '__main__':
 
     # if one of the two models could not be loader -> ERROR
     if not(res1==ReturnCodes.TERM_OK and res2==ReturnCodes.TERM_OK):
-        print "error in loading models"
+        print("error in loading models")
         sys.exit(ReturnCodes.TERM_PROBLEM)
 
     # checks if we compare up to a context
@@ -315,11 +315,11 @@ if __name__ == '__main__':
     # TODO Pascal : what about if we have hiding and/or renaming + context-awareness? different alphabets should be used?
     if args.context is not None:
         pifContextModel = args.context
-        print "converting " + pifContextModel + " to LTS.."
+        print("converting " + pifContextModel + " to LTS..")
         (ltsContext, contextAlphabet) = loader(pifContextModel)
-        syncset1 = filter(lambda itm: itm in model1Alphabet, contextAlphabet)
-        syncset2 = filter(lambda itm: itm in model2Alphabet, contextAlphabet)
-        print syncset1, syncset2
+        syncset1 = [itm for itm in contextAlphabet if itm in model1Alphabet]
+        syncset2 = [itm for itm in contextAlphabet if itm in model2Alphabet]
+        print(syncset1, syncset2)
     else:
         syncset1, syncset2 = [], []
 
@@ -338,5 +338,5 @@ if __name__ == '__main__':
         val = ReturnCodes.TERM_ERROR
     else:
         val = ReturnCodes.TERM_OK
-    print res
+    print(res)
     sys.exit(val)

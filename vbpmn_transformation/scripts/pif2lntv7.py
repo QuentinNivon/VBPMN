@@ -116,7 +116,7 @@ class Flow:
     # Generates the (generic) process for flows, only once
     def lnt(self, f):
         f.write("process flow [begin:any, finish:any] (ident: ID) is\n")
-        f.write(" loop begin (!ident) ; finish (!ident) end loop\n")
+        f.write(" loop begin (ident) ; finish (ident) end loop\n")
         f.write("end process\n\n")
 
     # A normal flow cannot be a default flow
@@ -146,7 +146,7 @@ class ConditionalFlow(Flow):
     def lnt(self, f):
         # TODO: translate the condition too
         f.write("process conditionalflow [begin:any, finish:any] (ident: ID) is\n")
-        f.write(" loop begin (!ident) ; finish (!ident) end loop\n")
+        f.write(" loop begin (ident) ; finish (ident) end loop\n")
         f.write("end process\n\n")
 
     # A conditional flow is default iff the condition attribute contains "default"
@@ -897,7 +897,7 @@ class OrJoinGateway(JoinGateway):
             nb = nb + 1
             if (nb <= nbincf):
                 f.write("\n[]")
-        f.write("\n[] MoveOn(!mergeid); mergestatus := True")
+        f.write("\n[] MoveOn(mergeid); mergestatus := True")
         f.write("\nend select")
         f.write("\nend loop;\n")
         f.write("outf (?ident of ID)\nend loop\n")
@@ -1481,7 +1481,7 @@ class Process:
             "\n[]\n mergeid := any ID where member(mergeid, mergestore);\n"
             "if (is_merge_possible_v2(bpmn,activeflows,mergeid) and is_sync_done(bpmn, activeflows, syncstore, mergeid)) then \n")
         #f.write("ProcessResponse(!True of Bool);\n")
-        f.write("MoveOn(!mergeid);")
+        f.write("MoveOn(mergeid);")
         if(len(incJoinBeginList) > 0):
             f.write("select \n")
             f.write("[]\n".join(incJoinBeginList))
@@ -1543,7 +1543,7 @@ class Process:
         filename = "id.lnt"
         idfile = open(filename, 'w')
         # Generates an ID type for all identifiers
-        idfile.write("module id with \"get\" is\n\n")
+        idfile.write("module id with get, <, == is\n\n")
         idfile.write("(* Data type for identifiers, useful for scheduling purposes *)\n")
         idfile.write("type ID is\n")
 
@@ -1559,7 +1559,7 @@ class Process:
             idfile.write(", \n")
             idfile.write(f.ident)
         idfile.write(", DummyId\n")
-        idfile.write("with \"==\",\"!=\"\n")
+        idfile.write("with ==, !=\n")
         idfile.write("end type\n")
         idfile.write("\nend module\n")
 
@@ -1573,7 +1573,7 @@ class Process:
         else:
             filename = name + ".lnt"
         f = open(filename, 'w')
-        f.write("module " + self.name + "(bpmntypes) with \"get\" is\n\n")
+        f.write("module " + self.name + "(bpmntypes) with get, ==, < is\n\n")
 
         if (self.initial != None):
             self.initial.lnt(f)
