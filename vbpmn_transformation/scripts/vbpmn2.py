@@ -16,7 +16,8 @@
 # TODO: perform cleaning in SVL scripts
 
 import sys
-from pif2lntv7 import *  # this library allows to go from PIF to LNT and LTS
+import pifcheck as pc
+# from pif2lntv7 import *  # this library allows to go from PIF to LNT and LTS
 
 # command to call SVL
 # first argument is the script, second one is the result file
@@ -291,6 +292,14 @@ if __name__ == '__main__':
     except:
         parser.print_help()
         sys.exit(ReturnCodes.TERM_PROBLEM)
+
+    #conditional import: use new version for inclusive unbalanced PIFs
+    if pc.checkInclusiveUnbalanced(args.models[0], args.models[1]):
+        from pif2lntv1 import *
+        print("\n ------- Using VBPMN with pif2lntv1 ---------- \n")
+    else:
+        from pif2lntv7 import *
+        print("\n ------- Using VBPMN with pif2lntv7 ---------- \n")
 
     # if in lazy mode, rebuild the BCG files only if needed
     if args.lazy:

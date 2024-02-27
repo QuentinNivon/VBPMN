@@ -29,11 +29,11 @@ class PifTraversal:
             for flow in seqFlows:
                 targetId = flow
                 targetNode = self.findNodeById(proc, targetId)
-                if isinstance(targetNode, pif.OrSplitGateway_):
+                if isinstance(targetNode, pif.OrSplitGateway):
                     stack.append(targetNode)
-                if isinstance(targetNode, pif.OrJoinGateway_):
+                if isinstance(targetNode, pif.OrJoinGateway):
                     sourceSplit = stack.pop()
-                    if isinstance(sourceSplit, pif.OrSplitGateway_):
+                    if isinstance(sourceSplit, pif.OrSplitGateway):
                         if len(targetNode.incomingFlows) != len(sourceSplit.outgoingFlows):
                             return False
                 return self.traverseNode(proc, targetNode, visited, stack)
@@ -57,16 +57,16 @@ if __name__ == '__main__':
         xml = f.read()
         proc = pif.CreateFromDocument(xml)
         for n in proc.behaviour.nodes:
-            if isinstance(n, pif.InitialEvent_):
+            if isinstance(n, pif.InitialEvent):
                 initialNode = n
         visited = []
         stack = []
         pifTraversal = PifTraversal()
         result = pifTraversal.traverseNode(proc, initialNode, visited, stack)
         if result:
-            print "TRUE: PIF is balanced"
+            print("TRUE: PIF is balanced")
         else:
-            print "FALSE: PIF is unbalanced"
+            print("FALSE: PIF is unbalanced")
 
 def checkInclusiveUnbalanced(file1 , file2):
     result1 = checkPifFile(file1)
@@ -82,7 +82,7 @@ def checkPifFile(pifFile):
         xml = f.read()
         proc = pif.CreateFromDocument(xml)
         for n in proc.behaviour.nodes:
-            if isinstance(n, pif.InitialEvent_):
+            if isinstance(n, pif.InitialEvent):
                 initialNode = n
         visited = []
         stack = []
