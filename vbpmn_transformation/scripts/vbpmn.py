@@ -16,7 +16,13 @@
 # TODO: perform cleaning in SVL scripts
 
 import sys
-from pif2lntv1 import *  # this library allows to go from PIF to LNT and LTS
+import importlib
+import pifcheck as pc
+import time
+from subprocess import *
+from return_codes import *
+from p2lprovider import *
+# from pif2lntv7 import *  # this library allows to go from PIF to LNT and LTS
 
 # command to call SVL
 # first argument is the script, second one is the result file
@@ -223,7 +229,8 @@ class FormulaChecker(Checker):
     def __genSVL(self, filename):
         svl_commands = ""
         svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model1, "formula.mcl")
-        svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model2, "formula.mcl")
+        if self.model1 != self.model2 :
+            svl_commands += SVL_FORMULA_CHECKING_TEMPLATE % (self.model2, "formula.mcl")
         template = SVL_CAESAR_TEMPLATE % svl_commands
         #
         f = open(filename, 'w')
@@ -238,7 +245,7 @@ class FormulaChecker(Checker):
     def __call__(self, *args, **kwargs):
         import sys
         f = open(FormulaChecker.FORMULA_FILE, 'w')
-        f.write(self.formula[1:-1]) # TODO: not very clean ...
+        f.write(self.formula) # TODO: not very clean ...
         f.close()
         self.__genSVL(Checker.CHECKER_FILE)
         call(SVL_CALL_COMMAND % (Checker.CHECKER_FILE, Checker.DIAGNOSTIC_FILE), shell=True, stdout=sys.stdout)
@@ -252,6 +259,8 @@ class FormulaChecker(Checker):
 
 ##############################################################################################
 if __name__ == '__main__':
+    start_time = time.time()
+    
     # set up parser
     import argparse
 
@@ -283,19 +292,25 @@ if __name__ == '__main__':
     try:
         args = parser.parse_args()
         if args.operation in OPERATIONS_PROPERTY and args.formula is None:
-            print "missing formula in presence of property based comparison"
+            print("missing formula in presence of property based comparison")
             raise Exception()
         if args.operation not in OPERATIONS_PROPERTY and args.formula is not None:
-            print "formula in presence of equivalence based comparison will not be used"
+            print("formula in presence of equivalence based comparison will not be used")
     except:
         parser.print_help()
         sys.exit(ReturnCodes.TERM_PROBLEM)
 
+    # check if processed is balanced or not
+    process_is_balanced = pc.checkInclusiveUnbalanced(args.models[0], args.models[1])
+
+    # COMPATIBILITY: import pif2lnt module according to the installed version of CADP
+    p2l = importlib.import_module(get_pif2lnt_module(process_is_balanced))
+
     # if in lazy mode, rebuild the BCG files only if needed
     if args.lazy:
-        loader = Loader()
+        loader = p2l.Loader()
     else:
-        loader = Generator()
+        loader = p2l.Generator()
 
     # (re)build first model
     pifModel1 = args.models[0]
@@ -306,7 +321,7 @@ if __name__ == '__main__':
 
     # if one of the two models could not be loader -> ERROR
     if not(res1==ReturnCodes.TERM_OK and res2==ReturnCodes.TERM_OK):
-        print "error in loading models"
+        print("error in loading models")
         sys.exit(ReturnCodes.TERM_PROBLEM)
 
     # checks if we compare up to a context
@@ -314,11 +329,11 @@ if __name__ == '__main__':
     # TODO Pascal : what about if we have hiding and/or renaming + context-awareness? different alphabets should be used?
     if args.context is not None:
         pifContextModel = args.context
-        print "converting " + pifContextModel + " to LTS.."
+        print("converting " + pifContextModel + " to LTS..")
         (ltsContext, contextAlphabet) = loader(pifContextModel)
-        syncset1 = filter(lambda itm: itm in model1Alphabet, contextAlphabet)
-        syncset2 = filter(lambda itm: itm in model2Alphabet, contextAlphabet)
-        print syncset1, syncset2
+        syncset1 = [itm for itm in contextAlphabet if itm in model1Alphabet]
+        syncset2 = [itm for itm in contextAlphabet if itm in model2Alphabet]
+        print(syncset1, syncset2)
     else:
         syncset1, syncset2 = [], []
 
@@ -333,9 +348,17 @@ if __name__ == '__main__':
 
     # perform comparison and process result
     res = comparator()
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+  
+    f = open("time.txt", 'w')
+    f.write(str(elapsed_time) + "s")
+    f.close()
+
     if not res:
         val = ReturnCodes.TERM_ERROR
     else:
         val = ReturnCodes.TERM_OK
-    print res
+    print(res)
     sys.exit(val)

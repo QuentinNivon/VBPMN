@@ -48,8 +48,8 @@ public class CommandExecutor {
       InputStream output = process.getInputStream();
       InputStream error = process.getErrorStream();
 
-      stdOut = IOUtils.toString(output, StandardCharsets.UTF_8.name());
-      stdError = IOUtils.toString(error, StandardCharsets.UTF_8.name());
+      stdOut = IOUtils.toString(output, StandardCharsets.UTF_8);
+      stdError = IOUtils.toString(error, StandardCharsets.UTF_8);
 
       intValue = process.waitFor();
     } catch (IOException ioe) {
