@@ -22,8 +22,6 @@ import fr.inria.convecs.optimus.util.PifUtil;
  *
  */
 public class VbpmnValidator implements ModelValidator {
-	private static final String CADP_KEYWORD = "VERSION";
-	private static final String V_2023_K = "2023-k";
 	private Logger logger = LoggerFactory.getLogger(ModelValidator.class);
 
 	private String scriptsFolder;
@@ -73,8 +71,8 @@ public class VbpmnValidator implements ModelValidator {
 		logger.debug("The command is: {}", vbpmnCommand.toString());
 		try {
 			File outputDirectory = new File(outputFolder);
-			Files.copy(new File(scriptsFolder + File.separator + getBpmnTypesFilePath() + File.separator + "bpmntypes.lnt").toPath(),
-					new File(outputFolder + File.separator +"bpmntypes.lnt").toPath());
+			//Files.copy(new File(scriptsFolder + File.separator + getBpmnTypesFilePath() + File.separator + "bpmntypes.lnt").toPath(),
+			//		new File(outputFolder + File.separator +"bpmntypes.lnt").toPath());
 			CommandExecutor commandExecutor = new CommandExecutor(vbpmnCommand, outputDirectory);
 			int execResult = commandExecutor.executeCommand();
 
@@ -189,30 +187,5 @@ public class VbpmnValidator implements ModelValidator {
 		dotOutput = dotOutput.replaceAll("\\R", " "); // Java 8 carriage return replace
 
 		return dotOutput.trim();
-	}
-
-	private String getBpmnTypesFilePath()
-	{
-		File outputDirectory = new File(outputFolder);
-		final List<String> command = new ArrayList<>();
-		command.add("cadp_lib");
-		CommandExecutor commandExecutor = new CommandExecutor(command, outputDirectory);
-		commandExecutor.executeCommand();
-
-		// Run ``cadp_lib'' command to retrieve the CADP version installed on the machine
-		final String rawVersion = commandExecutor.getOutput();
-		final int leftIndex = rawVersion.indexOf(CADP_KEYWORD) + CADP_KEYWORD.length();
-		final int rightIndex = rawVersion.indexOf('"');
-		// ``version'' should contain something like "2023-k"
-		final String version = rawVersion.substring(leftIndex, rightIndex).trim();
-
-		if (version.equals(V_2023_K))
-		{
-			return version.replace("-", "");
-		}
-		else
-		{
-			throw new RuntimeException("CADP version |" + version + "| is not yet managed!");
-		}
 	}
 }

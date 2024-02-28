@@ -260,7 +260,10 @@ class FormulaChecker(Checker):
 ##############################################################################################
 if __name__ == '__main__':
     start_time = time.time()
-    
+
+    import os
+    import pathlib
+    import shutil
     # set up parser
     import argparse
 
@@ -304,7 +307,13 @@ if __name__ == '__main__':
     process_is_balanced = pc.checkInclusiveUnbalanced(args.models[0], args.models[1])
 
     # COMPATIBILITY: import pif2lnt module according to the installed version of CADP
-    p2l = importlib.import_module(get_pif2lnt_module(process_is_balanced))
+    version_provider = P2LProvider(process_is_balanced)
+    p2l = importlib.import_module(version_provider.get_current_version_import())
+    # COMPATIBILITY: copy ``bpmntypes.lnt'' file from Python (this script) instead of Java to avoid double modifs
+    path_to_web_inf_dir = str(pathlib.Path(__file__).parent.resolve())
+    source_file_path = os.path.join(path_to_web_inf_dir, version_provider.get_current_version_directory(), "bpmntypes.lnt")
+    dest_file_path = os.path.join(os.getcwd(), "bpmntypes.lnt")
+    shutil.copyfile(source_file_path, dest_file_path)
 
     # if in lazy mode, rebuild the BCG files only if needed
     if args.lazy:

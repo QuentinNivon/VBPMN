@@ -17,26 +17,4 @@ CADP version (normally, only 3 files may be subject to changes: ``bpmntypes.lnt'
 ``pif2lntv7.py''). To do so, check the latest changes on the CADP webpage ``https://cadp.inria.fr/changes.html''
 or by using the ``$CADP/HISTORY'' file.
 
-6) Go back to the previous directory (``vbpmn_transformation/scripts''), and open the ``p2lprovider.py'' file
-
-7) On the first lines, below the existing versions, add a line with the name of the current CADP version (i.e.,
-``V_2024_A = "2024-a"'')
-
-8) Inside the ``if'' of the ``get_pif2lnt_module'', add a line
-``
-elif version == <my_version>:
-    return build_import(version, process_is_balanced)
-''
-
-9) Save the file and close it
-
-10) Go to the directory ``vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/validator'' and open the
-file ``VbpmnValidator.java''
-
-11) Modify the file similarly to the what you did for the python file, that is,
-    a) Add a new version constant at the beginning of the file
-    b) Add an ``else if'' in the ``getBpmnTypesFilePath'' method to check the version
-
-12) Save the file and close it
-
-13) Regenerate the WAR file and upload it to your Tomcat instance
+6) Regenerate the WAR file and upload it to your Tomcat instance

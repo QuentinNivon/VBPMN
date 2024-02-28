@@ -2,7 +2,7 @@
 # Name:    pif2lnt.py - Classes for loading a PIF model
 #                        and translating it to LNT
 # Authors: Pascal Poizat, Gwen Salaun
-# Date:    2014-2015
+# Date:    2014-2017
 ###############################################################################
 
 import itertools
@@ -10,6 +10,7 @@ import random
 import sys
 import networkx as nx
 from subprocess import *
+from return_codes import *
 
 import pyxb
 
@@ -17,12 +18,6 @@ import pif
 
 LTS_SUFFIX = ".bcg"
 LNT_SUFFIX = ".lnt"
-
-
-# TODO: use values that must exist in some python library instead
-class ReturnCodes:
-    TERM_OK, TERM_ERROR, TERM_PROBLEM = (0, 1, 2)
-
 
 # Dumps alphabet (list of strings) in the given file
 # Inputs: a list of strings, a file identifier, a Boolean indicating whether to add "any" or not
@@ -92,13 +87,13 @@ class Node:
 
     # This method dumps a textual version of a node (useful for debugging purposes)
     def dump(self):
-        print "Node " + self.ident + " in: ",
+        print("Node " + self.ident + " in: ", end=' ')
         for f in self.incomingFlows:
-            print f.ident + " ",
-        print " out: ",
+            print(f.ident + " ", end=' ')
+        print(" out: ", end=' ')
         for f in self.outgoingFlows:
-            print f.ident + " ",
-        print ""
+            print(f.ident + " ", end=' ')
+        print("")
 
 
 ##
@@ -111,12 +106,12 @@ class Flow:
 
     # This method dumps a textual version of a flow (useful for debugging purposes)
     def dump(self):
-        print "Flow " + self.source.ident + "--" + self.ident + "-->" + self.target.ident
+        print("Flow " + self.source.ident + "--" + self.ident + "-->" + self.target.ident)
 
     # Generates the (generic) process for flows, only once
     def lnt(self, f):
         f.write("process flow [begin:any, finish:any] (ident: ID) is\n")
-        f.write(" loop begin (!ident) ; finish (!ident) end loop\n")
+        f.write(" loop begin (ident) ; finish (ident) end loop\n")
         f.write("end process\n\n")
 
     # A normal flow cannot be a default flow
@@ -146,7 +141,7 @@ class ConditionalFlow(Flow):
     def lnt(self, f):
         # TODO: translate the condition too
         f.write("process conditionalflow [begin:any, finish:any] (ident: ID) is\n")
-        f.write(" loop begin (!ident) ; finish (!ident) end loop\n")
+        f.write(" loop begin (ident) ; finish (ident) end loop\n")
         f.write("end process\n\n")
 
     # A conditional flow is default iff the condition attribute contains "default"
@@ -163,6 +158,7 @@ class InitialEvent(Node):
     # Generates the (generic) process for the initial event, only once
     def lnt(self, f):
         f.write("process init [begin:any, outf:any] is\n")
+        #f.write(" var ident: ID in begin ; outf (?ident of ID); exit end var \n")
         f.write(" var ident: ID in begin ; outf (?ident of ID) end var \n")
         f.write("end process\n\n")
 
@@ -174,9 +170,21 @@ class InitialEvent(Node):
     def processLnt(self, f):
         f.write("initial(" + self.ident + "," + self.outgoingFlows[0].ident + ")")
 
+    def schedulerLnt(self):
+        flowString = self.outgoingFlows[0].ident + "_begin (?ident of ID)"
+        incIds = "{ident}"
+        outIds = "{}"
+        schedulerString = {"flowString": flowString,
+                           "incIds": incIds,
+                           "OutIds": outIds}
+        return schedulerString
 
-##
-# Class for End Event
+
+
+        ##
+        # Class for End Event
+
+
 class EndEvent(Node):
     def __init__(self, ident, inc, out):
         Node.__init__(self, ident, inc, out)
@@ -185,6 +193,7 @@ class EndEvent(Node):
     def lnt(self, f):
         f.write("process final [incf:any, finish:any] is\n")
         f.write("var ident: ID in \nloop \nincf (?ident of ID); finish \nend loop\nend var\n")
+        # f.write("var ident: ID in \nincf (?ident of ID); finish \nend var\n")
         f.write("end process\n\n")
 
     # Seeks an or join, for an initial event, just a recursive call on the target node of the outgoing flow
@@ -201,6 +210,16 @@ class EndEvent(Node):
                 f.write(",")
             f.write(inflow.ident)
         f.write("})")
+
+    def schedulerLnt(self):
+        flowString = self.incomingFlows[0].ident + "_finish (?ident of ID)"
+
+        incIds = "{}"
+        outIds = "{ident}"
+        schedulerString = {"flowString": flowString,
+                           "incIds": incIds,
+                           "OutIds": outIds}
+        return schedulerString
 
 
 ##
@@ -441,6 +460,17 @@ class Task(Node):
             f.write(outflow.ident)
         f.write("})")
 
+    def schedulerLnt(self):
+        flowString = self.incomingFlows[0].ident + "_finish (?ident1 of ID);" \
+                                                   " " + self.outgoingFlows[0].ident + "_begin (?ident2 of ID)"
+        incIds = "{ident1}"
+        outIds = "{ident2}"
+
+        schedulerString = {"flowString": flowString,
+                           "incIds": incIds,
+                           "OutIds": outIds}
+        return schedulerString
+
 
 ##
 # Abstract Class for Gateway
@@ -554,6 +584,16 @@ class OrSplitGateway(SplitGateway):
             nb = nb + 1
             if (nb <= nboutf):
                 f.write(",")
+
+        if (combilen > 0):
+            f.write(", ")
+            cter = 1
+            for elem in allcombi:
+                f.write(self.ident + "_" + str(cter) + ":any")
+                cter = cter + 1
+                if (cter <= combilen):
+                    f.write(",")
+
         f.write(" ] is \n")
 
         combilencounter = combilen
@@ -566,12 +606,16 @@ class OrSplitGateway(SplitGateway):
                 f.write(",")
         f.write(" in ")
 
-        f.write("\nvar ident: ID in loop incf (?ident of ID); \n")
-        f.write(" select ")
+        f.write("\nvar ident: ID in loop \nincf (?ident of ID); \n")
+        f.write("select ")
         nb = 1
+        # counter for generating synchro points
+        cter = 1
         for t in allcombi:
             nbelem = len(t)
             nb2 = 1
+            f.write("\n"+self.ident + "_" + str(cter)+"; ")
+            cter = cter + 1
             if (nbelem > 1):
                 combilencounter = combilen
                 f.write("\npar\n")
@@ -584,7 +628,8 @@ class OrSplitGateway(SplitGateway):
                         f.write("\n||\n")
                 f.write("\nend par")
             else:
-                f.write("\n" + t[0] + " (?ident of ID)")
+                f.write(t[0] + " (?ident of ID)")
+
 
             nb = nb + 1
             if (nb <= combilen):
@@ -595,34 +640,83 @@ class OrSplitGateway(SplitGateway):
 
     # Generates process instantiation for main LNT process
     def mainlnt(self, f):
+        nboutf = len(self.outgoingFlows)
+        alphaout = []
+        nb = 1
+        while (nb <= nboutf):
+            alphaout.append("outf_" + str(nb))
+            nb = nb + 1
+        allcombi = computeAllCombinations(alphaout)
+        nbt = len(allcombi)
+
+        # we dump the synchronization points
+        # if (nbt > 0):
+        #     cter = 1
+        #     for elem in allcombi:
+        #         f.write(self.ident + "_" + str(cter))
+        #         cter = cter + 1
+        #         if (cter <= nbt):
+        #             f.write(",")
+        #     f.write(" -> ")
+
+        # process call + alphabet
         f.write("orsplit_" + self.ident)
-        SplitGateway.mainlnt(self, f)
 
-    # For an or split, if not visited yet, recursive call on the target nodes of all outgoing flows
-    # We increase the depth, to distinguish it from the split or being analyzed
-    # Returns the list of reachable or joins
-    def reachableOrJoin(self, visited, depth):
-        if self.ident in visited:
-            return []
-        else:
-            res = []
-            for f in self.outgoingFlows:
-                res = res + f.getTarget().reachableOrJoin(visited + [self.ident], depth + 1)
-            return res
+        f.write("[")
+        f.write(self.incomingFlows[0].ident + "_finish,")
+        i = 0
+        while (i < nboutf):
+            f.write(self.outgoingFlows[i].ident + "_begin")
+            i = i + 1
+            if (i < nboutf):
+                f.write(",")
 
-    # Dumps a Maude line of code into the given file
-    def dumpMaude(self, f):
-        f.write("        split(" + self.ident + ",inclusive," + self.incomingFlows[0].ident + ",")
-        cpt = len(self.outgoingFlows)
-        f.write("(")
-        # proba=1./cpt
-        for ofl in self.outgoingFlows:
-            proba = round(random.uniform(0, 1), 1)
-            cpt = cpt - 1
-            f.write("(" + ofl.ident + "," + str(proba) + ")")
-            if (cpt > 0):
-                f.write(" ")
-        f.write("))")
+        if (nbt > 0):
+            f.write(", ")
+            cter = 1
+            for elem in allcombi:
+                f.write(self.ident + "_" + str(cter))
+                cter = cter + 1
+                if (cter <= nbt):
+                    f.write(",")
+        f.write("]")
+
+
+# For an or split, if not visited yet, recursive call on the target nodes of all outgoing flows
+# We increase the depth, to distinguish it from the split or being analyzed
+# Returns the list of reachable or joins
+def reachableOrJoin(self, visited, depth):
+    if self.ident in visited:
+        return []
+    else:
+        res = []
+        for f in self.outgoingFlows:
+            res = res + f.getTarget().reachableOrJoin(visited + [self.ident], depth + 1)
+        return res
+
+
+# Dumps a Maude line of code into the given file
+def dumpMaude(self, f):
+    f.write("        split(" + self.ident + ",inclusive," + self.incomingFlows[0].ident + ",")
+    cpt = len(self.outgoingFlows)
+    f.write("(")
+    # proba=1./cpt
+    for ofl in self.outgoingFlows:
+        proba = round(random.uniform(0, 1), 1)
+        cpt = cpt - 1
+        f.write("(" + ofl.ident + "," + str(proba) + ")")
+        if (cpt > 0):
+            f.write(" ")
+    f.write("))")
+
+
+def schedulerLnt(self):
+    lnt = self.incomingFlows[0].ident + "_finish (?ident1 of ID);"
+    idmap = {}
+    idcounter = 1
+    lnt.join("select ")
+    for flow in self.outgoingFlows:
+        lnt.join("flow_being")
 
 
 ##
@@ -787,10 +881,10 @@ class OrJoinGateway(JoinGateway):
             f.write("incf_" + str(nb) + ":any")
             nb = nb + 1
             f.write(",")
-        f.write("outf:any, QueryProcess:any, ProcessResponse:any] (mergeid: ID) is \n")
-        f.write("var mergecount:Nat, ident:ID in \n loop\n")
-        f.write("mergecount := 0;\n")
-        f.write("while mergecount == 0 loop \n")
+        f.write("outf:any, MoveOn:any] (mergeid: ID) is \n")
+        f.write("var mergestatus:Bool, ident:ID in \n loop\n")
+        f.write("mergestatus := False;\n")
+        f.write("while mergestatus == False loop \n")
         f.write("select\n")
         nb = 1
         while (nb <= nbincf):
@@ -798,8 +892,8 @@ class OrJoinGateway(JoinGateway):
             nb = nb + 1
             if (nb <= nbincf):
                 f.write("\n[]")
-
-        f.write("\nend select;\nQueryProcess(!mergeid);ProcessResponse(?mergecount of Nat)")
+        f.write("\n[] MoveOn(mergeid); mergestatus := True")
+        f.write("\nend select")
         f.write("\nend loop;\n")
         f.write("outf (?ident of ID)\nend loop\n")
         # f.write(" orjoin_" + self.ident + " [")
@@ -823,7 +917,7 @@ class OrJoinGateway(JoinGateway):
             f.write(self.incomingFlows[i].ident + "_finish")
             i = i + 1
             f.write(",")
-        f.write(self.outgoingFlows[0].ident + "_begin, QueryProcess, ProcessResponse] (" + self.ident + ")")
+        f.write(self.outgoingFlows[0].ident + "_begin, MoveOn] (" + self.ident + ")")
 
     # For an or join, if not visited yet, recursive call on the target node of the outgoing flow
     # We store the result and we decrease the depth
@@ -947,16 +1041,16 @@ class Process:
 
     # This method dumps a textual version of a process (useful for debugging purposes)
     def dump(self):
-        print "NAME: " + self.name
-        print "INITIAL NODE"
+        print("NAME: " + self.name)
+        print("INITIAL NODE")
         self.initial.dump()
-        print "FINAL NODES"
+        print("FINAL NODES")
         for n in self.finals:
             n.dump()
-        print "NODES"
+        print("NODES")
         for n in self.nodes:
             n.dump()
-        print "FLOWS"
+        print("FLOWS")
         for f in self.flows:
             f.dump()
 
@@ -983,22 +1077,24 @@ class Process:
                     njoin.correspOrSplit = n.ident  # we update the join attribute
 
     # Computes the list with the additionnal synchronization points for corresponding or splits/joins
-    def computeAddSynchroPoints(self):
+    def computeAddSynchroPoints(self, any):
         res = []
         for n in self.nodes:
             if isinstance(n, OrSplitGateway):
-                if (n.correspOrJoin != ""):
-                    alphaout = []
-                    nb = 1
-                    while (nb <= len(n.outgoingFlows)):
-                        alphaout.append("outf_" + str(nb))
-                        nb = nb + 1
-                    allcombi = computeAllCombinations(alphaout)
-                    nbt = len(allcombi)
-                    cter = 1
-                    for elem in allcombi:
-                        res.append(n.correspOrJoin + "_" + str(cter))
-                        cter = cter + 1
+                alphaout = []
+                nb = 1
+                while (nb <= len(n.outgoingFlows)):
+                    alphaout.append("outf_" + str(nb))
+                    nb = nb + 1
+                allcombi = computeAllCombinations(alphaout)
+                nbt = len(allcombi)
+                cter = 1
+                for elem in allcombi:
+                    if any:
+                        res.append(n.ident + "_" + str(cter)+":any")
+                    else:
+                        res.append(n.ident + "_" + str(cter))
+                    cter = cter + 1
         return res
 
     # Dumps the alphabet for the scheduler process
@@ -1015,6 +1111,22 @@ class Process:
             cter = cter + 1
             if (cter <= nbflows):
                 f.write(", ")
+
+    def getFlowMsgs(self, withany):
+        nbflows = len(self.flows)
+        cter = 1
+        flowString = []
+        for fl in self.flows:
+            flowString.append(fl.ident + "_begin")
+            if withany:
+                flowString.append(":any")
+            flowString.append(", " + fl.ident + "_finish")
+            if withany:
+                flowString.append(":any")
+            cter = cter + 1
+            if (cter <= nbflows):
+                flowString.append(", ")
+        return "".join(flowString)
 
     # generate the process LNT
     def processDump(self, f):
@@ -1116,7 +1228,7 @@ class Process:
             pGraph.add_edge(pFlow.source.ident, pFlow.target.ident, name=pFlow.ident)
 
         cycle = False
-        for n, d in pGraph.nodes_iter(data=True):
+        for n, d in list(pGraph.nodes(data=True)):
             if d['type'] == 'orjoin':
                 try:
                     edgeList = nx.find_cycle(pGraph, source=n)
@@ -1131,60 +1243,319 @@ class Process:
     # Generates the scheduler process
     def generateScheduler(self, f):
         f.write("\nprocess scheduler [")
-        self.dumpFlowsMsgs(f, True)
-        f.write(
-            ", QueryProcess:any, ProcessResponse:any] (activeflows: IDS, bpmn: BPROCESS) is\n")  # this parameter stores the set of active flows / tokens
-        nbflows = len(self.flows)
+        f.write(self.getFlowMsgs(True))
+        #add split synchro params
+        res = self.computeAddSynchroPoints(True)
 
-        f.write("var mergeid:ID in \n")
-        f.write("var ident: ID in\n")
+        if len(res)!= 0:
+            f.write(",")
+            f.write(",".join(res))
+        f.write(
+            ", MoveOn:any] (activeflows: IDS, bpmn: BPROCESS, syncstore: IDS, mergestore:IDS, parstore:IDS) is\n")  # this parameter stores the set of active flows / tokens
+
+        identSet = []
+        flowSelectStrings = []
+        incJoinBeginList = []
+        parJoinBeginList = []
+
+        for node in self.nodes:
+            flowString = []
+            if isinstance(node, Task):
+                flowString.append("\n(*----  Task with ID: " + str(node.ident) + "------*)\n")
+                flowString.append(node.incomingFlows[0].ident + "_finish (?ident1 of ID);" \
+                                                                " " + node.outgoingFlows[
+                                      0].ident + "_begin (?ident2 of ID);")
+                identSet.append("ident1")
+                identSet.append("ident2")
+
+                flowString.append(self.getSchedulerString("{ident1}", "{ident2}", "syncstore", "mergestore", "parstore"))
+            elif isinstance(node, XOrSplitGateway):
+                flowString.append("\n(*----  XOrSplitGateway with ID: " + str(node.ident) + "------*)\n")
+                flowString.append(node.incomingFlows[0].ident + "_finish (?ident1 of ID); ")
+                identSet.append("ident1")
+                first = True
+                counter = 2
+                flowString.append(" select\n")
+                for flow in node.outgoingFlows:
+                    if first:
+                        first = False
+                    else:
+                        flowString.append("[]\n")
+                    flowString.append(flow.ident + "_begin (?ident" + str(counter) + " of ID); ")
+                    identSet.append("ident" + str(counter))
+                    flowString.append(self.getSchedulerString("{ident1}", "{ident" + str(counter )+ "}", "syncstore", "mergestore", "parstore"))
+                    counter += 1
+                flowString.append("\nend select ")
+
+            elif isinstance(node, XOrJoinGateway):
+                flowString.append("\n(*----  XOrJoinGateway with ID: " + str(node.ident) + "------*)\n")
+                first = True
+                flowString.append(" select\n")
+                for flow in node.incomingFlows:
+                    if first:
+                        first = False
+                    else:
+                        flowString.append("\n[]\n")
+                    flowString.append(flow.ident + "_finish (?ident2 of ID) ")
+                flowString.append("\nend select; ")
+                flowString.append(node.outgoingFlows[0].ident + "_begin (?ident1 of ID);")
+                identSet.append("ident1")
+                identSet.append("ident2")
+                flowString.append(self.getSchedulerString("{ident2}", "{ident1}", "syncstore", "mergestore", "parstore"))
+
+            elif isinstance(node, AndSplitGateway):
+                flowString.append("\n(*----  AndSplitGateway with ID: " + str(node.ident) + "------*)\n")
+                flowString.append(node.incomingFlows[0].ident + "_finish (?ident1 of ID);")
+                identSet.append("ident1")
+                first = True
+                counter = 2
+                outIds = []
+                flowString.append("par\n")
+                for flow in node.outgoingFlows:
+                    if first:
+                        first = False
+                    else:
+                        flowString.append("\n||")
+                    flowString.append(flow.ident + "_begin (?ident" + str(counter) + " of ID) ")
+                    identSet.append("ident" + str(counter))
+                    outIds.append("ident" + str(counter))
+                    counter += 1
+                flowString.append("\nend par;")
+                flowString.append(self.getSchedulerString("{ident1}", "{" +",".join(outIds)+ "}", "syncstore", "mergestore", "parstore"))
+
+            elif isinstance(node, AndJoinGateway):
+                flowString.append("\n(*----  AndJoinGateway with ID: " + str(node.ident) + "------*)\n")
+                first = True
+                for flow in node.incomingFlows:
+                    if first:
+                        first = False
+                        identSet.append("ident")
+                    else:
+                        flowString.append("\n[]\n")
+                    flowString.append(flow.ident + "_finish (?ident of ID); ")
+                    flowString.append(self.getSchedulerString("{}", "{}", "insert(ident, syncstore)", "mergestore", "insert("+node.ident+", parstore)"))
+
+                identSet.append("ident1")
+                # parallel merge join TODO: Clean up
+                parJoinString = []
+                parJoinString.append(node.outgoingFlows[0].ident + "_begin (?ident1 of ID);")
+                parJoinString.append('scheduler [')
+                parJoinString.append(self.getFlowMsgs(False))
+                res = self.computeAddSynchroPoints(False)
+                if len(res)!= 0:
+                    parJoinString.append(",")
+                    parJoinString.append(",".join(res))
+                parJoinString.append(", MoveOn]")
+                parJoinString.append(
+                    "(union({ident1}, remove_incf(bpmn, activeflows, mergeid)), bpmn, remove_sync(bpmn, syncstore, mergeid), mergestore, remove(mergeid, parstore))\n")
+
+                parJoinBeginList.append("".join(parJoinString))
+
+
+            elif isinstance(node, OrSplitGateway):
+                flowString.append("\n(*----  OrSplitGateway with ID: " + str(node.ident) + "------*)\n")
+                flowString.append(node.incomingFlows[0].ident + "_finish (?ident1 of ID); \n")
+                identSet.append("ident1")
+
+                nboutf = len(node.outgoingFlows)
+                # We translate the inclusive split by enumerating all combinations in a select / par
+                flowAlpha = []
+                counter = 2
+                for flow in node.outgoingFlows:
+                    flowAlpha.append(flow.ident + "_begin")
+                    identSet.append("ident" + str(counter))
+                    counter += 1
+
+                allcombi = computeAllCombinations(flowAlpha)
+                combilen = len(allcombi)
+
+                outIds = []
+                flowString.append("select ")
+                nb = 1
+                cter = 1
+                for t in allcombi:
+                    nbelem = len(t)
+                    nb2 = 1
+                    flowString.append(" \n " + node.ident + "_" + str(cter)+"; ")
+                    cter = cter + 1
+                    if (nbelem > 1):
+                        combilencounter = combilen
+                        flowString.append("\npar\n")
+                        for e in t:
+                            flowString.append(e + "(?ident" + str(combilencounter) + " of ID)")
+                            outIds.append("ident" + str(combilencounter))
+                            identSet.append("ident" + str(combilencounter))
+                            combilencounter = combilencounter - 1
+                            nb2 = nb2 + 1
+                            if (nb2 <= nbelem):
+                                flowString.append("\n||\n")
+                        flowString.append("\nend par")
+                        flowString.append(
+                            ";" + self.getSchedulerString("{ident1}", "{" + ','.join(outIds) + "}", "syncstore", "mergestore", "parstore"))
+                    else:
+                        flowString.append(t[0] + " (?ident of ID)")
+                        flowString.append(";" + self.getSchedulerString("{ident1}", "{ident}", "syncstore", "mergestore", "parstore"))
+                        identSet.append("ident")
+
+                    nb = nb + 1
+                    if (nb <= combilen):
+                        flowString.append("\n[] ")
+                flowString.append("\nend select\n")
+
+
+            elif isinstance(node, OrJoinGateway):
+                flowString.append("\n(*----  OrJoinGateway with ID: " + str(node.ident) + "------*)\n")
+                first = True
+                for flow in node.incomingFlows:
+                    if first:
+                        first = False
+                        identSet.append("ident")
+                    else:
+                        flowString.append("\n[]\n")
+                    flowString.append(flow.ident + "_finish (?ident of ID); ")
+                    flowString.append(self.getSchedulerString("{}", "{}", "insert(ident, syncstore)", "insert("+node.ident+", mergestore)", "parstore"))
+
+                identSet.append("ident1")
+                # inclusive merge join TODO: Clean up
+                incJoinString = []
+                incJoinString.append(node.outgoingFlows[0].ident + "_begin (?ident1 of ID);")
+                incJoinString.append('scheduler [')
+                incJoinString.append(self.getFlowMsgs(False))
+                res = self.computeAddSynchroPoints(False)
+                if len(res)!= 0:
+                    incJoinString.append(",")
+                    incJoinString.append(",".join(res))
+                incJoinString.append(", MoveOn]")
+                incJoinString.append(
+                    "(union({ident1}, remove_incf(bpmn, activeflows, mergeid)), bpmn, remove_sync(bpmn, syncstore, mergeid), remove(mergeid, mergestore), parstore)\n")
+
+                incJoinBeginList.append("".join(incJoinString))
+
+            else:
+                flowString.append("\n(*---- ERROR - Unable to select ID: " + str(node.ident) + "------*)\n")
+                flowString = [""]
+            seperator = ''
+            flowSelectStrings.append(seperator.join(flowString))
+
+        # generate var
+        identSet.append('ident1')  # for initial/final
+        f.write("var ")
+        first = True
+        for ident in set(identSet):
+            if first:
+                first = False
+            else:
+                f.write(",")
+            f.write(ident + ": ID")
+        f.write(", mergeid: ID in \n")
+
         f.write("select \n")
-        cter = 1
-        for fl in self.flows:
-            f.write(fl.ident + "_begin (?ident of ID) ; scheduler [")
-            self.dumpFlowsMsgs(f, False)
-            f.write(", QueryProcess, ProcessResponse] (add(ident, activeflows), bpmn)\n")
-            f.write(" []\n")
-            f.write(fl.ident + "_finish (?ident of ID) ; scheduler [")
-            self.dumpFlowsMsgs(f, False)
-            f.write(", QueryProcess, ProcessResponse] (remove(ident, activeflows), bpmn)\n")
-            cter = cter + 1
-            if (cter <= nbflows):
-                f.write("[]\n")
 
+        # handle initial and final
+        f.write("(*---------- Initial node ---------------------*)\n")
         f.write(
-            "\n[]\n QueryProcess(?mergeid of ID);ProcessResponse(!is_merge_possible(bpmn,activeflows,mergeid));\nscheduler [")
-        self.dumpFlowsMsgs(f, False)
-        f.write(", QueryProcess, ProcessResponse] (activeflows, bpmn)\n")
+            self.initial.outgoingFlows[0].ident + "_begin (?ident1 of ID);" + self.getSchedulerString("{}", "{ident1}",
+                                                                                                      "syncstore", "mergestore", "parstore"))
+        f.write("\n[]\n")
+
+        first = True
+        for flow in flowSelectStrings:
+            if first:
+                first = False
+            else:
+                f.write("\n[]")
+            f.write(flow)
+
+        f.write("\n[]\n")
+
+        f.write("\n(*----------------- Final node ----------------------*)\n")
+        f.write(self.finals[0].incomingFlows[0].ident + "_finish (?ident1 of ID);" + self.getSchedulerString("{ident1}",
+                                                                                                             "{}",
+                                                                                                             "syncstore", "mergestore", "parstore"))
+        f.write(
+            "\n[]\n mergeid := any ID where member(mergeid, mergestore);\n"
+            "if (is_merge_possible_v2(bpmn,activeflows,mergeid) and is_sync_done(bpmn, activeflows, syncstore, mergeid)) then \n")
+        #f.write("ProcessResponse(!True of Bool);\n")
+        f.write("MoveOn(mergeid);")
+        if(len(incJoinBeginList) > 0):
+            f.write("select \n")
+            f.write("[]\n".join(incJoinBeginList))
+            f.write("end select \n")
+        else:
+            f.write(self.getSchedulerString("{}", "{}", "syncstore", "mergestore", "parstore"))
+        f.write("else \n")
+        f.write("\nscheduler [")
+        f.write(self.getFlowMsgs(False))
+        res = self.computeAddSynchroPoints(False)
+        if len(res)!= 0:
+            f.write(",")
+            f.write(",".join(res))
+        f.write(", MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)\n")
+        f.write("end if\n")
+        
+        #Outflow of parallel merge
+        f.write(
+            "\n[]\n mergeid := any ID where member(mergeid, parstore);\n"
+            "if (is_merge_possible_par(bpmn,syncstore,mergeid)) then \n")
+        #f.write("ProcessResponse(!True of Bool);\n")
+        #f.write("MoveOn(!mergeid);")
+        if(len(parJoinBeginList) > 0):
+            f.write("select \n")
+            f.write("[]\n".join(parJoinBeginList))
+            f.write("end select \n")
+        else:
+            f.write(self.getSchedulerString("{}", "{}", "syncstore", "mergestore", "parstore"))
+        f.write("else \n")
+        f.write("\nscheduler [")
+        f.write(self.getFlowMsgs(False))
+        res = self.computeAddSynchroPoints(False)
+        if len(res)!= 0:
+            f.write(",")
+            f.write(",".join(res))
+        f.write(", MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)\n")
+        f.write("end if\n")
         f.write("end select\n")
-        f.write("end var\n")
         f.write("end var\n")
 
         f.write("end process\n\n")
+
+    def getSchedulerString(self, incIds, outIds, syncString, mergeStoreString, parStoreString):
+        schedulerString = []
+        schedulerString.append('scheduler [...]')
+        # schedulerString.append(self.getFlowMsgs(False))
+        # #add split synchro params
+        # res = self.computeAddSynchroPoints(False)
+        # if len(res)!= 0:
+        #     schedulerString.append(",")
+        #     schedulerString.append(",".join(res))
+        # schedulerString.append(", MoveOn]")
+        schedulerString.append(
+            "(union(" + outIds + ", remove_ids_from_set(" + incIds + ", activeflows)), bpmn, " + syncString +", "+mergeStoreString+", "+parStoreString+")\n")
+        return "".join(schedulerString)
 
     # generates file with process element ids
     def generateIdfile(self):
         filename = "id.lnt"
         idfile = open(filename, 'w')
         # Generates an ID type for all identifiers
-        idfile.write("module id with \"get\" is\n\n")
+        idfile.write("module id with get, <, == is\n\n")
         idfile.write("(* Data type for identifiers, useful for scheduling purposes *)\n")
         idfile.write("type ID is\n")
 
         idfile.write(self.name)
         for n in self.nodes:
-            idfile.write(",")
+            idfile.write(",\n")
             idfile.write(n.ident)
-        idfile.write("," + self.initial.ident)
+        idfile.write(",\n" + self.initial.ident)
         for fNode in self.finals:
-            idfile.write(",")
+            idfile.write(",\n")
             idfile.write(fNode.ident)
         for f in self.flows:
-            idfile.write(",")
+            idfile.write(", \n")
             idfile.write(f.ident)
-        idfile.write("\n")
-        idfile.write("with \"==\",\"!=\"\n")
-        idfile.write("end type\n\n")
+        idfile.write(", DummyId\n")
+        idfile.write("with ==, !=\n")
+        idfile.write("end type\n")
         idfile.write("\nend module\n")
 
     # Generates an LNT module and process for a BPMN 2.0 process
@@ -1197,7 +1568,7 @@ class Process:
         else:
             filename = name + ".lnt"
         f = open(filename, 'w')
-        f.write("module " + self.name + "(bpmntypes) with \"get\" is\n\n")
+        f.write("module " + self.name + "(bpmntypes) with get, ==, < is\n\n")
 
         if (self.initial != None):
             self.initial.lnt(f)
@@ -1212,7 +1583,7 @@ class Process:
         for n in self.nodes:
             if isinstance(n, Interaction) or isinstance(n, MessageSending) or isinstance(n,
                                                                                          MessageReception) or isinstance(
-                    n, Task):
+                n, Task):
                 if (n.__class__.__name__ in specialnodes):
                     pass
                 else:
@@ -1247,14 +1618,14 @@ class Process:
         dumpAlphabet(alph, f, True)
         f.write(" is\n\n")
         # computes additional synchros for or splits/joins
-        addSynchro = self.computeAddSynchroPoints()
+        addSynchro = self.computeAddSynchroPoints(False)
         nbsync = len(addSynchro)
 
         f.write(" hide begin:any, finish:any")
         nbflows = len(self.flows)
         if (nbflows > 0):
             f.write(", ")
-            self.dumpFlowsMsgs(f, True)
+            f.write(self.getFlowMsgs(True))
             # we hide additional synchros for or splits/joins as well
             nb = 0
             if (nbsync > 0):
@@ -1264,27 +1635,48 @@ class Process:
                     nb = nb + 1
                     if (nb < nbsync):
                         f.write(", ")
-        f.write(", QueryProcess:any, ProcessResponse:any ")
+        f.write(", MoveOn:any ")
         f.write(" in\n")
 
         # we start with the scheduler
-        f.write("par ")
+        f.write("par MoveOn, ")
         # synchronizations on all begin/finish flows
         if (nbflows > 0):
-            self.dumpFlowsMsgs(f, False)
+            f.write(self.getFlowMsgs(False))
+        if len(addSynchro) != 0:
+            f.write(",")
+            f.write(",".join(addSynchro))
         f.write(" in\n")
         f.write(
             "  (* we first generate the scheduler, necessary for keeping track of tokens, and triggering inclusive merge gateways *)\n")
-        f.write("    scheduler [")
-        self.dumpFlowsMsgs(f, False)
-        f.write(", QueryProcess, ProcessResponse] (nil, p1()) \n")
+        f.write("    scheduler [...](nil, p1(), nil, nil, nil) \n")
+        # f.write(self.getFlowMsgs(False))
+        #   #add split synchro params
+        # res = []
+        # for n in self.nodes:
+        #     if isinstance(n, OrSplitGateway):
+        #         alphaout = []
+        #         nb = 1
+        #         while (nb <= len(n.outgoingFlows)):
+        #             alphaout.append("outf_" + str(nb))
+        #             nb = nb + 1
+        #         allcombi = computeAllCombinations(alphaout)
+        #         nbt = len(allcombi)
+        #         cter = 1
+        #         for elem in allcombi:
+        #             res.append(n.ident + "_" + str(cter))
+        #             cter = cter + 1
+        # if len(res)!= 0:
+        #     f.write(",")
+        #     f.write(",".join(res))
+        # f.write(", MoveOn] (nil, p1(), nil, nil, nil) \n")
         f.write("||\n")
 
         f.write("par   ")
         f.write(" (* synchronizations on all begin/finish flow messages *)\n")
         # synchronizations on all begin/finish flows
         if (nbflows > 0):
-            self.dumpFlowsMsgs(f, False)
+            f.write(self.getFlowMsgs(False))
             # cter = 1
             # for fl in self.flows:
             #    f.write(fl.ident + "_begin, " + fl.ident + "_finish")
@@ -1343,7 +1735,7 @@ class Process:
         filename = self.name + ".svl"
         f = open(filename, 'w')
         f.write(
-            "% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat\"\n\n")  # \"% CADP_TIME=\"memtime\"\n\n")
+            "% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n% CAESAR_OPTIONS=\"-more cat -gc\"\n\n")  # \"% CADP_TIME=\"memtime\"\n\n")
         f.write("% DEFAULT_PROCESS_FILE=" + self.name + ".lnt\n\n")
         # process generation (LTS)
         # f.write("\"" + self.name + ".bcg\" = safety reduction of tau*.a reduction of branching reduction of \"MAIN")
@@ -1361,28 +1753,29 @@ class Process:
         import os
         import stat
         st = os.stat(filename)
-        os.chmod(filename, st.st_mode | 0111)
+        os.chmod(filename, st.st_mode | 0o111)
 
     # This method takes as input a file.pif and generates a PIF Python object
     def buildProcessFromFile(self, filename, debug=False):
         # open xml document specified in fileName
-        xml = file(filename).read()
+        #xml = open(filename, 'r')
+        xml = open(filename, mode="r", encoding="utf-8")
         try:
-            proc = pif.CreateFromDocument(xml)
+            proc = pif.CreateFromDocument(xml.read())
             self.name = proc.name
 
             # we first create all nodes without incoming/outgoing flows
             for n in proc.behaviour.nodes:
                 # initial and final events
-                if isinstance(n, pif.InitialEvent_):
+                if isinstance(n, pif.InitialEvent):
                     node = InitialEvent(n.id, [], [])
                     self.initial = node
-                if isinstance(n, pif.EndEvent_):
+                if isinstance(n, pif.EndEvent):
                     node = EndEvent(n.id, [], [])
                     self.finals.append(node)
 
                 # tasks / emissions / receptions / interactions
-                if isinstance(n, pif.Task_):
+                if isinstance(n, pif.Task):
                     node = Task(n.id, [], [])
                 # if isinstance(n, pif.MessageSending_):
                 #     node = MessageSending(n.id, [], [], n.message)
@@ -1392,22 +1785,22 @@ class Process:
                 #     node = Interaction(n.id, [], [], n.message, n.initiatingPeer, n.receivingPeers)
 
                 # split gateways
-                if isinstance(n, pif.AndSplitGateway_):
+                if isinstance(n, pif.AndSplitGateway):
                     node = AndSplitGateway(n.id, [], [])
-                if isinstance(n, pif.OrSplitGateway_):
+                if isinstance(n, pif.OrSplitGateway):
                     node = OrSplitGateway(n.id, [], [])
-                if isinstance(n, pif.XOrSplitGateway_):
+                if isinstance(n, pif.XOrSplitGateway):
                     node = XOrSplitGateway(n.id, [], [])
 
                 # join gateways
-                if isinstance(n, pif.AndJoinGateway_):
+                if isinstance(n, pif.AndJoinGateway):
                     node = AndJoinGateway(n.id, [], [])
-                if isinstance(n, pif.OrJoinGateway_):
+                if isinstance(n, pif.OrJoinGateway):
                     node = OrJoinGateway(n.id, [], [])
-                if isinstance(n, pif.XOrJoinGateway_):
+                if isinstance(n, pif.XOrJoinGateway):
                     node = XOrJoinGateway(n.id, [], [])
 
-                if not (isinstance(n, pif.InitialEvent_)) and not (isinstance(n, pif.EndEvent_)):
+                if not (isinstance(n, pif.InitialEvent)) and not (isinstance(n, pif.EndEvent)):
                     self.nodes.append(node)
 
             # creation of flow Objects
@@ -1416,9 +1809,9 @@ class Process:
                 self.flows.append(flow)
                 self.addFlow(flow)
 
-        except pyxb.UnrecognizedContentError, e:
-            print 'An error occured while parsing xml document ' + filename
-            print 'Unrecognized element, the message was "%s"' % (e.message)
+        except pyxb.UnrecognizedContentError as e:
+            print('An error occured while parsing xml document ' + filename)
+            print('Unrecognized element, the message was "%s"' % (e.message))
 
     # Takes as input a node identifier and returns the corresponding object
     def getNode(self, nident):
@@ -1465,6 +1858,7 @@ class Generator:
 
         # check for cycles in processes involving inclusive Gateway
         cycle = proc.check_inclusive_cycle()
+        #cycle = False
         if cycle:
             return (ReturnCodes.TERM_ERROR, pifModelName, proc.alpha())
 
@@ -1472,9 +1866,9 @@ class Generator:
         proc.genLNT()
         # compute the LTS from the LNT code using SVL, possibly with a smart reduction
         proc.genSVL(smartReduction)
-        pr = Popen(["svl", pifModelName], shell=False, stdout=sys.stdout)
+        pr = check_output(["svl", pifModelName])
         # pr = Popen("env", shell=True, stdout=sys.stdout)
-        pr.communicate()
+        # pr.communicate()
         # return name and alphabet
         return (ReturnCodes.TERM_OK, pifModelName, proc.alpha())  # TODO: use return value from SVL call
 
