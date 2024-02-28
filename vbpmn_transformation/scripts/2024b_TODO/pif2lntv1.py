@@ -9,6 +9,7 @@ import itertools
 import random
 import sys
 from subprocess import *
+from return_codes import *
 
 import pyxb
 
@@ -16,10 +17,6 @@ import pif
 
 LTS_SUFFIX = ".bcg"
 LNT_SUFFIX = ".lnt"
-
-# TODO: use values that must exist in some python library instead
-class ReturnCodes:
-    TERM_OK, TERM_ERROR, TERM_PROBLEM = (0, 1, 2)
 
 # Dumps alphabet (list of strings) in the given file
 # Inputs: a list of strings, a file identifier, a Boolean indicating whether to add "any" or not
