@@ -12,7 +12,9 @@ mvn install -f pom.xml;
 mvn site -f pom.xml;
 mvn deploy -f pom.xml;
 mvn war:war -f pom.xml;
+rm ../vbpmn_dist/transformation.war
 cd target;
+cp transformation.war ../../vbpmn_dist/transformation.war
 echo 'Catalina home: |'$CATALINA_HOME'|';
 $CATALINA_HOME/bin/shutdown.sh;
 rm -r $CATALINA_HOME/webapps/transformation;

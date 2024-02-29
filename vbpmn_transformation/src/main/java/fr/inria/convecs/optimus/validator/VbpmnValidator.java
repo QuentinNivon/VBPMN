@@ -145,14 +145,24 @@ public class VbpmnValidator implements ModelValidator {
 			} 
 			else 
 			{
-				String lastLine = stdOut.substring(stdOut.lastIndexOf("\n")).trim();
-				if (!(lastLine.equalsIgnoreCase("TRUE") || lastLine.equalsIgnoreCase("FALSE"))) 
+				final int index = stdOut.lastIndexOf("\n");
+
+				if (index == -1)
 				{
 					responseBuilder.append(stdOut);
-				} 
-				else 
+				}
+				else
 				{
-					responseBuilder.append(lastLine);
+					String lastLine = stdOut.substring(stdOut.lastIndexOf("\n")).trim();
+
+					if (!(lastLine.equalsIgnoreCase("TRUE") || lastLine.equalsIgnoreCase("FALSE")))
+					{
+						responseBuilder.append(stdOut);
+					}
+					else
+					{
+						responseBuilder.append(lastLine);
+					}
 				}
 			}
 		} 
