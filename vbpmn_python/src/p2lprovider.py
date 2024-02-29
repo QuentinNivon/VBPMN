@@ -33,7 +33,7 @@ class P2LProvider:
 
     def get_current_version_import(self):
         if self.current_version_import is None:
-            if (self.process_is_balanced):
+            if self.process_is_balanced:
                 self.current_version_import = self.get_current_version_directory() + "." + "pif2lntv1"
             else:
                 self.current_version_import = self.get_current_version_directory() + "." + "pif2lntv7"
