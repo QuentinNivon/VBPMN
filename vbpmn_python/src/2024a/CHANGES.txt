@@ -25,7 +25,7 @@ Nature:		To align LNT2LOTOS with TRAIAN, the predefined library
 		in the generated LOTOS code. This problem was easily solved
 		by replacing "FIRST" with "FIRST of TYPEMSG" where needed.
 
--------------------#2951: UNKNOWN / NOTHING TO DO-------------------
+-------------------#2951: NOTHING TO DO-------------------
 
 IMPROVEMENT
 Number:		2951
@@ -110,7 +110,7 @@ TRAIAN 3.12 now emits a more informative warning:
 
 See item 582 in the HISTORY.txt file.
 
-############ITEM 584: UNKNOWN############
+############ITEM 584: NOTHING TO DO############
 
 The static semantics of TRAIAN was modified to make it as strict as LNT2LOTOS: from now
 on, any expression of the following form:
@@ -133,7 +133,7 @@ For instance, the two files "demos/demo_03/scsi.lnt" and "demos/demo_04/simproc.
 have been modified to insert "with get" clauses where needed. See item 584 in the
 HISTORY.txt file. 
 
-############ITEM 585: UNKNOWN############
+############ITEM 585: NOTHING TO DO############
 
 The static semantics of TRAIAN was modified to make it as strict as LNT2LOTOS: from
 now on, any expression of the form:
@@ -153,7 +153,7 @@ This change is not backward compatible, as it may be required to introduce "with
 clauses in existing LOTOS NT programs to have them accepted by TRAIAN 3.12. See item
 585 in the HISTORY.txt file.
 
-############ITEM 593: UNKNOWN############
+############ITEM 593: NOTHING TO DO############
 
 The static semantic checks of TRAIAN have been strengthened as follows: if some type
 T2 defined by the list of its constructors has a clause "with ==" (resp. "!=", "<",
@@ -177,7 +177,7 @@ to insert missing "with ==", etc. clauses. For instance, file
 "demos/demo_01/DATA_IEEE_1394.lnt" was modified accordingly. See item 593 in the
 HISTORY.txt file.
 
-############ITEM 596: UNKNOWN############
+############ITEM 596: NOTHING TO DO############
 
 The static semantics of TRAIAN has been strengthened: if a type T2 defined by the
 list of its constructors has a clause "with STRING", then each type T1 used by (at
