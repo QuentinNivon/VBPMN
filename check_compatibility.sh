@@ -22,6 +22,9 @@
 
 CADP_VERSION=$(cadp_lib)
 UNKNOWN_CADP_VERSION=1546
+STABLE_CADP_CMP_RES_FALSE="False"       #STABLE VALUE OF VERSION 2024-b
+STABLE_CADP_CMP_RES_TRUE="TRUETrue"     #STABLE VALUE OF VERSION 2024-b
+STABLE_CADP_VERIF_RES_TRUE="True"       #STABLE VALUE OF VERSION 2024-b
 
 ## THE FOLLOWING ``case'' STATEMENT IS USED TO ASSIGN VALUES TO THE
 ## ``CADP_CMP_RES_FALSE'', ``CADP_CMP_RES_TRUE'', AND ``CADP_VERIF_RES_TRUE''
@@ -40,8 +43,15 @@ case $CADP_VERSION in
     ;;
 
     *)
-        echo 'Unknown CADP version' \`\`$CADP_VERSION\'\'
-        exit $UNKNOWN_CADP_VERSION
+        echo '#####################################################'
+        echo 'WARNING: Unknown CADP version' \`\`$CADP_VERSION\'\''.'
+        echo 'The' \`\`check_compatibility.sh\'\' 'script will use former stable values for comparisons and property results.'
+        echo 'Please add the current version to the' \`\`check_compatibility.sh\'\' 'script to remove this warning.'
+        echo '#####################################################'
+        echo
+        CADP_CMP_RES_FALSE=$STABLE_CADP_CMP_RES_FALSE
+        CADP_CMP_RES_TRUE=$STABLE_CADP_CMP_RES_TRUE
+        CADP_VERIF_RES_TRUE=$STABLE_CADP_VERIF_RES_TRUE
     ;;
 
 esac
