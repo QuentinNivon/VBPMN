@@ -1,21 +1,18 @@
 from subprocess import *
-import os # Verification purpose
-import pathlib # Verification purpose
+import os           # Verification purpose
+import pathlib      # Verification purpose
 
 ##
 ##
-##  VARIABLES ``CADP_LIB_LEFT_IDENT'' AND ``CADP_LIB_RIGHT_IDENT''
-##  ARE USED TO SLICE THE RESULT OF THE ``cadp_lib'' COMMAND
-##  IN ORDER TO OBTAIN ONLY THE VERSION CODE (e.g., ``2023-k'').
-##  AS THE RESULT OF ``cadp_lib'' MAY BE SUBJECT TO CHANGES
-##  IN FUTURE VERSIONS OF CADP, THE VALUE OF THESE TWO CONSTANTS
-##  SHOULD BE CHECKED AND UPDATED ACCORDING TO THE VERSION OF CADP
-##  IN USE
+## The ``_get_current_version()'' function is using the output
+## of the ``cadp_lib'' script that returns information about
+## the installed version of CADP.
+## The correctness of its behaviour is thus strongly linked to
+## the immutability of the output of the ``cadp_lib'' script.
+## In case of changes in this output, please adapt the function
+## ``_get_current_version()'' accordingly.
 ##
 ##
-
-CADP_LIB_LEFT_IDENT = 'VERSION'
-CADP_LIB_RIGHT_IDENT = '"'
 
 class P2LProvider:
     def __init__(self, process_is_balanced):
@@ -47,17 +44,20 @@ class P2LProvider:
     def get_current_version_import(self):
         if self.current_version_import is None:
             if self.process_is_balanced:
-                self.current_version_import = self.get_current_version_directory() + "." + "pif2lntv1"
+                self.current_version_import = self.get_current_version_directory() + ".pif2lntv1"
             else:
-                self.current_version_import = self.get_current_version_directory() + "." + "pif2lntv7"
+                self.current_version_import = self.get_current_version_directory() + ".pif2lntv7"
+
         return self.current_version_import
 
 def _get_current_version():
-    # Run ``cadp_lib'' command to retrieve the CADP version installed on the machine
-    raw_version = check_output(["cadp_lib"], text=True)
-    left_index = raw_version.index(CADP_LIB_LEFT_IDENT) + len(CADP_LIB_LEFT_IDENT)
-    right_index = raw_version.index(CADP_LIB_RIGHT_IDENT)
-    # ``version'' should contain something like "2023-k"
-    version = raw_version[left_index:right_index].strip()
+    # Run ``cadp_lib'' command to retrieve the CADP version installed on the machine.
+    # ``cadp_lib'' output is supposed to be ``VERSION <version_code> "<version_name>"''.
+    # Thus, retrieving the version code from its output can be done by extracting the
+    # second word of the sentence using ``<version_code>.split(" ")[1]''.
+    # This may be subject to changes in further versions of CADP.
+    
+    raw_version = check_output(["cadp_lib", "-1"], text=True)
+    version = raw_version.split(" ")[1].strip()
 
     return version
