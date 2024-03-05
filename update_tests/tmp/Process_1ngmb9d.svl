@@ -1,9 +1,0 @@
-% CAESAR_OPEN_OPTIONS="-silent -warning"
-% CAESAR_OPTIONS="-more cat -gc"
-
-% DEFAULT_PROCESS_FILE=Process_1ngmb9d.lnt
-
-"Process_1ngmb9d_raw.bcg" = generation of "MAIN[Activity_1kwh79w, Activity_0zada8u, Activity_1k1z0h2, Activity_1ihs2pn, Activity_1nznv0p, Activity_1yint2p, Activity_0qskknw, Activity_09wb4yp, Activity_1u1z1yw]";
-
-"Process_1ngmb9d.bcg" = branching reduction of "Process_1ngmb9d_raw.bcg";
-
