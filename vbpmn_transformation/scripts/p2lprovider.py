@@ -2,7 +2,20 @@ from subprocess import *
 import os # Verification purpose
 import pathlib # Verification purpose
 
-CADP_KEYWORD = "VERSION"
+##
+##
+##  VARIABLES ``CADP_LIB_LEFT_IDENT'' AND ``CADP_LIB_RIGHT_IDENT''
+##  ARE USED TO SLICE THE RESULT OF THE ``cadp_lib'' COMMAND
+##  IN ORDER TO OBTAIN ONLY THE VERSION CODE (e.g., ``2023-k'').
+##  AS THE RESULT OF ``cadp_lib'' MAY BE SUBJECT TO CHANGES
+##  IN FUTURE VERSIONS OF CADP, THE VALUE OF THESE TWO CONSTANTS
+##  SHOULD BE CHECKED AND UPDATED ACCORDING TO THE VERSION OF CADP
+##  IN USE
+##
+##
+
+CADP_LIB_LEFT_IDENT = 'VERSION'
+CADP_LIB_RIGHT_IDENT = '"'
 
 class P2LProvider:
     def __init__(self, process_is_balanced):
@@ -42,8 +55,8 @@ class P2LProvider:
 def _get_current_version():
     # Run ``cadp_lib'' command to retrieve the CADP version installed on the machine
     raw_version = check_output(["cadp_lib"], text=True)
-    left_index = raw_version.index(CADP_KEYWORD) + len(CADP_KEYWORD)
-    right_index = raw_version.index('"')
+    left_index = raw_version.index(CADP_LIB_LEFT_IDENT) + len(CADP_LIB_LEFT_IDENT)
+    right_index = raw_version.index(CADP_LIB_RIGHT_IDENT)
     # ``version'' should contain something like "2023-k"
     version = raw_version[left_index:right_index].strip()
 
