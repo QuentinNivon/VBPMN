@@ -84,4 +84,5 @@ $ misc
 *.o
 *.bcg
 
-
+# compatibility checks
+update_tests/tmp
