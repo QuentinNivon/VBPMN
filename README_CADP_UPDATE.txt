@@ -38,5 +38,3 @@ another, the following procedure has been created:
 10) /!\ OPTIONAL /!\ Remove directories corresponding to versions older than 1 year. As CADP license files
    last at most 1 year, removing older folders is safe as they are no longer used by anybody. For instance,
    if the current directory is ``2024-b'', you can remove all directories up to ``2023-a'' included.
-
-TESTER: cadp_lib -1 | awk '{ print $2 }'

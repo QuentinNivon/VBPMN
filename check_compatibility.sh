@@ -36,7 +36,8 @@ case $CADP_VERSION in
     *2023-k* |\
     *2023-l* |\
     *2024-a* |\
-    *2024-b*)
+    *2024-b* |\
+    *2024-c*)
         CADP_CMP_RES_FALSE="False"
         CADP_CMP_RES_TRUE="TRUETrue"
         CADP_VERIF_RES_TRUE="True"
