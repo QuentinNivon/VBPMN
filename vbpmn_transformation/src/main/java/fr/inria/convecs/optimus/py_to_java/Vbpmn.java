@@ -391,7 +391,7 @@ public class Vbpmn
 		 * @param hiding is the list of elements to hide (or to expose, wrt @exposeMode)
 		 * @param exposeMode states whether the elements in @hiding should be exposed or not
 		 * @param renaming is the correspondence between old labels and new labels
-		 * @param syncSets is the couple of list of alphabets to synchronize on (one for each model)
+		 * @param syncSets is the couple of lists of alphabets to synchronize on (one for each model)
 		 */
 		public ComparisonChecker(final String model1,
 								 final String model2,
@@ -552,7 +552,7 @@ public class Vbpmn
 
 		/**
 		 * Checks if an equivalence or preorder yields between two models.
-		 * Does it by generating first an SVL script and then calling it.
+		 * Done by generating first an SVL script and then calling it.
 		 *
 		 * @return true if the equivalence/preorder yields, false otherwise.
 		 */
@@ -650,7 +650,7 @@ public class Vbpmn
 
 		/**
 		 * Checks if a formula yields on two models.
-		 * Does it by generating first an SVL script and then calling it.
+		 * Done by generating first an SVL script and then calling it.
 		 *
 		 * @return true if no errors were detected by SVL, false otherwise
 		 */
