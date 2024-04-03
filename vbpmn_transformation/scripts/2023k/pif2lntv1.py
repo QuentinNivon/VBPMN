@@ -329,7 +329,7 @@ class Task(Node):
                 if (cptinc<nbinc):
                     f.write(" [] ")
             f.write(" end select ; \n")
-        f.write("task ; ")
+        f.write("task ; ")################################
         if (nbout==1):
             f.write(" outf (?ident of ID)")
         else:
