@@ -1,22 +1,17 @@
 package fr.inria.convecs.optimus.py_to_java;
 
-import com.sun.tools.javac.comp.Check;
 import fr.inria.convecs.optimus.util.PifUtil;
-import net.sourceforge.argparse4j.ArgumentParserBuilder;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
-import net.sourceforge.argparse4j.inf.ArgumentAction;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Triple;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class Vbpmn
@@ -207,37 +202,73 @@ public class Vbpmn
 		final File pif1 = new File((String) args.getList("models").get(0));
 		final File pif2 = new File((String) args.getList("models").get(1));
 		final boolean processIsBalanced = PifUtil.isPifBalanced(pif1) && PifUtil.isPifBalanced(pif2);
+		final String cadpVersionDir;
 
-		//Check how to properly load the good file (depending on the CADP version)
-		//+ copy all the necessary files
-		Class<?> test;
 		try
 		{
-			 test = Class.forName("rgknrk");
+			final Process cadpLibCommand = Runtime.getRuntime().exec("cadp_lib -1");
+			final BufferedReader stdInput = new BufferedReader(new InputStreamReader(cadpLibCommand.getInputStream()));
+			final BufferedReader stdError = new BufferedReader(new InputStreamReader(cadpLibCommand.getErrorStream()));
+			String line;
+
+			// Read the output from the command
+			System.out.println("Here is the standard output of the command:\n");
+			final StringBuilder stdOutBuilder = new StringBuilder();
+			while ((line = stdInput.readLine()) != null)
+			{
+				stdOutBuilder.append(line);
+			}
+			System.out.println(stdOutBuilder);
+
+			// Read any errors from the attempted command
+			System.out.println("Here is the standard error of the command (if any):\n");
+			final StringBuilder stdErrBuilder = new StringBuilder();
+			while ((line = stdError.readLine()) != null)
+			{
+				stdErrBuilder.append(line);
+			}
+			System.out.println(stdErrBuilder);
+			cadpLibCommand.destroy();
+
+			//Split answer by spaces
+			String[] splitAnswer = stdOutBuilder.toString().split("\\s+");
+			//The 2nd element is the version code, i.e. "2023k"
+			cadpVersionDir = "_" + splitAnswer[1].replace(" ", "");
 		}
-		catch (ClassNotFoundException e)
+		catch (IOException e)
 		{
 			throw new RuntimeException(e);
 		}
 
-		final Loader loader;
+		//Check how to properly load the good file (depending on the CADP version)
+		//+ copy all the necessary files
+		final Pif2LntGeneric pif2lnt;
+		try
+		{
+			//Load the Pif2Lnt class located in the package corresponding to the good version
+			final Class<? extends Pif2LntGeneric> pif2LntClass = (Class<? extends Pif2LntGeneric>)
+					Class.forName("fr.inria.convecs.optimus.py_to_java." + cadpVersionDir + ".Pif2LntV1");
+			final Constructor<? extends Pif2LntGeneric> pif2LntConstructor = pif2LntClass.getDeclaredConstructor();
+			pif2lnt = pif2LntConstructor.newInstance();
+		}
+		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
+			   IllegalAccessException e)
+		{
+			System.out.println("Please make sure that the path \"fr.inria.convecs.optimus.py_to_java."
+					+ cadpVersionDir + "\" exists and contains all the necessary files (TODO). If yes, please send" +
+					" an email to the staff.");
+			throw new RuntimeException(e);
+		}
 
 		//If in lazy mode, rebuild the BCG files only if needed
-		if (args.getBoolean("--lazy"))
-		{
-			loader = test.loader();
-		}
-		else
-		{
-			loader = test.generator();
-		}
+		final boolean lazy = args.getBoolean("--lazy");
 
 		//(Re)build the first model
 		final String pifModel1 = (String) args.getList("models").get(0);
-		final Triple<Integer, String, Collection<String>> result1 = loader.load(pifModel1);
+		final Triple<Integer, String, Collection<String>> result1 = lazy ? pif2lnt.load(pifModel1) : pif2lnt.generate(pifModel1);
 		//(Re)build the second model
 		final String pifModel2 = (String) args.getList("models").get(1);
-		final Triple<Integer, String, Collection<String>> result2 = loader.load(pifModel2);
+		final Triple<Integer, String, Collection<String>> result2 = lazy ? pif2lnt.load(pifModel2) : pif2lnt.generate(pifModel2);
 
 		//If one of the models could not be loaded => ERROR
 		if (result1.getLeft() != ReturnCodes.TERMINATION_OK
@@ -262,7 +293,7 @@ public class Vbpmn
 		{
 			final String pifContextModel = args.getString("--context");
 			System.out.println("Converting \"" + pifContextModel + "\" to LTS...");
-			Triple<Integer, String, Collection<String>> result = Loader.load(pifContextModel);
+			Triple<Integer, String, Collection<String>> result = lazy ? pif2lnt.load(pifContextModel) : pif2lnt.generate(pifContextModel);
 
 			for (String symbol : result.getRight())
 			{

@@ -364,7 +364,7 @@ if __name__ == '__main__':
     f = open("time.txt", 'w')
     f.write(str(elapsed_time) + "s")
     f.close()
-
+   
     if not res:
         val = ReturnCodes.TERM_ERROR
     else:

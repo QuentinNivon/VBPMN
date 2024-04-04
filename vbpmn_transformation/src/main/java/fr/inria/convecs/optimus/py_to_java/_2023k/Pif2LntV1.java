@@ -1,74 +1,82 @@
 package fr.inria.convecs.optimus.py_to_java._2023k;
 
+import fr.inria.convecs.optimus.pif.*;
+import fr.inria.convecs.optimus.py_to_java.Pif2LntGeneric;
 import fr.inria.convecs.optimus.py_to_java.PyToJavaUtils;
+import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
 
-public class Pif2LntV1
+public class Pif2LntV1 extends Pif2LntGeneric
 {
 	private static final String LTS_SUFFIX = ".bcg";
 	private static final String LNT_SUFFIX = ".lnt";
 
-	public Pif2LntV1()
+	public Pif2LntV1(boolean isBalanced)
 	{
+		super(isBalanced);
+	}
 
+	public boolean pairListContainsIdentifier(final Collection<Pair<String, Integer>> pairList,
+											  final String identifier)
+	{
+		for (Pair<String, Integer> pair : pairList)
+		{
+			if (pair.getLeft().equals(identifier))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
 	 * Dumps alphabet (list of strings) in the given file.
 	 *
 	 * @param alphabet is the alphabet to dump
-	 * @param file is the file in which the alphabet should be dumped
+	 * @param printWriter is the printWriter representing the file to where the alphabet should be dumped
 	 * @param addAny is a boolean indicating whether to add "any" or not
 	 */
 	public void dumpAlphabet(final ArrayList<String> alphabet,
-							 final File file,
+							 final PrintWriter printWriter,
 							 final boolean addAny)
 	{
 		final int nbElem = alphabet.size();
 
 		if (nbElem > 0)
 		{
-			final PrintStream printStream;
-
-			try
-			{
-				printStream = new PrintStream(file);
-			}
-			catch (FileNotFoundException e)
-			{
-				throw new RuntimeException(e);
-			}
-
-			printStream.print("[");
+			printWriter.print("[");
 			int counter = 1;
 
 			for (String element : alphabet)
 			{
-				printStream.print(element);
+				printWriter.print(element);
 
 				if (addAny)
 				{
-					printStream.print(":any");
+					printWriter.print(":any");
 				}
 
 				counter++;
 
 				if (counter <= nbElem)
 				{
-					printStream.print(", ");
+					printWriter.print(", ");
 				}
 			}
 
-			printStream.print("]");
-			printStream.close();
+			printWriter.print("]");
+			printWriter.close();
 		}
 	}
 
@@ -77,7 +85,7 @@ public class Pif2LntV1
 	 *
 	 * @param list the list on which combinations should be computed
 	 */
-	public static Collection<Collection<String>> computeAllCombinations(final ArrayList<String> list)
+	public Collection<Collection<String>> computeAllCombinations(final ArrayList<String> list)
 	{
 		return PyToJavaUtils.getCombinationsOf(list);
 	}
@@ -145,6 +153,7 @@ public class Pif2LntV1
 		protected final String identifier;
 		protected final ArrayList<Flow> incomingFlows;
 		protected final ArrayList<Flow> outgoingFlows;
+		protected final ArrayList<String> alphabet;
 
 		Node(final String identifier,
 			 final ArrayList<Flow> incomingFlows,
@@ -153,11 +162,42 @@ public class Pif2LntV1
 			this.identifier = identifier;
 			this.incomingFlows = incomingFlows;
 			this.outgoingFlows = outgoingFlows;
+			this.alphabet = new ArrayList<>();
 		}
 
-		abstract void writeLnt(final PrintStream printStream);
-		abstract ArrayList<String> reachableOrJoin(final ArrayList<String> visited,
-												   final int depth);
+		ArrayList<String> alpha()
+		{
+			return this.alphabet;
+		}
+
+		String identifier()
+		{
+			return this.identifier;
+		}
+
+		void addIncomingFlow(final Flow flow)
+		{
+			this.incomingFlows.add(flow);
+		}
+
+		void addOutgoingFlow(final Flow flow)
+		{
+			this.outgoingFlows.add(flow);
+		}
+
+		ArrayList<Flow> getIncomingFlows()
+		{
+			return this.incomingFlows;
+		}
+
+		ArrayList<Flow> getOutgoingFlows()
+		{
+			return this.outgoingFlows;
+		}
+
+		abstract void writeLnt(final PrintWriter printWriter);
+		abstract ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
+																  final int depth);
 	}
 
 	/**
@@ -179,11 +219,11 @@ public class Pif2LntV1
 		}
 
 		//Generates the (generic) process for flows, only once
-		void writeLnt(final PrintStream printStream)
+		void writeLnt(final PrintWriter printWriter)
 		{
-			printStream.println("process flow [begin:any, finish:any] (ident:ID) is");
-			printStream.println(" loop begin (ident) ; finish (ident) end loop");
-			printStream.println("end process");
+			printWriter.println("process flow [begin:any, finish:any] (ident:ID) is");
+			printWriter.println(" loop begin (ident) ; finish (ident) end loop");
+			printWriter.println("end process");
 		}
 
 		//A normal flow cannot be a default flow
@@ -228,12 +268,12 @@ public class Pif2LntV1
 
 		// Generates the process for conditional flows
 		@Override
-		void writeLnt(final PrintStream printStream)
+		void writeLnt(final PrintWriter printWriter)
 		{
 			//TODO: Translate the condition too
-			printStream.println("process conditionalflow [begin:any, finish:any] (ident: ID) is");
-			printStream.println(" loop begin (ident) ; finish (ident) end loop");
-			printStream.println("end process");
+			printWriter.println("process conditionalflow [begin:any, finish:any] (ident: ID) is");
+			printWriter.println(" loop begin (ident) ; finish (ident) end loop");
+			printWriter.println("end process");
 		}
 
 		//A conditional flow is default iff the condition attribute contains "default"
@@ -258,11 +298,11 @@ public class Pif2LntV1
 
 		//Generates the (generic) process for the initial event, only once
 		@Override
-		void writeLnt(final PrintStream printStream)
+		void writeLnt(final PrintWriter printWriter)
 		{
-			printStream.println("process init [begin:any, outf:any] is");
-			printStream.println(" var ident: ID in begin ; outf (?ident of ID) end var ");
-			printStream.println("end process");
+			printWriter.println("process init [begin:any, outf:any] is");
+			printWriter.println(" var ident: ID in begin ; outf (?ident of ID) end var ");
+			printWriter.println("end process");
 		}
 
 		/**
@@ -274,11 +314,11 @@ public class Pif2LntV1
 		 * @return the list of reachable or joins
 		 */
 		@Override
-		ArrayList<String> reachableOrJoin(ArrayList<String> visited,
-										  int depth)
+		ArrayList<Pair<String, Integer>> reachableOrJoin(ArrayList<Pair<String, Integer>> visited,
+										 				 int depth)
 		{
-			final ArrayList<String> newVisited = new ArrayList<>(visited);
-			newVisited.add(this.identifier);
+			final ArrayList<Pair<String, Integer>> newVisited = new ArrayList<>(visited);
+			newVisited.add(Pair.of(this.identifier, depth));
 
 			return this.outgoingFlows.get(0).getTarget().reachableOrJoin(newVisited, depth);
 		}
@@ -298,11 +338,11 @@ public class Pif2LntV1
 
 		//Generates the (generic) process for final events, only once
 		@Override
-		void writeLnt(PrintStream printStream)
+		void writeLnt(PrintWriter printWriter)
 		{
-			printStream.println("process final [incf:any, finish:any] is");
-			printStream.println(" var ident: ID in incf (?ident of ID); finish end var");
-			printStream.println("end process");
+			printWriter.println("process final [incf:any, finish:any] is");
+			printWriter.println(" var ident: ID in incf (?ident of ID); finish end var");
+			printWriter.println("end process");
 		}
 
 		/**
@@ -313,7 +353,7 @@ public class Pif2LntV1
 		 * @return
 		 */
 		@Override
-		ArrayList<String> reachableOrJoin(ArrayList<String> visited, int depth)
+		ArrayList<Pair<String, Integer>> reachableOrJoin(ArrayList<Pair<String, Integer>> visited, int depth)
 		{
 			return new ArrayList<>();
 		}
@@ -341,16 +381,16 @@ public class Pif2LntV1
 		}
 
 		@Override
-		ArrayList<String> reachableOrJoin(ArrayList<String> visited, int depth)
+		ArrayList<Pair<String, Integer>> reachableOrJoin(ArrayList<Pair<String, Integer>> visited, int depth)
 		{
-			if (visited.contains(this.identifier))
+			if (pairListContainsIdentifier(visited, this.identifier))
 			{
 				return new ArrayList<>();
 			}
 			else
 			{
-				final ArrayList<String> newVisited = new ArrayList<>(visited);
-				newVisited.add(this.identifier);
+				final ArrayList<Pair<String, Integer>> newVisited = new ArrayList<>(visited);
+				newVisited.add(Pair.of(this.identifier, depth));
 
 				return this.outgoingFlows.get(0).getTarget().reachableOrJoin(newVisited, depth);
 			}
@@ -379,11 +419,11 @@ public class Pif2LntV1
 
 		//Generates the (generic) process for interactions, only once
 		@Override
-		void writeLnt(PrintStream printStream)
+		void writeLnt(PrintWriter printWriter)
 		{
-			printStream.println("process interaction [incf:any, inter:any, outf:any] is");
-			printStream.println(" var ident: ID in loop incf (?ident of ID); inter; outf (?ident of ID) end loop end var ");
-			printStream.println("end process");
+			printWriter.println("process interaction [incf:any, inter:any, outf:any] is");
+			printWriter.println(" var ident: ID in loop incf (?ident of ID); inter; outf (?ident of ID) end loop end var ");
+			printWriter.println("end process");
 		}
 
 		/**
@@ -412,25 +452,25 @@ public class Pif2LntV1
 		/**
 		 * Generates process instantiation for main LNT process
 		 */
-		void writeMainLnt(final PrintStream printStream)
+		void writeMainLnt(final PrintWriter printWriter)
 		{
 			//We assume one incoming flow and one outgoing flow
-			printStream.print("interaction [");
-			printStream.print(this.incomingFlows.get(0).identifier());
-			printStream.print("_finish,");
-			printStream.print(this.sender);
-			printStream.print("_");
+			printWriter.print("interaction [");
+			printWriter.print(this.incomingFlows.get(0).identifier());
+			printWriter.print("_finish,");
+			printWriter.print(this.sender);
+			printWriter.print("_");
 
 			for (String e : this.receivers)
 			{
-				printStream.print(e);
-				printStream.print("_");
+				printWriter.print(e);
+				printWriter.print("_");
 			}
 
-			printStream.print(this.message);
-			printStream.print(",");
-			printStream.print(this.outgoingFlows.get(0).identifier());
-			printStream.print("_begin]");
+			printWriter.print(this.message);
+			printWriter.print(",");
+			printWriter.print(this.outgoingFlows.get(0).identifier());
+			printWriter.print("_begin]");
 		}
 	}
 
@@ -462,11 +502,11 @@ public class Pif2LntV1
 		}
 
 		@Override
-		void writeLnt(PrintStream printStream)
+		void writeLnt(PrintWriter printWriter)
 		{
-			printStream.println("process messagesending [incf:any, msg:any, outf:any] is");
-			printStream.println(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var ");
-			printStream.println("end process");
+			printWriter.println("process messagesending [incf:any, msg:any, outf:any] is");
+			printWriter.println(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var ");
+			printWriter.println("end process");
 		}
 
 		ArrayList<String> alpha()
@@ -476,15 +516,15 @@ public class Pif2LntV1
 			return res;
 		}
 
-		void writeMainLnt(final PrintStream printStream)
+		void writeMainLnt(final PrintWriter printWriter)
 		{
-			printStream.print("messagesending [");
-			printStream.print(this.incomingFlows.get(0).identifier());
-			printStream.print("_finish,");
-			printStream.print(this.message);
-			printStream.print("_EM,");
-			printStream.print(this.outgoingFlows.get(0).identifier());
-			printStream.print("_begin]");
+			printWriter.print("messagesending [");
+			printWriter.print(this.incomingFlows.get(0).identifier());
+			printWriter.print("_finish,");
+			printWriter.print(this.message);
+			printWriter.print("_EM,");
+			printWriter.print(this.outgoingFlows.get(0).identifier());
+			printWriter.print("_begin]");
 		}
 	}
 
@@ -502,11 +542,11 @@ public class Pif2LntV1
 		}
 
 		@Override
-		void writeLnt(PrintStream printStream)
+		void writeLnt(PrintWriter printWriter)
 		{
-			printStream.println("process messagereception [incf:any, msg:any, outf:any] is");
-			printStream.println(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var");
-			printStream.println("end process");
+			printWriter.println("process messagereception [incf:any, msg:any, outf:any] is");
+			printWriter.println(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var");
+			printWriter.println("end process");
 		}
 
 		ArrayList<String> alpha()
@@ -516,15 +556,15 @@ public class Pif2LntV1
 			return result;
 		}
 
-		void writeMainLnt(final PrintStream printStream)
+		void writeMainLnt(final PrintWriter printWriter)
 		{
-			printStream.print("messagereception [");
-			printStream.print(this.incomingFlows.get(0).identifier());
-			printStream.print("_finish");
-			printStream.print(this.message);
-			printStream.print("_REC");
-			printStream.print(this.outgoingFlows.get(0).identifier());
-			printStream.print("_begin]");
+			printWriter.print("messagereception [");
+			printWriter.print(this.incomingFlows.get(0).identifier());
+			printWriter.print("_finish");
+			printWriter.print(this.message);
+			printWriter.print("_REC");
+			printWriter.print(this.outgoingFlows.get(0).identifier());
+			printWriter.print("_begin]");
 		}
 	}
 
@@ -541,20 +581,20 @@ public class Pif2LntV1
 		}
 
 		@Override
-		void writeLnt(PrintStream printStream)
+		void writeLnt(PrintWriter printWriter)
 		{
 			final int nbInc = this.incomingFlows.size();
 			final int nbOut = this.outgoingFlows.size();
 
-			printStream.print("process task_");
-			printStream.print(nbInc);
-			printStream.print("_");
-			printStream.print(nbOut);
-			printStream.print(" [");
+			printWriter.print("process task_");
+			printWriter.print(nbInc);
+			printWriter.print("_");
+			printWriter.print(nbOut);
+			printWriter.print(" [");
 
 			if (nbInc == 1)
 			{
-				printStream.print("incf:any,");
+				printWriter.print("incf:any,");
 			}
 			else
 			{
@@ -562,18 +602,18 @@ public class Pif2LntV1
 
 				while (incCounter < nbInc)
 				{
-					printStream.print("incf");
-					printStream.print(incCounter);
-					printStream.print(":any,");
+					printWriter.print("incf");
+					printWriter.print(incCounter);
+					printWriter.print(":any,");
 					incCounter++;
 				}
 			}
 
-			printStream.print("task:any,");
+			printWriter.print("task:any,");
 
 			if (nbOut == 1)
 			{
-				printStream.print("outf:any");
+				printWriter.print("outf:any");
 			}
 			else
 			{
@@ -581,82 +621,82 @@ public class Pif2LntV1
 
 				while (outCounter < nbOut)
 				{
-					printStream.print("outf");
-					printStream.print(outCounter);
-					printStream.print(":any");
+					printWriter.print("outf");
+					printWriter.print(outCounter);
+					printWriter.print(":any");
 					outCounter++;
 
 					if (outCounter < nbOut)
 					{
-						printStream.print(",");
+						printWriter.print(",");
 					}
 				}
 			}
 
-			printStream.println("] is");
-			printStream.print(" var ident: ID in loop ");
+			printWriter.println("] is");
+			printWriter.print(" var ident: ID in loop ");
 
 			if (nbInc == 1)
 			{
-				printStream.print(" incf (?ident of ID); ");
+				printWriter.print(" incf (?ident of ID); ");
 			}
 			else
 			{
 				int incCounter = 0;
-				printStream.print(" select ");
+				printWriter.print(" select ");
 
 				while (incCounter < nbInc)
 				{
-					printStream.print("incf");
-					printStream.print(incCounter);
-					printStream.print(" (?ident of ID)");
+					printWriter.print("incf");
+					printWriter.print(incCounter);
+					printWriter.print(" (?ident of ID)");
 					incCounter++;
 
 					if (incCounter < nbInc)
 					{
-						printStream.print(" [] ");
+						printWriter.print(" [] ");
 					}
 				}
 
-				printStream.println(" end select ; ");
+				printWriter.println(" end select ; ");
 			}
 
-			printStream.print("task ; ");
+			printWriter.print("task ; ");
 
 			if (nbOut == 1)
 			{
-				printStream.print(" outf (?ident of ID)");
+				printWriter.print(" outf (?ident of ID)");
 			}
 			else
 			{
 				int outCounter = 0;
-				printStream.print(" select ");
+				printWriter.print(" select ");
 
 				while (outCounter < nbOut)
 				{
-					printStream.print("outf");
-					printStream.print(outCounter);
-					printStream.print(" (?ident of ID)");
+					printWriter.print("outf");
+					printWriter.print(outCounter);
+					printWriter.print(" (?ident of ID)");
 					outCounter++;
 
 					if (outCounter < nbOut)
 					{
-						printStream.print(" [] ");
+						printWriter.print(" [] ");
 					}
 				}
 
-				printStream.println(" end select ");
+				printWriter.println(" end select ");
 			}
 
-			printStream.println(" end loop end var");
-			printStream.println("end process");
+			printWriter.println(" end loop end var");
+			printWriter.println("end process");
 		}
 
 		@Override
-		ArrayList<String> reachableOrJoin(ArrayList<String> visited,
-										  int depth)
+		ArrayList<Pair<String, Integer>> reachableOrJoin(ArrayList<Pair<String, Integer>> visited,
+														 int depth)
 		{
-			if (visited.contains(this.identifier))
+			if (pairListContainsIdentifier(visited, this.identifier))
 			{
 				return new ArrayList<>();
 			}
@@ -664,18 +704,18 @@ public class Pif2LntV1
 			{
 				if (this.outgoingFlows.size() == 1)
 				{
-					final ArrayList<String> newVisited = new ArrayList<>(visited);
-					newVisited.add(this.identifier);
+					final ArrayList<Pair<String, Integer>> newVisited = new ArrayList<>(visited);
+					newVisited.add(Pair.of(this.identifier, depth));
 					return this.outgoingFlows.get(0).getTarget().reachableOrJoin(newVisited, depth);
 				}
 				else
 				{
-					final ArrayList<String> res = new ArrayList<>();
+					final ArrayList<Pair<String, Integer>> res = new ArrayList<>();
 
 					for (Flow f : this.outgoingFlows)
 					{
-						final ArrayList<String> newVisited = new ArrayList<>(visited);
-						newVisited.add(this.identifier);
+						final ArrayList<Pair<String, Integer>> newVisited = new ArrayList<>(visited);
+						newVisited.add(Pair.of(this.identifier, depth));
 						res.addAll(f.getTarget().reachableOrJoin(newVisited, depth));
 					}
 
@@ -799,50 +839,50 @@ public class Pif2LntV1
 		/**
 		 * Generates process instantiation for all split gateways
 		 *
-		 * @param printStream
+		 * @param printWriter
 		 */
-		void writeMainLnt(final PrintStream printStream)
+		void writeMainLnt(final PrintWriter printWriter)
 		{
 			final int nbOut = this.outgoingFlows.size();
 			int i = 0;
 
-			printStream.print("[");
-			printStream.print(this.incomingFlows.get(0).identifier());
-			printStream.print("_finish,");
+			printWriter.print("[");
+			printWriter.print(this.incomingFlows.get(0).identifier());
+			printWriter.print("_finish,");
 
 			while (i < nbOut)
 			{
-				printStream.print(this.outgoingFlows.get(i).identifier());
-				printStream.print("_begin");
+				printWriter.print(this.outgoingFlows.get(i).identifier());
+				printWriter.print("_begin");
 				i++;
 
 				if (i < nbOut)
 				{
-					printStream.print(",");
+					printWriter.print(",");
 				}
 			}
 
-			printStream.print("]");
+			printWriter.print("]");
 		}
 
 		/**
 		 * For a split (generic), if not visited yet, recursive call on the target nodes of all outgoing flows.
 		 * Returns the list of reachable or joins.
  		 */
-		ArrayList<String> reachableOrJoin(final ArrayList<String> visited,
+		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
 										  final int depth)
 		{
-			if (visited.contains(this.identifier))
+			if (pairListContainsIdentifier(visited, this.identifier))
 			{
 				return new ArrayList<>();
 			}
 
-			final ArrayList<String> res = new ArrayList<>();
+			final ArrayList<Pair<String, Integer>> res = new ArrayList<>();
 
 			for (Flow f : this.outgoingFlows)
 			{
-				final ArrayList<String> temp = new ArrayList<>(visited);
-				temp.add(this.identifier);
+				final ArrayList<Pair<String, Integer>> temp = new ArrayList<>(visited);
+				temp.add(Pair.of(this.identifier, depth));
 				res.addAll(f.getTarget().reachableOrJoin(temp, depth));
 			}
 
@@ -892,6 +932,11 @@ public class Pif2LntV1
 			return this.correspOrJoin;
 		}
 
+		void setCorrespOrJoin(final String correspOrJoin)
+		{
+			this.correspOrJoin = correspOrJoin;
+		}
+
 		/**
 		 * Checks whether the set of outgoing flows contains a default flow
 		 * @return
@@ -910,7 +955,7 @@ public class Pif2LntV1
 		}
 
 		@Override
-		void writeLnt(PrintStream printStream)
+		void writeLnt(PrintWriter printWriter)
 		{
 			final int nbOut = this.outgoingFlows.size();
 			final boolean existsDefault = this.existDefaultFlow();
@@ -926,69 +971,69 @@ public class Pif2LntV1
 				nb++;
 			}
 
-			final Collection<Collection<String>> allCombi = Pif2LntV1.computeAllCombinations(alphaOut);
+			final Collection<Collection<String>> allCombi = computeAllCombinations(alphaOut);
 			final int nbt = allCombi.size();
 
-			printStream.print("process orsplit_");
-			printStream.print(this.identifier);
-			printStream.print(" [incf:any,");
+			printWriter.print("process orsplit_");
+			printWriter.print(this.identifier);
+			printWriter.print(" [incf:any,");
 
 			//We dump the process alphabet (flows + synchronization points if necessary)
 			int nbg = 1;
 
 			while (nbg < nbOut)
 			{
-				printStream.print("outf_");
-				printStream.print(nbg);
-				printStream.print(":any");
+				printWriter.print("outf_");
+				printWriter.print(nbg);
+				printWriter.print(":any");
 				nbg++;
 
 				if (nbg < nbOut)
 				{
-					printStream.print(",");
+					printWriter.print(",");
 				}
 			}
 
 			if (nbt > 0
 				&& !this.correspOrJoin.isEmpty())
 			{
-				printStream.print(", ");
+				printWriter.print(", ");
 				int counter = 1;
 
 				for (Collection<String> combi : allCombi) //TODO Bizarre ....
 				{
-					printStream.print(this.correspOrJoin);
-					printStream.print("_");
-					printStream.print(counter);
-					printStream.print(":any");
+					printWriter.print(this.correspOrJoin);
+					printWriter.print("_");
+					printWriter.print(counter);
+					printWriter.print(":any");
 					counter++;
 
 					if (counter < nbt)
 					{
-						printStream.print(",");
+						printWriter.print(",");
 					}
 				}
 			}
 
-			printStream.println(" ] is ");
+			printWriter.println(" ] is ");
 			int counterVar = allCombi.size();
-			printStream.print(" var ");
+			printWriter.print(" var ");
 
 			while (counterVar > 0)
 			{
-				printStream.print("ident");
-				printStream.print(counterVar);
-				printStream.print(":ID");
+				printWriter.print("ident");
+				printWriter.print(counterVar);
+				printWriter.print(":ID");
 				counterVar--;
 
 				if (counterVar > 0)
 				{
-					printStream.print(",");
+					printWriter.print(",");
 				}
 			}
 
-			printStream.println(" in var ident: ID in loop incf (?ident of ID); "); //TODO We generate unnecessary variables...
-			printStream.print(" select ");
+			printWriter.println(" in var ident: ID in loop incf (?ident of ID); "); //TODO We generate unnecessary variables...
+			printWriter.print(" select ");
 
 			nb = 1;
 			//Counter for generating synchro points
@@ -1002,38 +1047,38 @@ public class Pif2LntV1
 				if (nbElem > 1)
 				{
 					counterVar = allCombi.size();
-					printStream.print(" par ");
+					printWriter.print(" par ");
 
 					for (String s : element)
 					{
-						printStream.print(s);
-						printStream.print(" (?ident");
-						printStream.print(counterVar);
-						printStream.print(" of ID)");
+						printWriter.print(s);
+						printWriter.print(" (?ident");
+						printWriter.print(counterVar);
+						printWriter.print(" of ID)");
 						counterVar--;
 						nb2++;
 
 						if (nb2 <= nbElem)
 						{
-							printStream.print("||");
+							printWriter.print("||");
 						}
 					}
 
-					printStream.print(" end par ");
+					printWriter.print(" end par ");
 				}
 				else
 				{
-					printStream.print(element.iterator().next());
-					printStream.print(" (?ident of ID)");
+					printWriter.print(element.iterator().next());
+					printWriter.print(" (?ident of ID)");
 				}
 
 				//Add synchronization points if there's a corresponding join
 				if (!this.correspOrJoin.isEmpty())
 				{
-					printStream.print(" ; ");
-					printStream.print(this.correspOrJoin);
-					printStream.print("_");
-					printStream.print(counter);
+					printWriter.print(" ; ");
+					printWriter.print(this.correspOrJoin);
+					printWriter.print("_");
+					printWriter.print(counter);
 					counter++;
 				}
 
@@ -1041,12 +1086,12 @@ public class Pif2LntV1
 
 				if (nb <= nbt)
 				{
-					printStream.print(" [] ");
+					printWriter.print(" [] ");
 				}
 			}
 
-			printStream.println(" end select end loop end var end var");
-			printStream.println("end process");
+			printWriter.println(" end select end loop end var end var");
+			printWriter.println("end process");
 		}
 
 		/**
@@ -1058,15 +1103,1624 @@ public class Pif2LntV1
 		{
 			if (this.correspOrJoin.isEmpty())
 			{
+				final int nbOut = this.outgoingFlows.size();
+				final ArrayList<String> alphaOut = new ArrayList<>();
+				int nb = 1;
 
+				while (nb < nbOut)
+				{
+					alphaOut.add("outf_" + nb);
+					nb++;
+				}
+
+				final Collection<Collection<String>> allCombinations = computeAllCombinations(alphaOut);
+				final int nbCombi = allCombinations.size();
+
+				//We dump the synchronisation points
+				if (nbCombi > 0)
+				{
+					int counter = 1;
+
+					for (Collection<String> combination : allCombinations) //TODO Bizarre...
+					{
+						printWriter.print(this.correspOrJoin);
+						printWriter.print("_");
+						printWriter.print(counter);
+						counter++;
+
+						if (counter < nbCombi)
+						{
+							printWriter.print(",");
+						}
+					}
+
+					printWriter.print(" -> ");
+				}
+
+				//Process call + alphabet
+				printWriter.print("orsplit_");
+				printWriter.print(this.identifier);
+				printWriter.print("[");
+				printWriter.print(this.incomingFlows.get(0).identifier());
+				printWriter.print("_finish,");
+				int i = 0;
+
+				while (i < nbOut)
+				{
+					printWriter.print(this.outgoingFlows.get(i).identifier());
+					printWriter.print("_begin");
+					i++;
+
+					if (i < nbOut)
+					{
+						printWriter.print(",");
+					}
+				}
+
+				if (nbCombi > 0)
+				{
+					printWriter.print(", ");
+					int counter = 1;
+
+					for (Collection<String> combination : allCombinations)
+					{
+						printWriter.print(this.correspOrJoin);
+						printWriter.print("_");
+						printWriter.print(counter);
+						counter++;
+
+						if (counter <= nbCombi)
+						{
+							printWriter.print(",");
+						}
+					}
+				}
+
+				printWriter.print("]");
+			}
+			else
+			{
+				printWriter.print("orsplit_");
+				printWriter.print(this.identifier);
+				super.writeMainLnt(printWriter);
 			}
 		}
 
+		/**
+		 * For an or split, if not visited yet, recursive call on the target nodes of all outgoing flows.
+		 * We increase the depth, to distinguish it from the split or being analyzed.
+		 *
+		 * @param visited
+		 * @param depth
+		 * @return the list of reachable or joins.
+		 */
 		@Override
-		ArrayList<String> reachableOrJoin(final ArrayList<String> visited,
-										  final int depth)
+		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
+														 final int depth)
 		{
+			if (pairListContainsIdentifier(visited, this.identifier))
+			{
+				return new ArrayList<>();
+			}
 
+			final ArrayList<Pair<String, Integer>> result = new ArrayList<>();
+
+			for (Flow f : this.outgoingFlows)
+			{
+				final ArrayList<Pair<String, Integer>> temp = new ArrayList<>(visited);
+				temp.add(Pair.of(this.identifier, depth));
+				result.addAll(f.getTarget().reachableOrJoin(temp, depth + 1));
+			}
+
+			return result;
 		}
+
+		public void dumpMaude(final PrintWriter printWriter)
+		{
+			super.dumpMaude(printWriter, "inclusive");
+		}
+	}
+
+	/**
+	 * Class for XOrSplitGateway
+	 */
+	class XOrSplitGateway extends SplitGateway
+	{
+		XOrSplitGateway(String identifier,
+						ArrayList<Flow> incomingFlows,
+						ArrayList<Flow> outgoingFlows)
+		{
+			super(identifier, incomingFlows, outgoingFlows);
+		}
+
+		/**
+		 * Generates the process for exclusive split gateway.
+		 * Takes as input the number of outgoing flows.
+		 *
+		 * @param printWriter
+		 */
+		@Override
+		void writeLnt(PrintWriter printWriter)
+		{
+			final int nbOut = this.outgoingFlows.size();
+			printWriter.print("process xorsplit_");
+			printWriter.print(this.identifier);
+			printWriter.print(" [incf:any,");
+			int nb = 1;
+
+			while (nb < nbOut)
+			{
+				printWriter.print("outf_");
+				printWriter.print(nb);
+				printWriter.print(":any");
+				nb++;
+
+				if (nb <= nbOut)
+				{
+					printWriter.print(",");
+				}
+			}
+
+			printWriter.println(" ] is ");
+			printWriter.println(" var ident: ID in loop incf (?ident of ID); ");
+			printWriter.print(" select ");
+			nb = 1;
+
+			while (nb < nbOut)
+			{
+				printWriter.print("outf_");
+				printWriter.print(nb);
+				printWriter.print("(?ident of ID)");
+				nb++;
+
+				if (nb <= nbOut)
+				{
+					printWriter.print("[]");
+				}
+			}
+
+			printWriter.println(" end select end loop end var");
+			printWriter.println("end process");
+		}
+
+		void writeMainLnt(final PrintWriter printWriter)
+		{
+			printWriter.print("xorsplit_");
+			printWriter.print(this.identifier);
+			super.writeMainLnt(printWriter);
+		}
+
+		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
+														 final int depth)
+		{
+			return super.reachableOrJoin(visited, depth);
+		}
+
+		void dumpMaude(final PrintWriter printWriter)
+		{
+			super.dumpMaude(printWriter, "exclusive");
+		}
+	}
+
+	/**
+	 * Class for AndSplitGateway
+	 */
+	class AndSplitGateway extends SplitGateway
+	{
+		AndSplitGateway(String identifier,
+						ArrayList<Flow> incomingFlows,
+						ArrayList<Flow> outgoingFlows)
+		{
+			super(identifier, incomingFlows, outgoingFlows);
+		}
+
+		/**
+		 * Generates the process for parallel split gateway.
+		 * Takes as input the number of outgoing flows.
+		 *
+		 * @param printWriter
+		 */
+		@Override
+		void writeLnt(PrintWriter printWriter)
+		{
+			final int nbOut = this.outgoingFlows.size();
+			printWriter.print("process andsplit_");
+			printWriter.print(this.identifier);
+			printWriter.print(" [incf:any,");
+			int nb = 1;
+
+			while (nb < nbOut)
+			{
+				printWriter.print("outf_");
+				printWriter.print(nb);
+				printWriter.print(":any");
+				nb++;
+
+				if (nb < nbOut)
+				{
+					printWriter.print(",");
+				}
+			}
+
+			printWriter.println(" ] is ");
+			int variablesCounter = nbOut;
+
+			while (variablesCounter > 0)
+			{
+				printWriter.print("ident");
+				printWriter.print(variablesCounter);
+				printWriter.print(":ID");
+				variablesCounter--;
+
+				if (variablesCounter > 0)
+				{
+					printWriter.print(",");
+				}
+			}
+
+			printWriter.println(" in  var ident: ID in loop incf (?ident of ID); ");
+			printWriter.print(" par ");
+			nb = 1;
+			variablesCounter = nbOut;
+
+			while (nb < nbOut)
+			{
+				printWriter.print("outf_");
+				printWriter.print(nb);
+				printWriter.print("(?ident");
+				printWriter.print(variablesCounter);
+				printWriter.print(" of ID)");
+				variablesCounter--;
+				nb++;
+
+				if (nb <= nbOut)
+				{
+					printWriter.print("||");
+				}
+			}
+
+			printWriter.println(" end par end loop end var end var");
+			printWriter.println("end process");
+		}
+
+		void writeMainLnt(final PrintWriter printWriter)
+		{
+			printWriter.print("andsplit_");
+			printWriter.print(this.identifier);
+			super.writeMainLnt(printWriter);
+		}
+
+		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
+														 final int depth)
+		{
+			return super.reachableOrJoin(visited, depth);
+		}
+
+		void dumpMaude(final PrintWriter printWriter)
+		{
+			super.dumpMaude(printWriter, "parallel");
+		}
+	}
+
+	/**
+	 * Abstract class for JoinGateway
+	 */
+	abstract class JoinGateway extends Gateway
+	{
+		JoinGateway(String identifier,
+					ArrayList<Flow> incomingFlows,
+					ArrayList<Flow> outgoingFlows)
+		{
+			super(identifier, incomingFlows, outgoingFlows);
+		}
+
+		/**
+		 * Generates process instantiation for all join gateways.
+		 *
+		 * @param printWriter
+		 */
+		void writeMainLnt(final PrintWriter printWriter)
+		{
+			//We assume one outgoing flow
+			final int nbInc = this.incomingFlows.size();
+			printWriter.print("[");
+			int i = 0;
+
+			while (i < nbInc)
+			{
+				printWriter.print(this.incomingFlows.get(i).identifier());
+				printWriter.print("_finish");
+				i++;
+				printWriter.print(",");
+			}
+
+			printWriter.print(this.outgoingFlows.get(0).identifier());
+			printWriter.print("_begin]");
+		}
+
+		/**
+		 * For a join (generic), if not visited yet, recursive call on the target node of the outgoing flow.
+		 *
+		 * @param visited
+		 * @param depth
+		 * @return the list of reachable or joins
+		 */
+		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
+														 final int depth)
+		{
+			if (pairListContainsIdentifier(visited, this.identifier))
+			{
+				return new ArrayList<>();
+			}
+
+			final ArrayList<Pair<String, Integer>> copy = new ArrayList<>(visited);
+			copy.add(Pair.of(this.identifier, depth));
+			return this.outgoingFlows.get(0).getTarget().reachableOrJoin(copy, depth);
+		}
+
+		/**
+		 * Dumps a Maude line of code into the given file.
+		 *
+		 * @param printWriter
+		 */
+		void dumpMaude(final PrintWriter printWriter,
+					   final String nameOp)
+		{
+			printWriter.print("        merge(");
+			printWriter.print(this.identifier);
+			printWriter.print(",");
+			printWriter.print(nameOp);
+			printWriter.print(",(");
+			int nbInc = this.incomingFlows.size();
+
+			for (Flow ofl : this.incomingFlows) //TODO : Bizarre "ofl" VS "incomingFlows"
+			{
+				nbInc--;
+				printWriter.print(ofl.identifier());
+
+				if (nbInc > 0)
+				{
+					printWriter.print(",");
+				}
+			}
+
+			printWriter.print("),");
+			printWriter.print(this.outgoingFlows.get(0).identifier());
+			printWriter.print(")");
+		}
+	}
+
+	/**
+	 * Class for OrJoinGateway
+	 */
+	class OrJoinGateway extends JoinGateway
+	{
+		private String correspondingOrSplit;
+
+		OrJoinGateway(String identifier,
+					  ArrayList<Flow> incomingFlows,
+					  ArrayList<Flow> outgoingFlows)
+		{
+			super(identifier, incomingFlows, outgoingFlows);
+			this.correspondingOrSplit = ""; //contains the identifier of the corresponding split (if there is one)
+		}
+
+		void setCorrespondingOrSplit(final String correspondingOrSplit)
+		{
+			this.correspondingOrSplit = correspondingOrSplit;
+		}
+
+		/**
+		 * Generates the process for inclusive join gateway.
+		 * Takes as input the number of incoming flows.
+		 *
+		 * @param printWriter
+		 */
+		@Override
+		void writeLnt(PrintWriter printWriter)
+		{
+			final int nbInc = this.incomingFlows.size();
+			final ArrayList<String> alphaInc = new ArrayList<>();
+			int nb = 1;
+
+			while (nb < nbInc)
+			{
+				alphaInc.add("incf_" + nb);
+				nb++;
+			}
+
+			final Collection<Collection<String>> allCombinations = computeAllCombinations(alphaInc);
+			final int nbCombi = allCombinations.size();
+
+			printWriter.print("process orjoin_");
+			printWriter.print(this.identifier);
+			printWriter.print(" [");
+			nb = 1;
+
+			while (nb < nbInc)
+			{
+				printWriter.print("incf_");
+				printWriter.print(nb);
+				printWriter.print(":any,");
+				nb++;
+			}
+
+			printWriter.print("outf:any ");
+
+			//we add to the alphabet potential additional synchronization points
+			if (nbCombi > 0
+				&& !this.correspondingOrSplit.isEmpty())
+			{
+				int counter = 1;
+				printWriter.print(",");
+
+				for (Collection<String> combination : allCombinations)
+				{
+					printWriter.print(this.identifier);
+					printWriter.print("_");
+					printWriter.print(counter);
+					printWriter.print(":any");
+					counter++;
+
+					if (counter < nbCombi)
+					{
+						printWriter.print(",");
+					}
+				}
+			}
+
+			printWriter.println("] is ");
+			printWriter.print(" var ");
+			int variablesCounter = allCombinations.size();
+
+			while (variablesCounter > 0) //TODO: we generate unnecessary variables
+			{
+				printWriter.print("ident");
+				printWriter.print(variablesCounter);
+				printWriter.print(":ID");
+				variablesCounter--;
+
+				if (variablesCounter > 0)
+				{
+					printWriter.print(",");
+				}
+			}
+
+			printWriter.print(" in  var ident: ID in loop select ");
+			nb = 1;
+			int counter = 1;
+
+			for (Collection<String> combination : allCombinations)
+			{
+				int nbElem = combination.size();
+				int nb2 = 1;
+
+				// add synchronization points if there's a corresponding split
+				if (!this.correspondingOrSplit.isEmpty())
+				{
+					printWriter.print(this.identifier);
+					printWriter.print("_");
+					printWriter.print(counter);
+					printWriter.print(";");
+					counter++;
+				}
+
+				if (nbElem > 1)
+				{
+					variablesCounter = allCombinations.size();
+					printWriter.print(" par ");
+
+					for (String element : combination)
+					{
+						printWriter.print(element);
+						printWriter.print(" (?ident");
+						printWriter.print(variablesCounter);
+						printWriter.print(" of ID)");
+						variablesCounter--;
+						nb2++;
+
+						if (nb2 <= nbElem)
+						{
+							printWriter.print("||");
+						}
+					}
+
+					printWriter.print(" end par ");
+				}
+				else
+				{
+					printWriter.print(combination.iterator().next());
+					printWriter.print(" (?ident of ID)");
+				}
+
+				nb++;
+
+				if (nb < nbCombi)
+				{
+					printWriter.print(" [] ");
+				}
+			}
+
+			printWriter.println(" end select ; outf (?ident of ID) end loop end var end var ");
+			printWriter.println("end process");
+		}
+
+		//Generates process instantiation for main LNT process
+		void writeMainLnt(final PrintWriter printWriter)
+		{
+			if (!this.correspondingOrSplit.isEmpty())
+			{
+				final int nbInc = this.incomingFlows.size();
+				final ArrayList<String> alphaInc = new ArrayList<>();
+				int nb = 1;
+
+				while (nb < nbInc)
+				{
+					alphaInc.add("incf_" + nb);
+					nb++;
+				}
+
+				final Collection<Collection<String>> allCombinations = computeAllCombinations(alphaInc);
+				final int nbCombi = allCombinations.size();
+
+				//We dump synchronization points
+				if (nbCombi > 0)
+				{
+					int counter = 1;
+
+					for (Collection<String> combination : allCombinations)
+					{
+						printWriter.print(this.identifier);
+						printWriter.print("_");
+						printWriter.print(counter);
+						counter++;
+
+						if (counter <= nbCombi)
+						{
+							printWriter.print(",");
+						}
+					}
+
+					printWriter.print(" -> ");
+				}
+
+				//Process call + alphabet
+				printWriter.print("orjoin_");
+				printWriter.print(this.identifier);
+				printWriter.print("[");
+				int i = 0;
+
+				while (i < nbInc)
+				{
+					printWriter.print(this.incomingFlows.get(i).identifier());
+					printWriter.print("_finish,");
+					i++;
+				}
+
+				printWriter.print(this.outgoingFlows.get(0).identifier());
+				printWriter.print("_begin");
+
+				if (nbCombi > 0)
+				{
+					int counter = 1;
+					printWriter.print(",");
+
+					for (Collection<String> combination : allCombinations)
+					{
+						printWriter.print(this.identifier);
+						printWriter.print("_");
+						printWriter.print(counter);
+						counter++;
+
+						if (counter <= nbCombi)
+						{
+							printWriter.print(",");
+						}
+					}
+				}
+
+				printWriter.print("]");
+			}
+			else
+			{
+				printWriter.print("orjoin_");
+				printWriter.print(this.identifier);
+				super.writeMainLnt(printWriter);
+			}
+		}
+
+		/**
+		 * For an or join, if not visited yet, recursive call on the target node of the outgoing flow.
+		 * We store the result and we decrease the depth.
+		 *
+		 * @param visited
+		 * @param depth
+		 * @return the list of reachable or joins
+		 */
+		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
+														 final int depth)
+		{
+			if (pairListContainsIdentifier(visited, this.identifier))
+			{
+				return new ArrayList<>();
+			}
+
+			final ArrayList<Pair<String, Integer>> temp = new ArrayList<>(visited);
+			temp.add(Pair.of(this.identifier, depth));
+
+			final ArrayList<Pair<String, Integer>> result = new ArrayList<>();
+			result.add(Pair.of(this.identifier, depth));
+			result.addAll(this.outgoingFlows.get(0).getTarget().reachableOrJoin(temp, depth - 1));
+
+			return result;
+		}
+
+		void dumpMaude(final PrintWriter printWriter)
+		{
+			super.dumpMaude(printWriter, "inclusive");
+		}
+	}
+
+	/**
+	 * Class for XOrJoinGateway
+	 */
+	class XOrJoinGateway extends JoinGateway
+	{
+		XOrJoinGateway(String identifier,
+					   ArrayList<Flow> incomingFlows,
+					   ArrayList<Flow> outgoingFlows)
+		{
+			super(identifier, incomingFlows, outgoingFlows);
+		}
+
+		/**
+		 * Generates the process for exclusive join gateway.
+		 * Takes as input the number of incoming flows.
+		 *
+		 * @param printWriter
+		 */
+		@Override
+		void writeLnt(PrintWriter printWriter)
+		{
+			final int nbInc = this.incomingFlows.size();
+			printWriter.print("process xorjoin_");
+			printWriter.println(this.identifier);
+			printWriter.println(" [");
+			int nb = 1;
+
+			while (nb <= nbInc)
+			{
+				printWriter.print("incf_");
+				printWriter.print(nb);
+				printWriter.print(":any,");
+				nb++;
+			}
+
+			printWriter.println("outf:any] is ");
+			printWriter.print(" var ident: ID in loop select ");
+			nb = 1;
+
+			while (nb < nbInc)
+			{
+				printWriter.print("incf_");
+				printWriter.print(nb);
+				printWriter.print(" (?ident of ID)");
+				nb++;
+
+				if (nb <= nbInc)
+				{
+					printWriter.print("[]");
+				}
+			}
+
+			printWriter.println(" end select ; outf (?ident of ID) end loop end var ");
+			printWriter.println("end process");
+		}
+
+		void writeMainLnt(final PrintWriter printWriter)
+		{
+			printWriter.print("xorjoin_");
+			printWriter.print(this.identifier);
+			super.writeMainLnt(printWriter);
+		}
+
+		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
+										 				 final int depth)
+		{
+			return super.reachableOrJoin(visited, depth);
+		}
+
+		void dumpMaude(final PrintWriter printWriter)
+		{
+			super.dumpMaude(printWriter, "exclusive");
+		}
+	}
+
+	/**
+	 * Class for AndJoinGateway
+	 */
+	class AndJoinGateway extends JoinGateway
+	{
+		AndJoinGateway(String identifier,
+					   ArrayList<Flow> incomingFlows,
+					   ArrayList<Flow> outgoingFlows)
+		{
+			super(identifier, incomingFlows, outgoingFlows);
+		}
+
+		/**
+		 * Generates the process for parallel join gateway.
+		 * Takes as input the number of incoming flows.
+		 *
+		 * @param printWriter
+		 */
+		@Override
+		void writeLnt(PrintWriter printWriter)
+		{
+			final int nbInc = this.incomingFlows.size();
+			printWriter.print("process andjoin_");
+			printWriter.print(this.identifier);
+			printWriter.print(" [");
+			int nb = 1;
+
+			while (nb < nbInc)
+			{
+				printWriter.print("incf_");
+				printWriter.print(nb);
+				printWriter.print(":any,");
+				nb++;
+			}
+
+			printWriter.println("outf:any] is ");
+			int variablesCounter = nbInc;
+			printWriter.print(" var ");
+
+			while (variablesCounter > 0)
+			{
+				printWriter.print("ident");
+				printWriter.print(variablesCounter);
+				printWriter.print(":ID");
+				variablesCounter--;
+
+				if (variablesCounter > 0)
+				{
+					printWriter.print(",");
+				}
+			}
+
+			printWriter.print(" in  var ident:ID in loop par ");
+			nb = 1;
+			variablesCounter = nbInc;
+
+			while (nb < nbInc)
+			{
+				printWriter.print("incf_");
+				printWriter.print(nb);
+				printWriter.print(" (?ident");
+				printWriter.print(variablesCounter);
+				printWriter.print(" of ID)");
+				variablesCounter--;
+				nb++;
+
+				if (nb <= nbInc)
+				{
+					printWriter.print("||");
+				}
+			}
+
+			printWriter.println(" end par ; outf (?ident of ID) end loop end var end var ");
+			printWriter.println("end process");
+		}
+
+		void writeMainLnt(final PrintWriter printWriter)
+		{
+			printWriter.print("andjoin_");
+			printWriter.print(this.identifier);
+			super.writeMainLnt(printWriter);
+		}
+
+		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
+														 final int depth)
+		{
+			return super.reachableOrJoin(visited, depth);
+		}
+
+		void dumpMaude(final PrintWriter printWriter)
+		{
+			super.dumpMaude(printWriter, "parallel");
+		}
+	}
+
+	/**
+	 * Class for Processes described in PIF.
+	 * Attributes: a name, a list of nodes, a list of flows, an initial node, a list of final nodes.
+	 */
+	class Process
+	{
+		private final ArrayList<Node> nodes;
+		private final ArrayList<Node> finals;
+		private final ArrayList<Flow> flows;
+		private String name;
+		private Node initial;
+
+		Process()
+		{
+			this.name = "";
+			this.nodes = new ArrayList<>();
+			this.flows = new ArrayList<>();
+			this.initial = null;
+			this.finals = new ArrayList<>();
+		}
+
+		String name()
+		{
+			return this.name;
+		}
+
+		Node initialNode()
+		{
+			return this.initial;
+		}
+
+		Node getNode(final String identifier)
+		{
+			if (identifier.equals(this.initial.identifier()))
+			{
+				return this.initial;
+			}
+
+			for (Node n : this.finals)
+			{
+				if (n.identifier().equals(identifier))
+				{
+					return n;
+				}
+			}
+
+			for (Node n : this.nodes)
+			{
+				if (n.identifier().equals(identifier))
+				{
+					return n;
+				}
+			}
+
+			throw new IllegalStateException("No node found with identifier \"" + identifier + "\".");
+		}
+
+		void addFlow(final Flow flow)
+		{
+			if (flow.getSource().identifier().equals(this.initial.identifier()))
+			{
+				this.initial.addOutgoingFlow(flow);
+			}
+
+			for (Node n : this.finals)
+			{
+				if (flow.getTarget().identifier().equals(n.identifier()))
+				{
+					n.addIncomingFlow(flow);
+				}
+			}
+
+			for (Node n : this.nodes)
+			{
+				if (flow.getSource().identifier().equals(n.identifier()))
+				{
+					n.addOutgoingFlow(flow);
+				}
+				if (flow.getTarget().identifier().equals(n.identifier()))
+				{
+					n.addIncomingFlow(flow);
+				}
+			}
+		}
+
+		/**
+		 * Computes the process alphabet
+		 *
+		 * @return
+		 */
+		ArrayList<String> alpha()
+		{
+			final ArrayList<String> alphabet = new ArrayList<>();
+
+			for (Node n : this.nodes)
+			{
+				alphabet.addAll(n.alpha());
+			}
+
+			return alphabet;
+		}
+
+		/**
+		 * This method applies a pre-processing to the whole process
+		 * and computes correspondences between or splits/merges.
+		 */
+		void reachableOrJoin()
+		{
+			//We traverse all process nodes and call this computation for all inclusive splits
+			for (Node n : this.nodes)
+			{
+				if (n instanceof OrSplitGateway)
+				{
+					final ArrayList<Pair<String, Integer>> resTmp = n.reachableOrJoin(new ArrayList<>(), -1);
+					final String res = analyzeReachabilityResults(resTmp, n.getOutgoingFlows().size());
+
+					if (!res.isEmpty())
+					{
+						((OrSplitGateway) n).setCorrespOrJoin(res); //we update the split attribute
+						final Node joinNode = this.getNode(res); //we retrieve the object corresponding to the join id
+						((OrJoinGateway) joinNode).setCorrespondingOrSplit(n.identifier()); //we update the join attribute
+					}
+				}
+			}
+		}
+
+		/**
+		 * Computes the list with the additional synchronization points for corresponding or splits/joins.
+		 *
+		 * @return
+		 */
+		ArrayList<String> computeAddSynchroPoints()
+		{
+			final ArrayList<String> res = new ArrayList<>();
+
+			for (Node n : this.nodes)
+			{
+				if (n instanceof OrSplitGateway)
+				{
+					if (!((OrSplitGateway) n).getCorrespOrJoin().isEmpty())
+					{
+						final ArrayList<String> alphaOut = new ArrayList<>();
+						int nb = 1;
+
+						while (nb <= n.getOutgoingFlows().size())
+						{
+							alphaOut.add("outf_" + nb);
+							nb++;
+						}
+
+						final Collection<Collection<String>> allCombinations = computeAllCombinations(alphaOut);
+						final int nbCombi = allCombinations.size();
+						int counter = 1;
+
+						for (Collection<String> combination : allCombinations)
+						{
+							res.add(((OrSplitGateway) n).getCorrespOrJoin() + "_" + counter);
+							counter++;
+						}
+					}
+				}
+			}
+
+			return res;
+		}
+
+		//Generates an LNT module and process for a BPMN 2.0 process
+		void genLNT()
+		{
+			this.genLNT("");
+		}
+
+		//Generates an LNT module and process for a BPMN 2.0 process
+		void genLNT(final String name)
+		{
+			final String fileName;
+
+			if (name.isEmpty())
+			{
+				fileName = this.name + LNT_SUFFIX;
+			}
+			else
+			{
+				fileName = name + LNT_SUFFIX;
+			}
+
+			final File file = new File(fileName);
+			final PrintWriter printWriter;
+
+			try
+			{
+				printWriter = new PrintWriter(file);
+			}
+			catch (FileNotFoundException e)
+			{
+				throw new RuntimeException(e);
+			}
+
+			printWriter.print("module ");
+			printWriter.print(this.name);
+			printWriter.println(" with get, <, == is");
+			printWriter.println();
+
+			//Generates an ID type for all flow identifiers
+			printWriter.println("(* Data type for flow identifiers, useful for scheduling purposes *)");
+			printWriter.println("type ID is");
+			int counter = this.flows.size();
+
+			for (Flow f : this.flows)
+			{
+				printWriter.print(f.identifier());
+				counter--;
+
+				if (counter > 0)
+				{
+					printWriter.print(",");
+				}
+			}
+
+			printWriter.println();
+			printWriter.println("with ==, !=");
+			printWriter.println("end type");
+			printWriter.println();
+
+			if (this.initial != null)
+			{
+				this.initial.writeLnt(printWriter);
+			}
+
+			//Generates one process for final events and events, this is enough because generic processes
+			if (!this.finals.isEmpty())
+			{
+				this.finals.get(0).writeLnt(printWriter);
+			}
+
+			if (!this.flows.isEmpty())
+			{
+				this.flows.get(0).writeLnt(printWriter); //TODO: ConditionalFlow?
+			}
+
+			//Generates LNT processes for all other nodes
+			final ArrayList<String> specialNodes = new ArrayList<>(); //We keep track of nodes that need to be translated only once
+
+			for (Node n : this.nodes)
+			{
+				if (n instanceof Interaction
+					|| n instanceof MessageSending
+					|| n instanceof MessageReception
+					|| n instanceof Task)
+				{
+					if (!specialNodes.contains(n.getClass().getName()))
+					{
+						if (n instanceof Task)
+						{
+							//a task is identified with its number of incoming and outgoing flows
+							final StringBuilder classNameBuilder = new StringBuilder(n.getClass().getName());
+							classNameBuilder.append("_")
+									.append(n.getIncomingFlows().size())
+									.append("_")
+									.append(n.getOutgoingFlows().size());
+
+							if (!specialNodes.contains(classNameBuilder.toString()))
+							{
+								specialNodes.add(classNameBuilder.toString());
+								n.writeLnt(printWriter);
+							}
+						}
+						else
+						{
+							specialNodes.add(n.getClass().getName());
+							n.writeLnt(printWriter);
+						}
+					}
+				}
+				else
+				{
+					n.writeLnt(printWriter);
+				}
+			}
+
+			/*
+				Note: up to here, translation patterns are independent of the actual tasks, comm, etc.
+				The actual names will be used only in the MAIN process when computing the process alphabet
+				and instantiating processes.
+			 */
+
+			printWriter.println();
+			printWriter.print("process MAIN ");
+			final ArrayList<String> alpha = this.alpha();
+			dumpAlphabet(alpha, printWriter, true);
+			printWriter.println(" is");
+			//Computes additional synchros for or splits/joins
+			final ArrayList<String> synchroPoints = this.computeAddSynchroPoints();
+			final int nbSync = synchroPoints.size();
+			printWriter.print(" hide begin:any, finish:any");
+			final int nbFlows = this.flows.size();
+
+			if (nbFlows > 0)
+			{
+				printWriter.print(", ");
+				int cter = 1;
+
+				for (Flow f : this.flows)
+				{
+					printWriter.print(f.identifier());
+					printWriter.print("_begin:any, ");
+					printWriter.print(f.identifier());
+					printWriter.print("_finish:any");
+					cter++;
+
+					if (cter <= nbFlows)
+					{
+						printWriter.print(", ");
+						//we hide additional synchros for or splits/joins as well
+					}
+				}
+
+				int nb = 0;
+
+				if (nbSync > 0)
+				{
+					printWriter.print(", ");
+
+					for (String s : synchroPoints)
+					{
+						printWriter.print(s);
+						printWriter.print(":any");
+						nb++;
+
+						if (nb < nbSync)
+						{
+							printWriter.print(", ");
+						}
+					}
+				}
+			}
+
+			printWriter.println(" in");
+			printWriter.print("par ");
+			//Synchronizations on all begin/finish flows
+
+			if (nbFlows > 0)
+			{
+				int cter = 1;
+
+				for (Flow f : this.flows)
+				{
+					printWriter.print(f.identifier());
+					printWriter.print("_begin, ");
+					printWriter.print(f.identifier());
+					printWriter.print("_finish");
+					cter++;
+
+					if (cter <= nbFlows)
+					{
+						printWriter.print(", ");
+					}
+				}
+			}
+
+			printWriter.println(" in");
+
+			//Interleaving of all flow processes
+			printWriter.println(" par ");
+			int cter = 1;
+
+			for (Flow f : this.flows)
+			{
+				//TODO: take conditional flows into account
+				printWriter.print("flow [");
+				printWriter.print(f.identifier());
+				printWriter.print("_begin, ");
+				printWriter.print(f.identifier());
+				printWriter.print("_finish] (");
+				printWriter.print(f.identifier());
+				printWriter.print(")");
+				cter++;
+
+				if (cter <= nbFlows)
+				{
+					printWriter.print(" || ");
+				}
+			}
+
+			printWriter.println();
+			printWriter.println(" end par ");
+			printWriter.println();
+			printWriter.println("||");
+
+			//Interleaving of all node processes
+			printWriter.print(" par ");
+
+			//Process instantiation for initial node
+			printWriter.print("init [begin,");
+			printWriter.print(this.initial.getOutgoingFlows().get(0).identifier());
+			printWriter.print("_begin] || "); //We assume a single output flow
+			final int nbFinals = this.finals.size();
+			cter = 1;
+
+			//Processes instantiations for final nodes
+			for (Node n : this.finals)
+			{
+				printWriter.print("final [");
+				printWriter.print(n.getIncomingFlows().get(0).identifier());
+				printWriter.print("_finish, finish]"); //We assume a single incoming flow
+				cter++;
+
+				if (cter <= nbFlows)
+				{
+					printWriter.print(" || ");
+				}
+			}
+
+			//Processes instantiations for all other nodes
+			final int nbNodes = this.nodes.size();
+			cter = 1;
+
+			for (Node n : this.nodes)
+			{
+				n.writeLnt(printWriter);
+				cter++;
+
+				if (cter <= nbNodes)
+				{
+					printWriter.print(" || ");
+				}
+			}
+
+			printWriter.println();
+			printWriter.println(" end par ");
+			printWriter.println();
+			printWriter.println(" end par");
+			printWriter.println(" end hide");
+			printWriter.println();
+			printWriter.println("end process");
+			printWriter.println();
+			printWriter.println("end module");
+
+			printWriter.flush();
+			printWriter.close();
+		}
+
+		/**
+		 * Generates an SVL file
+		 */
+		void genSVL()
+		{
+			this.genSVL(true);
+		}
+
+		/**
+		 * Generates an SVL file
+		 */
+		void genSVL(final boolean smartReduction)
+		{
+			final String fileName = this.name + ".svl";
+			final File svlFile = new File(fileName);
+
+			if (!svlFile.setExecutable(true))
+			{
+				throw new IllegalStateException("Unable to make the SVL script executable. Please check your rights" +
+						" on the current working directory.");
+			}
+
+			final PrintWriter printWriter;
+
+			try
+			{
+				printWriter = new PrintWriter(svlFile);
+			}
+			catch (FileNotFoundException e)
+			{
+				throw new RuntimeException(e);
+			}
+
+			printWriter.println("% CAESAR_OPEN_OPTIONS=\"-silent -warning\"");
+			printWriter.println("% CAESAR_OPTIONS=\"-more cat\"");
+			printWriter.println();
+			printWriter.print("% DEFAULT_PROCESS_FILE=");
+			printWriter.print(this.name);
+			printWriter.println(".lnt");
+			printWriter.println();
+			// generation of the raw bcg
+			printWriter.print("\"");
+			printWriter.print(this.name);
+			printWriter.print("_raw.bcg\" = generation of \"MAIN");
+			final ArrayList<String> alpha = this.alpha();
+			dumpAlphabet(alpha, printWriter, false);
+			printWriter.println("\";");
+			printWriter.println();
+			//reduction of the raw bcg
+			printWriter.print("\"");
+			printWriter.print(this.name);
+			printWriter.print(".bcg\" = branching reduction of \"");
+			printWriter.print(this.name);
+			printWriter.println("_raw.bcg\";");
+			printWriter.println();
+
+			printWriter.flush();
+			printWriter.close();
+		}
+
+		/**
+		 * This method takes as input a file.pif and generates a PIF Python object
+		 *
+		 * @param filename
+		 */
+		void buildProcessFromFile(final String filename)
+		{
+			this.buildProcessFromFile(filename, false);
+		}
+
+		/**
+		 * This method takes as input a file.pif and generates a PIF Python object
+		 *
+		 * @param filename
+		 * @param debug
+		 */
+		void buildProcessFromFile(final String filename,
+								  final boolean debug)
+		{
+			//Open XML document specified in the filename
+			final File file = new File(filename);
+			final fr.inria.convecs.optimus.pif.Process process;
+
+			try
+			{
+				final JAXBContext jaxbContext = JAXBContext.newInstance(fr.inria.convecs.optimus.pif.Process.class);
+				final Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+				process = (fr.inria.convecs.optimus.pif.Process) jaxbUnmarshaller.unmarshal(file);
+			}
+			catch (JAXBException e)
+			{
+				System.out.println("An error occured while parsing xml document \"" + filename + "\".");
+				System.out.println("Unrecognized element, the message was \"" + e.getMessage() + "\".");
+				throw new RuntimeException(e);
+			}
+
+			this.name = process.getName();
+
+			//We first create all nodes without incoming/outgoing flows
+			for (WorkflowNode n : process.getBehaviour().getNodes())
+			{
+				//Initial and final events
+				if (n instanceof fr.inria.convecs.optimus.pif.InitialEvent)
+				{
+					this.initial = new InitialEvent(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>()
+					);
+				}
+				if (n instanceof fr.inria.convecs.optimus.pif.EndEvent)
+				{
+					this.finals.add(new EndEvent(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>())
+					);
+				}
+
+				//Tasks / Emissions / Receptions / Interactions
+				if (n instanceof fr.inria.convecs.optimus.pif.Task)
+				{
+					this.nodes.add(new Task(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>())
+					);
+				}
+				if (n instanceof fr.inria.convecs.optimus.pif.MessageSending)
+				{
+					this.nodes.add(new MessageSending(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>(),
+							((fr.inria.convecs.optimus.pif.MessageSending) n).getMessage().getId()
+					));
+				}
+				if (n instanceof fr.inria.convecs.optimus.pif.MessageReception)
+				{
+					this.nodes.add(new MessageReception(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>(),
+							((fr.inria.convecs.optimus.pif.MessageReception) n).getMessage().getId()
+					));
+				}
+				if (n instanceof fr.inria.convecs.optimus.pif.Interaction)
+				{
+					final ArrayList<String> receivingPeers = new ArrayList<>();
+
+					for (JAXBElement<Object> JAXBObject : ((fr.inria.convecs.optimus.pif.Interaction) n).getReceivingPeers())
+					{
+						final Peer peer = (Peer) JAXBObject.getValue();
+						receivingPeers.add(peer.getId());
+					}
+
+					this.nodes.add(new Interaction(
+						n.getId(),
+						new ArrayList<>(),
+						new ArrayList<>(),
+						((fr.inria.convecs.optimus.pif.Interaction) n).getMessage().getId(),
+						((fr.inria.convecs.optimus.pif.Interaction) n).getInitiatingPeer().getId(),
+						receivingPeers
+					));
+				}
+
+				//Split gateways
+				if (n instanceof fr.inria.convecs.optimus.pif.AndSplitGateway)
+				{
+					this.nodes.add(new AndSplitGateway(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>()
+					));
+				}
+				if (n instanceof fr.inria.convecs.optimus.pif.OrSplitGateway)
+				{
+					this.nodes.add(new OrSplitGateway(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>()
+					));
+				}
+				if (n instanceof fr.inria.convecs.optimus.pif.XOrSplitGateway)
+				{
+					this.nodes.add(new XOrSplitGateway(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>()
+					));
+				}
+
+				//Join gateways
+				if (n instanceof fr.inria.convecs.optimus.pif.AndJoinGateway)
+				{
+					this.nodes.add(new AndJoinGateway(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>()
+					));
+				}
+				if (n instanceof fr.inria.convecs.optimus.pif.OrJoinGateway)
+				{
+					this.nodes.add(new OrJoinGateway(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>()
+					));
+				}
+				if (n instanceof fr.inria.convecs.optimus.pif.XOrJoinGateway)
+				{
+					this.nodes.add(new XOrJoinGateway(
+							n.getId(),
+							new ArrayList<>(),
+							new ArrayList<>()
+					));
+				}
+			}
+
+			//Creation of flow objects
+			for (SequenceFlow sequenceFlow : process.getBehaviour().getSequenceFlows())
+			{
+				final Flow flow = new Flow(
+						sequenceFlow.getId(),
+						this.getNode(sequenceFlow.getSource().getId()),
+						this.getNode(sequenceFlow.getTarget().getId())
+				);
+				this.flows.add(flow);
+				this.addFlow(flow);
+			}
+		}
+	}
+
+	/**
+	 * Computes the LTS model (BCG file) for a PIF model.
+	 *
+	 * @param pifFileName is the name of the PIF file
+	 * @return (Integer, String, Collection<String>), return code, name of the model
+	 * (can be different from the filename) and its alphabet
+	 */
+	@Override
+	public Triple<Integer, String, Collection<String>> generate(final String pifFileName)
+	{
+		return this.generate(pifFileName, true, false);
+	}
+
+	/**
+	 * Computes the LTS model (BCG file) for a PIF model.
+	 *
+	 * @param pifFileName is the name of the PIF file.
+	 * @param smartReduction is true if a smart reduction is done on the LTS when loading it, false otherwise.
+	 * @param debug is true if debug information are displayed, false otherwise.
+	 * @return (Integer, String, Collection<String>), return code, name of the model
+	 * (can be different from the filename) and its alphabet.
+	 */
+	@Override
+	public Triple<Integer, String, Collection<String>> generate(final String pifFileName,
+																final boolean smartReduction,
+																final boolean debug)
+	{
+		final Process process = new Process();
+		//Load PIF model
+		process.buildProcessFromFile(pifFileName);
+		final String pifModelName = process.name();
+		//Pre-processing: compute correspondences between or splits/joins
+		process.reachableOrJoin();
+		//Generate the LNT code for the model
+		process.genLNT();
+		//Compute the LTS from the LNT code using SVL, possibly with a smart reduction
+		process.genSVL(smartReduction);
+
+		try
+		{
+			final java.lang.Process svlCommand = Runtime.getRuntime().exec(
+					"svl " + pifModelName
+			);
+			final int exitValue2 = svlCommand.waitFor();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		return Triple.of(ReturnCodes.TERMINATION_OK, pifModelName, process.alpha()); //TODO use return value from SVL call
+	}
+
+	/**
+	 * Gets the name and the alphabet of the LTS for the PIF model.
+	 *
+	 * @param pifFileName is the name of the PIF file
+	 * @return (Integer, String, Collection<String>), return code, name of the model
+	 * (can be different from the filename) and its alphabet
+	 */
+	@Override
+	public Triple<Integer, String, Collection<String>> load(final String pifFileName)
+	{
+		return this.load(pifFileName, true, false);
+	}
+
+	/**
+	 * Gets the name and the alphabet of the LTS for the PIF model.
+	 *
+	 * @param pifFileName is the name of the PIF file.
+	 * @param smartReduction is true if a smart reduction is done on the LTS when loading it, false otherwise.
+	 * @param debug is true if debug information are displayed, false otherwise.
+	 * @return (Integer, String, Collection<String>), return code, name of the model
+	 * (can be different from the filename) and its alphabet.
+	 */
+	@Override
+	public Triple<Integer, String, Collection<String>> load(final String pifFileName,
+															final boolean smartReduction,
+															final boolean debug)
+	{
+		final Process process = new Process();
+		process.buildProcessFromFile(pifFileName);
+		final String pifModelName = process.name();
+		final String ltsFileName = process.name() + LTS_SUFFIX;
+
+		if (this.needsRebuild(pifFileName, ltsFileName))
+		{
+			return this.generate(pifFileName, smartReduction, debug);
+		}
+		else
+		{
+			return Triple.of(ReturnCodes.TERMINATION_OK, pifModelName, process.alpha());
+		}
+	}
+
+	/**
+	 * Decides if the LTS for the pifFileName has to be recomputed.
+	 *
+	 * @param pifFileName is the name of the PIF file
+	 * @param ltsFileName is the name of the LTS file
+	 * @return true if the LTS must be rebuilt from the PIF file, false otherwise
+	 */
+	boolean needsRebuild(final String pifFileName,
+						 final String ltsFileName)
+	{
+		final File pifFile = new File(pifFileName);
+		final File ltsFile = new File(ltsFileName);
+
+		//If the LTS file does not exist -> rebuilt
+		if (!ltsFile.exists())
+		{
+			return true;
+		}
+
+		//If the timestamp of the LTS file is older than the timestamp of the PIF file -> rebuild
+		return ltsFile.lastModified() < pifFile.lastModified();
 	}
 }

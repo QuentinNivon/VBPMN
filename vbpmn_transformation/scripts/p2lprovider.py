@@ -46,7 +46,7 @@ class P2LProvider:
             if self.process_is_balanced:
                 self.current_version_import = self.get_current_version_directory() + ".pif2lntv1"
             else:
-                self.current_version_import = self.get_current_version_directory() + ".pif2lntv7"
+                self.current_version_import = self.get_current_version_directory() + ".pif2lntv1"
 
         return self.current_version_import
 
