@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="travail" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="py_to_java" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="2Elhnlk7iZWamLpATNeaqpePMmt" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Maven.transformation [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [compile].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [deploy].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-compiler-plugin:3.11.0:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-deploy-plugin:3.1.1:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-install-plugin:3.1.1:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-resources-plugin:3.3.1:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-resources-plugin:3.3.1:resources].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-site-plugin:3.12.1:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-surefire-plugin:3.1.2:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:exploded].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:war].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [package].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [site].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [test].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [validate].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [verify].executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/quentin/Documents/vbpmn/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024b" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024a" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2023l" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="transformation [site]" type="MavenRunConfiguration" factoryName="Maven" temporary="true">
+      <MavenSettings>
+        <option name="myGeneralSettings" />
+        <option name="myRunnerSettings" />
+        <option name="myRunnerParameters">
+          <MavenRunnerParameters>
+            <option name="cmdOptions" />
+            <option name="profiles">
+              <set />
+            </option>
+            <option name="goals">
+              <list>
+                <option value="site" />
+              </list>
+            </option>
+            <option name="multimoduleDir" />
+            <option name="pomFileName" value="pom.xml" />
+            <option name="profilesMap">
+              <map />
+            </option>
+            <option name="projectsCmdOptionValues">
+              <list />
+            </option>
+            <option name="resolveToWorkspace" value="false" />
+            <option name="workingDirPath" value="$PROJECT_DIR$/vbpmn_transformation" />
+          </MavenRunnerParameters>
+        </option>
+      </MavenSettings>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Maven.transformation [site]" />
+        <item itemvalue="Maven.transformation [site]" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="jdk-11.0.16-jbr_dcevm-11.0.16-4caba194b151-a86c5f01" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="" />
+      <created>1663176248299</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1663176248299</updated>
+    </task>
+    <task id="LOCAL-00001" summary="traduction fichier vbpmn.py en Vbpmn.java">
+      <option name="closed" value="true" />
+      <created>1712071741466</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1712071741467</updated>
+    </task>
+    <task id="LOCAL-00002" summary="merge">
+      <option name="closed" value="true" />
+      <created>1712126068644</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1712126068644</updated>
+    </task>
+    <task id="LOCAL-00003" summary="travail">
+      <option name="closed" value="true" />
+      <created>1712167909102</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1712167909102</updated>
+    </task>
+    <task id="LOCAL-00004" summary="fin traduction pif2lntv1">
+      <option name="closed" value="true" />
+      <created>1712236418850</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1712236418850</updated>
+    </task>
+    <task id="LOCAL-00005" summary="fin traduction pif2lntv1.py et pif2lntv7.py + merge des deux dans la classe Pif2Lnt.java">
+      <option name="closed" value="true" />
+      <created>1712309658997</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1712309658997</updated>
+    </task>
+    <task id="LOCAL-00006" summary="travail">
+      <option name="closed" value="true" />
+      <created>1712325462763</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1712325462763</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="traduction fichier vbpmn.py en Vbpmn.java" />
+    <MESSAGE value="merge" />
+    <MESSAGE value="fin traduction pif2lntv1" />
+    <MESSAGE value="fin traduction pif2lntv1.py et pif2lntv7.py + merge des deux dans la classe Pif2Lnt.java" />
+    <MESSAGE value="travail" />
+    <option name="LAST_COMMIT_MESSAGE" value="travail" />
+  </component>
+</project>
