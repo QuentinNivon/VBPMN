@@ -36,7 +36,8 @@ public class PyToJavaUtils
 	 * @param elements the list of elements to concatenate
 	 * @return a string corresponding to the concatenation of @elements
 	 */
-	public static String join(final List<?> elements)
+	public static String join(final List<?> elements,
+							  final String separatorToUse)
 	{
 		final StringBuilder builder = new StringBuilder();
 		String separator = "";
@@ -46,7 +47,7 @@ public class PyToJavaUtils
 			builder.append(separator)
 					.append(element.toString());
 
-			separator = ",";
+			separator = separatorToUse;
 		}
 
 		return builder.toString();

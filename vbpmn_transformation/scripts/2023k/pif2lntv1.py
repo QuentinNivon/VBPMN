@@ -329,7 +329,7 @@ class Task(Node):
                 if (cptinc<nbinc):
                     f.write(" [] ")
             f.write(" end select ; \n")
-        f.write("task ; ")################################
+        f.write("task ; ")
         if (nbout==1):
             f.write(" outf (?ident of ID)")
         else:
@@ -473,8 +473,7 @@ class OrSplitGateway(SplitGateway):
     def lnt(self, f):
         nboutf = len(self.outgoingFlows)
         default = self.existDefaultFlow()
-        # TODO: update the translation to consider properly the default semantics (if there is such a branch)
-
+       
         # We translate the inclusive split by enumerating all combinations in a select / par
         alphaout = []
         nb = 1
@@ -486,7 +485,6 @@ class OrSplitGateway(SplitGateway):
         nbt = len(allcombi)
 
         f.write("process orsplit_" + self.ident + " [incf:any,")
-        # We dumps the process alphabet (flows + synchronization points if necessary)
         nbg = 1
         while (nbg <= nboutf):
             f.write("outf_" + str(nbg) + ":any")

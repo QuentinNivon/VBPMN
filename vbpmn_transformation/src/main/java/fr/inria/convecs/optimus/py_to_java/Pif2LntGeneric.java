@@ -12,6 +12,15 @@ public abstract class Pif2LntGeneric
 	{
 		this.isBalanced = isBalanced;
 	}
+	public Pif2LntGeneric()
+	{
+
+	}
+
+	public void setBalance(final boolean balance)
+	{
+		this.isBalanced = balance;
+	}
 
 	public abstract Triple<Integer, String, Collection<String>> load(final String pifFileName);
 	public abstract Triple<Integer, String, Collection<String>> load(final String pifFileName,

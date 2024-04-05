@@ -247,9 +247,10 @@ public class Vbpmn
 		{
 			//Load the Pif2Lnt class located in the package corresponding to the good version
 			final Class<? extends Pif2LntGeneric> pif2LntClass = (Class<? extends Pif2LntGeneric>)
-					Class.forName("fr.inria.convecs.optimus.py_to_java." + cadpVersionDir + ".Pif2LntV1");
+					Class.forName("fr.inria.convecs.optimus.py_to_java." + cadpVersionDir + ".Pif2Lnt");
 			final Constructor<? extends Pif2LntGeneric> pif2LntConstructor = pif2LntClass.getDeclaredConstructor();
 			pif2lnt = pif2LntConstructor.newInstance();
+			pif2lnt.setBalance(processIsBalanced);
 		}
 		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
 			   IllegalAccessException e)
@@ -490,13 +491,13 @@ public class Vbpmn
 						SVL_HIDING_TEMPLATE,
 						workModel1,
 						hideMode,
-						PyToJavaUtils.join(this.hiding))
+						PyToJavaUtils.join(this.hiding, ","))
 				);
 				svlCommands.append(PyToJavaUtils.parametrize(
 						SVL_HIDING_TEMPLATE,
 						workModel2,
 						hideMode,
-						PyToJavaUtils.join(this.hiding))
+						PyToJavaUtils.join(this.hiding, ","))
 				);
 			}
 
@@ -521,26 +522,26 @@ public class Vbpmn
 						svlCommands.append(PyToJavaUtils.parametrize(
 								SVL_RENAMING_TEMPLATE,
 								workModel1,
-								PyToJavaUtils.join(renamings))
+								PyToJavaUtils.join(renamings, ","))
 						);
 						svlCommands.append(PyToJavaUtils.parametrize(
 								SVL_RENAMING_TEMPLATE,
 								workModel2,
-								PyToJavaUtils.join(renamings))
+								PyToJavaUtils.join(renamings, ","))
 						);
 						break;
 					case SELECTION_FIRST:
 						svlCommands.append(PyToJavaUtils.parametrize(
 								SVL_RENAMING_TEMPLATE,
 								workModel1,
-								PyToJavaUtils.join(renamings))
+								PyToJavaUtils.join(renamings, ","))
 						);
 						break;
 					case SELECTION_SECOND:
 						svlCommands.append(PyToJavaUtils.parametrize(
 								SVL_RENAMING_TEMPLATE,
 								workModel2,
-								PyToJavaUtils.join(renamings))
+								PyToJavaUtils.join(renamings, ","))
 						);
 						break;
 					default:
