@@ -352,6 +352,16 @@ if __name__ == '__main__':
                                        args.hiding, args.exposemode,
                                        args.renaming, args.renamed,
                                        syncsets=[syncset1, syncset2])
+        with open("/home/quentin/verificzrgkjrzgn.txt", "a") as f:
+            f.write("- LTS model 1: " + str(ltsModel1) + "\n")
+            f.write("- LTS model 2: " + str(ltsModel2) + "\n")
+            f.write("- Operation: " + str(args.operation) + "\n")  
+            f.write("- Hiding: " + str(args.hiding) + "\n")
+            f.write("- Expose mode: " + str(args.exposemode) + "\n")
+            f.write("- Renaming: " + str(args.renaming) + "\n")
+            f.write("- Renamed: " + str(args.renamed) + "\n")
+            f.write("- Syncset 1: " + str(syncset1) + "\n")
+            f.write("- Syncset 2: " + str(syncset2) + "\n")
     else:
         comparator = FormulaChecker(ltsModel1, ltsModel2, args.formula)
 
