@@ -1,6 +1,7 @@
 package fr.inria.convecs.optimus.py_to_java;
 
 import fr.inria.convecs.optimus.util.PifUtil;
+import fr.inria.convecs.optimus.validator.ModelValidator;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -9,6 +10,8 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jgrapht.alg.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -21,6 +24,8 @@ public class Vbpmn
 	 * Porting of the ``vbpmn.py'' code to Java code
 	 * @author Quentin NIVON (quentin.nivon@inria.fr)
 	 */
+
+	private Logger logger = LoggerFactory.getLogger(Vbpmn.class);
 
 	/*
 	 	Command to call SVL.
@@ -35,7 +40,7 @@ public class Vbpmn
 	private static final String SVL_CAESAR_TEMPLATE =
 		"% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n" +
 		"% CAESAR_OPTIONS=\"-more cat\"\n" +
-		"{0}"
+		"{0}\n"
 	;
 
 	/*
@@ -46,7 +51,7 @@ public class Vbpmn
 		Fourth one is the second model (LTS in BCG format).
 	 */
 	private static final String SVL_COMPARISON_CHECKING_TEMPLATE =
-		"% bcg_open \"{0}.bcg\" bisimulator -{1} -{2} -diag \"{3}.bcg\""
+		"% bcg_open \"{0}.bcg\" bisimulator -{1} -{2} -diag \"{3}.bcg\"\n"
 	;
 
 	/*
@@ -54,7 +59,7 @@ public class Vbpmn
 		First argument is the model file (LTS in BCG format).
 		Second one is the formula (MCG) file.
 	 */
-	private static final String SVL_FORMULA_CHECKING_TEMPLATE = "% bcg_open \"{0}.bcg\" evaluator4 -diag \"{1}\"";
+	private static final String SVL_FORMULA_CHECKING_TEMPLATE = "% bcg_open \"{0}.bcg\" evaluator4 -diag \"{1}\"\n";
 
 	/*
 		Template for hiding in SVL.
@@ -62,21 +67,21 @@ public class Vbpmn
 		Second argument is the hiding mode (hiding or hiding all but).
 		Third argument is the list of elements to hide (or hide but).
 	 */
-	private static final String SVL_HIDING_TEMPLATE = "\"{0}.bcg\" = total {1} {2} in \"{0}.bcg\"";
+	private static final String SVL_HIDING_TEMPLATE = "\"{0}.bcg\" = total {1} {2} in \"{0}.bcg\"\n";
 
 	/*
 		Template for renaming in SVL.
 		First and third arguments are the model file (LTS in BCG format).
 		Second argument is the relabelling function.
 	 */
-	private static final String SVL_RENAMING_TEMPLATE = "\"{0}.bcg\" = total rename {1} in \"{0}.bcg\"";
+	private static final String SVL_RENAMING_TEMPLATE = "\"{0}.bcg\" = total rename {1} in \"{0}.bcg\"\n";
 
 	/*
 		Template for making a working copy in SVL.
 		First argument is the source model file (LTS in BCG format).
 		Second argument is the target model file (LTS in BCG format).
 	 */
-	private static final String SVL_COPY_TEMPLATE = "% bcg_io \"{0}.bcg\" \"{1}.bcg\"";
+	private static final String SVL_COPY_TEMPLATE = "% bcg_io \"{0}.bcg\" \"{1}.bcg\"\n";
 
 	private static final String WORK_SUFFIX = "_work";
 	private static final String CONSERVATIVE_COMPARISON = "conservative";
@@ -211,6 +216,7 @@ public class Vbpmn
 		final File pif1 = new File((String) args.getList("models").get(0));
 		final File pif2 = new File((String) args.getList("models").get(1));
 		final boolean processIsBalanced = PifUtil.isPifBalanced(pif1) && PifUtil.isPifBalanced(pif2);
+
 		final String cadpVersionDir;
 
 		try
@@ -329,9 +335,9 @@ public class Vbpmn
 					result1.getMiddle(),
 					result2.getMiddle(),
 					args.getString("operation"),
-					args.get("--hiding") == null ? new ArrayList<>() : args.getList("--hiding"),
+					args.getList("--hiding"),
 					args.get("--exposemode") != null && args.getBoolean("--exposemode"),
-					args.get("--hiding") == null ? new HashMap<>() : args.get("--renaming"),
+					args.get("--renaming") == null ? new HashMap<>() : args.get("--renaming"),
 					args.getString("--renamed") == null ? "all" : args.getString("--renamed"),
 					new ArrayList[]{syncSet1, syncSet2}
 			);
@@ -611,7 +617,7 @@ public class Vbpmn
 					SVL_CALL_COMMAND,
 					Checker.CHECKER_FILE,
 					Checker.DIAGNOSTIC_FILE
-				));
+				), null, new File(outputFolder));
 				final int exitValue = svlCommand.waitFor();
 
 				if (exitValue != ReturnCodes.TERMINATION_OK)
@@ -620,7 +626,7 @@ public class Vbpmn
 				}
 
 				final Process grepCommand = Runtime.getRuntime().exec(
-						"grep TRUE " + Checker.DIAGNOSTIC_FILE
+						"grep TRUE " + Checker.DIAGNOSTIC_FILE, null, new File(outputFolder)
 				);
 				final int exitValue2 = grepCommand.waitFor();
 
@@ -727,7 +733,7 @@ public class Vbpmn
 					SVL_CALL_COMMAND,
 					Checker.CHECKER_FILE,
 					Checker.DIAGNOSTIC_FILE
-				));
+				), null, new File(outputFolder));
 				final int exitValue = svlCommand.waitFor();
 
 				if (exitValue != ReturnCodes.TERMINATION_OK)
@@ -736,7 +742,7 @@ public class Vbpmn
 				}
 
 				final Process grepCommand = Runtime.getRuntime().exec(
-						"grep FALSE " + Checker.DIAGNOSTIC_FILE
+						"grep FALSE " + Checker.DIAGNOSTIC_FILE, null, new File(outputFolder)
 				);
 				final int exitValue2 = grepCommand.waitFor();
 

@@ -90,7 +90,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 
 			printWriter.print("]");
-			printWriter.close();
+			//printWriter.close();
 		}
 	}
 
@@ -3975,7 +3975,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		try
 		{
 			final java.lang.Process svlCommand = Runtime.getRuntime().exec(
-					"svl " + pifModelName
+					"svl " + pifModelName, null, new File(outputFolder)
 			);
 			final int exitValue2 = svlCommand.waitFor();
 		}
