@@ -329,10 +329,10 @@ public class Vbpmn
 					result1.getMiddle(),
 					result2.getMiddle(),
 					args.getString("operation"),
-					args.getList("--hiding"),
+					args.get("--hiding") == null ? new ArrayList<>() : args.getList("--hiding"),
 					args.get("--exposemode") != null && args.getBoolean("--exposemode"),
-					args.get("--renaming"),
-					args.getString("--renamed"),
+					args.get("--hiding") == null ? new HashMap<>() : args.get("--renaming"),
+					args.getString("--renamed") == null ? "all" : args.getString("--renamed"),
 					new ArrayList[]{syncSet1, syncSet2}
 			);
 		}
