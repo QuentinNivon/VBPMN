@@ -8,6 +8,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Triple;
+import org.jgrapht.alg.util.Pair;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -81,7 +82,7 @@ public class Vbpmn
 	private static final String CONSERVATIVE_COMPARISON = "conservative";
 	private static final String INCLUSIVE_COMPARISON = "inclusive";
 	private static final String EXCLUSIVE_COMPARISON = "exclusive";
-	private static final ArrayList<String> OPERATIONS_COMPARISON = (ArrayList<String>) Arrays.asList(
+	private static final List<String> OPERATIONS_COMPARISON = Arrays.asList(
 		CONSERVATIVE_COMPARISON,
 		INCLUSIVE_COMPARISON,
 		EXCLUSIVE_COMPARISON
@@ -90,11 +91,11 @@ public class Vbpmn
 	private static final String AND_PROPERTY = "property-and";
 	private static final String IMPLIED_PROPERTY = "property-implied";
 	private static final String HIDING_OPERATION = "_"; //NOT IN Python CODE
-	private static final ArrayList<String> OPERATIONS_PROPERTY = (ArrayList<String>) Arrays.asList(
+	private static final List<String> OPERATIONS_PROPERTY = Arrays.asList(
 		AND_PROPERTY,
 		IMPLIED_PROPERTY
 	);
-	private static final ArrayList<String> OPERATIONS = (ArrayList<String>) Arrays.asList(
+	private static final List<String> OPERATIONS = Arrays.asList(
 		CONSERVATIVE_COMPARISON,
 		INCLUSIVE_COMPARISON,
 		EXCLUSIVE_COMPARISON,
@@ -105,7 +106,7 @@ public class Vbpmn
 	private static final String SELECTION_FIRST = "first";
 	private static final String SELECTION_SECOND = "second";
 	private static final String SELECTION_ALL = "all";
-	private static final ArrayList<String> SELECTIONS = (ArrayList<String>) Arrays.asList(
+	private static final List<String> SELECTIONS = Arrays.asList(
 		SELECTION_FIRST,
 		SELECTION_SECOND,
 		SELECTION_ALL
@@ -125,8 +126,17 @@ public class Vbpmn
 	private static final String HIDE_ALL_BUT = "hide all but";
 	private static final String HIDE = "hide";
 	private static final String MCL_FORMULA = "formula.mcl";
+	private final String[] sysArgs;
+	private final String outputFolder;
 
-	public Vbpmn(final String[] sysArgs)
+	public Vbpmn(final String[] sysArgs,
+				 final String outputFolder)
+	{
+		this.sysArgs = sysArgs;
+		this.outputFolder = outputFolder;
+	}
+
+	public boolean execute()
 	{
 		final long startTime = System.nanoTime();
 
@@ -180,13 +190,13 @@ public class Vbpmn
 			args = parser.parseArgs(sysArgs);
 
 			if (OPERATIONS_PROPERTY.contains(args.getString("operation"))
-				&& args.get("formula") == null)
+					&& args.get("formula") == null)
 			{
 				System.out.println("missing formula in presence of property based comparison.");
 				throw new RuntimeException("missing formula in presence of property based comparison.");
 			}
 			if (!OPERATIONS_PROPERTY.contains(args.getString("operation"))
-				&& args.get("formula") != null)
+					&& args.get("formula") != null)
 			{
 				System.out.println("formula in presence of equivalence based comparison will not be used.");
 			}
@@ -194,8 +204,7 @@ public class Vbpmn
 		catch (ArgumentParserException e)
 		{
 			parser.printHelp();
-			System.exit(ReturnCodes.TERMINATION_ERROR);
-			return;
+			throw new IllegalStateException();
 		}
 
 		//Check if process is balanced or not
@@ -233,7 +242,8 @@ public class Vbpmn
 			//Split answer by spaces
 			String[] splitAnswer = stdOutBuilder.toString().split("\\s+");
 			//The 2nd element is the version code, i.e. "2023k"
-			cadpVersionDir = "_" + splitAnswer[1].replace(" ", "");
+			cadpVersionDir = "_" + splitAnswer[1].replace(" ", "").replace("-", "");
+			System.out.println("CADP VERSION: " + cadpVersionDir);
 		}
 		catch (IOException e)
 		{
@@ -247,22 +257,24 @@ public class Vbpmn
 		{
 			//Load the Pif2Lnt class located in the package corresponding to the good version
 			final Class<? extends Pif2LntGeneric> pif2LntClass = (Class<? extends Pif2LntGeneric>)
-					Class.forName("fr.inria.convecs.optimus.py_to_java." + cadpVersionDir + ".Pif2Lnt");
+					Class.forName("fr.inria.convecs.optimus.py_to_java.cadp_compliance." + cadpVersionDir + ".Pif2Lnt");
 			final Constructor<? extends Pif2LntGeneric> pif2LntConstructor = pif2LntClass.getDeclaredConstructor();
 			pif2lnt = pif2LntConstructor.newInstance();
 			pif2lnt.setBalance(processIsBalanced);
+			pif2lnt.setOutputFolder(this.outputFolder);
 		}
 		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
 			   IllegalAccessException e)
 		{
-			System.out.println("Please make sure that the path \"fr.inria.convecs.optimus.py_to_java."
-					+ cadpVersionDir + "\" exists and contains all the necessary files (TODO). If yes, please send" +
-					" an email to the staff.");
+			System.out.println("Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
+					+ cadpVersionDir + "\" exists and contains all the necessary files (\"bpmntypes.lnt\" and " +
+					"\"Pif2Lnt.java\"). If yes, please send an email to the staff.");
 			throw new RuntimeException(e);
 		}
 
 		//If in lazy mode, rebuild the BCG files only if needed
-		final boolean lazy = args.getBoolean("--lazy");
+		final boolean lazy = args.get("--lazy") != null
+				&& args.getBoolean("--lazy");
 
 		//(Re)build the first model
 		final String pifModel1 = (String) args.getList("models").get(0);
@@ -276,8 +288,7 @@ public class Vbpmn
 			|| result2.getLeft() != ReturnCodes.TERMINATION_OK)
 		{
 			System.out.println("Error in loading models.");
-			System.exit(ReturnCodes.TERMINATION_PROBLEM);
-			return;
+			throw new IllegalStateException();
 		}
 
 		/*
@@ -315,22 +326,22 @@ public class Vbpmn
 		if (OPERATIONS_COMPARISON.contains(args.getString("operation")))
 		{
 			comparator = new ComparisonChecker(
-				result1.getMiddle(),
-				result2.getMiddle(),
-				args.getString("operation"),
-				args.getList("--hiding"),
-				args.getBoolean("--exposemode"),
-				args.get("--renaming"),
-				args.getString("--renamed"),
-				new ArrayList[]{syncSet1, syncSet2}
+					result1.getMiddle(),
+					result2.getMiddle(),
+					args.getString("operation"),
+					args.getList("--hiding"),
+					args.get("--exposemode") != null && args.getBoolean("--exposemode"),
+					args.get("--renaming"),
+					args.getString("--renamed"),
+					new ArrayList[]{syncSet1, syncSet2}
 			);
 		}
 		else
 		{
 			comparator = new FormulaChecker(
-				result1.getMiddle(),
-				result2.getMiddle(),
-				args.getString("--formula")
+					result1.getMiddle(),
+					result2.getMiddle(),
+					args.getString("--formula")
 			);
 		}
 
@@ -356,7 +367,8 @@ public class Vbpmn
 
 		final int returnValue = result ? ReturnCodes.TERMINATION_OK : ReturnCodes.TERMINATION_ERROR;
 		System.out.println("Result: " + result);
-		System.exit(returnValue);
+
+		return result;
 	}
 
 	/*
@@ -566,7 +578,7 @@ public class Vbpmn
 
 			//TODO VERIFIER LA CREATION DU FICHIER AINSI QUE SON CONTENU
 			final String template = PyToJavaUtils.parametrize(SVL_CAESAR_TEMPLATE, svlCommands.toString());
-			final File templateFile = new File(filename);
+			final File templateFile = new File(outputFolder + File.separator + filename);
 			final PrintStream printStream;
 
 			try
@@ -664,7 +676,7 @@ public class Vbpmn
 			}
 
 			final String template = PyToJavaUtils.parametrize(SVL_CAESAR_TEMPLATE, svlCommands.toString());
-			final File templateFile = new File(filename);
+			final File templateFile = new File(outputFolder + File.separator + filename);
 			final PrintStream printStream;
 
 			try

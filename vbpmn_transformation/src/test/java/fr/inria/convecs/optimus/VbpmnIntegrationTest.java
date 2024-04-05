@@ -57,7 +57,7 @@ public class VbpmnIntegrationTest {
 
 			ModelValidator modelValidator = new VbpmnValidator(SCRIPTS_PATH, OUTPUT_PATH);
 
-			modelValidator.validate(output, vbpmnOptions);
+			modelValidator.validateV2(output, vbpmnOptions);
 
 			String result = modelValidator.getResult();
 

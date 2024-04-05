@@ -35,7 +35,7 @@ public class VbpmnValidatorTest {
 			File input = new File("data/output/ExpenseWorkflow.bpmn.pif");
 			List<String> option = new ArrayList<String>();
 			option.add("conservative");
-			modelValidator.validate(input, option);
+			modelValidator.validateV2(input, option);
 
 			String result = modelValidator.getResult();
 

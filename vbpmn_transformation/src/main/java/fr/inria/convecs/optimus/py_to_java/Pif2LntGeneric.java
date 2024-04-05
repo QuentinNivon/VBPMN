@@ -7,6 +7,7 @@ import java.util.Collection;
 public abstract class Pif2LntGeneric
 {
 	protected boolean isBalanced;
+	protected String outputFolder;
 
 	public Pif2LntGeneric(final boolean isBalanced)
 	{
@@ -20,6 +21,10 @@ public abstract class Pif2LntGeneric
 	public void setBalance(final boolean balance)
 	{
 		this.isBalanced = balance;
+	}
+	public void setOutputFolder(final String outputFolder)
+	{
+		this.outputFolder = outputFolder;
 	}
 
 	public abstract Triple<Integer, String, Collection<String>> load(final String pifFileName);
