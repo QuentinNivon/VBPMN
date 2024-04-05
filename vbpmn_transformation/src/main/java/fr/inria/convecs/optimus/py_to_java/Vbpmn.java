@@ -1,5 +1,6 @@
 package fr.inria.convecs.optimus.py_to_java;
 
+import fr.inria.convecs.optimus.py_to_java.cadp_compliance._2024c.BpmnTypesBuilder;
 import fr.inria.convecs.optimus.util.PifUtil;
 import fr.inria.convecs.optimus.validator.ModelValidator;
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -256,8 +257,7 @@ public class Vbpmn
 			throw new RuntimeException(e);
 		}
 
-		//Check how to properly load the good file (depending on the CADP version)
-		//+ copy all the necessary files
+		//Load the good Pif2Lnt class (depending on the CADP version)
 		final Pif2LntGeneric pif2lnt;
 		try
 		{
@@ -273,8 +273,26 @@ public class Vbpmn
 			   IllegalAccessException e)
 		{
 			System.out.println("Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
-					+ cadpVersionDir + "\" exists and contains all the necessary files (\"bpmntypes.lnt\" and " +
-					"\"Pif2Lnt.java\"). If yes, please send an email to the staff.");
+					+ cadpVersionDir + "\" exists and contains \"Pif2Lnt.java\"). If yes, please send an email to the staff.");
+			throw new RuntimeException(e);
+		}
+
+		//Load the good BpmnTypesBuilder class (depending on the CADP version)
+		try
+		{
+			//Load the Pif2Lnt class located in the package corresponding to the good version
+			final Class<? extends BpmnTypesBuilderGeneric> bpmnTypesBuilderClass = (Class<? extends BpmnTypesBuilderGeneric>)
+					Class.forName("fr.inria.convecs.optimus.py_to_java.cadp_compliance." + cadpVersionDir + ".BpmnTypesBuilder");
+			final Constructor<? extends BpmnTypesBuilderGeneric> bpmnTypesBuilderConstructor = bpmnTypesBuilderClass.getDeclaredConstructor();
+			final BpmnTypesBuilderGeneric bpmnTypesBuilder = bpmnTypesBuilderConstructor.newInstance();
+			bpmnTypesBuilder.setOutputDirectory(outputFolder);
+			bpmnTypesBuilder.dumpBpmnTypesFile();
+		}
+		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
+			   IllegalAccessException e)
+		{
+			System.out.println("Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
+					+ cadpVersionDir + "\" exists and contains \"BpmnTypesBuilder.java\"). If yes, please send an email to the staff.");
 			throw new RuntimeException(e);
 		}
 
@@ -356,7 +374,7 @@ public class Vbpmn
 		final long endTime = System.nanoTime();
 		final long totalTime = endTime - startTime;
 
-		final File templateFile = new File("time.txt");
+		final File templateFile = new File(outputFolder + File.separator + "time.txt");
 		final PrintStream printStream;
 
 		try
@@ -708,7 +726,7 @@ public class Vbpmn
 		public boolean call()
 		{
 			//Write formula to file
-			final File formulaFile = new File(FormulaChecker.FORMULA_FILE);
+			final File formulaFile = new File(outputFolder + File.separator + FormulaChecker.FORMULA_FILE);
 			final PrintStream printStream;
 
 			try

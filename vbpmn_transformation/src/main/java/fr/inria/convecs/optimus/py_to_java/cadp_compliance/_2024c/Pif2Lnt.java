@@ -3277,7 +3277,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		void generateIdFile()
 		{
 			final String fileName = "id.lnt";
-			final File file = new File(fileName);
+			final File file = new File(outputFolder + File.separator + fileName);
 			final PrintWriter printWriter;
 
 			try
@@ -3352,7 +3352,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				fileName = name + LNT_SUFFIX;
 			}
 
-			final File file = new File(fileName);
+			final File file = new File(outputFolder + File.separator + fileName);
 			final PrintWriter printWriter;
 
 			try
