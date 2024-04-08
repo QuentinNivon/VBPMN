@@ -13,6 +13,16 @@ public class FullTests
 	@Test
 	public void test() throws IOException, InterruptedException
 	{
+		//Check if $CADP is set
+		if (System.getenv("CADP") == null)
+		{
+			throw new RuntimeException("Environment variable $CADP is not set! Please fix this error and retry.");
+		}
+		else
+		{
+			System.out.println("Environment variable $CADP is set. Tests start.");
+		}
+
 		final String cadpVersion;
 
 		//Compute CADP version in use
@@ -20,7 +30,6 @@ public class FullTests
 		{
 			final Process cadpLibCommand = Runtime.getRuntime().exec("cadp_lib -1");
 			final BufferedReader stdInput = new BufferedReader(new InputStreamReader(cadpLibCommand.getInputStream()));
-			final BufferedReader stdError = new BufferedReader(new InputStreamReader(cadpLibCommand.getErrorStream()));
 			String line;
 
 			// Read the output from the command
@@ -30,19 +39,13 @@ public class FullTests
 				stdOutBuilder.append(line);
 			}
 
-			// Read any errors from the attempted command
-			final StringBuilder stdErrBuilder = new StringBuilder();
-			while ((line = stdError.readLine()) != null)
-			{
-				stdErrBuilder.append(line);
-			}
-
 			cadpLibCommand.destroy();
 
 			//Split answer by spaces
 			String[] splitAnswer = stdOutBuilder.toString().split("\\s+");
 			//The 2nd element is the version code, i.e. "2023k"
 			cadpVersion = splitAnswer[1].replace(" ", "");
+			System.out.println("----------TESTS ARE PERFORMED FOR THE CADP VERSION \"" + cadpVersion + "\"----------");
 		}
 		catch (IOException e)
 		{

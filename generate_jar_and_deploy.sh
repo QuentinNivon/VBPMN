@@ -5,7 +5,7 @@ cd vbpmn_transformation;
 mvn clean -f pom.xml;
 mvn validate -f pom.xml;
 mvn compile -f pom.xml;
-mvn test -f pom.xml;
+#mvn test -f pom.xml;
 mvn package -f pom.xml;
 mvn verify -f pom.xml;
 mvn install -f pom.xml;

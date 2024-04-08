@@ -222,6 +222,11 @@ public class Vbpmn
 
 		try
 		{
+			if (System.getenv("CADP") == null)
+			{
+				throw new RuntimeException("Environment variable $CADP is not set! Please fix this error and retry.");
+			}
+
 			final Process cadpLibCommand = Runtime.getRuntime().exec("cadp_lib -1", null, new File(outputFolder));
 			final BufferedReader stdInput = new BufferedReader(new InputStreamReader(cadpLibCommand.getInputStream()));
 			final BufferedReader stdError = new BufferedReader(new InputStreamReader(cadpLibCommand.getErrorStream()));
