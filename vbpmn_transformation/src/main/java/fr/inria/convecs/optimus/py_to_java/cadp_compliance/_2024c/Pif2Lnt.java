@@ -6,6 +6,7 @@ import fr.inria.convecs.optimus.pif.WorkflowNode;
 import fr.inria.convecs.optimus.py_to_java.Pif2LntGeneric;
 import fr.inria.convecs.optimus.py_to_java.PyToJavaUtils;
 import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jgrapht.alg.CycleDetector;
@@ -99,9 +100,37 @@ public class Pif2Lnt extends Pif2LntGeneric
 	 *
 	 * @param list the list on which combinations should be computed
 	 */
-	public Collection<Collection<String>> computeAllCombinations(final ArrayList<String> list)
+	public ArrayList<ArrayList<String>> computeAllCombinations(final ArrayList<String> list)
 	{
-		return PyToJavaUtils.getCombinationsOf(list);
+		final Collection<Collection<String>> allCombinations = PyToJavaUtils.getCombinationsOf(list);
+
+		/*
+			The PyToJavaUtils.getCombinationsOf(list) method does not necessarily return the combinations
+			in ascending size, thus we need to reorder the combinations to match with the Python implementation
+		 */
+
+		final ArrayList<ArrayList<String>> orderedCombinations = new ArrayList<>();
+
+		int currentSize = 1;
+		boolean found = true;
+
+		while (found)
+		{
+			found = false;
+
+			for (Collection<String> combination : allCombinations)
+			{
+				if (combination.size() == currentSize)
+				{
+					orderedCombinations.add((ArrayList<String>) combination);
+					found = true;
+				}
+			}
+
+			currentSize++;
+		}
+
+		return orderedCombinations;
 	}
 
 	/**
@@ -219,6 +248,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return this.outgoingFlows.get(0);
 		}
 
+		abstract void writeMainLnt(final PrintWriter printWriter);
 		abstract void processLnt(final PrintWriter printWriter);
 		abstract void writeLnt(final PrintWriter printWriter);
 		abstract ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
@@ -249,6 +279,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			printWriter.println("process flow [begin:any, finish:any] (ident:ID) is");
 			printWriter.println(" loop begin (ident) ; finish (ident) end loop");
 			printWriter.println("end process");
+			printWriter.println();
 		}
 
 		//A normal flow cannot be a default flow
@@ -332,6 +363,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 			super(identifier, incomingFlows, outgoingFlows);
 		}
 
+		@Override
+		void writeMainLnt(final PrintWriter printWriter)
+		{
+			throw new NotImplementedException("Method \"writeMainLnt()\" should not be used on InitialEvent!");
+		}
+
 		//Generates the (generic) process for the initial event, only once
 		@Override
 		void writeLnt(final PrintWriter printWriter)
@@ -339,6 +376,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			printWriter.println("process init [begin:any, outf:any] is");
 			printWriter.println(" var ident: ID in begin ; outf (?ident of ID) end var ");
 			printWriter.println("end process");
+			printWriter.println();
 		}
 
 		/**
@@ -394,6 +432,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 			super(identifier, incomingFlows, outgoingFlows);
 		}
 
+		@Override
+		void writeMainLnt(final PrintWriter printWriter)
+		{
+			throw new NotImplementedException("Method \"writeMainLnt()\" should not be used on EndEvent!");
+		}
+
 		//Generates the (generic) process for final events, only once
 		@Override
 		void writeLnt(PrintWriter printWriter)
@@ -414,6 +458,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 
 			printWriter.println("end process");
+			printWriter.println();
 		}
 
 		/**
@@ -710,7 +755,42 @@ public class Pif2Lnt extends Pif2LntGeneric
 		@Override
 		void processLnt(PrintWriter printWriter)
 		{
-			this.writeLnt(printWriter);
+			printWriter.print("task(");
+			printWriter.print(this.identifier);
+			printWriter.print(",{");
+			boolean first = true;
+
+			for (Flow inFlow : this.incomingFlows)
+			{
+				if (first)
+				{
+					first = false;
+				}
+				else
+				{
+					printWriter.print(",");
+				}
+
+				printWriter.print(inFlow.identifier());
+			}
+
+			printWriter.print("},");
+			first = true;
+			printWriter.print("{");
+
+			for (Flow outFlow : this.outgoingFlows)
+			{
+				if (first)
+				{
+					first = false;
+				}
+				else
+				{
+					printWriter.print(",");
+				}
+				printWriter.print(outFlow.identifier());
+			}
+			printWriter.print("})");
 		}
 
 		@Override
@@ -823,6 +903,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			printWriter.println(" end loop end var");
 			printWriter.println("end process");
+			printWriter.println();
 		}
 
 		@Override
@@ -1150,14 +1231,27 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final ArrayList<String> alphaOut = new ArrayList<>();
 			int nb = 1;
 
-			while (nb < nbOut)
+			while (nb <= nbOut)
 			{
 				alphaOut.add("outf_" + nb);
 				nb++;
 			}
 
-			final Collection<Collection<String>> allCombi = computeAllCombinations(alphaOut);
+			final ArrayList<ArrayList<String>> allCombi = computeAllCombinations(alphaOut);
 			final int nbt = allCombi.size();
+
+			final StringBuilder builder  = new StringBuilder();
+			for (ArrayList<String> collection : allCombi)
+			{
+				builder.append("Collection: [");
+
+				for (String s : collection)
+				{
+					builder.append(s).append(",");
+				}
+
+				builder.append("]\n");
+			}
 
 			printWriter.print("process orsplit_");
 			printWriter.print(this.identifier);
@@ -1166,14 +1260,14 @@ public class Pif2Lnt extends Pif2LntGeneric
 			//We dump the process alphabet (flows + synchronization points if necessary)
 			int nbg = 1;
 
-			while (nbg < nbOut)
+			while (nbg <= nbOut)
 			{
 				printWriter.print("outf_");
 				printWriter.print(nbg);
 				printWriter.print(":any");
 				nbg++;
 
-				if (nbg < nbOut)
+				if (nbg <= nbOut)
 				{
 					printWriter.print(",");
 				}
@@ -1193,7 +1287,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					printWriter.print(":any");
 					counter++;
 
-					if (counter < nbt)
+					if (counter <= nbt)
 					{
 						printWriter.print(",");
 					}
@@ -1227,7 +1321,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				printWriter.println(" in ");
 				printWriter.println("var ident: ID in loop ");
 				printWriter.println("incf (?ident of ID); "); //TODO We generate unnecessary variables...
-				printWriter.print(" select ");
+				printWriter.print("select ");
 			}
 
 			nb = 1;
@@ -1326,7 +1420,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					else
 					{
 						printWriter.println();
-						printWriter.println("[] ");
+						printWriter.print("[] ");
 					}
 				}
 			}
@@ -1362,13 +1456,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 				final ArrayList<String> alphaOut = new ArrayList<>();
 				int nb = 1;
 
-				while (nb < nbOut)
+				while (nb <= nbOut)
 				{
 					alphaOut.add("outf_" + nb);
 					nb++;
 				}
 
-				final Collection<Collection<String>> allCombinations = computeAllCombinations(alphaOut);
+				final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(alphaOut);
 				final int nbCombi = allCombinations.size();
 
 				if (isBalanced)
@@ -1378,14 +1472,14 @@ public class Pif2Lnt extends Pif2LntGeneric
 					{
 						int counter = 1;
 
-						for (Collection<String> combination : allCombinations) //TODO Bizarre...
+						for (ArrayList<String> combination : allCombinations) //TODO Bizarre...
 						{
 							printWriter.print(this.correspOrJoin);
 							printWriter.print("_");
 							printWriter.print(counter);
 							counter++;
 
-							if (counter < nbCombi)
+							if (counter <= nbCombi)
 							{
 								printWriter.print(",");
 							}
@@ -1420,7 +1514,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					printWriter.print(", ");
 					int counter = 1;
 
-					for (Collection<String> combination : allCombinations)
+					for (ArrayList<String> combination : allCombinations)
 					{
 						printWriter.print(isBalanced ? this.correspOrJoin : this.identifier);
 						printWriter.print("_");
@@ -1542,52 +1636,46 @@ public class Pif2Lnt extends Pif2LntGeneric
 		@Override
 		void writeLnt(PrintWriter printWriter)
 		{
-			if (isBalanced)
+			final int nbOut = this.outgoingFlows.size();
+			printWriter.print("process xorsplit_");
+			printWriter.print(this.identifier);
+			printWriter.print(" [incf:any,");
+			int nb = 1;
+
+			while (nb <= nbOut)
 			{
-				final int nbOut = this.outgoingFlows.size();
-				printWriter.print("process xorsplit_");
-				printWriter.print(this.identifier);
-				printWriter.print(" [incf:any,");
-				int nb = 1;
+				printWriter.print("outf_");
+				printWriter.print(nb);
+				printWriter.print(":any");
+				nb++;
 
-				while (nb < nbOut)
+				if (nb <= nbOut)
 				{
-					printWriter.print("outf_");
-					printWriter.print(nb);
-					printWriter.print(":any");
-					nb++;
-
-					if (nb <= nbOut)
-					{
-						printWriter.print(",");
-					}
+					printWriter.print(",");
 				}
-
-				printWriter.println(" ] is ");
-				printWriter.println(" var ident: ID in loop incf (?ident of ID); ");
-				printWriter.print(" select ");
-				nb = 1;
-
-				while (nb < nbOut)
-				{
-					printWriter.print("outf_");
-					printWriter.print(nb);
-					printWriter.print("(?ident of ID)");
-					nb++;
-
-					if (nb <= nbOut)
-					{
-						printWriter.print("[]");
-					}
-				}
-
-				printWriter.println(" end select end loop end var");
-				printWriter.println("end process");
 			}
-			else
+
+			printWriter.println(" ] is ");
+			printWriter.println(" var ident: ID in loop incf (?ident of ID); ");
+			printWriter.print(" select ");
+			nb = 1;
+
+			while (nb <= nbOut)
 			{
+				printWriter.print("outf_");
+				printWriter.print(nb);
+				printWriter.print("(?ident of ID)");
+				nb++;
 
+				if (nb <= nbOut)
+				{
+					printWriter.print("[]");
+				}
 			}
+
+			printWriter.println(" end select end loop end var");
+			printWriter.println("end process");
+			printWriter.println();
 		}
 
 		void writeMainLnt(final PrintWriter printWriter)
@@ -1672,14 +1760,14 @@ public class Pif2Lnt extends Pif2LntGeneric
 			printWriter.print(" [incf:any,");
 			int nb = 1;
 
-			while (nb < nbOut)
+			while (nb <= nbOut)
 			{
 				printWriter.print("outf_");
 				printWriter.print(nb);
 				printWriter.print(":any");
 				nb++;
 
-				if (nb < nbOut)
+				if (nb <= nbOut)
 				{
 					printWriter.print(",");
 				}
@@ -1687,6 +1775,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			printWriter.println(" ] is ");
 			int variablesCounter = nbOut;
+			printWriter.print(" var ");
 
 			while (variablesCounter > 0)
 			{
@@ -1706,7 +1795,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			nb = 1;
 			variablesCounter = nbOut;
 
-			while (nb < nbOut)
+			while (nb <= nbOut)
 			{
 				printWriter.print("outf_");
 				printWriter.print(nb);
@@ -1724,6 +1813,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			printWriter.println(" end par end loop end var end var");
 			printWriter.println("end process");
+			printWriter.println();
 		}
 
 		void writeMainLnt(final PrintWriter printWriter)
@@ -1868,19 +1958,20 @@ public class Pif2Lnt extends Pif2LntGeneric
 		@Override
 		void writeLnt(PrintWriter printWriter)
 		{
+			final int nbInc = this.incomingFlows.size();
+
 			if (isBalanced)
 			{
-				final int nbInc = this.incomingFlows.size();
 				final ArrayList<String> alphaInc = new ArrayList<>();
 				int nb = 1;
 
-				while (nb < nbInc)
+				while (nb <= nbInc)
 				{
 					alphaInc.add("incf_" + nb);
 					nb++;
 				}
 
-				final Collection<Collection<String>> allCombinations = computeAllCombinations(alphaInc);
+				final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(alphaInc);
 				final int nbCombi = allCombinations.size();
 
 				printWriter.print("process orjoin_");
@@ -1888,7 +1979,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				printWriter.print(" [");
 				nb = 1;
 
-				while (nb < nbInc)
+				while (nb <= nbInc)
 				{
 					printWriter.print("incf_");
 					printWriter.print(nb);
@@ -1905,7 +1996,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					int counter = 1;
 					printWriter.print(",");
 
-					for (Collection<String> combination : allCombinations)
+					for (ArrayList<String> combination : allCombinations)
 					{
 						printWriter.print(this.identifier);
 						printWriter.print("_");
@@ -1913,7 +2004,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 						printWriter.print(":any");
 						counter++;
 
-						if (counter < nbCombi)
+						if (counter <= nbCombi)
 						{
 							printWriter.print(",");
 						}
@@ -1941,7 +2032,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				nb = 1;
 				int counter = 1;
 
-				for (Collection<String> combination : allCombinations)
+				for (ArrayList<String> combination : allCombinations)
 				{
 					int nbElem = combination.size();
 					int nb2 = 1;
@@ -1986,7 +2077,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					nb++;
 
-					if (nb < nbCombi)
+					if (nb <= nbCombi)
 					{
 						printWriter.print(" [] ");
 					}
@@ -1997,7 +2088,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 			else
 			{
-				final int nbInc = this.incomingFlows.size();
 				printWriter.print("process orjoin_");
 				printWriter.print(this.identifier);
 				printWriter.print(" [");
@@ -2057,13 +2147,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 					final ArrayList<String> alphaInc = new ArrayList<>();
 					int nb = 1;
 
-					while (nb < nbInc)
+					while (nb <= nbInc)
 					{
 						alphaInc.add("incf_" + nb);
 						nb++;
 					}
 
-					final Collection<Collection<String>> allCombinations = computeAllCombinations(alphaInc);
+					final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(alphaInc);
 					final int nbCombi = allCombinations.size();
 
 					//We dump synchronization points
@@ -2071,7 +2161,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					{
 						int counter = 1;
 
-						for (Collection<String> combination : allCombinations)
+						for (ArrayList<String> combination : allCombinations)
 						{
 							printWriter.print(this.identifier);
 							printWriter.print("_");
@@ -2108,7 +2198,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 						int counter = 1;
 						printWriter.print(",");
 
-						for (Collection<String> combination : allCombinations)
+						for (ArrayList<String> combination : allCombinations)
 						{
 							printWriter.print(this.identifier);
 							printWriter.print("_");
@@ -2215,8 +2305,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			final int nbInc = this.incomingFlows.size();
 			printWriter.print("process xorjoin_");
-			printWriter.println(this.identifier);
-			printWriter.println(" [");
+			printWriter.print(this.identifier);
+			printWriter.print(" [");
 			int nb = 1;
 
 			while (nb <= nbInc)
@@ -2231,7 +2321,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			printWriter.print(" var ident: ID in loop select ");
 			nb = 1;
 
-			while (nb < nbInc)
+			while (nb <= nbInc)
 			{
 				printWriter.print("incf_");
 				printWriter.print(nb);
@@ -2246,6 +2336,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			printWriter.println(" end select ; outf (?ident of ID) end loop end var ");
 			printWriter.println("end process");
+			printWriter.println();
 		}
 
 		void writeMainLnt(final PrintWriter printWriter)
@@ -2300,7 +2391,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			printWriter.print(" [");
 			int nb = 1;
 
-			while (nb < nbInc)
+			while (nb <= nbInc)
 			{
 				printWriter.print("incf_");
 				printWriter.print(nb);
@@ -2329,7 +2420,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			nb = 1;
 			variablesCounter = nbInc;
 
-			while (nb < nbInc)
+			while (nb <= nbInc)
 			{
 				printWriter.print("incf_");
 				printWriter.print(nb);
@@ -2347,6 +2438,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			printWriter.println(" end par ; outf (?ident of ID) end loop end var end var ");
 			printWriter.println("end process");
+			printWriter.println();
 		}
 
 		void writeMainLnt(final PrintWriter printWriter)
@@ -2518,11 +2610,11 @@ public class Pif2Lnt extends Pif2LntGeneric
 							nb++;
 						}
 
-						final Collection<Collection<String>> allCombinations = computeAllCombinations(alphaOut);
+						final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(alphaOut);
 						final int nbCombi = allCombinations.size();
 						int counter = 1;
 
-						for (Collection<String> combination : allCombinations)
+						for (ArrayList<String> combination : allCombinations)
 						{
 							res.add(((OrSplitGateway) n).getCorrespOrJoin() + "_" + counter);
 							counter++;
@@ -2556,11 +2648,11 @@ public class Pif2Lnt extends Pif2LntGeneric
 						nb++;
 					}
 
-					final Collection<Collection<String>> allCombinations = computeAllCombinations(alphaOut);
+					final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(alphaOut);
 					final int nbCombi = allCombinations.size();
 					int counter = 1;
 
-					for (Collection<String> combination : allCombinations)
+					for (ArrayList<String> combination : allCombinations)
 					{
 						res.add(n.identifier() + "_" + counter + (any ? ":any" : ""));
 						counter++;
@@ -2675,6 +2767,29 @@ public class Pif2Lnt extends Pif2LntGeneric
 			//TODO: eliminate iterating twice / Separate printer class?
 			//handle tasks
 			printWriter.print("\tt ( { ");
+			first = true;
+
+			for (Node pNode : this.nodes)
+			{
+				if (pNode instanceof Task)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						printWriter.print(",");
+					}
+
+					pNode.processLnt(printWriter);
+				}
+			}
+
+			printWriter.println(" } ), ");
+
+			//handle gateways
+			printWriter.print("\tg ( { ");
 			first = true;
 
 			for (Node pNode : this.nodes)
@@ -2953,7 +3068,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					identSet.add("ident1");
 					//Parallel merge join TODO: Clean up
 					final ArrayList<String> parJoinString = new ArrayList<>();
-					parJoinString.add(node.firstOutgoingFlow().identifier() + "_begin (?ident of ID);");
+					parJoinString.add(node.firstOutgoingFlow().identifier() + "_begin (?ident1 of ID);");
 					parJoinString.add("scheduler [");
 					parJoinString.add(this.getFlowMsgs(false));
 					final ArrayList<String> res = this.computeAddSynchroPoints(false);
@@ -2987,14 +3102,14 @@ public class Pif2Lnt extends Pif2LntGeneric
 						counter++;
 					}
 
-					final Collection<Collection<String>> allCombinations = computeAllCombinations(flowAlpha);
+					final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(flowAlpha);
 					final int nbCombinations = allCombinations.size();
 					final ArrayList<String> outIds = new ArrayList<>();
 					flowString.add("select ");
 					int nb = 1;
 					int cter = 1;
 
-					for (Collection<String> combination : allCombinations)
+					for (ArrayList<String> combination : allCombinations)
 					{
 						final int nbElemCombi = combination.size();
 						int nb2 = 1;
@@ -3095,7 +3210,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					incJoinString.add(", MoveOn]");
 					incJoinString.add("(union({ident1}, remove_incf(bpmn, activeflows, mergeid)), bpmn, " +
-							"remove_sync(bpmn, syncstore, mergeid), remove(mergeid, mergestore), parstore\n");
+							"remove_sync(bpmn, syncstore, mergeid), remove(mergeid, mergestore), parstore)\n");
 					incJoinBeginList.add(PyToJavaUtils.join(incJoinString, ""));
 				}
 				else
@@ -3266,7 +3381,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final ArrayList<String> schedulerString = new ArrayList<>();
 			schedulerString.add("scheduler [...]");
 			schedulerString.add("(union(" + outIds + ", remove_ids_from_set(" + incIds + ", activeflows)), bpmn, " +
-					syncString + "," + mergeStoreString + "," + parStoreString + ")\n");
+					syncString + ", " + mergeStoreString + ", " + parStoreString + ")\n");
 
 			return PyToJavaUtils.join(schedulerString, "");
 		}
@@ -3470,6 +3585,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final ArrayList<String> alpha = this.alpha();
 			dumpAlphabet(alpha, printWriter, true);
 			printWriter.println(" is");
+			printWriter.println();
 			//Computes additional synchros for or splits/joins
 			final ArrayList<String> synchroPoints = isBalanced ? this.computeAddSynchroPoints() : this.computeAddSynchroPoints(false);
 			final int nbSync = synchroPoints.size();
@@ -3660,7 +3776,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			for (Node n : this.nodes)
 			{
-				n.writeLnt(printWriter);
+				n.writeMainLnt(printWriter);
 				cter++;
 
 				if (cter <= nbNodes)
