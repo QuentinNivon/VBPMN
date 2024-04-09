@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export CATALINA_HOME;
 cd vbpmn_transformation;
 mvn clean -f pom.xml;
 mvn validate -f pom.xml;
@@ -13,4 +14,4 @@ mvn deploy -f pom.xml;
 mvn war:war -f pom.xml;
 rm ../vbpmn_dist/transformation.war
 cd target;
-cp transformation.war ../../vbpmn_dist/transformation.war
+cp transformation.war ../../vbpmn_dist/transformation.war;
