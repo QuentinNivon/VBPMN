@@ -1,4 +1,4 @@
-package fr.inria.convecs.optimus.py_to_java.cadp_compliance._2024c;
+package fr.inria.convecs.optimus.py_to_java.cadp_compliance._2024d;
 
 import fr.inria.convecs.optimus.pif.Peer;
 import fr.inria.convecs.optimus.pif.SequenceFlow;
@@ -106,7 +106,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 		/*
 			The PyToJavaUtils.getCombinationsOf(list) method does not necessarily return the combinations
-			in ascending size, thus we need to reorder the combinations to match with the Python implementation
+			in ascending order of size, thus we need to reorder the combinations to match with the Python
+			implementation.
 		 */
 
 		final ArrayList<ArrayList<String>> orderedCombinations = new ArrayList<>();
@@ -856,7 +857,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			else
 			{
 				int incCounter = 0;
-				printWriter.print(" select ");
+				printWriter.print(" alt ");
 
 				while (incCounter < nbInc)
 				{
@@ -871,7 +872,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					}
 				}
 
-				printWriter.println(" end select ; ");
+				printWriter.println(" end alt ; ");
 			}
 
 			printWriter.print("task ; ");
@@ -883,7 +884,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			else
 			{
 				int outCounter = 0;
-				printWriter.print(" select ");
+				printWriter.print(" alt ");
 
 				while (outCounter < nbOut)
 				{
@@ -898,7 +899,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					}
 				}
 
-				printWriter.println(" end select ");
+				printWriter.println(" end alt ");
 			}
 
 			printWriter.println(" end loop end var");
@@ -1227,7 +1228,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final boolean existsDefault = this.existDefaultFlow();
 			//TODO: update the translation to consider properly the default semantics (if there is such a branch)
 
-			//We translate the inclusive split by enumerating all combinations in a select / par
+			//We translate the inclusive split by enumerating all combinations in a alt / par
 			final ArrayList<String> alphaOut = new ArrayList<>();
 			int nb = 1;
 
@@ -1314,14 +1315,14 @@ public class Pif2Lnt extends Pif2LntGeneric
 			if (isBalanced)
 			{
 				printWriter.println(" in  var ident: ID in loop incf (?ident of ID); "); //TODO We generate unnecessary variables...
-				printWriter.print(" select ");
+				printWriter.print(" alt ");
 			}
 			else
 			{
 				printWriter.println(" in ");
 				printWriter.println("var ident: ID in loop ");
 				printWriter.println("incf (?ident of ID); "); //TODO We generate unnecessary variables...
-				printWriter.print("select ");
+				printWriter.print("alt ");
 			}
 
 			nb = 1;
@@ -1427,13 +1428,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (isBalanced)
 			{
-				printWriter.println(" end select end loop end var end var");
+				printWriter.println(" end alt end loop end var end var");
 				printWriter.println("end process");
 			}
 			else
 			{
 				printWriter.println();
-				printWriter.println("end select ");
+				printWriter.println("end alt ");
 				printWriter.println("end loop ");
 				printWriter.println("end var");
 				printWriter.println("end var");
@@ -1657,7 +1658,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			printWriter.println(" ] is ");
 			printWriter.println(" var ident: ID in loop incf (?ident of ID); ");
-			printWriter.print(" select ");
+			printWriter.print(" alt ");
 			nb = 1;
 
 			while (nb <= nbOut)
@@ -1673,7 +1674,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 			}
 
-			printWriter.println(" end select end loop end var");
+			printWriter.println(" end alt end loop end var");
 			printWriter.println("end process");
 			printWriter.println();
 		}
@@ -2028,7 +2029,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					}
 				}
 
-				printWriter.print(" in  var ident: ID in loop select ");
+				printWriter.print(" in  var ident: ID in loop alt ");
 				nb = 1;
 				int counter = 1;
 
@@ -2083,7 +2084,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					}
 				}
 
-				printWriter.println(" end select ; outf (?ident of ID) end loop end var end var ");
+				printWriter.println(" end alt ; outf (?ident of ID) end loop end var end var ");
 				printWriter.println("end process");
 			}
 			else
@@ -2106,7 +2107,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				printWriter.println(" loop");
 				printWriter.println("mergestatus := False;");
 				printWriter.println("while mergestatus == False loop ");
-				printWriter.println("select");
+				printWriter.println("alt");
 
 				nb = 1;
 
@@ -2126,7 +2127,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				printWriter.println();
 				printWriter.println("[] MoveOn(mergeid); mergestatus := True");
-				printWriter.println("end select");
+				printWriter.println("end alt");
 				printWriter.println("end loop;");
 				printWriter.println("outf (?ident of ID)");
 				printWriter.println("end loop");
@@ -2318,7 +2319,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 
 			printWriter.println("outf:any] is ");
-			printWriter.print(" var ident: ID in loop select ");
+			printWriter.print(" var ident: ID in loop alt ");
 			nb = 1;
 
 			while (nb <= nbInc)
@@ -2334,7 +2335,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 			}
 
-			printWriter.println(" end select ; outf (?ident of ID) end loop end var ");
+			printWriter.println(" end alt ; outf (?ident of ID) end loop end var ");
 			printWriter.println("end process");
 			printWriter.println();
 		}
@@ -2914,7 +2915,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					"parstore:IDS) is");
 
 			final ArrayList<String> identSet = new ArrayList<>();
-			final ArrayList<String> flowSelectStrings = new ArrayList<>();
+			final ArrayList<String> flowaltStrings = new ArrayList<>();
 			final ArrayList<String> incJoinBeginList = new ArrayList<>();
 			final ArrayList<String> parJoinBeginList = new ArrayList<>();
 
@@ -2944,7 +2945,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					identSet.add("ident1");
 					boolean first = true;
 					int counter = 2;
-					flowString.add(" select\n");
+					flowString.add(" alt\n");
 
 					for (Flow flow : node.outgoingFlows())
 					{
@@ -2969,13 +2970,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 						counter++;
 					}
 
-					flowString.add("\nend select ");
+					flowString.add("\nend alt ");
 				}
 				else if (node instanceof XOrJoinGateway)
 				{
 					flowString.add("\n(*----  XOrJoinGateway with ID: " + node.identifier() + "------*)\n");
 					boolean first = true;
-					flowString.add(" select\n");
+					flowString.add(" alt\n");
 
 					for (Flow flow : node.incomingFlows())
 					{
@@ -2991,7 +2992,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 						flowString.add(flow.identifier() + "_finish (?ident2 of ID) ");
 					}
 
-					flowString.add("\nend select; ");
+					flowString.add("\nend alt; ");
 					flowString.add(node.firstOutgoingFlow().identifier() + "_begin (?ident1 of ID); ");
 					identSet.add("ident1");
 					identSet.add("ident2");
@@ -3091,7 +3092,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					identSet.add("ident1");
 
 					final int nbOut = node.outgoingFlows().size();
-					//We translate the inclusive split by enumerating all combinations in a select/par
+					//We translate the inclusive split by enumerating all combinations in a alt/par
 					final ArrayList<String> flowAlpha = new ArrayList<>();
 					int counter = 2;
 
@@ -3105,7 +3106,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(flowAlpha);
 					final int nbCombinations = allCombinations.size();
 					final ArrayList<String> outIds = new ArrayList<>();
-					flowString.add("select ");
+					flowString.add("alt ");
 					int nb = 1;
 					int cter = 1;
 
@@ -3165,7 +3166,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 						}
 					}
 
-					flowString.add("\nend select\n");
+					flowString.add("\nend alt\n");
 				}
 				else if (node instanceof OrJoinGateway)
 				{
@@ -3216,13 +3217,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 				else
 				{
 					//TODO Intéret ????
-					flowString.add("\n(*----  ERROR - Unable to select ID: " + node.identifier() + "------*)\n");
+					flowString.add("\n(*----  ERROR - Unable to alt ID: " + node.identifier() + "------*)\n");
 					flowString.clear();
 					flowString.add("");
 				}
 
 				final String separator = "";
-				flowSelectStrings.add(PyToJavaUtils.join(flowString, separator));
+				flowaltStrings.add(PyToJavaUtils.join(flowString, separator));
 			}
 
 			//Generate var
@@ -3246,7 +3247,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 
 			printWriter.println(", mergeid: ID in ");
-			printWriter.println("select ");
+			printWriter.println("alt ");
 
 			//Handle initial and final
 			printWriter.println("(*---------- Initial node ---------------------*)");
@@ -3263,7 +3264,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			first = true;
 
-			for (String flow : flowSelectStrings)
+			for (String flow : flowaltStrings)
 			{
 				if (first)
 				{
@@ -3299,9 +3300,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (!incJoinBeginList.isEmpty())
 			{
-				printWriter.println("select ");
+				printWriter.println("alt ");
 				printWriter.print(PyToJavaUtils.join(incJoinBeginList, "[]\n"));
-				printWriter.println("end select ");
+				printWriter.println("end alt ");
 			}
 			else
 			{
@@ -3337,9 +3338,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (!parJoinBeginList.isEmpty())
 			{
-				printWriter.println("select ");
+				printWriter.println("alt ");
 				printWriter.print(PyToJavaUtils.join(parJoinBeginList, "[]\n"));
-				printWriter.print("end select ");
+				printWriter.print("end alt ");
 			}
 			else
 			{
@@ -3366,7 +3367,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			printWriter.println(", MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)");
 			printWriter.println("end if");
-			printWriter.println("end select");
+			printWriter.println("end alt");
 			printWriter.println("end var");
 			printWriter.println("end process");
 			printWriter.println();
@@ -4079,7 +4080,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (cycleExists)
 			{
-				return Triple.of(ReturnCodes.TERMINATION_ERROR, pifModelName, process.alpha());
+				return Triple.of(ReturnCodes.TERMINATION_UNBALANCED_INCLUSIVE_CYCLE, pifModelName, process.alpha());
 			}
 		}
 

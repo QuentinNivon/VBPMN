@@ -229,33 +229,23 @@ public class Vbpmn
 
 			final Process cadpLibCommand = Runtime.getRuntime().exec("cadp_lib -1", null, new File(outputFolder));
 			final BufferedReader stdInput = new BufferedReader(new InputStreamReader(cadpLibCommand.getInputStream()));
-			final BufferedReader stdError = new BufferedReader(new InputStreamReader(cadpLibCommand.getErrorStream()));
 			String line;
 
 			// Read the output from the command
-			System.out.println("Here is the standard output of the command:\n");
+			//System.out.println("Here is the standard output of the command:\n");
 			final StringBuilder stdOutBuilder = new StringBuilder();
 			while ((line = stdInput.readLine()) != null)
 			{
 				stdOutBuilder.append(line);
 			}
-			System.out.println(stdOutBuilder);
-
-			// Read any errors from the attempted command
-			System.out.println("Here is the standard error of the command (if any):\n");
-			final StringBuilder stdErrBuilder = new StringBuilder();
-			while ((line = stdError.readLine()) != null)
-			{
-				stdErrBuilder.append(line);
-			}
-			System.out.println(stdErrBuilder);
+			//System.out.println(stdOutBuilder);
 			cadpLibCommand.destroy();
 
 			//Split answer by spaces
-			String[] splitAnswer = stdOutBuilder.toString().split("\\s+");
+			final String[] splitAnswer = stdOutBuilder.toString().split("\\s+");
 			//The 2nd element is the version code, i.e. "2023k"
 			cadpVersionDir = "_" + splitAnswer[1].replace(" ", "").replace("-", "");
-			System.out.println("CADP VERSION: " + cadpVersionDir);
+			//System.out.println("CADP VERSION: " + cadpVersionDir);
 		}
 		catch (IOException e)
 		{
@@ -277,9 +267,10 @@ public class Vbpmn
 		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
 			   IllegalAccessException e)
 		{
-			System.out.println("Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
-					+ cadpVersionDir + "\" exists and contains \"Pif2Lnt.java\"). If yes, please send an email to the staff.");
-			throw new RuntimeException(e);
+			final String errorMessage = "Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
+					+ cadpVersionDir + "\" exists and contains \"Pif2Lnt.java\"). If yes, please send an email to the staff.";
+			System.out.println(errorMessage);
+			throw new RuntimeException(errorMessage, e);
 		}
 
 		//Load the good BpmnTypesBuilder class (depending on the CADP version)
@@ -296,9 +287,10 @@ public class Vbpmn
 		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
 			   IllegalAccessException e)
 		{
-			System.out.println("Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
-					+ cadpVersionDir + "\" exists and contains \"BpmnTypesBuilder.java\"). If yes, please send an email to the staff.");
-			throw new RuntimeException(e);
+			final String errorMessage = "Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
+					+ cadpVersionDir + "\" exists and contains \"BpmnTypesBuilder.java\"). If yes, please send an email to the staff.";
+			System.out.println(errorMessage);
+			throw new RuntimeException(errorMessage, e);
 		}
 
 		//If in lazy mode, rebuild the BCG files only if needed
@@ -313,11 +305,18 @@ public class Vbpmn
 		final Triple<Integer, String, Collection<String>> result2 = lazy ? pif2lnt.load(pifModel2) : pif2lnt.generate(pifModel2);
 
 		//If one of the models could not be loaded => ERROR
-		if (result1.getLeft() != ReturnCodes.TERMINATION_OK
-			|| result2.getLeft() != ReturnCodes.TERMINATION_OK)
+		if (result1.getLeft() != ReturnCodes.TERMINATION_OK)
 		{
-			System.out.println("Error in loading models.");
-			throw new IllegalStateException();
+			final String errorMessage = this.getErrorMessage(pif1, result1);
+			System.out.println(errorMessage);
+			throw new IllegalStateException(errorMessage);
+		}
+
+		if (result2.getLeft() != ReturnCodes.TERMINATION_OK)
+		{
+			final String errorMessage = this.getErrorMessage(pif2, result2);
+			System.out.println(errorMessage);
+			throw new IllegalStateException(errorMessage);
 		}
 
 		/*
@@ -395,9 +394,31 @@ public class Vbpmn
 		printStream.close();
 
 		final int returnValue = result ? ReturnCodes.TERMINATION_OK : ReturnCodes.TERMINATION_ERROR;
-		System.out.println("Result: " + result);
+		//System.out.println("Result: " + result);
 
 		return result;
+	}
+
+	//Private methods
+	private String getErrorMessage(final File pifProcess,
+								   final Triple<Integer, String, Collection<String>> triple)
+	{
+		final String errorMessage;
+
+		if (triple.getLeft() != ReturnCodes.TERMINATION_UNBALANCED_INCLUSIVE_CYCLE)
+		{
+			errorMessage = "Error while loading model \"" + pifProcess.getAbsolutePath() + "\". Please verify " +
+					"that your input model is correct (in particular, BPMN objects and flows should not contain the" +
+					" \"-\" symbol in their \"id\" attribute).";
+
+		}
+		else
+		{
+			errorMessage = "Unbalanced inclusive gateways inside loops are not supported by the current version of" +
+					" VBPMN, but model \"" + pifProcess.getAbsolutePath() + "\" contains some.";
+		}
+
+		return errorMessage;
 	}
 
 	/*

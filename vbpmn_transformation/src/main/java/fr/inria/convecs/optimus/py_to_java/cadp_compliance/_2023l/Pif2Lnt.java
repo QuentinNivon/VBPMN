@@ -3815,8 +3815,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final String fileName = this.name + ".svl";
 			final File svlFile = new File(outputFolder + File.separator + fileName);
 
-			System.out.println("Absolute path: " + svlFile.getAbsolutePath());
-			System.out.println("Working Directory = " + System.getProperty("user.dir"));
+			//System.out.println("Absolute path: " + svlFile.getAbsolutePath());
+			//System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
 			final PrintWriter printWriter;
 
