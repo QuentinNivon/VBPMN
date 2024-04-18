@@ -6,14 +6,14 @@ another, the following procedure has been created:
 1) Check the version of CADP installed on your computer using the ``cadp_lib'' command.
 
 2) Go to the ``vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance''
-folder (accessible from the current folder).
+   directory (accessible from the current directory).
 
-3) In the current directory, create a new folder whose name is the version name returned by the
-   ``cadp_lib'' command executed in step 1 without the dash symbol and preceded by an underscore (e.g.,
-   ``_2023k'', or ``_2024a'').
+3) In this directory, create a new folder whose name is the version name returned by the ``cadp_lib''
+   command executed in step 1 without the dash symbol and preceded by an underscore (e.g., ``_2023k'',
+   or ``_2024a'').
 
 4) Copy all the files of the most recent folder (such as ``_2023k'' or ``_2024a'') inside your new folder and
-   resolve all the packages names problems of the copied classes (switch imports to the newly created package).
+   resolve all the packages names issues for the copied classes (switch imports to the newly created package).
 
 5) Find your CADP version on the ``https://cadp.inria.fr/changes.html'' webpage and check the ``HISTORY file
    item'' column.
@@ -30,9 +30,9 @@ folder (accessible from the current folder).
    To do so, analyse precisely the changes that you pasted in the ``CHANGES.txt'' file on step 5.
 
 7) /!\ OPTIONAL /!\
-   Run the `check_compatibility.sh'' script or the JUnit test located at
+   Run the ``check_compatibility.sh'' script or the JUnit test located at
    ``vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/FullTests.java'' to verify that
-   your changes are compliant with the new CADP version. If the script output errors, repeat steps 6) and 7)
+   your changes are compliant with the new version of CADP. If the script output errors, repeat steps 6) and 7)
    until the script returns no error.
 
 8) Regenerate the WAR file (manually or using the ``generate_jar.sh'' script) and deploy it to your Tomcat
@@ -46,3 +46,13 @@ folder (accessible from the current folder).
    corresponding to CADP versions older than 1 year. As CADP license files last at most 1 year, removing older
    folders is safe as they are no longer used by anybody. For instance, if the current directory is ``_2024b'',
    you can remove all directories up to ``_2023a'' included.
+
+10) /!\ OPTIONAL - ADDING NEW TESTS /!\
+    To add new test cases to the compatibility tests performed to check whether VBPMN is compliant with a new version
+    of CADP, please follow these rules:
+    - If needed, add your new PIF process to the ``vbpmn_transformation/src/main/resources/pif_examples'' directory.
+    - Navigate to the ``vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/unit_tests'' directory
+    - Copy/paste one of the ``Test<number>.java'' file and modify its top properties (PIF_FILE_1, PIF_FILE_2, etc.)
+      according to your needs
+    - You can also modify the body of the ``test()'' function if needed, but that may not be necessary in most cases.
+    - That is all! Your test has been added to the test suit! :-) You can verify it by performing step 7) ;-)
