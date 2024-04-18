@@ -17,14 +17,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/**
+ * Porting of the ``vbpmn.py'' code to Java code
+ * @author Quentin NIVON (quentin.nivon@inria.fr)
+ */
+
 public class Vbpmn
 {
-	/**
-	 * Porting of the ``vbpmn.py'' code to Java code
-	 * @author Quentin NIVON (quentin.nivon@inria.fr)
-	 */
-
-	private Logger logger = LoggerFactory.getLogger(Vbpmn.class);
+	private final Logger logger = LoggerFactory.getLogger(Vbpmn.class);
 
 	/*
 	 	Command to call SVL.
@@ -141,7 +141,8 @@ public class Vbpmn
 		this.outputFolder = outputFolder;
 	}
 
-	@SuppressWarnings("unchecked") //Prevents Java from outputting warnings concerning the cast of Class<capture of ?> to Class<? extends Pif2LntGeneric>
+	@SuppressWarnings("unchecked") //Prevents Java from outputting warnings concerning the cast of Class<capture of ?>
+	// to Class<? extends Pif2LntGeneric>
 	public boolean execute()
 	{
 		final long startTime = System.nanoTime();
@@ -425,7 +426,7 @@ public class Vbpmn
 		This class represents the superclass of all classes performing some formal checking on two LTS models (stores
 		in BCG format files)
 	 */
-	abstract class Checker
+	abstract static class Checker
 	{
 		protected static final String CHECKER_FILE = "check.svl";
 		protected static final String DIAGNOSTIC_FILE = "res.txt";

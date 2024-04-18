@@ -10,12 +10,36 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 public class FullTests
 {
+	/**
+	 * This test class performs compatibility testing for VBPMN with regards to the version of CADP
+	 * installed on the user starting this test suite's machine.
+	 * It works as follows:
+	 * - First, the test verifies that the $CADP environment variable is set, and throws a RuntimeException if not
+	 * - Then, it computes the identifier of the CADP version being used on the user's machine.
+	 * - Finally, it loads each test file located in
+	 * ``vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/unit_tests'' using Java reflexion
+	 * capacities, and executes these tests.
+	 * If a test fails, it throws a RuntimeException that stops the execution of the current instance.
+	 * Otherwise, if each test has been passed, a message is displayed saying that VBPMN is compliant with the new
+	 * CADP version.
+	 *
+	 * @throws IOException is thrown by the test cases whenever creating/cleaning temporary directory failed, or when
+	 * the copy of the PIF files to this directory failed.
+	 * @throws ClassNotFoundException is thrown whenever a test case class failed to be loaded.
+	 * @throws NoSuchMethodException is thrown whenever the default constructor of a test case class failed to be loaded.
+	 * @throws InvocationTargetException is thrown whenever a new instance of the test case class failed to be loaded.
+	 * @throws InstantiationException is thrown whenever a new instance of the test case class failed to be loaded.
+	 * @throws IllegalAccessException is thrown whenever a new instance of the test case class failed to be loaded.
+	 */
+
+	@SuppressWarnings("unchecked") //Prevents Java from outputting warnings concerning the cast of Class<capture of ?>
+	// to Class<? extends GenericTest>
 	@Test
 	public void test() throws IOException,
-			InterruptedException,
 			ClassNotFoundException,
 			NoSuchMethodException,
 			InvocationTargetException,
@@ -69,7 +93,9 @@ public class FullTests
 
 		System.out.println("Path: " + path);
 
-		for (File file : new File(path).listFiles())
+		int nbTests = 0;
+
+		for (File file : Objects.requireNonNull(new File(path).listFiles()))
 		{
 			//Load the Pif2Lnt class located in the package corresponding to the good version
 			final Class<? extends GenericTest> testClass = (Class<? extends GenericTest>)
@@ -79,9 +105,10 @@ public class FullTests
 
 			System.out.println(ShellColor.ANSI_CYAN + "Performing " + file.getName() + "..." + ShellColor.ANSI_RESET);
 			test.test();
+			nbTests++;
 			System.out.println(ShellColor.ANSI_GREEN + file.getName() + " passed!\n" + ShellColor.ANSI_RESET);
 		}
 
-		System.out.println(ShellColor.ANSI_GREEN + "----------COMPATIBILITY CHECK SUCCEEDED FOR CADP VERSION \"" + cadpVersion + "\"----------" + ShellColor.ANSI_RESET);
+		System.out.println(ShellColor.ANSI_GREEN + "----------" + nbTests + " COMPATIBILITY TEST CASES PASSED FOR CADP VERSION \"" + cadpVersion + "\"----------" + ShellColor.ANSI_RESET);
 	}
 }
