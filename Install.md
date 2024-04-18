@@ -3,7 +3,7 @@ Using Tomcat WAR to Run VBPMN
 
  - Download the WAR from the VBPMN site
 
-[**Download VBPMN**](https://github.com/QuentinNivon/VBPMN/tree/main/vbpmn_dist/transformation.war) 
+[**Download VBPMN**](https://quentinnivon.github.io/vbpmn/transformation.war) 
 
 **Via Tomcat Manager**
 

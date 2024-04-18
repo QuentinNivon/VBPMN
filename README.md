@@ -14,7 +14,7 @@ Usage
 VBPMN web app is available for download as a web archive (WAR). 
 Hosting of the web app requires [Apache Tomcat 8.0](https://tomcat.apache.org/download-80.cgi). 
 
-[**Download VBPMN**](https://github.com/QuentinNivon/VBPMN/tree/main/vbpmn_dist/transformation.war) 
+[**Download VBPMN**](https://quentinnivon.github.io/vbpmn/transformation.war) 
 
 Once you have the web app running, you can access the application 
 using the following web page (assuming tomcat is running locally on port 8080)
