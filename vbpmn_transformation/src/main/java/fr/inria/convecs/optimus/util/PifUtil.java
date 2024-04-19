@@ -46,6 +46,7 @@ public class PifUtil {
 		} catch(JAXBException e)
 		{
 			logger.warn("Unable to check if the pif file is balanced", e);
+			throw new IllegalStateException("Unable to check if the pif file is balanced.");
 		}
 		return result;
 	}
@@ -70,6 +71,7 @@ public class PifUtil {
 		catch(Exception e)
 		{
 			logger.warn("Unable to check if the process is balanced", e);
+			throw new IllegalStateException("Unable to check if the pif file is balanced.");
 		}
 		return result;
 
@@ -86,7 +88,7 @@ public class PifUtil {
 		if(!visited.contains(initial))
 		{
 			visited.add(initial);
-			logger.debug("Processing workflownode: {}", initial.getId());
+			//logger.debug("Processing workflownode: {}", initial.getId());
 			List<JAXBElement<Object>> seqFlows = initial.getOutgoingFlows();
 
 			if (seqFlows.isEmpty())
@@ -104,13 +106,13 @@ public class PifUtil {
 
 				if (targetNode instanceof OrSplitGateway)
 				{
-					logger.debug("Push SplitGateway: {}", targetNode.getId());
+					//logger.debug("Push SplitGateway: {}", targetNode.getId());
 					gatewayStack.push((Gateway) targetNode);
 				}
 
 				if(targetNode instanceof OrJoinGateway)
 				{
-					logger.debug("Found JoinGateway: {}", targetNode.getId());
+					//logger.debug("Found JoinGateway: {}", targetNode.getId());
 					Gateway sourceSplit = gatewayStack.pop();
 
 					if(sourceSplit instanceof OrSplitGateway)
@@ -127,7 +129,7 @@ public class PifUtil {
 		else
 		{
 			//Loop inclusivegateway
-			logger.warn("Found an inclusive gateway with loop!");
+			//logger.warn("Found an inclusive gateway with loop!");
 			return false;
 		}
 		return true;

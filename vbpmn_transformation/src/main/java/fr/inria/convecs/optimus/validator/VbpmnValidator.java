@@ -8,8 +8,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
+import fr.inria.convecs.optimus.py_to_java.Vbpmn;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +36,7 @@ public class VbpmnValidator implements ModelValidator {
 	public VbpmnValidator(String scriptsFolder, String outputFolder) {
 		this.scriptsFolder = scriptsFolder;
 		this.outputFolder = outputFolder;
+		System.out.println("OUTPUT FOLDER: " + this.outputFolder);
 	}
 
 	/*
@@ -41,10 +45,67 @@ public class VbpmnValidator implements ModelValidator {
 	 * @see fr.inria.convecs.optimus.validator.ModelValidator#validate(java.io.File, java.lang.String)
 	 */
 	@Override
-	public void validate(final File modelFile, final List<String> options) {
+	public void validateV2(final File modelFile, final List<String> options) {
 
-		validate(modelFile, modelFile, options);
+		validateV2(modelFile, modelFile, options);
 
+	}
+
+	public void validateV2(final File modelFile1,
+					final File modelFile2,
+					final List<String> options)
+	{
+		final boolean isBalanced = PifUtil.isPifBalanced(modelFile1) && PifUtil.isPifBalanced(modelFile2);
+		logger.debug("The input is balanced: {}", isBalanced);
+
+		final ArrayList<String> command = new ArrayList<>();
+		command.add(modelFile1.getAbsolutePath());
+		command.add(modelFile2.getAbsolutePath());
+		command.addAll(options);
+
+		logger.debug("The command is: {}", command);
+
+		final Vbpmn vbpmn = new Vbpmn(command.toArray(new String[0]), this.outputFolder);
+		final boolean result = vbpmn.execute();
+
+		/*if (result != ReturnCodes.TERMINATION_OK)
+		{
+			throw new RuntimeException("Failed to execute VBPMN (return code " + result + ").");
+		}*/
+
+		final StringBuilder builder = new StringBuilder();
+		builder.append(result)
+				.append("|");
+
+		try
+		{
+			final String dotModel1 = generateDotFile(modelFile1.getAbsolutePath().replace(".pif", ".bcg"));
+			final String dotModel2 = generateDotFile(modelFile2.getAbsolutePath().replace(".pif", ".bcg"));
+
+			builder.append(dotModel1)
+					.append("|")
+					.append(dotModel2);
+
+			if (!result)
+			{
+				String bcgFileName = "bisimulator.bcg";
+				if (options.contains("property-implied")
+					|| options.contains("property-and"))
+				{
+					bcgFileName = "evaluator.bcg";
+				}
+
+				final File bcgFile = new File(this.outputFolder + File.separator + bcgFileName);
+				final String dotBcg = generateDotFile(bcgFile.getAbsolutePath());
+				builder.append("|").append(dotBcg);
+			}
+		}
+		catch (IOException | InterruptedException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		this.result = builder.toString();
 	}
 
 	/*
@@ -53,7 +114,7 @@ public class VbpmnValidator implements ModelValidator {
 	 * @see fr.inria.convecs.optimus.validator.ModelValidator#validate(java.io.File, java.io.File,
 	 * java.lang.String)
 	 */
-	@Override
+
 	public void validate(final File modelFile1, final File modelFile2, final List<String> options) {
 		Boolean isBalanced = false;
 		isBalanced = PifUtil.isPifBalanced(modelFile1);

@@ -14,25 +14,40 @@ Usage
 VBPMN web app is available for download as a web archive (WAR). 
 Hosting of the web app requires [Apache Tomcat 8.0](https://tomcat.apache.org/download-80.cgi). 
 
-[**Download VBPMN**](https://pascalpoizat.github.io/vbpmn/downloads/transformation.war) 
+[**Download VBPMN**](https://quentinnivon.github.io/vbpmn/transformation.war) 
 
 Once you have the web app running, you can access the application 
 using the following web page (assuming tomcat is running locally on port 8080)
 
 http://localhost:8080/transformation/home.html  
 
-If you need sample BPMN 2.0 models to try, you can download it from the site
+Required Softwares
+=======================================
+* [JDK >= 8.0](https://www.oracle.com/fr/java/technologies/downloads/)
+* [Apache Tomcat 8.0](https://tomcat.apache.org/download-80.cgi)
+* [CADP >= 2023-k](https://cadp.inria.fr/)
 
-[**Download BPMN 2.0 Samples**](https://pascalpoizat.github.io/vbpmn/downloads/samples.zip) 
+Important information
+======================================
+The VBPMN tool relies on the CADP toolbox that is updated once per month.
+If you upgrade CADP on your machine, VBPMN must also be upgraded to a newer version, compliant with the most recent version of CADP.
+This can be done by downloading again the [VBPMN WAR file](https://quentinnivon.github.io/vbpmn/transformation.war)
+and replacing the old WAR file of the Tomcat by the new one.
+If you have any issue with a subsequent version of VBPMN, please send an email to quentin.nivon@inria.fr.
 
-For more information, you can visit the VBPMN site - https://pascalpoizat.github.io/vbpmn/
+Browser Compatibility
+====================================
+The web app has been tested on the following browsers.
+
+* Mozilla Firefox 47.0
+* Google Chrome 51.0.2704
 
 Contributors
 =====================================
 * [Pascal Poizat](http://pascalpoizat.github.io/)
 * [Gwen Salaün](http://convecs.inria.fr/people/Gwen.Salaun/) 
 * [Ajay Krishna](https://about.me/ajaykrishna)
-
+* [Quentin Nivon](https://quentinnivon.github.io/)
 
 License
 =============================

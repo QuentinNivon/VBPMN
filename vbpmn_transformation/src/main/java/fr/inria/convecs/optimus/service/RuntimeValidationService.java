@@ -138,7 +138,7 @@ public class RuntimeValidationService {
 					}
 					File input1 = parseAndTransform(fileList.get(0));
 					File input2 = parseAndTransform(fileList.get(1));
-					validator.validate(input1, input2, operationMode);
+					validator.validateV2(input1, input2, operationMode);
 				} 
 				else 
 				{
@@ -148,7 +148,7 @@ public class RuntimeValidationService {
 					operationMode.add(formula);
 					
 					File input1 = parseAndTransform(fileList.get(0));
-					validator.validate(input1, operationMode);
+					validator.validateV2(input1, operationMode);
 				}
 				result = validator.getResult();
 				httpResponse = Response.status(Status.OK)

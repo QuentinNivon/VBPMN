@@ -1,36 +1,36 @@
 package fr.inria.convecs.optimus.py_to_java;
 
-import com.sun.tools.javac.comp.Check;
 import fr.inria.convecs.optimus.util.PifUtil;
-import net.sourceforge.argparse4j.ArgumentParserBuilder;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
-import net.sourceforge.argparse4j.inf.ArgumentAction;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+/**
+ * Porting of the ``vbpmn.py'' code to Java code
+ * @author Quentin NIVON (quentin.nivon@inria.fr)
+ */
 
 public class Vbpmn
 {
-	/**
-	 * Porting of the ``vbpmn.py'' code to Java code
-	 * @author Quentin NIVON (quentin.nivon@inria.fr)
-	 */
+	private final Logger logger = LoggerFactory.getLogger(Vbpmn.class);
 
 	/*
 	 	Command to call SVL.
 	 	First argument is the script, second one is the result file.
 	 */
-	private static final String SVL_CALL_COMMAND = "svl {0} > {1}";
+	private static final String SVL_CALL_COMMAND = "svl {0} -> {1}";
 
 	/*
 		Template for SVL scripts.
@@ -39,7 +39,7 @@ public class Vbpmn
 	private static final String SVL_CAESAR_TEMPLATE =
 		"% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n" +
 		"% CAESAR_OPTIONS=\"-more cat\"\n" +
-		"{0}"
+		"{0}\n"
 	;
 
 	/*
@@ -50,7 +50,7 @@ public class Vbpmn
 		Fourth one is the second model (LTS in BCG format).
 	 */
 	private static final String SVL_COMPARISON_CHECKING_TEMPLATE =
-		"% bcg_open \"{0}.bcg\" bisimulator -{1} -{2} -diag \"{3}.bcg\""
+		"% bcg_open \"{0}.bcg\" bisimulator -{1} -{2} -diag \"{3}.bcg\"\n"
 	;
 
 	/*
@@ -58,7 +58,7 @@ public class Vbpmn
 		First argument is the model file (LTS in BCG format).
 		Second one is the formula (MCG) file.
 	 */
-	private static final String SVL_FORMULA_CHECKING_TEMPLATE = "% bcg_open \"{0}.bcg\" evaluator4 -diag \"{1}\"";
+	private static final String SVL_FORMULA_CHECKING_TEMPLATE = "% bcg_open \"{0}.bcg\" evaluator4 -diag \"{1}\"\n";
 
 	/*
 		Template for hiding in SVL.
@@ -66,27 +66,27 @@ public class Vbpmn
 		Second argument is the hiding mode (hiding or hiding all but).
 		Third argument is the list of elements to hide (or hide but).
 	 */
-	private static final String SVL_HIDING_TEMPLATE = "\"{0}.bcg\" = total {1} {2} in \"{0}.bcg\"";
+	private static final String SVL_HIDING_TEMPLATE = "\"{0}.bcg\" = total {1} {2} in \"{0}.bcg\"\n";
 
 	/*
 		Template for renaming in SVL.
 		First and third arguments are the model file (LTS in BCG format).
 		Second argument is the relabelling function.
 	 */
-	private static final String SVL_RENAMING_TEMPLATE = "\"{0}.bcg\" = total rename {1} in \"{0}.bcg\"";
+	private static final String SVL_RENAMING_TEMPLATE = "\"{0}.bcg\" = total rename {1} in \"{0}.bcg\"\n";
 
 	/*
 		Template for making a working copy in SVL.
 		First argument is the source model file (LTS in BCG format).
 		Second argument is the target model file (LTS in BCG format).
 	 */
-	private static final String SVL_COPY_TEMPLATE = "% bcg_io \"{0}.bcg\" \"{1}.bcg\"";
+	private static final String SVL_COPY_TEMPLATE = "% bcg_io \"{0}.bcg\" \"{1}.bcg\"\n";
 
 	private static final String WORK_SUFFIX = "_work";
 	private static final String CONSERVATIVE_COMPARISON = "conservative";
 	private static final String INCLUSIVE_COMPARISON = "inclusive";
 	private static final String EXCLUSIVE_COMPARISON = "exclusive";
-	private static final ArrayList<String> OPERATIONS_COMPARISON = (ArrayList<String>) Arrays.asList(
+	private static final List<String> OPERATIONS_COMPARISON = Arrays.asList(
 		CONSERVATIVE_COMPARISON,
 		INCLUSIVE_COMPARISON,
 		EXCLUSIVE_COMPARISON
@@ -95,11 +95,11 @@ public class Vbpmn
 	private static final String AND_PROPERTY = "property-and";
 	private static final String IMPLIED_PROPERTY = "property-implied";
 	private static final String HIDING_OPERATION = "_"; //NOT IN Python CODE
-	private static final ArrayList<String> OPERATIONS_PROPERTY = (ArrayList<String>) Arrays.asList(
+	private static final List<String> OPERATIONS_PROPERTY = Arrays.asList(
 		AND_PROPERTY,
 		IMPLIED_PROPERTY
 	);
-	private static final ArrayList<String> OPERATIONS = (ArrayList<String>) Arrays.asList(
+	private static final List<String> OPERATIONS = Arrays.asList(
 		CONSERVATIVE_COMPARISON,
 		INCLUSIVE_COMPARISON,
 		EXCLUSIVE_COMPARISON,
@@ -110,7 +110,7 @@ public class Vbpmn
 	private static final String SELECTION_FIRST = "first";
 	private static final String SELECTION_SECOND = "second";
 	private static final String SELECTION_ALL = "all";
-	private static final ArrayList<String> SELECTIONS = (ArrayList<String>) Arrays.asList(
+	private static final List<String> SELECTIONS = Arrays.asList(
 		SELECTION_FIRST,
 		SELECTION_SECOND,
 		SELECTION_ALL
@@ -130,8 +130,20 @@ public class Vbpmn
 	private static final String HIDE_ALL_BUT = "hide all but";
 	private static final String HIDE = "hide";
 	private static final String MCL_FORMULA = "formula.mcl";
+	private final String[] sysArgs;
+	private final String outputFolder;
 
-	public Vbpmn(final String[] sysArgs)
+	public Vbpmn(final String[] sysArgs,
+				 final String outputFolder)
+	{
+		this.sysArgs = sysArgs;
+		//if (true) throw new IllegalStateException(Arrays.toString(sysArgs));
+		this.outputFolder = outputFolder;
+	}
+
+	@SuppressWarnings("unchecked") //Prevents Java from outputting warnings concerning the cast of Class<capture of ?>
+	// to Class<? extends Pif2LntGeneric>
+	public boolean execute()
 	{
 		final long startTime = System.nanoTime();
 
@@ -185,13 +197,13 @@ public class Vbpmn
 			args = parser.parseArgs(sysArgs);
 
 			if (OPERATIONS_PROPERTY.contains(args.getString("operation"))
-				&& args.get("formula") == null)
+					&& args.get("formula") == null)
 			{
 				System.out.println("missing formula in presence of property based comparison.");
 				throw new RuntimeException("missing formula in presence of property based comparison.");
 			}
 			if (!OPERATIONS_PROPERTY.contains(args.getString("operation"))
-				&& args.get("formula") != null)
+					&& args.get("formula") != null)
 			{
 				System.out.println("formula in presence of equivalence based comparison will not be used.");
 			}
@@ -199,8 +211,7 @@ public class Vbpmn
 		catch (ArgumentParserException e)
 		{
 			parser.printHelp();
-			System.exit(ReturnCodes.TERMINATION_ERROR);
-			return;
+			throw new IllegalStateException();
 		}
 
 		//Check if process is balanced or not
@@ -208,44 +219,105 @@ public class Vbpmn
 		final File pif2 = new File((String) args.getList("models").get(1));
 		final boolean processIsBalanced = PifUtil.isPifBalanced(pif1) && PifUtil.isPifBalanced(pif2);
 
-		//Check how to properly load the good file (depending on the CADP version)
-		//+ copy all the necessary files
-		Class<?> test;
+		final String cadpVersionDir;
+
 		try
 		{
-			 test = Class.forName("rgknrk");
+			if (System.getenv("CADP") == null)
+			{
+				throw new RuntimeException("Environment variable $CADP is not set! Please fix this error and retry.");
+			}
+
+			final Process cadpLibCommand = Runtime.getRuntime().exec("cadp_lib -1", null, new File(outputFolder));
+			final BufferedReader stdInput = new BufferedReader(new InputStreamReader(cadpLibCommand.getInputStream()));
+			String line;
+
+			// Read the output from the command
+			//System.out.println("Here is the standard output of the command:\n");
+			final StringBuilder stdOutBuilder = new StringBuilder();
+			while ((line = stdInput.readLine()) != null)
+			{
+				stdOutBuilder.append(line);
+			}
+			//System.out.println(stdOutBuilder);
+			cadpLibCommand.destroy();
+
+			//Split answer by spaces
+			final String[] splitAnswer = stdOutBuilder.toString().split("\\s+");
+			//The 2nd element is the version code, i.e. "2023k"
+			cadpVersionDir = "_" + splitAnswer[1].replace(" ", "").replace("-", "");
+			//System.out.println("CADP VERSION: " + cadpVersionDir);
 		}
-		catch (ClassNotFoundException e)
+		catch (IOException e)
 		{
 			throw new RuntimeException(e);
 		}
 
-		final Loader loader;
+		//Load the good Pif2Lnt class (depending on the CADP version)
+		final Pif2LntGeneric pif2lnt;
+		try
+		{
+			//Load the Pif2Lnt class located in the package corresponding to the good version
+			final Class<? extends Pif2LntGeneric> pif2LntClass = (Class<? extends Pif2LntGeneric>)
+					Class.forName("fr.inria.convecs.optimus.py_to_java.cadp_compliance." + cadpVersionDir + ".Pif2Lnt");
+			final Constructor<? extends Pif2LntGeneric> pif2LntConstructor = pif2LntClass.getDeclaredConstructor();
+			pif2lnt = pif2LntConstructor.newInstance();
+			pif2lnt.setBalance(processIsBalanced);
+			pif2lnt.setOutputFolder(this.outputFolder);
+		}
+		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
+			   IllegalAccessException e)
+		{
+			final String errorMessage = "Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
+					+ cadpVersionDir + "\" exists and contains \"Pif2Lnt.java\"). If yes, please send an email to the staff.";
+			System.out.println(errorMessage);
+			throw new RuntimeException(errorMessage, e);
+		}
+
+		//Load the good BpmnTypesBuilder class (depending on the CADP version)
+		try
+		{
+			//Load the BpmnTypesBuilder class located in the package corresponding to the good version
+			final Class<? extends BpmnTypesBuilderGeneric> bpmnTypesBuilderClass = (Class<? extends BpmnTypesBuilderGeneric>)
+					Class.forName("fr.inria.convecs.optimus.py_to_java.cadp_compliance." + cadpVersionDir + ".BpmnTypesBuilder");
+			final Constructor<? extends BpmnTypesBuilderGeneric> bpmnTypesBuilderConstructor = bpmnTypesBuilderClass.getDeclaredConstructor();
+			final BpmnTypesBuilderGeneric bpmnTypesBuilder = bpmnTypesBuilderConstructor.newInstance();
+			bpmnTypesBuilder.setOutputDirectory(outputFolder);
+			bpmnTypesBuilder.dumpBpmnTypesFile();
+		}
+		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
+			   IllegalAccessException e)
+		{
+			final String errorMessage = "Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
+					+ cadpVersionDir + "\" exists and contains \"BpmnTypesBuilder.java\"). If yes, please send an email to the staff.";
+			System.out.println(errorMessage);
+			throw new RuntimeException(errorMessage, e);
+		}
 
 		//If in lazy mode, rebuild the BCG files only if needed
-		if (args.getBoolean("--lazy"))
-		{
-			loader = test.loader();
-		}
-		else
-		{
-			loader = test.generator();
-		}
+		final boolean lazy = args.get("lazy") != null
+				&& args.getBoolean("lazy");
 
 		//(Re)build the first model
 		final String pifModel1 = (String) args.getList("models").get(0);
-		final Triple<Integer, String, Collection<String>> result1 = loader.load(pifModel1);
+		final Triple<Integer, String, Collection<String>> result1 = lazy ? pif2lnt.load(pifModel1) : pif2lnt.generate(pifModel1);
 		//(Re)build the second model
 		final String pifModel2 = (String) args.getList("models").get(1);
-		final Triple<Integer, String, Collection<String>> result2 = loader.load(pifModel2);
+		final Triple<Integer, String, Collection<String>> result2 = lazy ? pif2lnt.load(pifModel2) : pif2lnt.generate(pifModel2);
 
 		//If one of the models could not be loaded => ERROR
-		if (result1.getLeft() != ReturnCodes.TERMINATION_OK
-			|| result2.getLeft() != ReturnCodes.TERMINATION_OK)
+		if (result1.getLeft() != ReturnCodes.TERMINATION_OK)
 		{
-			System.out.println("Error in loading models.");
-			System.exit(ReturnCodes.TERMINATION_PROBLEM);
-			return;
+			final String errorMessage = this.getErrorMessage(pif1, result1);
+			System.out.println(errorMessage);
+			throw new IllegalStateException(errorMessage);
+		}
+
+		if (result2.getLeft() != ReturnCodes.TERMINATION_OK)
+		{
+			final String errorMessage = this.getErrorMessage(pif2, result2);
+			System.out.println(errorMessage);
+			throw new IllegalStateException(errorMessage);
 		}
 
 		/*
@@ -258,11 +330,11 @@ public class Vbpmn
 		final ArrayList<String> syncSet1 = new ArrayList<>();
 		final ArrayList<String> syncSet2 = new ArrayList<>();
 
-		if (args.get("--context") != null)
+		if (args.get("context") != null)
 		{
-			final String pifContextModel = args.getString("--context");
+			final String pifContextModel = args.getString("context");
 			System.out.println("Converting \"" + pifContextModel + "\" to LTS...");
-			Triple<Integer, String, Collection<String>> result = Loader.load(pifContextModel);
+			Triple<Integer, String, Collection<String>> result = lazy ? pif2lnt.load(pifContextModel) : pif2lnt.generate(pifContextModel);
 
 			for (String symbol : result.getRight())
 			{
@@ -283,22 +355,22 @@ public class Vbpmn
 		if (OPERATIONS_COMPARISON.contains(args.getString("operation")))
 		{
 			comparator = new ComparisonChecker(
-				result1.getMiddle(),
-				result2.getMiddle(),
-				args.getString("operation"),
-				args.getList("--hiding"),
-				args.getBoolean("--exposemode"),
-				args.get("--renaming"),
-				args.getString("--renamed"),
-				new ArrayList[]{syncSet1, syncSet2}
+					result1.getMiddle(),
+					result2.getMiddle(),
+					args.getString("operation"),
+					args.getList("hiding"),
+					args.get("exposemode") != null && args.getBoolean("exposemode"),
+					args.get("renaming") == null ? new HashMap<>() : args.get("renaming"),
+					args.getString("renamed") == null ? "all" : args.getString("renamed"),
+					new ArrayList[]{syncSet1, syncSet2}
 			);
 		}
 		else
 		{
 			comparator = new FormulaChecker(
-				result1.getMiddle(),
-				result2.getMiddle(),
-				args.getString("--formula")
+					result1.getMiddle(),
+					result2.getMiddle(),
+					args.getString("formula")
 			);
 		}
 
@@ -307,7 +379,7 @@ public class Vbpmn
 		final long endTime = System.nanoTime();
 		final long totalTime = endTime - startTime;
 
-		final File templateFile = new File("time.txt");
+		final File templateFile = new File(outputFolder + File.separator + "time.txt");
 		final PrintStream printStream;
 
 		try
@@ -323,15 +395,38 @@ public class Vbpmn
 		printStream.close();
 
 		final int returnValue = result ? ReturnCodes.TERMINATION_OK : ReturnCodes.TERMINATION_ERROR;
-		System.out.println("Result: " + result);
-		System.exit(returnValue);
+		//System.out.println("Result: " + result);
+
+		return result;
+	}
+
+	//Private methods
+	private String getErrorMessage(final File pifProcess,
+								   final Triple<Integer, String, Collection<String>> triple)
+	{
+		final String errorMessage;
+
+		if (triple.getLeft() != ReturnCodes.TERMINATION_UNBALANCED_INCLUSIVE_CYCLE)
+		{
+			errorMessage = "Error while loading model \"" + pifProcess.getAbsolutePath() + "\". Please verify " +
+					"that your input model is correct (in particular, BPMN objects and flows should not contain the" +
+					" \"-\" symbol in their \"id\" attribute).";
+
+		}
+		else
+		{
+			errorMessage = "Unbalanced inclusive gateways inside loops are not supported by the current version of" +
+					" VBPMN, but model \"" + pifProcess.getAbsolutePath() + "\" contains some.";
+		}
+
+		return errorMessage;
 	}
 
 	/*
 		This class represents the superclass of all classes performing some formal checking on two LTS models (stores
 		in BCG format files)
 	 */
-	class Checker
+	abstract static class Checker
 	{
 		protected static final String CHECKER_FILE = "check.svl";
 		protected static final String DIAGNOSTIC_FILE = "res.txt";
@@ -356,20 +451,14 @@ public class Vbpmn
 
 		 	@param filename is the filename of the SVL script to create.
 		 */
-		public void genSVL(final String filename)
-		{
-			throw new NotImplementedException("genSVL() is not implemented!"); //TODO ``in class %s" % self.__class__.__name__)''
-		}
+		public abstract void genSVL(final String filename);
 
 		/**
 		 * Reification of a Checker as a callable object.
 		 *
 		 * TODO
 		 */
-		public boolean call()
-		{
-			return true;
-		}
+		public abstract boolean call();
 	}
 
 	// This class is used to perform comparison operations on two models (LTS stored in two BCG format files)
@@ -459,13 +548,13 @@ public class Vbpmn
 						SVL_HIDING_TEMPLATE,
 						workModel1,
 						hideMode,
-						PyToJavaUtils.join(this.hiding))
+						PyToJavaUtils.join(this.hiding, ","))
 				);
 				svlCommands.append(PyToJavaUtils.parametrize(
 						SVL_HIDING_TEMPLATE,
 						workModel2,
 						hideMode,
-						PyToJavaUtils.join(this.hiding))
+						PyToJavaUtils.join(this.hiding, ","))
 				);
 			}
 
@@ -490,26 +579,26 @@ public class Vbpmn
 						svlCommands.append(PyToJavaUtils.parametrize(
 								SVL_RENAMING_TEMPLATE,
 								workModel1,
-								PyToJavaUtils.join(renamings))
+								PyToJavaUtils.join(renamings, ","))
 						);
 						svlCommands.append(PyToJavaUtils.parametrize(
 								SVL_RENAMING_TEMPLATE,
 								workModel2,
-								PyToJavaUtils.join(renamings))
+								PyToJavaUtils.join(renamings, ","))
 						);
 						break;
 					case SELECTION_FIRST:
 						svlCommands.append(PyToJavaUtils.parametrize(
 								SVL_RENAMING_TEMPLATE,
 								workModel1,
-								PyToJavaUtils.join(renamings))
+								PyToJavaUtils.join(renamings, ","))
 						);
 						break;
 					case SELECTION_SECOND:
 						svlCommands.append(PyToJavaUtils.parametrize(
 								SVL_RENAMING_TEMPLATE,
 								workModel2,
-								PyToJavaUtils.join(renamings))
+								PyToJavaUtils.join(renamings, ","))
 						);
 						break;
 					default:
@@ -534,7 +623,7 @@ public class Vbpmn
 
 			//TODO VERIFIER LA CREATION DU FICHIER AINSI QUE SON CONTENU
 			final String template = PyToJavaUtils.parametrize(SVL_CAESAR_TEMPLATE, svlCommands.toString());
-			final File templateFile = new File(filename);
+			final File templateFile = new File(outputFolder + File.separator + filename);
 			final PrintStream printStream;
 
 			try
@@ -560,27 +649,45 @@ public class Vbpmn
 		public boolean call()
 		{
 			this.genSVL(Checker.CHECKER_FILE);
+
 			try
 			{
-				//TODO CHECK FUNCTIONEMENT
+				//TODO CHECK FUNCTIONING
 				final Process svlCommand = Runtime.getRuntime().exec(PyToJavaUtils.parametrize(
-					SVL_CALL_COMMAND,
-					Checker.CHECKER_FILE,
-					Checker.DIAGNOSTIC_FILE
-				));
+						SVL_CALL_COMMAND,
+						Checker.CHECKER_FILE,
+						Checker.DIAGNOSTIC_FILE
+				), null, new File(outputFolder));
+				final InputStream output = svlCommand.getInputStream();
+				final InputStream error = svlCommand.getErrorStream();
+				final String stdOut = IOUtils.toString(output, StandardCharsets.UTF_8);
+				final String stdError = IOUtils.toString(error, StandardCharsets.UTF_8);
 				final int exitValue = svlCommand.waitFor();
+				output.close();
+				error.close();
 
 				if (exitValue != ReturnCodes.TERMINATION_OK)
 				{
-					throw new RuntimeException("An error occurred during the execution of the SVL script.");
+					throw new RuntimeException("An error occurred during the execution of the SVL script:\n\n" + stdError);
 				}
 
-				final Process grepCommand = Runtime.getRuntime().exec(
-						"grep TRUE " + Checker.DIAGNOSTIC_FILE
-				);
-				final int exitValue2 = grepCommand.waitFor();
+				final File resFile = new File(outputFolder + File.separator + DIAGNOSTIC_FILE);
+				final PrintWriter printWriter;
 
-				return exitValue2 != ReturnCodes.TERMINATION_ERROR;
+				try
+				{
+					printWriter = new PrintWriter(resFile);
+				}
+				catch (IOException e)
+				{
+					throw new RuntimeException();
+				}
+
+				printWriter.println(stdOut);
+				printWriter.flush();
+				printWriter.close();
+
+				return stdOut.contains("TRUE");
 			}
 			catch (IOException | InterruptedException e)
 			{
@@ -632,7 +739,7 @@ public class Vbpmn
 			}
 
 			final String template = PyToJavaUtils.parametrize(SVL_CAESAR_TEMPLATE, svlCommands.toString());
-			final File templateFile = new File(filename);
+			final File templateFile = new File(outputFolder + File.separator + filename);
 			final PrintStream printStream;
 
 			try
@@ -658,7 +765,7 @@ public class Vbpmn
 		public boolean call()
 		{
 			//Write formula to file
-			final File formulaFile = new File(FormulaChecker.FORMULA_FILE);
+			final File formulaFile = new File(outputFolder + File.separator + FormulaChecker.FORMULA_FILE);
 			final PrintStream printStream;
 
 			try
@@ -671,6 +778,7 @@ public class Vbpmn
 			}
 
 			printStream.print(this.formula); //TODO: not very clean ...
+			printStream.flush();
 			printStream.close();
 
 			//Generate SVL
@@ -678,25 +786,42 @@ public class Vbpmn
 
 			try
 			{
-				//TODO CHECK FUNCTIONEMENT
+				//TODO CHECK FUNCTIONING
 				final Process svlCommand = Runtime.getRuntime().exec(PyToJavaUtils.parametrize(
 					SVL_CALL_COMMAND,
 					Checker.CHECKER_FILE,
 					Checker.DIAGNOSTIC_FILE
-				));
+				), null, new File(outputFolder));
+				final InputStream output = svlCommand.getInputStream();
+				final InputStream error = svlCommand.getErrorStream();
+				final String stdOut = IOUtils.toString(output, StandardCharsets.UTF_8);
+				final String stdError = IOUtils.toString(error, StandardCharsets.UTF_8);
 				final int exitValue = svlCommand.waitFor();
+				output.close();
+				error.close();
 
 				if (exitValue != ReturnCodes.TERMINATION_OK)
 				{
-					throw new RuntimeException("An error occurred during the execution of the SVL script.");
+					throw new RuntimeException("An error occurred during the execution of the SVL script:\n\n" + stdError);
 				}
 
-				final Process grepCommand = Runtime.getRuntime().exec(
-						"grep FALSE " + Checker.DIAGNOSTIC_FILE
-				);
-				final int exitValue2 = grepCommand.waitFor();
+				final File resFile = new File(outputFolder + File.separator + DIAGNOSTIC_FILE);
+				final PrintWriter printWriter;
 
-				return exitValue2 == ReturnCodes.TERMINATION_ERROR;
+				try
+				{
+					printWriter = new PrintWriter(resFile);
+				}
+				catch (IOException e)
+				{
+					throw new RuntimeException();
+				}
+
+				printWriter.println(stdOut);
+				printWriter.flush();
+				printWriter.close();
+
+				return !stdOut.contains("FALSE");
 			}
 			catch (IOException | InterruptedException e)
 			{

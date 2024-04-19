@@ -43,9 +43,10 @@ public class RuntimeValidator implements ModelValidator {
 	 * @see fr.inria.convecs.optimus.validator.ModelValidator#validate(java.io.File, java.lang.String)
 	 */
 	@Override
-	public void validate(final File modelFile, final List<String> options) {
+	public void validateV2(final File modelFile, final List<String> options) {
 
-		validate(modelFile, modelFile, options);
+		if (true) throw new IllegalStateException(); //TODO USED TO VERIFY THAT IT IS NOT USED
+		validateV2(modelFile, modelFile, options);
 
 	}
 
@@ -56,7 +57,7 @@ public class RuntimeValidator implements ModelValidator {
 	 * java.lang.String)
 	 */
 	@Override
-	public void validate(final File modelFile1, final File modelFile2, final List<String> options) {
+	public void validateV2(final File modelFile1, final File modelFile2, final List<String> options) {
 		Boolean isBalanced = false;
 		isBalanced = PifUtil.isPifBalanced(modelFile1);
 		//isBalanced = isBalanced && PifUtil.isPifBalanced(modelFile2);
