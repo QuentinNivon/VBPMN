@@ -31,7 +31,7 @@ Important information
 ======================================
 The VBPMN tool relies on the CADP toolbox that is updated once per month.
 If you upgrade CADP on your machine, VBPMN must also be upgraded to a newer version, compliant with the most recent version of CADP.
-This can be done by downloading again the [VBPMN WAR file](https://github.com/QuentinNivon/VBPMN/tree/main/vbpmn_dist/transformation.war)
+This can be done by downloading again the [VBPMN WAR file](https://quentinnivon.github.io/vbpmn/transformation.war)
 and replacing the old WAR file of the Tomcat by the new one.
 If you have any issue with a subsequent version of VBPMN, please send an email to quentin.nivon@inria.fr.
 
