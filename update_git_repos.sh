@@ -52,3 +52,8 @@ git push;
 echo Leaving $PWD...
 cd $CURRENT_DIR;
 echo Entering $PWD...
+
+#Update current repo's git
+git add *;
+git commit -m "update";
+git push;
