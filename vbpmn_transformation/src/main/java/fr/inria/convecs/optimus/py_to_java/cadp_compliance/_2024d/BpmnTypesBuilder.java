@@ -1,6 +1,6 @@
 package fr.inria.convecs.optimus.py_to_java.cadp_compliance._2024d;
 
-import fr.inria.convecs.optimus.py_to_java.BpmnTypesBuilderGeneric;
+import fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics.BpmnTypesBuilderGeneric;
 
 import java.io.File;
 import java.io.FileNotFoundException;

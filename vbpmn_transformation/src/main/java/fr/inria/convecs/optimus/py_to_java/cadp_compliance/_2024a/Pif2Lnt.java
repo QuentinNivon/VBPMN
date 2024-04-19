@@ -3,7 +3,7 @@ package fr.inria.convecs.optimus.py_to_java.cadp_compliance._2024a;
 import fr.inria.convecs.optimus.pif.Peer;
 import fr.inria.convecs.optimus.pif.SequenceFlow;
 import fr.inria.convecs.optimus.pif.WorkflowNode;
-import fr.inria.convecs.optimus.py_to_java.Pif2LntGeneric;
+import fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics.Pif2LntGeneric;
 import fr.inria.convecs.optimus.py_to_java.PyToJavaUtils;
 import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
 import org.apache.commons.lang3.NotImplementedException;

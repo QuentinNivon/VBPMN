@@ -1,4 +1,4 @@
-package fr.inria.convecs.optimus.py_to_java;
+package fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics;
 
 import org.apache.commons.lang3.tuple.Triple;
 

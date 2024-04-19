@@ -1,4 +1,4 @@
-package fr.inria.convecs.optimus.py_to_java;
+package fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics;
 
 public abstract class BpmnTypesBuilderGeneric
 {
