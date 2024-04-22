@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>fr.inria.convecs.vbpmn</groupId>
 	<artifactId>transformation</artifactId>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<version>1.1</version>
 	<name>transformation</name>
 	<url>http://convecs.inria.fr</url>
@@ -143,6 +143,8 @@
 		</dependency>
 	</dependencies>
 
+
+
 	<build>
 		<finalName>transformation</finalName>
 		<resources>
@@ -150,5 +152,32 @@
 				<directory>src/main/resources</directory>
 			</resource>
 		</resources>
+
+		<plugins>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.5.2</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>fr.inria.convecs.optimus.nl_to_mc.Main</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+		</plugins>
 	</build>
 </project>
