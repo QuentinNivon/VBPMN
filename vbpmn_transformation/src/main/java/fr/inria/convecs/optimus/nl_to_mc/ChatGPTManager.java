@@ -1,0 +1,88 @@
+package fr.inria.convecs.optimus.nl_to_mc;
+
+import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExceptionStatus;
+import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class ChatGPTManager
+{
+	private static final String SYSTEM_BASE = "You are an helpful Linear Temporal Logic (LTL) assistant. The user" +
+			" provides you a sentence written in natural language, and you translate it to the corresponding LTL" +
+			" formula. Except when explicitely asked by the user, you should not use the 'Globally' LTL quantifier" +
+			" (also written 'G' or '[]'). In such cases, you should prefer the 'Finally' quantifier (also written" +
+			" 'F' or '<>'). Your output should contain only the LTL formula, without any surrounding text to" +
+			" explain it.";
+	private static final String BASE_MODEL = "gpt-3.5-turbo-16k";
+	private static final String URL = "https://api.openai.com/v1/chat/completions";
+	private static final String REQUEST_METHOD = "POST";
+	private static final String USER_ROLE = "user";
+	private static final String SYSTEM_ROLE = "system";
+	private static final double TEMPERATURE = 0; //Set to 0 so that the model behaves deterministically
+	private static final double TOP_P = 0;
+	private static final double FREQUENCE_PENALTY = 0;
+	private static final double PRESENCE_PENALTY = 0;
+	private static final int MAX_TOKENS = 12540;
+
+	private ChatGPTManager()
+	{
+
+	}
+
+	public static String generateAnswer(final String question,
+										final String apiKey) throws ExpectedException
+	{
+		try
+		{
+			final URL url = new URL(URL);
+			final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+			connection.setRequestMethod(REQUEST_METHOD);
+			connection.setRequestProperty("Content-Type", "application/json");
+			connection.setRequestProperty("Authorization", "Bearer " + apiKey);
+			connection.setDoOutput(true);
+
+			final String body = "{\"model\": \"" + BASE_MODEL + "\"," +
+					"\"messages\": [" +
+					"{\"role\": \"" + SYSTEM_ROLE + "\", \"content\": \"" + SYSTEM_BASE + "\"}" + ", " +
+					"{\"role\": \"" + USER_ROLE + "\", \"content\": \"" + question + "\"}" +
+					"]," +
+					"\"temperature\": " + TEMPERATURE + ", " +
+					"\"top_p\": " + TOP_P +
+					"}";
+
+			MyOwnLogger.append(body);
+
+			final OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+			writer.write(body);
+			writer.flush();
+			writer.close();
+
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+			final StringBuilder response = new StringBuilder();
+			String line;
+
+			while ((line = reader.readLine()) != null)
+			{
+				response.append(line);
+			}
+
+			reader.close();
+
+			//System.out.println("Real answer: " + response);
+
+			final int startIndex = response.indexOf("content") + 11;
+			final int endIndex = response.indexOf("\"", startIndex);
+
+			return response.substring(startIndex, endIndex);
+		}
+		catch (IOException e)
+		{
+			throw new ExpectedException(e, ExceptionStatus.CHATGPT_IO);
+		}
+	}
+}
