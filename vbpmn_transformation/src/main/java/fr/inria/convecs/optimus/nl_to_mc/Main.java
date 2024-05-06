@@ -139,7 +139,7 @@ public class Main
 
 				final long labelsComputationEndTime = System.nanoTime();
 				final long labelsComputationTime = labelsComputationEndTime - labelsComputationStartTime;
-				System.out.println("Labels \"" + labelsAndReturnCode + "\" computed in " + Utils.nanoSecToReadable(labelsComputationTime) + ".\n");
+				System.out.println("Labels \"" + labelsAndReturnCode.getLeft() + "\" computed in " + Utils.nanoSecToReadable(labelsComputationTime) + ".\n");
 
 				System.out.println("Generating Büchi automata...");
 				final long buchiAutomataGenerationStartTime = System.nanoTime();
@@ -495,28 +495,9 @@ public class Main
 			return Pair.of(new ArrayList<>(), LNT_TO_BCG_FAILED);
 		}
 
-		//Reduce LTS with weaktrace
-		final String bcgOpenCommand = "bcg_open";
-		final String[] bcgOpenArgs = new String[]{"process.bcg", "reductor", "-weaktrace", LNT_GENERIC_NAME + "_weaktraced.bcg"};
-		final CommandManager bcgOpenCommandManager = new CommandManager(bcgOpenCommand, workingDir, bcgOpenArgs);
-
-		try
-		{
-			bcgOpenCommandManager.execute();
-		}
-		catch (IOException | InterruptedException e)
-		{
-			return Pair.of(new ArrayList<>(), WEAKTRACING_BCG_FAILED);
-		}
-
-		if (bcgOpenCommandManager.returnValue() != 0)
-		{
-			return Pair.of(new ArrayList<>(), WEAKTRACING_BCG_FAILED);
-		}
-
 		//Retrieve LTS labels
 		final String bcgInfoCommand = "bcg_info";
-		final String[] bcgInfoArgs = new String[]{"-labels", LNT_GENERIC_NAME + "_weaktraced.bcg"};
+		final String[] bcgInfoArgs = new String[]{"-labels", LNT_GENERIC_NAME + ".bcg"};
 		final CommandManager bcgInfoCommandManager = new CommandManager(bcgInfoCommand, workingDir, bcgInfoArgs);
 
 		try
@@ -533,7 +514,6 @@ public class Main
 			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
 		}
 
-		(new File(workingDir + File.separator + LNT_GENERIC_NAME + "_weaktraced.bcg")).delete();
 		final String[] splitStdout = bcgInfoCommandManager.stdOut().split("\n");
 		final ArrayList<String> labels = new ArrayList<>();
 
@@ -548,7 +528,6 @@ public class Main
 			}
 		}
 
-		System.out.println("Labels retrieved: \"" + labels + "\".");
 		return Pair.of(labels, 0);
 	}
 
