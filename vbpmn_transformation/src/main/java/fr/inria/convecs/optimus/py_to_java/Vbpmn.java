@@ -39,10 +39,10 @@ public class Vbpmn
 		First argument is the SVL contents.
 	 */
 	private static final String SVL_CAESAR_TEMPLATE =
-		"% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n" +
-		"% CAESAR_OPTIONS=\"-more cat\"\n" +
-		"{0}\n"
-	;
+			"% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n" +
+					"% CAESAR_OPTIONS=\"-more cat\"\n" +
+					"{0}\n"
+			;
 
 	/*
 		Template of the verification of a comparison between two models.
@@ -52,8 +52,8 @@ public class Vbpmn
 		Fourth one is the second model (LTS in BCG format).
 	 */
 	private static final String SVL_COMPARISON_CHECKING_TEMPLATE =
-		"% bcg_open \"{0}.bcg\" bisimulator -{1} -{2} -diag \"{3}.bcg\"\n"
-	;
+			"% bcg_open \"{0}.bcg\" bisimulator -{1} -{2} -diag \"{3}.bcg\"\n"
+			;
 
 	/*
 		Template of the verification of formula over a model.
@@ -89,33 +89,33 @@ public class Vbpmn
 	private static final String INCLUSIVE_COMPARISON = "inclusive";
 	private static final String EXCLUSIVE_COMPARISON = "exclusive";
 	private static final List<String> OPERATIONS_COMPARISON = Arrays.asList(
-		CONSERVATIVE_COMPARISON,
-		INCLUSIVE_COMPARISON,
-		EXCLUSIVE_COMPARISON
+			CONSERVATIVE_COMPARISON,
+			INCLUSIVE_COMPARISON,
+			EXCLUSIVE_COMPARISON
 	);
 
 	private static final String AND_PROPERTY = "property-and";
 	private static final String IMPLIED_PROPERTY = "property-implied";
 	private static final String HIDING_OPERATION = "_"; //NOT IN Python CODE
 	private static final List<String> OPERATIONS_PROPERTY = Arrays.asList(
-		AND_PROPERTY,
-		IMPLIED_PROPERTY
+			AND_PROPERTY,
+			IMPLIED_PROPERTY
 	);
 	private static final List<String> OPERATIONS = Arrays.asList(
-		CONSERVATIVE_COMPARISON,
-		INCLUSIVE_COMPARISON,
-		EXCLUSIVE_COMPARISON,
-		AND_PROPERTY,
-		IMPLIED_PROPERTY
+			CONSERVATIVE_COMPARISON,
+			INCLUSIVE_COMPARISON,
+			EXCLUSIVE_COMPARISON,
+			AND_PROPERTY,
+			IMPLIED_PROPERTY
 	);
 	private static final String OPERATIONS_DEFAULT = CONSERVATIVE_COMPARISON;
 	private static final String SELECTION_FIRST = "first";
 	private static final String SELECTION_SECOND = "second";
 	private static final String SELECTION_ALL = "all";
 	private static final List<String> SELECTIONS = Arrays.asList(
-		SELECTION_FIRST,
-		SELECTION_SECOND,
-		SELECTION_ALL
+			SELECTION_FIRST,
+			SELECTION_SECOND,
+			SELECTION_ALL
 	);
 	private static final String SELECTIONS_DEFAULT = SELECTION_ALL;
 	private static final String EQUAL_OPERATION = "equal";
@@ -132,8 +132,10 @@ public class Vbpmn
 	private static final String HIDE_ALL_BUT = "hide all but";
 	private static final String HIDE = "hide";
 	private static final String MCL_FORMULA = "formula.mcl";
+
 	private final String[] sysArgs;
 	private final String outputFolder;
+	private final boolean compareOrVerify;
 
 	public Vbpmn(final String[] sysArgs,
 				 final String outputFolder)
@@ -141,6 +143,17 @@ public class Vbpmn
 		this.sysArgs = sysArgs;
 		//if (true) throw new IllegalStateException(Arrays.toString(sysArgs));
 		this.outputFolder = outputFolder;
+		this.compareOrVerify = true;
+	}
+
+	public Vbpmn(final String[] sysArgs,
+				 final String outputFolder,
+				 final boolean compareOrVerify)
+	{
+		this.sysArgs = sysArgs;
+		//if (true) throw new IllegalStateException(Arrays.toString(sysArgs));
+		this.outputFolder = outputFolder;
+		this.compareOrVerify = compareOrVerify;
 	}
 
 	@SuppressWarnings("unchecked") //Prevents Java from outputting warnings concerning the cast of Class<capture of ?>
@@ -150,6 +163,166 @@ public class Vbpmn
 		final long startTime = System.nanoTime();
 
 		//Initialise parser
+		final Namespace args = this.parseArgs();
+
+		//Check if process is balanced or not
+		final File pif1 = new File((String) args.getList("models").get(0));
+		final File pif2 = new File((String) args.getList("models").get(1));
+		final boolean processIsBalanced = PifUtil.isPifBalanced(pif1) && PifUtil.isPifBalanced(pif2);
+
+		//Get CADP version
+		final String cadpVersionDir = this.getCadpVersion();
+
+		//Load the good Pif2Lnt class (depending on the CADP version)
+		final Pif2LntGeneric pif2lnt = this.loadPif2LntGenericClass(cadpVersionDir);
+		pif2lnt.setBalance(processIsBalanced);
+		pif2lnt.setOutputFolder(this.outputFolder);
+
+		//Load the good BpmnTypesBuilder class (depending on the CADP version)
+		final BpmnTypesBuilderGeneric bpmnTypesBuilder = this.loadBpmnTypesBuilderClass(cadpVersionDir);
+		bpmnTypesBuilder.setOutputDirectory(this.outputFolder);
+		bpmnTypesBuilder.dumpBpmnTypesFile();
+
+		//If in lazy mode, rebuild the BCG files only if needed
+		final boolean lazy = args.get("lazy") != null
+				&& args.getBoolean("lazy");
+
+		//(Re)build the first model
+		final String pifModel1 = (String) args.getList("models").get(0);
+		final Triple<Integer, String, Collection<String>> result1 = lazy ? pif2lnt.load(pifModel1) : pif2lnt.generate(pifModel1);
+		//(Re)build the second model
+		final String pifModel2 = (String) args.getList("models").get(1);
+		final Triple<Integer, String, Collection<String>> result2 = lazy ? pif2lnt.load(pifModel2) : pif2lnt.generate(pifModel2);
+
+		//If one of the models could not be loaded => ERROR
+		if (result1.getLeft() != ReturnCodes.TERMINATION_OK)
+		{
+			final String errorMessage = this.getErrorMessage(pif1, result1);
+			System.out.println(errorMessage);
+			throw new IllegalStateException(errorMessage);
+		}
+
+		if (result2.getLeft() != ReturnCodes.TERMINATION_OK)
+		{
+			final String errorMessage = this.getErrorMessage(pif2, result2);
+			System.out.println(errorMessage);
+			throw new IllegalStateException(errorMessage);
+		}
+
+		/*
+			Checks if we compare up to a context.
+			TODO Gwen : refine synchronization sets computation (_EM vs _REC)
+			TODO Pascal : what about if we have hiding and/or renaming + context-awareness? different alphabets should
+			 be used?
+		 */
+
+		final ArrayList<String> syncSet1 = new ArrayList<>();
+		final ArrayList<String> syncSet2 = new ArrayList<>();
+
+		if (args.get("context") != null)
+		{
+			final String pifContextModel = args.getString("context");
+			System.out.println("Converting \"" + pifContextModel + "\" to LTS...");
+			Triple<Integer, String, Collection<String>> result = lazy ? pif2lnt.load(pifContextModel) : pif2lnt.generate(pifContextModel);
+
+			for (String symbol : result.getRight())
+			{
+				if (result1.getRight().contains(symbol))
+				{
+					syncSet1.add(symbol);
+				}
+				if (result2.getRight().contains(symbol))
+				{
+					syncSet2.add(symbol);
+				}
+			}
+		}
+
+		final boolean result;
+
+		if (this.compareOrVerify)
+		{
+			final Checker comparator;
+
+			//Check whether we compare based on an equivalence or based on a property
+			if (OPERATIONS_COMPARISON.contains(args.getString("operation")))
+			{
+				comparator = new ComparisonChecker(
+						result1.getMiddle(),
+						result2.getMiddle(),
+						args.getString("operation"),
+						args.getList("hiding"),
+						args.get("exposemode") != null && args.getBoolean("exposemode"),
+						args.get("renaming") == null ? new HashMap<>() : args.get("renaming"),
+						args.getString("renamed") == null ? "all" : args.getString("renamed"),
+						new ArrayList[]{syncSet1, syncSet2}
+				);
+			}
+			else
+			{
+				comparator = new FormulaChecker(
+						result1.getMiddle(),
+						result2.getMiddle(),
+						args.getString("formula")
+				);
+			}
+
+			result = comparator.call();
+		}
+		else
+		{
+			result = true;
+		}
+
+		//Perform comparison and process result
+		final long endTime = System.nanoTime();
+		final long totalTime = endTime - startTime;
+
+		final File execTimeFile = new File(outputFolder + File.separator + "time.txt");
+		final PrintStream printStream;
+
+		try
+		{
+			printStream = new PrintStream(execTimeFile);
+		}
+		catch (FileNotFoundException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		printStream.print("The execution took " + totalTime + " ns");
+		printStream.close();
+
+		final int returnValue = result ? ReturnCodes.TERMINATION_OK : ReturnCodes.TERMINATION_ERROR;
+		//System.out.println("Result: " + result);
+
+		return result;
+	}
+
+	//Private methods
+	private String getErrorMessage(final File pifProcess,
+								   final Triple<Integer, String, Collection<String>> triple)
+	{
+		final String errorMessage;
+
+		if (triple.getLeft() != ReturnCodes.TERMINATION_UNBALANCED_INCLUSIVE_CYCLE)
+		{
+			errorMessage = "Error while loading model \"" + pifProcess.getAbsolutePath() + "\". Please verify " +
+					"that your input model is correct (in particular, BPMN objects and flows should not contain the" +
+					" \"-\" symbol in their \"id\" attribute).";
+
+		}
+		else
+		{
+			errorMessage = "Unbalanced inclusive gateways inside loops are not supported by the current version of" +
+					" VBPMN, but model \"" + pifProcess.getAbsolutePath() + "\" contains some.";
+		}
+
+		return errorMessage;
+	}
+
+	private Namespace parseArgs()
+	{
 		final ArgumentParser parser = ArgumentParsers.newFor("vbpmn").build()
 				.description("Compares two PIF processes.")
 				.version("${prog} 1.0");
@@ -216,11 +389,11 @@ public class Vbpmn
 			throw new IllegalStateException();
 		}
 
-		//Check if process is balanced or not
-		final File pif1 = new File((String) args.getList("models").get(0));
-		final File pif2 = new File((String) args.getList("models").get(1));
-		final boolean processIsBalanced = PifUtil.isPifBalanced(pif1) && PifUtil.isPifBalanced(pif2);
+		return args;
+	}
 
+	private String getCadpVersion()
+	{
 		final String cadpVersionDir;
 
 		try
@@ -255,8 +428,14 @@ public class Vbpmn
 			throw new RuntimeException(e);
 		}
 
-		//Load the good Pif2Lnt class (depending on the CADP version)
+		return cadpVersionDir;
+	}
+
+	@SuppressWarnings("unchecked")
+	private Pif2LntGeneric loadPif2LntGenericClass(final String cadpVersionDir)
+	{
 		final Pif2LntGeneric pif2lnt;
+
 		try
 		{
 			//Load the Pif2Lnt class located in the package corresponding to the good version
@@ -264,8 +443,6 @@ public class Vbpmn
 					Class.forName("fr.inria.convecs.optimus.py_to_java.cadp_compliance." + cadpVersionDir + ".Pif2Lnt");
 			final Constructor<? extends Pif2LntGeneric> pif2LntConstructor = pif2LntClass.getDeclaredConstructor();
 			pif2lnt = pif2LntConstructor.newInstance();
-			pif2lnt.setBalance(processIsBalanced);
-			pif2lnt.setOutputFolder(this.outputFolder);
 		}
 		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
 			   IllegalAccessException e)
@@ -276,16 +453,21 @@ public class Vbpmn
 			throw new RuntimeException(errorMessage, e);
 		}
 
-		//Load the good BpmnTypesBuilder class (depending on the CADP version)
+		return pif2lnt;
+	}
+
+	@SuppressWarnings("unchecked")
+	private BpmnTypesBuilderGeneric loadBpmnTypesBuilderClass(final String cadpVersionDir)
+	{
+		final BpmnTypesBuilderGeneric bpmnTypesBuilder;
+
 		try
 		{
 			//Load the BpmnTypesBuilder class located in the package corresponding to the good version
 			final Class<? extends BpmnTypesBuilderGeneric> bpmnTypesBuilderClass = (Class<? extends BpmnTypesBuilderGeneric>)
 					Class.forName("fr.inria.convecs.optimus.py_to_java.cadp_compliance." + cadpVersionDir + ".BpmnTypesBuilder");
 			final Constructor<? extends BpmnTypesBuilderGeneric> bpmnTypesBuilderConstructor = bpmnTypesBuilderClass.getDeclaredConstructor();
-			final BpmnTypesBuilderGeneric bpmnTypesBuilder = bpmnTypesBuilderConstructor.newInstance();
-			bpmnTypesBuilder.setOutputDirectory(outputFolder);
-			bpmnTypesBuilder.dumpBpmnTypesFile();
+			bpmnTypesBuilder = bpmnTypesBuilderConstructor.newInstance();
 		}
 		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
 			   IllegalAccessException e)
@@ -296,133 +478,10 @@ public class Vbpmn
 			throw new RuntimeException(errorMessage, e);
 		}
 
-		//If in lazy mode, rebuild the BCG files only if needed
-		final boolean lazy = args.get("lazy") != null
-				&& args.getBoolean("lazy");
-
-		//(Re)build the first model
-		final String pifModel1 = (String) args.getList("models").get(0);
-		final Triple<Integer, String, Collection<String>> result1 = lazy ? pif2lnt.load(pifModel1) : pif2lnt.generate(pifModel1);
-		//(Re)build the second model
-		final String pifModel2 = (String) args.getList("models").get(1);
-		final Triple<Integer, String, Collection<String>> result2 = lazy ? pif2lnt.load(pifModel2) : pif2lnt.generate(pifModel2);
-
-		//If one of the models could not be loaded => ERROR
-		if (result1.getLeft() != ReturnCodes.TERMINATION_OK)
-		{
-			final String errorMessage = this.getErrorMessage(pif1, result1);
-			System.out.println(errorMessage);
-			throw new IllegalStateException(errorMessage);
-		}
-
-		if (result2.getLeft() != ReturnCodes.TERMINATION_OK)
-		{
-			final String errorMessage = this.getErrorMessage(pif2, result2);
-			System.out.println(errorMessage);
-			throw new IllegalStateException(errorMessage);
-		}
-
-		/*
-			Checks if we compare up to a context.
-			TODO Gwen : refine synchronization sets computation (_EM vs _REC)
-			TODO Pascal : what about if we have hiding and/or renaming + context-awareness? different alphabets should
-			 be used?
-		 */
-
-		final ArrayList<String> syncSet1 = new ArrayList<>();
-		final ArrayList<String> syncSet2 = new ArrayList<>();
-
-		if (args.get("context") != null)
-		{
-			final String pifContextModel = args.getString("context");
-			System.out.println("Converting \"" + pifContextModel + "\" to LTS...");
-			Triple<Integer, String, Collection<String>> result = lazy ? pif2lnt.load(pifContextModel) : pif2lnt.generate(pifContextModel);
-
-			for (String symbol : result.getRight())
-			{
-				if (result1.getRight().contains(symbol))
-				{
-					syncSet1.add(symbol);
-				}
-				if (result2.getRight().contains(symbol))
-				{
-					syncSet2.add(symbol);
-				}
-			}
-		}
-
-		final Checker comparator;
-
-		//Check whether we compare based on an equivalence or based on a property
-		if (OPERATIONS_COMPARISON.contains(args.getString("operation")))
-		{
-			comparator = new ComparisonChecker(
-					result1.getMiddle(),
-					result2.getMiddle(),
-					args.getString("operation"),
-					args.getList("hiding"),
-					args.get("exposemode") != null && args.getBoolean("exposemode"),
-					args.get("renaming") == null ? new HashMap<>() : args.get("renaming"),
-					args.getString("renamed") == null ? "all" : args.getString("renamed"),
-					new ArrayList[]{syncSet1, syncSet2}
-			);
-		}
-		else
-		{
-			comparator = new FormulaChecker(
-					result1.getMiddle(),
-					result2.getMiddle(),
-					args.getString("formula")
-			);
-		}
-
-		//Perform comparison and process result
-		final boolean result = comparator.call();
-		final long endTime = System.nanoTime();
-		final long totalTime = endTime - startTime;
-
-		final File templateFile = new File(outputFolder + File.separator + "time.txt");
-		final PrintStream printStream;
-
-		try
-		{
-			printStream = new PrintStream(templateFile);
-		}
-		catch (FileNotFoundException e)
-		{
-			throw new RuntimeException(e);
-		}
-
-		printStream.print("The execution took " + totalTime + " ns");
-		printStream.close();
-
-		final int returnValue = result ? ReturnCodes.TERMINATION_OK : ReturnCodes.TERMINATION_ERROR;
-		//System.out.println("Result: " + result);
-
-		return result;
+		return bpmnTypesBuilder;
 	}
 
-	//Private methods
-	private String getErrorMessage(final File pifProcess,
-								   final Triple<Integer, String, Collection<String>> triple)
-	{
-		final String errorMessage;
-
-		if (triple.getLeft() != ReturnCodes.TERMINATION_UNBALANCED_INCLUSIVE_CYCLE)
-		{
-			errorMessage = "Error while loading model \"" + pifProcess.getAbsolutePath() + "\". Please verify " +
-					"that your input model is correct (in particular, BPMN objects and flows should not contain the" +
-					" \"-\" symbol in their \"id\" attribute).";
-
-		}
-		else
-		{
-			errorMessage = "Unbalanced inclusive gateways inside loops are not supported by the current version of" +
-					" VBPMN, but model \"" + pifProcess.getAbsolutePath() + "\" contains some.";
-		}
-
-		return errorMessage;
-	}
+	//Sub-classes
 
 	/*
 		This class represents the superclass of all classes performing some formal checking on two LTS models (stores
@@ -449,9 +508,9 @@ public class Vbpmn
 		}
 
 		/**
-		 	Generates the SVL script to check the property on both models.
+		 Generates the SVL script to check the property on both models.
 
-		 	@param filename is the filename of the SVL script to create.
+		 @param filename is the filename of the SVL script to create.
 		 */
 		public abstract void genSVL(final String filename);
 
@@ -496,7 +555,7 @@ public class Vbpmn
 			super(model1, model2);
 
 			if (!OPERATIONS.contains(operation)
-				|| operation.equals(HIDING_OPERATION))
+					|| operation.equals(HIDING_OPERATION))
 			{
 				throw new RuntimeException("Operation should be in " + OPERATIONS + " and \"_\" is only for hiding. " +
 						"Received \"" + operation + "\".");
@@ -790,9 +849,9 @@ public class Vbpmn
 			{
 				//TODO CHECK FUNCTIONING
 				final Process svlCommand = Runtime.getRuntime().exec(PyToJavaUtils.parametrize(
-					SVL_CALL_COMMAND,
-					Checker.CHECKER_FILE,
-					Checker.DIAGNOSTIC_FILE
+						SVL_CALL_COMMAND,
+						Checker.CHECKER_FILE,
+						Checker.DIAGNOSTIC_FILE
 				), null, new File(outputFolder));
 				final InputStream output = svlCommand.getInputStream();
 				final InputStream error = svlCommand.getErrorStream();
