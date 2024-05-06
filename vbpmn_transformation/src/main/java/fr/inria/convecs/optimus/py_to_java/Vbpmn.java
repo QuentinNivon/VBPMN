@@ -3,12 +3,14 @@ package fr.inria.convecs.optimus.py_to_java;
 import fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics.BpmnTypesBuilderGeneric;
 import fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics.Pif2LntGeneric;
 import fr.inria.convecs.optimus.util.PifUtil;
+import fr.inria.convecs.optimus.util.Utils;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,10 +41,10 @@ public class Vbpmn
 		First argument is the SVL contents.
 	 */
 	private static final String SVL_CAESAR_TEMPLATE =
-		"% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n" +
-		"% CAESAR_OPTIONS=\"-more cat\"\n" +
-		"{0}\n"
-	;
+			"% CAESAR_OPEN_OPTIONS=\"-silent -warning\"\n" +
+					"% CAESAR_OPTIONS=\"-more cat\"\n" +
+					"{0}\n"
+			;
 
 	/*
 		Template of the verification of a comparison between two models.
@@ -52,8 +54,8 @@ public class Vbpmn
 		Fourth one is the second model (LTS in BCG format).
 	 */
 	private static final String SVL_COMPARISON_CHECKING_TEMPLATE =
-		"% bcg_open \"{0}.bcg\" bisimulator -{1} -{2} -diag \"{3}.bcg\"\n"
-	;
+			"% bcg_open \"{0}.bcg\" bisimulator -{1} -{2} -diag \"{3}.bcg\"\n"
+			;
 
 	/*
 		Template of the verification of formula over a model.
@@ -89,33 +91,33 @@ public class Vbpmn
 	private static final String INCLUSIVE_COMPARISON = "inclusive";
 	private static final String EXCLUSIVE_COMPARISON = "exclusive";
 	private static final List<String> OPERATIONS_COMPARISON = Arrays.asList(
-		CONSERVATIVE_COMPARISON,
-		INCLUSIVE_COMPARISON,
-		EXCLUSIVE_COMPARISON
+			CONSERVATIVE_COMPARISON,
+			INCLUSIVE_COMPARISON,
+			EXCLUSIVE_COMPARISON
 	);
 
 	private static final String AND_PROPERTY = "property-and";
 	private static final String IMPLIED_PROPERTY = "property-implied";
 	private static final String HIDING_OPERATION = "_"; //NOT IN Python CODE
 	private static final List<String> OPERATIONS_PROPERTY = Arrays.asList(
-		AND_PROPERTY,
-		IMPLIED_PROPERTY
+			AND_PROPERTY,
+			IMPLIED_PROPERTY
 	);
 	private static final List<String> OPERATIONS = Arrays.asList(
-		CONSERVATIVE_COMPARISON,
-		INCLUSIVE_COMPARISON,
-		EXCLUSIVE_COMPARISON,
-		AND_PROPERTY,
-		IMPLIED_PROPERTY
+			CONSERVATIVE_COMPARISON,
+			INCLUSIVE_COMPARISON,
+			EXCLUSIVE_COMPARISON,
+			AND_PROPERTY,
+			IMPLIED_PROPERTY
 	);
 	private static final String OPERATIONS_DEFAULT = CONSERVATIVE_COMPARISON;
 	private static final String SELECTION_FIRST = "first";
 	private static final String SELECTION_SECOND = "second";
 	private static final String SELECTION_ALL = "all";
 	private static final List<String> SELECTIONS = Arrays.asList(
-		SELECTION_FIRST,
-		SELECTION_SECOND,
-		SELECTION_ALL
+			SELECTION_FIRST,
+			SELECTION_SECOND,
+			SELECTION_ALL
 	);
 	private static final String SELECTIONS_DEFAULT = SELECTION_ALL;
 	private static final String EQUAL_OPERATION = "equal";
@@ -136,6 +138,8 @@ public class Vbpmn
 	private final String[] sysArgs;
 	private final String outputFolder;
 	private final boolean compareOrVerify;
+	private final ArrayList<Pair<Long, String>> executionTimes;
+
 
 	public Vbpmn(final String[] sysArgs,
 				 final String outputFolder)
@@ -144,6 +148,7 @@ public class Vbpmn
 		//if (true) throw new IllegalStateException(Arrays.toString(sysArgs));
 		this.outputFolder = outputFolder;
 		this.compareOrVerify = true;
+		this.executionTimes = new ArrayList<>();
 	}
 
 	public Vbpmn(final String[] sysArgs,
@@ -154,6 +159,7 @@ public class Vbpmn
 		//if (true) throw new IllegalStateException(Arrays.toString(sysArgs));
 		this.outputFolder = outputFolder;
 		this.compareOrVerify = compareOrVerify;
+		this.executionTimes = new ArrayList<>();
 	}
 
 	@SuppressWarnings("unchecked") //Prevents Java from outputting warnings concerning the cast of Class<capture of ?>
@@ -168,31 +174,67 @@ public class Vbpmn
 		//Check if process is balanced or not
 		final File pif1 = new File((String) args.getList("models").get(0));
 		final File pif2 = new File((String) args.getList("models").get(1));
+		final long checkProcessBalanceStartTime = System.nanoTime();
 		final boolean processIsBalanced = PifUtil.isPifBalanced(pif1) && PifUtil.isPifBalanced(pif2);
+		final long checkProcessBalanceEndTime = System.nanoTime();
+		final long checkProcessBalanceTime = checkProcessBalanceEndTime - checkProcessBalanceStartTime;
+		this.executionTimes.add(Pair.of(checkProcessBalanceTime, "Checking if the process is balanced took " + Utils.nanoSecToReadable(checkProcessBalanceTime)));
 
 		//Get CADP version
+		final long computeCADPVersionStartTime = System.nanoTime();
 		final String cadpVersionDir = this.getCadpVersion();
+		final long computeCADPVersionEndTime = System.nanoTime();
+		final long computeCADPVersionTime = computeCADPVersionEndTime - computeCADPVersionStartTime;
+		this.executionTimes.add(Pair.of(computeCADPVersionTime, "Retrieving the installed CADP version took " + Utils.nanoSecToReadable(computeCADPVersionTime)));
 
 		//Load the good Pif2Lnt class (depending on the CADP version)
+		final long pif2LntClassRetrievalStartTime = System.nanoTime();
 		final Pif2LntGeneric pif2lnt = this.loadPif2LntGenericClass(cadpVersionDir);
 		pif2lnt.setBalance(processIsBalanced);
 		pif2lnt.setOutputFolder(this.outputFolder);
+		final long pif2LntClassRetrievalEndTime = System.nanoTime();
+		final long pif2LntClassRetrievalTime = pif2LntClassRetrievalEndTime - pif2LntClassRetrievalStartTime;
+		this.executionTimes.add(Pair.of(pif2LntClassRetrievalTime, "Retrieving the Pif2Lnt class to use took " + Utils.nanoSecToReadable(pif2LntClassRetrievalTime)));
 
 		//Load the good BpmnTypesBuilder class (depending on the CADP version)
+		final long bpmnTypesBuilderClassRetrievalStartTime = System.nanoTime();
 		final BpmnTypesBuilderGeneric bpmnTypesBuilder = this.loadBpmnTypesBuilderClass(cadpVersionDir);
 		bpmnTypesBuilder.setOutputDirectory(this.outputFolder);
 		bpmnTypesBuilder.dumpBpmnTypesFile();
+		final long bpmnTypesBuilderClassRetrievalEndTime = System.nanoTime();
+		final long bpmnTypesBuilderClassRetrievalTime = bpmnTypesBuilderClassRetrievalEndTime - bpmnTypesBuilderClassRetrievalStartTime;
+		this.executionTimes.add(Pair.of(bpmnTypesBuilderClassRetrievalTime, "Retrieving the BpmnTypesBuilder class to use took " + Utils.nanoSecToReadable(bpmnTypesBuilderClassRetrievalTime)));
 
 		//If in lazy mode, rebuild the BCG files only if needed
 		final boolean lazy = args.get("lazy") != null
 				&& args.getBoolean("lazy");
 
 		//(Re)build the first model
+		final long firstProcessConversionStartTime = System.nanoTime();
 		final String pifModel1 = (String) args.getList("models").get(0);
 		final Triple<Integer, String, Collection<String>> result1 = lazy ? pif2lnt.load(pifModel1) : pif2lnt.generate(pifModel1);
+		final long firstProcessConversionEndTime = System.nanoTime();
+		final long firstProcessConversionTime = firstProcessConversionEndTime - firstProcessConversionStartTime;
+		this.executionTimes.add(Pair.of(firstProcessConversionTime, "The generation of the LNT code of the first process took " + Utils.nanoSecToReadable(firstProcessConversionTime)));
+
 		//(Re)build the second model
-		final String pifModel2 = (String) args.getList("models").get(1);
-		final Triple<Integer, String, Collection<String>> result2 = lazy ? pif2lnt.load(pifModel2) : pif2lnt.generate(pifModel2);
+		final long secondProcessConversionStartTime = System.nanoTime();
+		final Triple<Integer, String, Collection<String>> result2;
+
+		if (OPERATIONS_COMPARISON.contains(args.getString("operation")))
+		{
+			//We are comparing processes, thus we need to build the two processes
+			final String pifModel2 = (String) args.getList("models").get(1);
+			result2 = lazy ? pif2lnt.load(pifModel2) : pif2lnt.generate(pifModel2);
+		}
+		else
+		{
+			result2 = result1;
+		}
+
+		final long secondProcessConversionEndTime = System.nanoTime();
+		final long secondProcessConversionTime = secondProcessConversionEndTime - secondProcessConversionStartTime;
+		this.executionTimes.add(Pair.of(secondProcessConversionTime, "The generation of the LNT code of the second process took " + Utils.nanoSecToReadable(secondProcessConversionTime)));
 
 		//If one of the models could not be loaded => ERROR
 		if (result1.getLeft() != ReturnCodes.TERMINATION_OK)
@@ -239,6 +281,8 @@ public class Vbpmn
 		}
 
 		final boolean result;
+		final long comparisonEvaluationStartTime = System.nanoTime();
+		final String mode;
 
 		if (this.compareOrVerify)
 		{
@@ -257,6 +301,7 @@ public class Vbpmn
 						args.getString("renamed") == null ? "all" : args.getString("renamed"),
 						new ArrayList[]{syncSet1, syncSet2}
 				);
+				mode = "The comparison of the processes took ";
 			}
 			else
 			{
@@ -265,6 +310,7 @@ public class Vbpmn
 						result2.getMiddle(),
 						args.getString("formula")
 				);
+				mode = "The evaluation of the formula took ";
 			}
 
 			result = comparator.call();
@@ -272,11 +318,17 @@ public class Vbpmn
 		else
 		{
 			result = true;
+			mode = "Not comparing nor evaluating took ";
 		}
+
+		final long comparisonEvaluationEndTime = System.nanoTime();
+		final long comparisonEvaluationTime = comparisonEvaluationEndTime - comparisonEvaluationStartTime;
+		this.executionTimes.add(Pair.of(comparisonEvaluationTime, mode + Utils.nanoSecToReadable(comparisonEvaluationTime)));
 
 		//Perform comparison and process result
 		final long endTime = System.nanoTime();
 		final long totalTime = endTime - startTime;
+		this.executionTimes.add(Pair.of(totalTime, "Overall execution took " + Utils.nanoSecToReadable(totalTime)));
 
 		final File execTimeFile = new File(outputFolder + File.separator + "time.txt");
 		final PrintStream printStream;
@@ -297,6 +349,11 @@ public class Vbpmn
 		//System.out.println("Result: " + result);
 
 		return result;
+	}
+
+	public ArrayList<Pair<Long, String>> times()
+	{
+		return this.executionTimes;
 	}
 
 	//Private methods
@@ -508,9 +565,9 @@ public class Vbpmn
 		}
 
 		/**
-		 	Generates the SVL script to check the property on both models.
+		 Generates the SVL script to check the property on both models.
 
-		 	@param filename is the filename of the SVL script to create.
+		 @param filename is the filename of the SVL script to create.
 		 */
 		public abstract void genSVL(final String filename);
 
@@ -555,7 +612,7 @@ public class Vbpmn
 			super(model1, model2);
 
 			if (!OPERATIONS.contains(operation)
-				|| operation.equals(HIDING_OPERATION))
+					|| operation.equals(HIDING_OPERATION))
 			{
 				throw new RuntimeException("Operation should be in " + OPERATIONS + " and \"_\" is only for hiding. " +
 						"Received \"" + operation + "\".");
@@ -849,9 +906,9 @@ public class Vbpmn
 			{
 				//TODO CHECK FUNCTIONING
 				final Process svlCommand = Runtime.getRuntime().exec(PyToJavaUtils.parametrize(
-					SVL_CALL_COMMAND,
-					Checker.CHECKER_FILE,
-					Checker.DIAGNOSTIC_FILE
+						SVL_CALL_COMMAND,
+						Checker.CHECKER_FILE,
+						Checker.DIAGNOSTIC_FILE
 				), null, new File(outputFolder));
 				final InputStream output = svlCommand.getInputStream();
 				final InputStream error = svlCommand.getErrorStream();

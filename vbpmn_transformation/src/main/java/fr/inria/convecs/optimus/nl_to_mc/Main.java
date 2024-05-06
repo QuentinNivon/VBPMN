@@ -1,6 +1,5 @@
 package fr.inria.convecs.optimus.nl_to_mc;
 
-import com.sun.tools.jdeprscan.scan.Scan;
 import fr.inria.convecs.optimus.model.Process;
 import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
 import fr.inria.convecs.optimus.parser.BaseContentHandler;
