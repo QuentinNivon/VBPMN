@@ -1,5 +1,6 @@
 package fr.inria.convecs.optimus.nl_to_mc;
 
+import com.sun.tools.jdeprscan.scan.Scan;
 import fr.inria.convecs.optimus.model.Process;
 import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
 import fr.inria.convecs.optimus.parser.BaseContentHandler;
@@ -10,7 +11,8 @@ import fr.inria.convecs.optimus.transformer.ContentTransformer;
 import fr.inria.convecs.optimus.util.CommandManager;
 import fr.inria.convecs.optimus.util.Utils;
 import fr.inria.convecs.optimus.util.XmlUtil;
-import jdk.internal.net.http.common.Pair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -24,6 +26,8 @@ public class Main
 	private static final String DUMMY_LOOPY_LABEL = "DUMMY_LOOPY_LABEL";
 	private static final String LNT_GENERIC_NAME = "process";
 	private static final String COUNTEREXAMPLE_FILE = "diag";
+	private static final String TEMPORARY_COUNTEREXAMPLE = COUNTEREXAMPLE_FILE + ".tmp";
+	private static final String VBPMN_COUNTEREXAMPLE_FILE = "evaluator.bcg";
 	private static final String BUCHI_AUTOMATA = "buchi.hoa";
 	private static final String SVL_SCRIPT_NAME = "task.svl";
 	private static final String TRUE_RESULT_FILE_NAME = "res_true.txt";
@@ -79,7 +83,24 @@ public class Main
 
 			final File bpmnFile = (File) commandLineParser.get(CommandLineOption.BPMN_FILE);
 
+			System.out.println("Retrieving temporal logic property...");
+			final long propertyRetrievingStartTime = System.nanoTime();
+			final Pair<File, Integer> ltlPropertyAndReturnValue = Main.retrieveLTLProperty(
+					workingDirectory,
+					commandLineParser.get(CommandLineOption.TEMPORAL_PROPERTY),
+					(String) commandLineParser.get(CommandLineOption.API_KEY)
+			);
+
+			if (ltlPropertyAndReturnValue.getRight() != 0)
+			{
+				System.exit(ltlPropertyAndReturnValue.getRight());
+			}
+			final long propertyRetrievingEndTime = System.nanoTime();
+			final long propertyRetrievingTime = propertyRetrievingEndTime - propertyRetrievingStartTime;
+			System.out.println("Temporal logic property retrieved in " + Utils.nanoSecToReadable(propertyRetrievingTime) + "\n");
+
 			System.out.println("Generating PIF file...");
+			final long pifFileGenerationStartTime = System.nanoTime();
 			final File pifFile = Main.parseAndTransform(workingDirectory, bpmnFile);
 
 			if (pifFile == null)
@@ -87,87 +108,105 @@ public class Main
 				System.exit(TRANSLATION_TO_PIF_FAILED);
 			}
 
-			System.out.println("PIF file generated.\n");
+			final long pifFileGenerationEndTime = System.nanoTime();
+			final long pifFileGenerationTime = pifFileGenerationEndTime - pifFileGenerationStartTime;
+			System.out.println("PIF file generated in " + Utils.nanoSecToReadable(pifFileGenerationTime) + ".\n");
 
 			System.out.println("Generating LNT file...");
-			final File lntSpec = Main.generateLNT(workingDirectory, pifFile);
+			final long lntFileGenerationStartTime = System.nanoTime();
+			final Triple<File, Boolean, Integer> lntSpecAndEvaluation = Main.generateLNT(workingDirectory, pifFile, ltlPropertyAndReturnValue.getLeft());
 
-			if (lntSpec == null)
+			if (lntSpecAndEvaluation.getRight() != 0)
 			{
-				System.exit(TRANSLATION_TO_LNT_FAILED);
+				System.exit(lntSpecAndEvaluation.getRight());
 			}
 
-			System.out.println("LNT file generated.\n");
+			final long lntFileGenerationEndTime = System.nanoTime();
+			final long lntFileGenerationTime = lntFileGenerationEndTime - lntFileGenerationStartTime;
+			System.out.println("LNT file generated in " + Utils.nanoSecToReadable(lntFileGenerationTime) + ".\n");
 
-			System.out.println("Retrieving LTL property...");
-			final Pair<File, Integer> ltlPropertyAndReturnValue = Main.retrieveLTLProperty(
-					workingDirectory,
-					commandLineParser.get(CommandLineOption.TEMPORAL_PROPERTY),
-					(String) commandLineParser.get(CommandLineOption.API_KEY)
-			);
-
-			if (ltlPropertyAndReturnValue.second != 0)
+			if (lntSpecAndEvaluation.getMiddle() == null)
 			{
-				System.exit(ltlPropertyAndReturnValue.second);
+				//The property is not written in MCL
+				System.out.println("Computing specification labels...");
+				final long labelsComputationStartTime = System.nanoTime();
+				final Pair<ArrayList<String>, Integer> labelsAndReturnCode = Main.computeSpecLabels(workingDirectory, lntSpecAndEvaluation.getLeft());
+
+				if (labelsAndReturnCode.getRight() != 0)
+				{
+					System.exit(labelsAndReturnCode.getRight());
+				}
+
+				final long labelsComputationEndTime = System.nanoTime();
+				final long labelsComputationTime = labelsComputationEndTime - labelsComputationStartTime;
+				System.out.println("Labels \"" + labelsAndReturnCode + "\" computed in " + Utils.nanoSecToReadable(labelsComputationTime) + ".\n");
+
+				System.out.println("Generating Büchi automata...");
+				final long buchiAutomataGenerationStartTime = System.nanoTime();
+				final int buchiReturnValue = Main.generateBuchiAutomata(workingDirectory, ltlPropertyAndReturnValue.getLeft());
+
+				if (buchiReturnValue != 0)
+				{
+					System.exit(buchiReturnValue);
+				}
+
+				final long buchiAutomataGenerationEndTime = System.nanoTime();
+				final long buchiAutomataGenerationTime = buchiAutomataGenerationEndTime - buchiAutomataGenerationStartTime;
+				System.out.println("Büchi automata generated in " + Utils.nanoSecToReadable(buchiAutomataGenerationTime) + ".\n");
+
+				System.out.println("Generating the SVL script...");
+				final long svlScriptGenerationStartTime = System.nanoTime();
+				final int svlGenReturnValue = Main.generateSVLScript(workingDirectory, lntSpecAndEvaluation.getLeft(), labelsAndReturnCode.getLeft());
+
+				if (svlGenReturnValue != 0)
+				{
+					System.exit(svlGenReturnValue);
+				}
+
+				final long svlScriptGenerationEndTime = System.nanoTime();
+				final long svlScriptGenerationTime = svlScriptGenerationEndTime - svlScriptGenerationStartTime;
+				System.out.println("SVL script generated in " + Utils.nanoSecToReadable(svlScriptGenerationTime) + ".\n");
+
+				System.out.println("Executing the SVL script...");
+				final long svlScriptExecutionStartTime = System.nanoTime();
+				final int svlExecReturnValue = Main.executeSVLScript(workingDirectory);
+
+				if (svlExecReturnValue != 0)
+				{
+					System.exit(svlExecReturnValue);
+				}
+
+				final long svlScriptExecutionEndTime = System.nanoTime();
+				final long svlScriptExecutionTime = svlScriptExecutionEndTime - svlScriptExecutionStartTime;
+				System.out.println("SVL script executed in " + Utils.nanoSecToReadable(svlScriptExecutionTime) + ".\n");
 			}
-			System.out.println("LTL property retrieved.\n");
-
-			System.out.println("Computing specification labels...");
-			final Pair<ArrayList<String>, Integer> labelsAndReturnCode = Main.computeSpecLabels(workingDirectory, lntSpec);
-
-			if (labelsAndReturnCode.second != 0)
-			{
-				System.exit(labelsAndReturnCode.second);
-			}
-			System.out.println("Labels computed: " + labelsAndReturnCode + ".\n");
-
-			System.out.println("Generating Büchi automata...");
-			final int buchiReturnValue = Main.generateBuchiAutomata(workingDirectory, ltlPropertyAndReturnValue.first);
-
-			if (buchiReturnValue != 0)
-			{
-				System.exit(buchiReturnValue);
-			}
-			System.out.println("Büchi automata generated.\n");
-
-			System.out.println("Generating the SVL script...");
-			final int svlGenReturnValue = Main.generateSVLScript(workingDirectory, lntSpec, labelsAndReturnCode.first);
-
-			if (svlGenReturnValue != 0)
-			{
-				System.exit(svlGenReturnValue);
-			}
-			System.out.println("SVL script generated.\n");
-
-			System.out.println("Executing the SVL script...");
-			final int svlExecReturnValue = Main.executeSVLScript(workingDirectory);
-
-			if (svlExecReturnValue != 0)
-			{
-				System.exit(svlExecReturnValue);
-			}
-			System.out.println("SVL script executed.\n");
 
 			System.out.println("Cleaning the counterexample...");
+			final long cleaningCounterExampleStartTime = System.nanoTime();
 			final Pair<File, Integer> counterExample = Main.generateProperCounterexample(workingDirectory);
 
-			if (counterExample.second != 0)
+			if (counterExample.getRight() != 0)
 			{
-				System.exit(counterExample.second);
+				System.exit(counterExample.getRight());
 			}
-			System.out.println("Counterexample cleaned.\n");
+			final long cleaningCounterExampleEndTime = System.nanoTime();
+			final long cleaningCounterExampleTime = cleaningCounterExampleEndTime - cleaningCounterExampleStartTime;
+			System.out.println("Counterexample cleaned in " + Utils.nanoSecToReadable(cleaningCounterExampleTime) + ".\n");
 
 			System.out.println("Converting counterexample to VIS format...");
+			final long convertingCounterExampleStartTime = System.nanoTime();
 			try
 			{
-				final Aut2Vis aut2Vis = new Aut2Vis(workingDirectory, counterExample.first, COUNTEREXAMPLE_FILE);
+				final Aut2Vis aut2Vis = new Aut2Vis(workingDirectory, counterExample.getLeft(), COUNTEREXAMPLE_FILE);
 				final File visFile = aut2Vis.generateVisFile();
 			}
 			catch (IOException e)
 			{
 				System.exit(AUT_TO_VIS_CONVERSION_FAILED);
 			}
-			System.out.println("Counterexample converted.\n");
+			final long convertingCounterExampleEndTime = System.nanoTime();
+			final long convertingCounterExampleTime = convertingCounterExampleEndTime - convertingCounterExampleStartTime;
+			System.out.println("Counterexample converted in " + Utils.nanoSecToReadable(convertingCounterExampleTime) + ".\n");
 
 			System.out.println("Cleaning working directory...");
 			Main.finalClean(workingDirectory);
@@ -179,49 +218,170 @@ public class Main
 		}
 	}
 
-	private static File generateLNT(File workingDir, File pifFile)
+	private static Triple<File, Boolean, Integer> generateLNT(final File workingDir,
+															  final File pifFile,
+															  final File temporalLogicProperty)
 	{
-		final Vbpmn vbpmn = new Vbpmn(new String[]{
-				pifFile.getAbsolutePath(),
-				pifFile.getAbsolutePath(),
-				"property-implied",
-				"--formula",
-				"false"
-		}, workingDir.getAbsolutePath());
-		vbpmn.execute();
+		final String mclProperty;
 
-		final File[] dirFiles = workingDir.listFiles();
-
-		assert dirFiles != null;
-
-		File lntSpec = null;
-
-		for (File file : dirFiles)
+		if (temporalLogicProperty.getName().endsWith(".mcl"))
 		{
-			if (file.getName().endsWith(".mcl")
-				|| file.getName().endsWith(".pif")
-				|| file.getName().equals(TRUE_RESULT_FILE_NAME)
-				|| file.getName().equals(FALSE_RESULT_FILE_NAME)
-				|| file.getName().equals("time.txt")
-				|| file.getName().equals("evaluator4"))
+			//The property can be evaluated directly using VBPMN
+			final StringBuilder mclPropertyBuilder = new StringBuilder();
+
+			try
 			{
-				file.delete();
-			}
-			else if (file.getName().endsWith(".lnt"))
-			{
-				if (!file.getName().equals(BPMN_TYPES_FILE)
-					&& !file.getName().equals(ID_FILE))
+				final FileInputStream inputStream = new FileInputStream(temporalLogicProperty);
+				final Scanner scanner = new Scanner(inputStream);
+
+				while (scanner.hasNextLine())
 				{
-					lntSpec = file;
+					mclPropertyBuilder.append(scanner.nextLine())
+							.append(" ");
 				}
+
+				scanner.close();
+				inputStream.close();
+
+				mclProperty = mclPropertyBuilder.toString();
+			}
+			catch (IOException e)
+			{
+				return Triple.of(null, null, READING_PROPERTY_FILE_FAILED);
 			}
 		}
+		else
+		{
+			mclProperty = null;
+		}
 
-		Main.cleanDirBeforeEvaluation(dirFiles);
+		if (mclProperty == null)
+		{
+			try
+			{
+				final Vbpmn vbpmn = new Vbpmn(new String[]{
+						pifFile.getAbsolutePath(),
+						pifFile.getAbsolutePath(),
+						"property-implied",
+						"--formula",
+						"false"
+				}, workingDir.getAbsolutePath(), false);
+				vbpmn.execute();
+			}
+			catch (Error e)
+			{
+				return Triple.of(null, null, TRANSLATION_TO_LNT_FAILED);
+			}
 
-		//throw new IllegalStateException("No LNT specification found in \"" + workingDir + "\".");
+			final File[] dirFiles = workingDir.listFiles();
 
-		return lntSpec;
+			assert dirFiles != null;
+
+			File lntSpec = null;
+
+			for (File file : dirFiles)
+			{
+				if (file.getName().endsWith(".mcl")
+						|| file.getName().endsWith(".pif")
+						|| file.getName().equals(TRUE_RESULT_FILE_NAME)
+						|| file.getName().equals(FALSE_RESULT_FILE_NAME)
+						|| file.getName().equals("time.txt")
+						|| file.getName().equals("evaluator4"))
+				{
+					file.delete();
+				}
+				else if (file.getName().endsWith(".lnt"))
+				{
+					if (!file.getName().equals(BPMN_TYPES_FILE)
+							&& !file.getName().equals(ID_FILE))
+					{
+						lntSpec = file;
+					}
+				}
+			}
+
+			Main.cleanDirBeforeEvaluation(dirFiles);
+			return Triple.of(lntSpec, null, 0);
+		}
+		else
+		{
+			//Launch VBPMN with the MCL formula directly
+			final boolean result;
+
+			try
+			{
+				final Vbpmn vbpmn = new Vbpmn(new String[]{
+						pifFile.getAbsolutePath(),
+						pifFile.getAbsolutePath(),
+						"property-implied",
+						"--formula",
+						mclProperty
+				}, workingDir.getAbsolutePath());
+				result = vbpmn.execute();
+			}
+			catch (Error e)
+			{
+				return Triple.of(null, null, SVL_SCRIPT_EXECUTION_FAILED);
+			}
+
+			final File currentCounterExample = new File(workingDir.getAbsolutePath() + File.separator + VBPMN_COUNTEREXAMPLE_FILE);
+			final File tempCounterExample = new File(workingDir.getAbsolutePath() + File.separator + TEMPORARY_COUNTEREXAMPLE);
+
+			if (!result)
+			{
+				//Property was evaluated to FALSE => Keep the counter-example
+				final boolean renameSucceeded = currentCounterExample.renameTo(tempCounterExample);
+			}
+
+			final File[] dirFiles = workingDir.listFiles();
+
+			assert dirFiles != null;
+
+			for (File file : dirFiles)
+			{
+				if (file.getName().endsWith(".pif")
+					|| file.getName().equals(TRUE_RESULT_FILE_NAME)
+					|| file.getName().equals(FALSE_RESULT_FILE_NAME)
+					|| file.getName().equals("time.txt")
+					|| file.getName().equals("evaluator4"))
+				{
+					file.delete();
+				}
+			}
+
+			Main.cleanDirBeforeEvaluation(dirFiles);
+
+			final PrintWriter printWriter;
+			final File counterExample;
+
+			try
+			{
+				if (result)
+				{
+					System.out.println("Property was evaluated to \"TRUE\"!");
+					printWriter = new PrintWriter(workingDir + File.separator + TRUE_RESULT_FILE_NAME);
+					printWriter.println("true");
+					counterExample = null;
+				}
+				else
+				{
+					System.out.println("Property was evaluated to \"FALSE\"!");
+					printWriter = new PrintWriter(workingDir + File.separator + FALSE_RESULT_FILE_NAME);
+					printWriter.println("false");
+					counterExample = new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + ".bcg");
+					final boolean renameWorked = tempCounterExample.renameTo(counterExample);
+				}
+			}
+			catch (FileNotFoundException e)
+			{
+				return Triple.of(null, null, WRITING_PROPERTY_EVALUATION_FILE_FAILED);
+			}
+
+			printWriter.flush();
+			printWriter.close();
+
+			return Triple.of(counterExample, result, 0);
+		}
 	}
 
 	private static Pair<File, Integer> retrieveLTLProperty(final File workingDir,
@@ -231,7 +391,7 @@ public class Main
 		if (temporalLogicObject instanceof File)
 		{
 			//The temporal logic property has been uploaded: nothing to do.
-			return new Pair<>((File) temporalLogicObject, 0);
+			return Pair.of((File) temporalLogicObject, 0);
 		}
 		else if (temporalLogicObject instanceof String)
 		{
@@ -244,7 +404,7 @@ public class Main
 			}
 			catch (Exception e)
 			{
-				return new Pair<>(null, PROPERTY_GENERATION_FAILED);
+				return Pair.of(null, PROPERTY_GENERATION_FAILED);
 			}
 
 			System.out.println("Generated LTL property: " + ltlProperty);
@@ -260,10 +420,10 @@ public class Main
 			}
 			catch (FileNotFoundException e)
 			{
-				return new Pair<>(null, WRITING_LTL_PROPERTY_FAILED);
+				return Pair.of(null, WRITING_LTL_PROPERTY_FAILED);
 			}
 
-			return new Pair<>(ltlPropertyFile, 0);
+			return Pair.of(ltlPropertyFile, 0);
 		}
 		else
 		{
@@ -327,12 +487,12 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return new Pair<>(new ArrayList<>(), LNT_TO_BCG_FAILED);
+			return Pair.of(new ArrayList<>(), LNT_TO_BCG_FAILED);
 		}
 
 		if (lntOpenCommandManager.returnValue() != 0)
 		{
-			return new Pair<>(new ArrayList<>(), LNT_TO_BCG_FAILED);
+			return Pair.of(new ArrayList<>(), LNT_TO_BCG_FAILED);
 		}
 
 		//Reduce LTS with weaktrace
@@ -346,12 +506,12 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return new Pair<>(new ArrayList<>(), WEAKTRACING_BCG_FAILED);
+			return Pair.of(new ArrayList<>(), WEAKTRACING_BCG_FAILED);
 		}
 
 		if (bcgOpenCommandManager.returnValue() != 0)
 		{
-			return new Pair<>(new ArrayList<>(), WEAKTRACING_BCG_FAILED);
+			return Pair.of(new ArrayList<>(), WEAKTRACING_BCG_FAILED);
 		}
 
 		//Retrieve LTS labels
@@ -365,12 +525,12 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return new Pair<>(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
+			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
 		}
 
 		if (bcgInfoCommandManager.returnValue() != 0)
 		{
-			return new Pair<>(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
+			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
 		}
 
 		(new File(workingDir + File.separator + LNT_GENERIC_NAME + "_weaktraced.bcg")).delete();
@@ -389,7 +549,7 @@ public class Main
 		}
 
 		System.out.println("Labels retrieved: \"" + labels + "\".");
-		return new Pair<>(labels, 0);
+		return Pair.of(labels, 0);
 	}
 
 	private static int generateBuchiAutomata(File workingDir,
@@ -452,6 +612,11 @@ public class Main
 			return TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED;
 		}
 
+		if (ltl2tgbaCommandManager.returnValue() != 0)
+		{
+			return TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED;
+		}
+
 		System.out.println("Buchi automata:\n\n" + ltl2tgbaCommandManager.stdOut());
 
 		try
@@ -492,6 +657,11 @@ public class Main
 			return SVL_SCRIPT_GENERATION_FAILED;
 		}
 
+		if (svlCommandManager.returnValue() != 0)
+		{
+			return SVL_SCRIPT_GENERATION_FAILED;
+		}
+
 		return 0;
 	}
 
@@ -506,6 +676,11 @@ public class Main
 			svlCommandManager.execute();
 		}
 		catch (IOException | InterruptedException e)
+		{
+			return SVL_SCRIPT_EXECUTION_FAILED;
+		}
+
+		if (svlCommandManager.returnValue() != 0)
 		{
 			return SVL_SCRIPT_EXECUTION_FAILED;
 		}
@@ -540,6 +715,11 @@ public class Main
 
 	private static Pair<File, Integer> generateProperCounterexample(File workingDir)
 	{
+		if (!new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + ".bcg").exists())
+		{
+			return Pair.of(null, 0);
+		}
+
 		//Minimize counterexample with divbranching to remove "i" transitions
 		final String bcgMinCommand = "bcg_min";
 		final String[] bcgMinArgs = new String[]{"-divbranching", COUNTEREXAMPLE_FILE + ".bcg", COUNTEREXAMPLE_FILE + "_div.bcg"};
@@ -551,7 +731,12 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return new Pair<>(null, COUNTEREXAMPLE_DETERMINATION_FAILED);
+			return Pair.of(null, COUNTEREXAMPLE_DETERMINATION_FAILED);
+		}
+
+		if (bcgMinCommandManager.returnValue() != 0)
+		{
+			return Pair.of(null, COUNTEREXAMPLE_DETERMINATION_FAILED);
 		}
 
 		//Convert example to AUT
@@ -565,10 +750,15 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return new Pair<>(null, COUNTEREXAMPLE_TO_AUT_FAILED);
+			return Pair.of(null, COUNTEREXAMPLE_TO_AUT_FAILED);
 		}
 
-		return new Pair<>(new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + "_div.aut"), 0);
+		if (bcgIOCommandManager.returnValue() != 0)
+		{
+			return Pair.of(null, COUNTEREXAMPLE_TO_AUT_FAILED);
+		}
+
+		return Pair.of(new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + "_div.aut"), 0);
 	}
 
 	private static void finalClean(File workingDirectory)

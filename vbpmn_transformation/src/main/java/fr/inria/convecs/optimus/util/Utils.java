@@ -1,7 +1,17 @@
 package fr.inria.convecs.optimus.util;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 public class Utils
 {
+	private static final long MICROSECONDS_THRESHOLD = 1000;
+	private static final long MILLISECONDS_THRESHOLD = 1000000;
+	private static final long SECONDS_THRESHOLD = 1000000000;
+	private static final long MINUTES_THRESHOLD = 60000000000L;
+	private static final long HOURS_THRESHOLD = 3600000000000L;
+	private static final long DAYS_THRESHOLD = 86400000000000L;
+
 	private Utils()
 	{
 
@@ -119,6 +129,45 @@ public class Utils
 
 			default:
 				throw new UnsupportedOperationException("Months indices should be between 0 and 11. Got " + month + " instead.");
+		}
+	}
+
+	public static String nanoSecToReadable(final long nanoseconds)
+	{
+		final DecimalFormat df = new DecimalFormat("#.##");
+		df.setRoundingMode(RoundingMode.CEILING);
+
+		if (nanoseconds > DAYS_THRESHOLD)
+		{
+			return df.format((double) nanoseconds / (double) DAYS_THRESHOLD) + " days";
+		}
+		else if (nanoseconds > HOURS_THRESHOLD)
+		{
+			return df.format((double) nanoseconds / (double) HOURS_THRESHOLD) + "h";
+		}
+		else if (nanoseconds > MINUTES_THRESHOLD)
+		{
+			return df.format((double) nanoseconds / (double) MINUTES_THRESHOLD) + "m";
+		}
+		else if (nanoseconds > SECONDS_THRESHOLD)
+		{
+			//More than 1sec
+			return df.format((double) nanoseconds / (double) SECONDS_THRESHOLD) + "s";
+		}
+		else if (nanoseconds > MILLISECONDS_THRESHOLD)
+		{
+			//More than 1ms
+			return df.format((double) nanoseconds / (double) MILLISECONDS_THRESHOLD) + "ms";
+		}
+		else if (nanoseconds > MICROSECONDS_THRESHOLD)
+		{
+			//More than 1µs
+			return df.format((double) nanoseconds / (double) MICROSECONDS_THRESHOLD) + "µs";
+		}
+		else
+		{
+			//Value in nanoseconds
+			return df.format((double) nanoseconds) + "ns";
 		}
 	}
 }

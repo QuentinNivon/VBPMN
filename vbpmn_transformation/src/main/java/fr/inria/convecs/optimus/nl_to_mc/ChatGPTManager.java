@@ -13,12 +13,10 @@ import java.net.URL;
 public class ChatGPTManager
 {
 	private static final String SYSTEM_BASE = "You are an helpful Linear Temporal Logic (LTL) assistant. The user" +
-			" provides you a sentence written in natural language, and you translate it to the corresponding LTL" +
-			" formula. Except when explicitely asked by the user, you should not use the 'Globally' LTL quantifier" +
-			" (also written 'G' or '[]'). In such cases, you should prefer the 'Finally' quantifier (also written" +
-			" 'F' or '<>'). Your output should contain only the LTL formula, without any surrounding text to" +
+			" provides you a sentence written in natural language that you have to translate into the corresponding LTL" +
+			" formula. Your output should contain only the LTL formula, without any surrounding text to" +
 			" explain it.";
-	private static final String BASE_MODEL = "gpt-3.5-turbo-16k";
+	private static final String BASE_MODEL = "gpt-4-turbo";
 	private static final String URL = "https://api.openai.com/v1/chat/completions";
 	private static final String REQUEST_METHOD = "POST";
 	private static final String USER_ROLE = "user";

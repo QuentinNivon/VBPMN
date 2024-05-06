@@ -33,6 +33,8 @@ public class Aut2Vis
 
 	public File generateVisFile() throws IOException
 	{
+		if (this.autFile == null) return null;
+
 		//Parse the .aut file and generate the corresponding VIS objects
 		final ArrayList<VisNode> nodes = new ArrayList<>();
 		final ArrayList<VisEdge> edges = new ArrayList<>();
