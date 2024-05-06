@@ -38,6 +38,7 @@ public class MyOwnLogger
 		}
 
 		printWriter.print(builder.toString());
+		printWriter.flush();
 		printWriter.close();
 	}
 
@@ -61,6 +62,7 @@ public class MyOwnLogger
 		}
 
 		printWriter.print(msg);
+		printWriter.flush();
 		printWriter.close();
 	}
 }

@@ -2,6 +2,10 @@ package fr.inria.convecs.optimus.nl_to_mc;
 
 import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExceptionStatus;
 import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,6 +21,7 @@ public class ChatGPTManager
 			" formula. Your output should contain only the LTL formula, without any surrounding text to" +
 			" explain it.";
 	private static final String BASE_MODEL = "gpt-4-turbo";
+	private static final String FINE_TUNED_MODEL_1 = "ft:gpt-3.5-turbo-0125:personal:inria-nivon-salaun:9Loa9FXv";
 	private static final String URL = "https://api.openai.com/v1/chat/completions";
 	private static final String REQUEST_METHOD = "POST";
 	private static final String USER_ROLE = "user";
@@ -44,7 +49,7 @@ public class ChatGPTManager
 			connection.setRequestProperty("Authorization", "Bearer " + apiKey);
 			connection.setDoOutput(true);
 
-			final String body = "{\"model\": \"" + BASE_MODEL + "\"," +
+			final String body = "{\"model\": \"" + FINE_TUNED_MODEL_1 + "\"," +
 					"\"messages\": [" +
 					"{\"role\": \"" + SYSTEM_ROLE + "\", \"content\": \"" + SYSTEM_BASE + "\"}" + ", " +
 					"{\"role\": \"" + USER_ROLE + "\", \"content\": \"" + question + "\"}" +
@@ -73,12 +78,21 @@ public class ChatGPTManager
 
 			//System.out.println("Real answer: " + response);
 
-			final int startIndex = response.indexOf("content") + 11;
-			final int endIndex = response.indexOf("\"", startIndex);
+			final JSONParser jsonParser = new JSONParser();
+			final JSONObject jsonAnswer = (JSONObject) jsonParser.parse(response.toString());
+			//System.out.println("JSON answer: " + jsonAnswer);
+			final JSONArray dataArray = (JSONArray) jsonAnswer.get("choices");
+			//System.out.println("Data array: " + dataArray);
+			final JSONObject singleChoice = (JSONObject) dataArray.get(0);
+			//System.out.println("Single choice: " + singleChoice);
+			final JSONObject message = (JSONObject) singleChoice.get("message");
+			//System.out.println("message : " + message);
+			final String answer = (String) message.get("content");
+			//System.out.println("JSON answer: " + answer);
 
-			return response.substring(startIndex, endIndex);
+			return answer;
 		}
-		catch (IOException e)
+		catch (IOException | ParseException e)
 		{
 			throw new ExpectedException(e, ExceptionStatus.CHATGPT_IO);
 		}

@@ -5,13 +5,10 @@ import fr.inria.convecs.optimus.util.Utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_TESTING;
 
 public class CommandLineParser
 {
@@ -59,30 +56,21 @@ public class CommandLineParser
 
     private void parse(String[] commandLineArgs)
     {
-        if (LOCAL_TESTING)
+        if (commandLineArgs.length < 3) return;
+
+        this.put(CommandLineOption.API_KEY, commandLineArgs[0]);
+        this.put(CommandLineOption.TEMPORAL_PROPERTY, commandLineArgs[1]);
+        final String leafDirectoryName = commandLineArgs[2];
+
+        try
         {
-            this.put(CommandLineOption.API_KEY, "");
-            this.put(CommandLineOption.TEMPORAL_PROPERTY, "");
-            this.put(CommandLineOption.WORKING_DIRECTORY, new File("/home/quentin/Documents/temptest"));
+            final File file = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            final File finalDirectory = this.buildArborescence(file, leafDirectoryName);
+            this.put(CommandLineOption.WORKING_DIRECTORY, finalDirectory);
         }
-        else
+        catch (URISyntaxException e)
         {
-            if (commandLineArgs.length < 3) return;
-
-            this.put(CommandLineOption.API_KEY, commandLineArgs[0]);
-            this.put(CommandLineOption.TEMPORAL_PROPERTY, commandLineArgs[1]);
-            final String leafDirectoryName = commandLineArgs[2];
-
-            try
-            {
-                final File file = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-                final File finalDirectory = this.buildArborescence(file, leafDirectoryName);
-                this.put(CommandLineOption.WORKING_DIRECTORY, finalDirectory);
-            }
-            catch (URISyntaxException e)
-            {
-                throw new RuntimeException(e);
-            }
+            throw new RuntimeException(e);
         }
 	}
 

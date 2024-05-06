@@ -36,6 +36,7 @@ public class Main
 	private static final String BPMN_TYPES_FILE = "bpmntypes.lnt";
 	private static final String PIF_SCHEMA = "pif.xsd";
 	private static final String REMOTE_PIF_FILE_LOCATION = "/home/quentin_nivon/nl_to_mc/public/";
+	private static final String LOCAL_PIF_FILE_LOCATION = "/home/quentin/Documents/VBPMN/vbpmn_transformation/src/main/resources/";
 	private static final int TRANSLATION_TO_PIF_FAILED = 12;
 	private static final int TRANSLATION_TO_LNT_FAILED = 13;
 	private static final int PROPERTY_GENERATION_FAILED = 14;
@@ -57,10 +58,10 @@ public class Main
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
 	{
+		CommandLineParser commandLineParser = null;
+
 		try
 		{
-			final CommandLineParser commandLineParser;
-
 			try
 			{
 				commandLineParser = new CommandLineParser(args);
@@ -210,10 +211,18 @@ public class Main
 			System.out.println("Cleaning working directory...");
 			Main.finalClean(workingDirectory);
 			System.out.println("Directory cleaned.\n");
+
+			MyOwnLogger.writeStdOut((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY));
+			MyOwnLogger.writeStdErr((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY), "");
 		}
 		catch (Exception e)
 		{
-			System.exit(UNEXPECTED_ERROR);
+			if (commandLineParser != null)
+			{
+				MyOwnLogger.writeStdOut((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY));
+				MyOwnLogger.writeStdErr((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY), Utils.getStackTrace(e));
+			}
+			throw e;
 		}
 	}
 
@@ -399,7 +408,7 @@ public class Main
 
 			try
 			{
-				ltlProperty = ChatGPTManager.generateAnswer((String) temporalLogicObject, apiKey);
+				ltlProperty = ChatGPTManager.generateAnswer((String) temporalLogicObject, apiKey).replace("\n", "").replace("\\\"", "\"");
 			}
 			catch (Exception e)
 			{
@@ -407,6 +416,7 @@ public class Main
 			}
 
 			System.out.println("Generated LTL property: " + ltlProperty);
+			MyOwnLogger.append("Generated LTL property: " + ltlProperty);
 
 			final File ltlPropertyFile = new File(workingDir.getAbsolutePath() + File.separator + LTL_PROPERTY);
 
@@ -433,7 +443,7 @@ public class Main
 	private static File parseAndTransform(File workingDir,
 										  File input)
 	{
-		final String pifSchema = REMOTE_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA;
+		final String pifSchema = LOCAL_TESTING ? LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA : REMOTE_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA;
 		final ContentHandler baseHandler = new BaseContentHandler(input);
 		baseHandler.handle();
 		final Process processOutput = (Process) baseHandler.getOutput();

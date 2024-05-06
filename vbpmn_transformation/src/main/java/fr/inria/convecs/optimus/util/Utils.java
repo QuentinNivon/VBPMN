@@ -1,5 +1,7 @@
 package fr.inria.convecs.optimus.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
@@ -169,5 +171,13 @@ public class Utils
 			//Value in nanoseconds
 			return df.format((double) nanoseconds) + "ns";
 		}
+	}
+
+	public static String getStackTrace(final Throwable throwable)
+	{
+		final StringWriter sw = new StringWriter();
+		final PrintWriter pw = new PrintWriter(sw, true);
+		throwable.printStackTrace(pw);
+		return sw.getBuffer().toString();
 	}
 }
