@@ -3,12 +3,14 @@ package fr.inria.convecs.optimus.py_to_java;
 import fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics.BpmnTypesBuilderGeneric;
 import fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics.Pif2LntGeneric;
 import fr.inria.convecs.optimus.util.PifUtil;
+import fr.inria.convecs.optimus.util.Utils;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,6 +138,8 @@ public class Vbpmn
 	private final String[] sysArgs;
 	private final String outputFolder;
 	private final boolean compareOrVerify;
+	private final ArrayList<Pair<Long, String>> executionTimes;
+
 
 	public Vbpmn(final String[] sysArgs,
 				 final String outputFolder)
@@ -144,6 +148,7 @@ public class Vbpmn
 		//if (true) throw new IllegalStateException(Arrays.toString(sysArgs));
 		this.outputFolder = outputFolder;
 		this.compareOrVerify = true;
+		this.executionTimes = new ArrayList<>();
 	}
 
 	public Vbpmn(final String[] sysArgs,
@@ -154,6 +159,7 @@ public class Vbpmn
 		//if (true) throw new IllegalStateException(Arrays.toString(sysArgs));
 		this.outputFolder = outputFolder;
 		this.compareOrVerify = compareOrVerify;
+		this.executionTimes = new ArrayList<>();
 	}
 
 	@SuppressWarnings("unchecked") //Prevents Java from outputting warnings concerning the cast of Class<capture of ?>
@@ -168,31 +174,67 @@ public class Vbpmn
 		//Check if process is balanced or not
 		final File pif1 = new File((String) args.getList("models").get(0));
 		final File pif2 = new File((String) args.getList("models").get(1));
+		final long checkProcessBalanceStartTime = System.nanoTime();
 		final boolean processIsBalanced = PifUtil.isPifBalanced(pif1) && PifUtil.isPifBalanced(pif2);
+		final long checkProcessBalanceEndTime = System.nanoTime();
+		final long checkProcessBalanceTime = checkProcessBalanceEndTime - checkProcessBalanceStartTime;
+		this.executionTimes.add(Pair.of(checkProcessBalanceTime, "Checking if the process is balanced took " + Utils.nanoSecToReadable(checkProcessBalanceTime)));
 
 		//Get CADP version
+		final long computeCADPVersionStartTime = System.nanoTime();
 		final String cadpVersionDir = this.getCadpVersion();
+		final long computeCADPVersionEndTime = System.nanoTime();
+		final long computeCADPVersionTime = computeCADPVersionEndTime - computeCADPVersionStartTime;
+		this.executionTimes.add(Pair.of(computeCADPVersionTime, "Retrieving the installed CADP version took " + Utils.nanoSecToReadable(computeCADPVersionTime)));
 
 		//Load the good Pif2Lnt class (depending on the CADP version)
+		final long pif2LntClassRetrievalStartTime = System.nanoTime();
 		final Pif2LntGeneric pif2lnt = this.loadPif2LntGenericClass(cadpVersionDir);
 		pif2lnt.setBalance(processIsBalanced);
 		pif2lnt.setOutputFolder(this.outputFolder);
+		final long pif2LntClassRetrievalEndTime = System.nanoTime();
+		final long pif2LntClassRetrievalTime = pif2LntClassRetrievalEndTime - pif2LntClassRetrievalStartTime;
+		this.executionTimes.add(Pair.of(pif2LntClassRetrievalTime, "Retrieving the Pif2Lnt class to use took " + Utils.nanoSecToReadable(pif2LntClassRetrievalTime)));
 
 		//Load the good BpmnTypesBuilder class (depending on the CADP version)
+		final long bpmnTypesBuilderClassRetrievalStartTime = System.nanoTime();
 		final BpmnTypesBuilderGeneric bpmnTypesBuilder = this.loadBpmnTypesBuilderClass(cadpVersionDir);
 		bpmnTypesBuilder.setOutputDirectory(this.outputFolder);
 		bpmnTypesBuilder.dumpBpmnTypesFile();
+		final long bpmnTypesBuilderClassRetrievalEndTime = System.nanoTime();
+		final long bpmnTypesBuilderClassRetrievalTime = bpmnTypesBuilderClassRetrievalEndTime - bpmnTypesBuilderClassRetrievalStartTime;
+		this.executionTimes.add(Pair.of(bpmnTypesBuilderClassRetrievalTime, "Retrieving the BpmnTypesBuilder class to use took " + Utils.nanoSecToReadable(bpmnTypesBuilderClassRetrievalTime)));
 
 		//If in lazy mode, rebuild the BCG files only if needed
 		final boolean lazy = args.get("lazy") != null
 				&& args.getBoolean("lazy");
 
 		//(Re)build the first model
+		final long firstProcessConversionStartTime = System.nanoTime();
 		final String pifModel1 = (String) args.getList("models").get(0);
 		final Triple<Integer, String, Collection<String>> result1 = lazy ? pif2lnt.load(pifModel1) : pif2lnt.generate(pifModel1);
+		final long firstProcessConversionEndTime = System.nanoTime();
+		final long firstProcessConversionTime = firstProcessConversionEndTime - firstProcessConversionStartTime;
+		this.executionTimes.add(Pair.of(firstProcessConversionTime, "The generation of the LNT code of the first process took " + Utils.nanoSecToReadable(firstProcessConversionTime)));
+
 		//(Re)build the second model
-		final String pifModel2 = (String) args.getList("models").get(1);
-		final Triple<Integer, String, Collection<String>> result2 = lazy ? pif2lnt.load(pifModel2) : pif2lnt.generate(pifModel2);
+		final long secondProcessConversionStartTime = System.nanoTime();
+		final Triple<Integer, String, Collection<String>> result2;
+
+		if (OPERATIONS_COMPARISON.contains(args.getString("operation")))
+		{
+			//We are comparing processes, thus we need to build the two processes
+			final String pifModel2 = (String) args.getList("models").get(1);
+			result2 = lazy ? pif2lnt.load(pifModel2) : pif2lnt.generate(pifModel2);
+		}
+		else
+		{
+			result2 = result1;
+		}
+
+		final long secondProcessConversionEndTime = System.nanoTime();
+		final long secondProcessConversionTime = secondProcessConversionEndTime - secondProcessConversionStartTime;
+		this.executionTimes.add(Pair.of(secondProcessConversionTime, "The generation of the LNT code of the second process took " + Utils.nanoSecToReadable(secondProcessConversionTime)));
 
 		//If one of the models could not be loaded => ERROR
 		if (result1.getLeft() != ReturnCodes.TERMINATION_OK)
@@ -239,6 +281,8 @@ public class Vbpmn
 		}
 
 		final boolean result;
+		final long comparisonEvaluationStartTime = System.nanoTime();
+		final String mode;
 
 		if (this.compareOrVerify)
 		{
@@ -257,6 +301,7 @@ public class Vbpmn
 						args.getString("renamed") == null ? "all" : args.getString("renamed"),
 						new ArrayList[]{syncSet1, syncSet2}
 				);
+				mode = "The comparison of the processes took ";
 			}
 			else
 			{
@@ -265,6 +310,7 @@ public class Vbpmn
 						result2.getMiddle(),
 						args.getString("formula")
 				);
+				mode = "The evaluation of the formula took ";
 			}
 
 			result = comparator.call();
@@ -272,11 +318,17 @@ public class Vbpmn
 		else
 		{
 			result = true;
+			mode = "Not comparing nor evaluating took ";
 		}
+
+		final long comparisonEvaluationEndTime = System.nanoTime();
+		final long comparisonEvaluationTime = comparisonEvaluationEndTime - comparisonEvaluationStartTime;
+		this.executionTimes.add(Pair.of(comparisonEvaluationTime, mode + Utils.nanoSecToReadable(comparisonEvaluationTime)));
 
 		//Perform comparison and process result
 		final long endTime = System.nanoTime();
 		final long totalTime = endTime - startTime;
+		this.executionTimes.add(Pair.of(totalTime, "Overall execution took " + Utils.nanoSecToReadable(totalTime)));
 
 		final File execTimeFile = new File(outputFolder + File.separator + "time.txt");
 		final PrintStream printStream;
@@ -297,6 +349,11 @@ public class Vbpmn
 		//System.out.println("Result: " + result);
 
 		return result;
+	}
+
+	public ArrayList<Pair<Long, String>> times()
+	{
+		return this.executionTimes;
 	}
 
 	//Private methods
