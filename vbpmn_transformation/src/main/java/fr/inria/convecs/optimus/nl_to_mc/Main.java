@@ -15,13 +15,11 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main
 {
-	public static final boolean LOCAL_TESTING = false;
+	private static final boolean LOCAL_TESTING = true;
 	private static final String DUMMY_LOOPY_LABEL = "DUMMY_LOOPY_LABEL";
 	private static final String LNT_GENERIC_NAME = "process";
 	private static final String COUNTEREXAMPLE_FILE = "diag";
@@ -54,6 +52,7 @@ public class Main
 	private static final int COUNTEREXAMPLE_TO_AUT_FAILED = 26;
 	private static final int AUT_TO_VIS_CONVERSION_FAILED = 27;
 	private static final int WRITING_LTL_PROPERTY_FAILED = 28;
+	private static final int SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS = 31;
 	private static final int UNEXPECTED_ERROR = 146548449;
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
@@ -533,6 +532,11 @@ public class Main
 
 			if (!trimmedLabel.equals("i"))
 			{
+				if (LTLKeyword.ALL_KEYWORDS.contains(trimmedLabel))
+				{
+					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
+				}
+
 				labels.add(trimmedLabel);
 			}
 		}
