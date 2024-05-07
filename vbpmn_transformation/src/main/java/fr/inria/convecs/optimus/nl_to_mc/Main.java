@@ -19,7 +19,7 @@ import java.util.*;
 
 public class Main
 {
-	private static final boolean LOCAL_TESTING = true;
+	private static final boolean LOCAL_TESTING = false;
 	private static final String DUMMY_LOOPY_LABEL = "DUMMY_LOOPY_LABEL";
 	private static final String LNT_GENERIC_NAME = "process";
 	private static final String COUNTEREXAMPLE_FILE = "diag";
@@ -395,48 +395,70 @@ public class Main
 														   final Object temporalLogicObject,
 														   final String apiKey)
 	{
+		if (!(temporalLogicObject instanceof String)
+			&& !(temporalLogicObject instanceof File))
+		{
+			throw new IllegalStateException("Unsupported object type: " + temporalLogicObject.getClass().getName());
+		}
+
+		final String property;
+
 		if (temporalLogicObject instanceof File)
 		{
-			//The temporal logic property has been uploaded: nothing to do.
-			return Pair.of((File) temporalLogicObject, 0);
-		}
-		else if (temporalLogicObject instanceof String)
-		{
-			//We got a description: ask GPT
-			final String ltlProperty;
-
 			try
 			{
-				ltlProperty = ChatGPTManager.generateAnswer((String) temporalLogicObject, apiKey).replace("\n", "").replace("\\\"", "\"");
+				final FileInputStream fileInputStream = new FileInputStream(((File) temporalLogicObject));
+				final Scanner scanner = new Scanner(fileInputStream);
+				final StringBuilder propertyBuilder = new StringBuilder();
+
+				while (scanner.hasNextLine())
+				{
+					propertyBuilder.append(scanner.nextLine());
+				}
+
+				scanner.close();
+				fileInputStream.close();
+
+				property = propertyBuilder.toString();
+			}
+			catch (IOException e)
+			{
+				return Pair.of(null, READING_PROPERTY_FILE_FAILED);
+			}
+
+			((File) temporalLogicObject).delete();
+		}
+		else
+		{
+			//We got a description: ask GPT
+			try
+			{
+				property = ChatGPTManager.generateAnswer((String) temporalLogicObject, apiKey).replace("\n", "").replace("\\\"", "\"");
 			}
 			catch (Exception e)
 			{
 				return Pair.of(null, PROPERTY_GENERATION_FAILED);
 			}
 
-			System.out.println("Generated LTL property: " + ltlProperty);
-			MyOwnLogger.append("Generated LTL property: " + ltlProperty);
-
-			final File ltlPropertyFile = new File(workingDir.getAbsolutePath() + File.separator + LTL_PROPERTY);
-
-			try
-			{
-				final PrintWriter printWriter = new PrintWriter(ltlPropertyFile);
-				printWriter.println(ltlProperty);
-				printWriter.flush();
-				printWriter.close();
-			}
-			catch (FileNotFoundException e)
-			{
-				return Pair.of(null, WRITING_LTL_PROPERTY_FAILED);
-			}
-
-			return Pair.of(ltlPropertyFile, 0);
+			System.out.println("Generated LTL property: " + property);
+			MyOwnLogger.append("Generated LTL property: " + property);
 		}
-		else
+
+		final File ltlPropertyFile = new File(workingDir.getAbsolutePath() + File.separator + LTL_PROPERTY);
+
+		try
 		{
-			throw new IllegalStateException("Unsupported object type: " + temporalLogicObject.getClass().getName());
+			final PrintWriter printWriter = new PrintWriter(ltlPropertyFile);
+			printWriter.println(property.toUpperCase()); //Needed because the LNT spec contains tasks in upper case
+			printWriter.flush();
+			printWriter.close();
 		}
+		catch (FileNotFoundException e)
+		{
+			return Pair.of(null, WRITING_LTL_PROPERTY_FAILED);
+		}
+
+		return Pair.of(ltlPropertyFile, 0);
 	}
 
 	private static File parseAndTransform(File workingDir,
@@ -534,6 +556,7 @@ public class Main
 			{
 				if (LTLKeyword.ALL_KEYWORDS.contains(trimmedLabel))
 				{
+					System.out.println("The specification contains tasks whose labels are reserved LTL keywords.");
 					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
 				}
 

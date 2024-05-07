@@ -342,7 +342,7 @@ public class Vbpmn
 			throw new RuntimeException(e);
 		}
 
-		printStream.print("The execution took " + totalTime + " ns");
+		printStream.print("The execution took " + Utils.nanoSecToReadable(totalTime));
 		printStream.close();
 
 		final int returnValue = result ? ReturnCodes.TERMINATION_OK : ReturnCodes.TERMINATION_ERROR;

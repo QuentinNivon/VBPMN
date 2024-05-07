@@ -22,6 +22,8 @@ public class ChatGPTManager
 			" explain it.";
 	private static final String BASE_MODEL = "gpt-4-turbo";
 	private static final String FINE_TUNED_MODEL_1 = "ft:gpt-3.5-turbo-0125:personal:inria-nivon-salaun:9Loa9FXv";
+	private static final String FINE_TUNED_MODEL_2 = "ft:gpt-3.5-turbo-0125:personal:inria-nivon-salaun:9MAz24aS";
+	private static final String FINE_TUNED_MODEL_3 = "ft:gpt-3.5-turbo-0125:personal:inria-nivon-salaun:9MEzWkH4";
 	private static final String URL = "https://api.openai.com/v1/chat/completions";
 	private static final String REQUEST_METHOD = "POST";
 	private static final String USER_ROLE = "user";
@@ -49,7 +51,7 @@ public class ChatGPTManager
 			connection.setRequestProperty("Authorization", "Bearer " + apiKey);
 			connection.setDoOutput(true);
 
-			final String body = "{\"model\": \"" + FINE_TUNED_MODEL_1 + "\"," +
+			final String body = "{\"model\": \"" + FINE_TUNED_MODEL_3 + "\"," +
 					"\"messages\": [" +
 					"{\"role\": \"" + SYSTEM_ROLE + "\", \"content\": \"" + SYSTEM_BASE + "\"}" + ", " +
 					"{\"role\": \"" + USER_ROLE + "\", \"content\": \"" + question + "\"}" +
