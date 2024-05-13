@@ -3647,7 +3647,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					}
 				}
 
-				lntBuilder.append(", MoveOn;any in\n");
+				lntBuilder.append(", MoveOn:any in\n");
 
 				//We start with the scheduler
 				lntBuilder.append("par MoveOn, ");
@@ -4059,7 +4059,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (cycleExists)
 			{
-				return Triple.of(ReturnCodes.TERMINATION_ERROR, pifModelName, process.alpha());
+				return Triple.of(ReturnCodes.TERMINATION_UNBALANCED_INCLUSIVE_CYCLE, pifModelName, process.alpha());
 			}
 		}
 
@@ -4079,7 +4079,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 			catch (IOException | InterruptedException e)
 			{
-				throw new RuntimeException(e);
+				return Triple.of(ReturnCodes.TERMINATION_ERROR, pifModelName, process.alpha());
 			}
 		}
 
