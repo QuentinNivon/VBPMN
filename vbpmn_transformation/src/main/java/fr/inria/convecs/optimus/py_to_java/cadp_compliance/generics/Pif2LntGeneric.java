@@ -29,10 +29,16 @@ public abstract class Pif2LntGeneric
 
 	public abstract Triple<Integer, String, Collection<String>> load(final String pifFileName);
 	public abstract Triple<Integer, String, Collection<String>> load(final String pifFileName,
+																	 final boolean generateLTS);
+	public abstract Triple<Integer, String, Collection<String>> load(final String pifFileName,
+																	 final boolean generateLTS,
 																	 final boolean smartReduction,
 																	 final boolean debug);
 	public abstract Triple<Integer, String, Collection<String>> generate(final String pifFileName);
 	public abstract Triple<Integer, String, Collection<String>> generate(final String pifFileName,
+																		 final boolean generateLTS);
+	public abstract Triple<Integer, String, Collection<String>> generate(final String pifFileName,
+																		 final boolean generateLTS,
 																		 final boolean smartReduction,
 																		 final boolean debug);
 }
