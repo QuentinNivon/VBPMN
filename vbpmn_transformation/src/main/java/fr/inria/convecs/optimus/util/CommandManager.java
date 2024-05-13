@@ -43,31 +43,41 @@ public class CommandManager
 
 	 public void execute() throws IOException, InterruptedException
 	 {
-			ArrayList<String> command = new ArrayList<>();
+		 	//Build the command
+			final ArrayList<String> command = new ArrayList<>();
 			command.add(this.command);
 			command.addAll(this.args);
 			System.out.println("Command to execute: \"" + PyToJavaUtils.join(command, " ") + "\".");
-			ProcessBuilder processBuilder = new ProcessBuilder(command);
+
+			//Create the process builder
+			final ProcessBuilder processBuilder = new ProcessBuilder(command);
 			processBuilder.directory(this.workingDirectory);
-			Process process = processBuilder.start();
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+			//Start the process
+			final Process process = processBuilder.start();
+
+			//Read stdout
+		 	final InputStreamReader stdOutInputStreamReader = new InputStreamReader(process.getInputStream());
+			final BufferedReader stdoutBufferedReader = new BufferedReader(stdOutInputStreamReader);
 			boolean forceQuit = false;
 
 			String line;
-			while((line = bufferedReader.readLine()) != null)
+			while ((line = stdoutBufferedReader.readLine()) != null)
 			{
 				 this.stdOut.append(line).append("\n");
 
-				 if (line.contains("impossible rendez-vous detected"))
+				 if (line.contains("impossible rendez-vous detected")) //Use for lnt.open that blocks for some reason
 				 {
-						forceQuit = true;
-						break;
+					 forceQuit = true;
+					 break;
 				 }
 			}
 
+			stdOutInputStreamReader.close();
+			stdoutBufferedReader.close();
+
 			if (forceQuit)
 			{
-				 bufferedReader.close();
 				 process.destroy();
 				 this.returnValue = 0;
 
@@ -75,6 +85,18 @@ public class CommandManager
 			}
 			else
 			{
+				//Read stderr
+				final InputStreamReader stdErrInputStreamReader = new InputStreamReader(process.getErrorStream());
+				final BufferedReader stdErrBufferedReader = new BufferedReader(stdErrInputStreamReader);
+
+				while ((line = stdErrBufferedReader.readLine()) != null)
+				{
+					this.stdErr.append(line).append("\n");
+				}
+
+				stdErrInputStreamReader.close();
+				stdErrBufferedReader.close();
+
 				 this.returnValue = process.waitFor();
 			}
 	 }

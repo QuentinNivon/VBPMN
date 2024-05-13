@@ -1,5 +1,8 @@
 package fr.inria.convecs.optimus.nl_to_mc;
 
+import fr.inria.convecs.optimus.bpmn.BpmnParser;
+import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessObject;
+import fr.inria.convecs.optimus.bpmn.types.process.Task;
 import fr.inria.convecs.optimus.model.Process;
 import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
 import fr.inria.convecs.optimus.parser.BaseContentHandler;
@@ -12,7 +15,9 @@ import fr.inria.convecs.optimus.util.Utils;
 import fr.inria.convecs.optimus.util.XmlUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -129,7 +134,7 @@ public class Main
 				//The property is not written in MCL
 				System.out.println("Computing specification labels...");
 				final long labelsComputationStartTime = System.nanoTime();
-				final Pair<ArrayList<String>, Integer> labelsAndReturnCode = Main.computeSpecLabels(workingDirectory, lntSpecAndEvaluation.getLeft());
+				final Pair<ArrayList<String>, Integer> labelsAndReturnCode = Main.computeSpecLabels(bpmnFile);
 
 				if (labelsAndReturnCode.getRight() != 0)
 				{
@@ -503,10 +508,31 @@ public class Main
 		}
 	}
 
-	private static Pair<ArrayList<String>, Integer> computeSpecLabels(File workingDir,
-																	  File lntSpec)
+	private static Pair<ArrayList<String>, Integer> computeSpecLabels(final File bpmnFile)
 	{
-		//Convert LNT spec to BCG
+		final BpmnParser bpmnParser;
+
+		try
+		{
+			bpmnParser = new BpmnParser(bpmnFile);
+			bpmnParser.parse();
+		}
+		catch (ParserConfigurationException | IOException | SAXException e)
+		{
+			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
+		}
+
+		final ArrayList<String> labels = new ArrayList<>();
+
+		for (BpmnProcessObject object : bpmnParser.bpmnProcess().objects())
+		{
+			if (object instanceof Task)
+			{
+				labels.add(object.name());
+			}
+		}
+
+		/*//Convert LNT spec to BCG
 		final String lntOpenCommand = "lnt.open";
 		final String[] lntOpenArgs = new String[]{"-silent", lntSpec.getName(), "generator", LNT_GENERIC_NAME + ".bcg"};
 		final CommandManager lntOpenCommandManager = new CommandManager(lntOpenCommand, workingDir, lntOpenArgs);
@@ -562,7 +588,7 @@ public class Main
 
 				labels.add(trimmedLabel);
 			}
-		}
+		}*/
 
 		return Pair.of(labels, 0);
 	}

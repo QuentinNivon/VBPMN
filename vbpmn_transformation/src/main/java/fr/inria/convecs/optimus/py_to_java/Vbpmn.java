@@ -2,6 +2,7 @@ package fr.inria.convecs.optimus.py_to_java;
 
 import fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics.BpmnTypesBuilderGeneric;
 import fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics.Pif2LntGeneric;
+import fr.inria.convecs.optimus.util.CommandManager;
 import fr.inria.convecs.optimus.util.PifUtil;
 import fr.inria.convecs.optimus.util.Utils;
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -212,7 +213,7 @@ public class Vbpmn
 		//(Re)build the first model
 		final long firstProcessConversionStartTime = System.nanoTime();
 		final String pifModel1 = (String) args.getList("models").get(0);
-		final Triple<Integer, String, Collection<String>> result1 = lazy ? pif2lnt.load(pifModel1) : pif2lnt.generate(pifModel1);
+		final Triple<Integer, String, Collection<String>> result1 = lazy ? pif2lnt.load(pifModel1, this.compareOrVerify) : pif2lnt.generate(pifModel1, this.compareOrVerify);
 		final long firstProcessConversionEndTime = System.nanoTime();
 		final long firstProcessConversionTime = firstProcessConversionEndTime - firstProcessConversionStartTime;
 		this.executionTimes.add(Pair.of(firstProcessConversionTime, "The generation of the LNT code of the first process took " + Utils.nanoSecToReadable(firstProcessConversionTime)));
@@ -225,7 +226,7 @@ public class Vbpmn
 		{
 			//We are comparing processes, thus we need to build the two processes
 			final String pifModel2 = (String) args.getList("models").get(1);
-			result2 = lazy ? pif2lnt.load(pifModel2) : pif2lnt.generate(pifModel2);
+			result2 = lazy ? pif2lnt.load(pifModel2, this.compareOrVerify) : pif2lnt.generate(pifModel2, this.compareOrVerify);
 		}
 		else
 		{
@@ -460,27 +461,16 @@ public class Vbpmn
 				throw new RuntimeException("Environment variable $CADP is not set! Please fix this error and retry.");
 			}
 
-			final Process cadpLibCommand = Runtime.getRuntime().exec("cadp_lib -1", null, new File(outputFolder));
-			final BufferedReader stdInput = new BufferedReader(new InputStreamReader(cadpLibCommand.getInputStream()));
-			String line;
-
-			// Read the output from the command
-			//System.out.println("Here is the standard output of the command:\n");
-			final StringBuilder stdOutBuilder = new StringBuilder();
-			while ((line = stdInput.readLine()) != null)
-			{
-				stdOutBuilder.append(line);
-			}
-			//System.out.println(stdOutBuilder);
-			cadpLibCommand.destroy();
+			final CommandManager commandManager = new CommandManager("cadp_lib", new File(outputFolder), "-1");
+			commandManager.execute();
 
 			//Split answer by spaces
-			final String[] splitAnswer = stdOutBuilder.toString().split("\\s+");
+			final String[] splitAnswer = commandManager.stdOut().split("\\s+");
 			//The 2nd element is the version code, i.e. "2023k"
 			cadpVersionDir = "_" + splitAnswer[1].replace(" ", "").replace("-", "");
 			//System.out.println("CADP VERSION: " + cadpVersionDir);
 		}
-		catch (IOException e)
+		catch (IOException | InterruptedException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -770,23 +760,15 @@ public class Vbpmn
 
 			try
 			{
-				//TODO CHECK FUNCTIONING
-				final Process svlCommand = Runtime.getRuntime().exec(PyToJavaUtils.parametrize(
-						SVL_CALL_COMMAND,
-						Checker.CHECKER_FILE,
-						Checker.DIAGNOSTIC_FILE
-				), null, new File(outputFolder));
-				final InputStream output = svlCommand.getInputStream();
-				final InputStream error = svlCommand.getErrorStream();
-				final String stdOut = IOUtils.toString(output, StandardCharsets.UTF_8);
-				final String stdError = IOUtils.toString(error, StandardCharsets.UTF_8);
-				final int exitValue = svlCommand.waitFor();
-				output.close();
-				error.close();
+				//TODO CHECK FUNCTIONING + REVERIF
+				final String command = "svl";
+				final String[] args = {Checker.CHECKER_FILE, "->", Checker.DIAGNOSTIC_FILE};
+				final CommandManager commandManager = new CommandManager(command, new File(outputFolder), args);
+				commandManager.execute();
 
-				if (exitValue != ReturnCodes.TERMINATION_OK)
+				if (commandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 				{
-					throw new RuntimeException("An error occurred during the execution of the SVL script:\n\n" + stdError);
+					throw new RuntimeException("An error occurred during the execution of the SVL script:\n\n" + commandManager.stdErr());
 				}
 
 				final File resFile = new File(outputFolder + File.separator + DIAGNOSTIC_FILE);
@@ -801,11 +783,11 @@ public class Vbpmn
 					throw new RuntimeException();
 				}
 
-				printWriter.println(stdOut);
+				printWriter.println(commandManager.stdOut());
 				printWriter.flush();
 				printWriter.close();
 
-				return stdOut.contains("TRUE");
+				return commandManager.stdOut().contains("TRUE");
 			}
 			catch (IOException | InterruptedException e)
 			{
@@ -904,23 +886,14 @@ public class Vbpmn
 
 			try
 			{
-				//TODO CHECK FUNCTIONING
-				final Process svlCommand = Runtime.getRuntime().exec(PyToJavaUtils.parametrize(
-						SVL_CALL_COMMAND,
-						Checker.CHECKER_FILE,
-						Checker.DIAGNOSTIC_FILE
-				), null, new File(outputFolder));
-				final InputStream output = svlCommand.getInputStream();
-				final InputStream error = svlCommand.getErrorStream();
-				final String stdOut = IOUtils.toString(output, StandardCharsets.UTF_8);
-				final String stdError = IOUtils.toString(error, StandardCharsets.UTF_8);
-				final int exitValue = svlCommand.waitFor();
-				output.close();
-				error.close();
+				final String command = "svl";
+				final String[] args = {Checker.CHECKER_FILE, "->", Checker.DIAGNOSTIC_FILE};
+				final CommandManager commandManager = new CommandManager(command, new File(outputFolder), args);
+				commandManager.execute();
 
-				if (exitValue != ReturnCodes.TERMINATION_OK)
+				if (commandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 				{
-					throw new RuntimeException("An error occurred during the execution of the SVL script:\n\n" + stdError);
+					throw new RuntimeException("An error occurred during the execution of the SVL script:\n\n" + commandManager.stdErr());
 				}
 
 				final File resFile = new File(outputFolder + File.separator + DIAGNOSTIC_FILE);
@@ -935,11 +908,11 @@ public class Vbpmn
 					throw new RuntimeException();
 				}
 
-				printWriter.println(stdOut);
+				printWriter.println(commandManager.stdOut());
 				printWriter.flush();
 				printWriter.close();
 
-				return !stdOut.contains("FALSE");
+				return !commandManager.stdOut().contains("FALSE");
 			}
 			catch (IOException | InterruptedException e)
 			{

@@ -4,6 +4,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.Random;
 
 public class Utils
 {
@@ -179,5 +180,50 @@ public class Utils
 		final PrintWriter pw = new PrintWriter(sw, true);
 		throwable.printStackTrace(pw);
 		return sw.getBuffer().toString();
+	}
+
+	public static String generateRandomIdentifier()
+	{
+		return Utils.generateRandomIdentifier(30);
+	}
+
+	public static String generateRandomIdentifier(final int length)
+	{
+		final StringBuilder builder = new StringBuilder();
+		final Random random = new Random();
+
+		for (int i = 0; i < length; i++)
+		{
+			final char c;
+
+			//CAPS
+			if (random.nextBoolean())
+			{
+				c = (char) (random.nextInt(25) + 65 + 1); //Exclusive upper bound
+			}
+			//NON CAPS
+			else
+			{
+				c = (char) (random.nextInt(25) + 97 + 1); //Exclusive upper bound
+			}
+
+			builder.append(c);
+		}
+
+		return builder.toString();
+	}
+
+	public static String multiTab(final int nbTab)
+	{
+		final StringBuilder tabBuilder = new StringBuilder();
+		int i = 0;
+
+		while (i < nbTab)
+		{
+			tabBuilder.append("		");
+			i++;
+		}
+
+		return tabBuilder.toString();
 	}
 }

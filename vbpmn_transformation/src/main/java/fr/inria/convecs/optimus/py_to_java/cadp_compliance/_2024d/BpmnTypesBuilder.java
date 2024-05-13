@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 
 public class BpmnTypesBuilder extends BpmnTypesBuilderGeneric
 {
+	private static final String BPMN_TYPES_FILENAME = "bpmntypes.lnt";
+
 	private static final String BPMN_TYPES = "\n" +
 			"(*  BPMN data types (FACS'16), necessary for encoding unbalanced workflows\n" +
 			"Author: Gwen Salaun *)\n" +
@@ -441,7 +443,7 @@ public class BpmnTypesBuilder extends BpmnTypesBuilderGeneric
 
 	public void dumpBpmnTypesFile()
 	{
-		final File bpmnTypesFile = new File(this.outputDirectory + File.separator + "bpmntypes.lnt");
+		final File bpmnTypesFile = new File(this.outputDirectory + File.separator + BPMN_TYPES_FILENAME);
 		final PrintWriter printWriter;
 
 		try
