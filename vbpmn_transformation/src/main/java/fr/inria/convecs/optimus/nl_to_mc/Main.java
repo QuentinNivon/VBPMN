@@ -7,6 +7,7 @@ import fr.inria.convecs.optimus.model.Process;
 import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
 import fr.inria.convecs.optimus.parser.BaseContentHandler;
 import fr.inria.convecs.optimus.parser.ContentHandler;
+import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
 import fr.inria.convecs.optimus.py_to_java.Vbpmn;
 import fr.inria.convecs.optimus.transformer.BaseContentTransformer;
 import fr.inria.convecs.optimus.transformer.ContentTransformer;
@@ -34,6 +35,7 @@ public class Main
 	private static final String SVL_SCRIPT_NAME = "task.svl";
 	private static final String TRUE_RESULT_FILE_NAME = "res_true.txt";
 	private static final String FALSE_RESULT_FILE_NAME = "res_false.txt";
+	private static final String WARNING_FILE_NAME = "warning.txt";
 	private static final String LTL_PROPERTY = "property.ltl";
 	private static final String ID_FILE = "id.lnt";
 	private static final String BPMN_TYPES_FILE = "bpmntypes.lnt";
@@ -58,6 +60,7 @@ public class Main
 	private static final int AUT_TO_VIS_CONVERSION_FAILED = 27;
 	private static final int WRITING_LTL_PROPERTY_FAILED = 28;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS = 31;
+	private static final int BUCHI_AUTOMATA_HAS_NO_LABELS = 32;
 	private static final int UNEXPECTED_ERROR = 146548449;
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
@@ -147,16 +150,23 @@ public class Main
 
 				System.out.println("Generating Büchi automata...");
 				final long buchiAutomataGenerationStartTime = System.nanoTime();
-				final int buchiReturnValue = Main.generateBuchiAutomata(workingDirectory, ltlPropertyAndReturnValue.getLeft());
+				final Pair<String, Integer> buchiAutomataAndReturnValue = Main.generateBuchiAutomata(workingDirectory, ltlPropertyAndReturnValue.getLeft());
 
-				if (buchiReturnValue != 0)
+				if (buchiAutomataAndReturnValue.getRight() != 0)
 				{
-					System.exit(buchiReturnValue);
+					System.exit(buchiAutomataAndReturnValue.getRight());
 				}
 
 				final long buchiAutomataGenerationEndTime = System.nanoTime();
 				final long buchiAutomataGenerationTime = buchiAutomataGenerationEndTime - buchiAutomataGenerationStartTime;
 				System.out.println("Büchi automata generated in " + Utils.nanoSecToReadable(buchiAutomataGenerationTime) + ".\n");
+
+				System.out.println("Verifying property labels...");
+				final long propertyLabelsVerificationStartTime = System.nanoTime();
+				Main.retrieveAndVerifyPropertyLabels(workingDirectory, labelsAndReturnCode.getLeft(), buchiAutomataAndReturnValue.getLeft());
+				final long propertyLabelsVerificationEndTime = System.nanoTime();
+				final long propertyLabelsVerificationTime = propertyLabelsVerificationEndTime - propertyLabelsVerificationStartTime;
+				System.out.println("Property labels verified in " + Utils.nanoSecToReadable(propertyLabelsVerificationTime) + ".\n");
 
 				System.out.println("Generating the SVL script...");
 				final long svlScriptGenerationStartTime = System.nanoTime();
@@ -528,6 +538,12 @@ public class Main
 		{
 			if (object instanceof Task)
 			{
+				if (LTLKeyword.ALL_KEYWORDS.contains(object.name().toUpperCase()))
+				{
+					System.out.println("The specification contains tasks whose labels are reserved LTL keywords.");
+					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
+				}
+
 				labels.add(object.name());
 			}
 		}
@@ -590,11 +606,11 @@ public class Main
 			}
 		}*/
 
-		return Pair.of(labels, 0);
+		return Pair.of(labels, ReturnCodes.TERMINATION_OK);
 	}
 
-	private static int generateBuchiAutomata(File workingDir,
-											 File ltlProperty)
+	private static Pair<String, Integer> generateBuchiAutomata(final File workingDir,
+															   final File ltlProperty)
 	{
 		final StringBuilder propertyBuilder = new StringBuilder();
 		final FileInputStream inputStream;
@@ -622,7 +638,7 @@ public class Main
 		}
 		catch (IOException e)
 		{
-			return READING_PROPERTY_FILE_FAILED;
+			return Pair.of("", READING_PROPERTY_FILE_FAILED);
 		}
 
 		final String negProperty = ltlProperty.getName().replace(".ltl", "") + "_neg.ltl";
@@ -637,7 +653,7 @@ public class Main
 		}
 		catch (FileNotFoundException e)
 		{
-			return WRITING_PROPERTY_NEGATION_FAILED;
+			return Pair.of("", WRITING_PROPERTY_NEGATION_FAILED);
 		}
 
 		final String ltl2tgbaCommand = "ltl2tgba";
@@ -650,12 +666,12 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED;
+			return Pair.of("", TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED);
 		}
 
 		if (ltl2tgbaCommandManager.returnValue() != 0)
 		{
-			return TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED;
+			return Pair.of("", TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED);
 		}
 
 		System.out.println("Buchi automata:\n\n" + ltl2tgbaCommandManager.stdOut());
@@ -669,12 +685,12 @@ public class Main
 		}
 		catch (FileNotFoundException e)
 		{
-			return WRITING_BUCHI_AUTOMATA_FILE_FAILED;
+			return Pair.of("", WRITING_BUCHI_AUTOMATA_FILE_FAILED);
 		}
 
 		(new File(workingDir + File.separator + negProperty)).delete();
 
-		return 0;
+		return Pair.of(ltl2tgbaCommandManager.stdOut(), ReturnCodes.TERMINATION_OK);
 	}
 
 	private static int generateSVLScript(File workingDir,
@@ -762,8 +778,8 @@ public class Main
 		}
 
 		//Minimize counterexample with divbranching to remove "i" transitions
-		final String bcgMinCommand = "bcg_min";
-		final String[] bcgMinArgs = new String[]{"-divbranching", COUNTEREXAMPLE_FILE + ".bcg", COUNTEREXAMPLE_FILE + "_div.bcg"};
+		final String bcgMinCommand = "bcg_open";
+		final String[] bcgMinArgs = new String[]{COUNTEREXAMPLE_FILE + ".bcg", "reductor", "-weaktrace", COUNTEREXAMPLE_FILE + "_weak.bcg"};
 		final CommandManager bcgMinCommandManager = new CommandManager(bcgMinCommand, workingDir, bcgMinArgs);
 
 		try
@@ -782,7 +798,7 @@ public class Main
 
 		//Convert example to AUT
 		final String bcgIOCommand = "bcg_io";
-		final String[] bcgIOArgs = new String[]{COUNTEREXAMPLE_FILE + "_div.bcg", COUNTEREXAMPLE_FILE + "_div.aut"};
+		final String[] bcgIOArgs = new String[]{COUNTEREXAMPLE_FILE + "_weak.bcg", COUNTEREXAMPLE_FILE + "_weak.aut"};
 		final CommandManager bcgIOCommandManager = new CommandManager(bcgIOCommand, workingDir, bcgIOArgs);
 
 		try
@@ -799,7 +815,68 @@ public class Main
 			return Pair.of(null, COUNTEREXAMPLE_TO_AUT_FAILED);
 		}
 
-		return Pair.of(new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + "_div.aut"), 0);
+		return Pair.of(new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + "_weak.aut"), 0);
+	}
+
+	private static void retrieveAndVerifyPropertyLabels(final File workingDirectory,
+														final ArrayList<String> specificationLabels,
+														final String buchiAutomata)
+	{
+		//Retrieve Büchi automata labels line
+		final String[] buchiAutomataLines = buchiAutomata.split("\\r?\\n");
+		String labelsLine = null;
+
+		for (String buchiAutomataLine : buchiAutomataLines)
+		{
+			if (buchiAutomataLine.startsWith("AP:"))
+			{
+				labelsLine = buchiAutomataLine;
+				break;
+			}
+		}
+
+		if (labelsLine == null)
+		{
+			System.exit(BUCHI_AUTOMATA_HAS_NO_LABELS);
+		}
+
+		//Retrieve Büchi automata labels
+		final ArrayList<String> buchiAutomataLabels = new ArrayList<>();
+		int doubleQuoteIndex = labelsLine.indexOf('"');
+
+		while (doubleQuoteIndex != -1)
+		{
+			labelsLine = labelsLine.substring(doubleQuoteIndex + 1);
+			final int nextQuoteIndex = labelsLine.indexOf('"');
+			final String currentLabel = labelsLine.substring(0, nextQuoteIndex);
+			buchiAutomataLabels.add(currentLabel.toUpperCase());
+			labelsLine = labelsLine.substring(nextQuoteIndex + 1);
+			doubleQuoteIndex = labelsLine.indexOf('"');
+		}
+
+		//Remove specification labels from Buchi automata labels
+		for (String specLabel : specificationLabels)
+		{
+			buchiAutomataLabels.remove(specLabel.toUpperCase());
+		}
+
+		if (!buchiAutomataLabels.isEmpty())
+		{
+			System.out.println("/!\\ WARNING /!\\ Labels \"" + buchiAutomataLabels + "\" belong to the property but do" +
+					" not belong to the specification!");
+
+			try
+			{
+				final PrintWriter printWriter = new PrintWriter(workingDirectory.getAbsolutePath() + File.separator + WARNING_FILE_NAME);
+				printWriter.println(buchiAutomataLabels);
+				printWriter.flush();
+				printWriter.close();
+			}
+			catch (FileNotFoundException e)
+			{
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	private static void finalClean(File workingDirectory)
