@@ -60,39 +60,39 @@ public class Pif2Lnt extends Pif2LntGeneric
 	 * Dumps alphabet (list of strings) in the given file.
 	 *
 	 * @param alphabet is the alphabet to dump
-	 * @param printWriter is the printWriter representing the file to where the alphabet should be dumped
+	 * @param stringBuilder is the stringBuilder representing the file to where the alphabet should be dumped
 	 * @param addAny is a boolean indicating whether to add "any" or not
 	 */
 	public void dumpAlphabet(final ArrayList<String> alphabet,
-							 final StringBuilder printWriter,
+							 final StringBuilder stringBuilder,
 							 final boolean addAny)
 	{
 		final int nbElem = alphabet.size();
 
 		if (nbElem > 0)
 		{
-			printWriter.append("[");
+			stringBuilder.append("[");
 			int counter = 1;
 
 			for (String element : alphabet)
 			{
-				printWriter.append(element);
+				stringBuilder.append(element);
 
 				if (addAny)
 				{
-					printWriter.append(":any");
+					stringBuilder.append(":any");
 				}
 
 				counter++;
 
 				if (counter <= nbElem)
 				{
-					printWriter.append(", ");
+					stringBuilder.append(", ");
 				}
 			}
 
-			printWriter.append("]");
-			//printWriter.close();
+			stringBuilder.append("]");
+			//stringBuilder.close();
 		}
 	}
 
@@ -275,11 +275,11 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		//Generates the (generic) process for flows, only once
-		void writeLnt(final StringBuilder printWriter)
+		void writeLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("process flow [begin:any, finish:any] (ident:ID) is\n");
-			printWriter.append(" loop begin (ident) ; finish (ident) end loop\n");
-			printWriter.append("end process\n\n");
+			stringBuilder.append("process flow [begin:any, finish:any] (ident:ID) is\n");
+			stringBuilder.append(" loop begin (ident) ; finish (ident) end loop\n");
+			stringBuilder.append("end process\n\n");
 		}
 
 		//A normal flow cannot be a default flow
@@ -305,15 +305,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return this.identifier;
 		}
 
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("flow(");
-			printWriter.append(this.identifier);
-			printWriter.append(",");
-			printWriter.append(this.source.identifier());
-			printWriter.append(",");
-			printWriter.append(this.target.identifier());
-			printWriter.append(")");
+			stringBuilder.append("flow(");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(",");
+			stringBuilder.append(this.source.identifier());
+			stringBuilder.append(",");
+			stringBuilder.append(this.target.identifier());
+			stringBuilder.append(")");
 		}
 	}
 
@@ -335,12 +335,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 		// Generates the process for conditional flows
 		@Override
-		void writeLnt(final StringBuilder printWriter)
+		void writeLnt(final StringBuilder stringBuilder)
 		{
 			//TODO: Translate the condition too
-			printWriter.append("process conditionalflow [begin:any, finish:any] (ident: ID) is\n");
-			printWriter.append(" loop begin (ident) ; finish (ident) end loop\n");
-			printWriter.append("end process\n");
+			stringBuilder.append("process conditionalflow [begin:any, finish:any] (ident: ID) is\n");
+			stringBuilder.append(" loop begin (ident) ; finish (ident) end loop\n");
+			stringBuilder.append("end process\n");
 		}
 
 		//A conditional flow is default iff the condition attribute contains "default"
@@ -364,16 +364,16 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
 			throw new NotImplementedException("Method \"writeMainLnt()\" should not be used on InitialEvent!");
 		}
 
 		//Generates the (generic) process for the initial event, only once
 		@Override
-		void writeLnt(final StringBuilder printWriter)
+		void writeLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("process init [begin:any, outf:any] is\n")
+			stringBuilder.append("process init [begin:any, outf:any] is\n")
 					.append(" var ident: ID in begin ; outf (?ident of ID) end var \n")
 					.append("end process\n\n");
 		}
@@ -397,9 +397,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("initial(")
+			stringBuilder.append("initial(")
 					.append(this.identifier)
 					.append(",")
 					.append(this.outgoingFlows.get(0).identifier())
@@ -433,31 +433,31 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
 			throw new NotImplementedException("Method \"writeMainLnt()\" should not be used on EndEvent!");
 		}
 
 		//Generates the (generic) process for final events, only once
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
-			printWriter.append("process final [incf:any, finish:any] is\n");
+			stringBuilder.append("process final [incf:any, finish:any] is\n");
 
 			if (isBalanced)
 			{
-				printWriter.append(" var ident: ID in incf (?ident of ID); finish end var\n");
+				stringBuilder.append(" var ident: ID in incf (?ident of ID); finish end var\n");
 			}
 			else
 			{
-				printWriter.append("var ident: ID in \n")
+				stringBuilder.append("var ident: ID in \n")
 						.append("loop \n")
 						.append("incf (?ident of ID); finish \n")
 						.append("end loop\n")
 						.append("end var\n");
 			}
 
-			printWriter.append("end process\n\n");
+			stringBuilder.append("end process\n\n");
 		}
 
 		/**
@@ -474,9 +474,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("final(")
+			stringBuilder.append("final(")
 					.append(this.identifier)
 					.append(",{");
 			boolean first = true;
@@ -489,13 +489,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 				else
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 
-				printWriter.append(inFlow.identifier());
+				stringBuilder.append(inFlow.identifier());
 			}
 
-			printWriter.append("})");
+			stringBuilder.append("})");
 		}
 
 		HashMap<String, String> schedulerLnt()
@@ -572,18 +572,18 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 		//Generates the (generic) process for interactions, only once
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
-			printWriter.append("process interaction [incf:any, inter:any, outf:any] is\n")
+			stringBuilder.append("process interaction [incf:any, inter:any, outf:any] is\n")
 					.append(" var ident: ID in loop incf (?ident of ID); inter; outf (?ident of ID) end loop end var \n")
 					.append("end process\n");
 		}
 
 		@Override
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
 			//TODO Vérifier
-			this.writeLnt(printWriter);
+			this.writeLnt(stringBuilder);
 		}
 
 		/**
@@ -612,25 +612,25 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * Generates process instantiation for main LNT process
 		 */
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
 			//We assume one incoming flow and one outgoing flow
-			printWriter.append("interaction [");
-			printWriter.append(this.incomingFlows.get(0).identifier());
-			printWriter.append("_finish,");
-			printWriter.append(this.sender);
-			printWriter.append("_");
+			stringBuilder.append("interaction [");
+			stringBuilder.append(this.incomingFlows.get(0).identifier());
+			stringBuilder.append("_finish,");
+			stringBuilder.append(this.sender);
+			stringBuilder.append("_");
 
 			for (String e : this.receivers)
 			{
-				printWriter.append(e);
-				printWriter.append("_");
+				stringBuilder.append(e);
+				stringBuilder.append("_");
 			}
 
-			printWriter.append(this.message);
-			printWriter.append(",");
-			printWriter.append(this.outgoingFlows.get(0).identifier());
-			printWriter.append("_begin]");
+			stringBuilder.append(this.message);
+			stringBuilder.append(",");
+			stringBuilder.append(this.outgoingFlows.get(0).identifier());
+			stringBuilder.append("_begin]");
 		}
 	}
 
@@ -662,17 +662,17 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
-			printWriter.append("process messagesending [incf:any, msg:any, outf:any] is\n");
-			printWriter.append(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var \n");
-			printWriter.append("end process\n");
+			stringBuilder.append("process messagesending [incf:any, msg:any, outf:any] is\n");
+			stringBuilder.append(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var \n");
+			stringBuilder.append("end process\n");
 		}
 
 		@Override
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(printWriter); //TODO vérifier
+			this.writeLnt(stringBuilder); //TODO vérifier
 		}
 
 		ArrayList<String> alpha()
@@ -682,15 +682,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return res;
 		}
 
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("messagesending [");
-			printWriter.append(this.incomingFlows.get(0).identifier());
-			printWriter.append("_finish,");
-			printWriter.append(this.message);
-			printWriter.append("_EM,");
-			printWriter.append(this.outgoingFlows.get(0).identifier());
-			printWriter.append("_begin]");
+			stringBuilder.append("messagesending [");
+			stringBuilder.append(this.incomingFlows.get(0).identifier());
+			stringBuilder.append("_finish,");
+			stringBuilder.append(this.message);
+			stringBuilder.append("_EM,");
+			stringBuilder.append(this.outgoingFlows.get(0).identifier());
+			stringBuilder.append("_begin]");
 		}
 	}
 
@@ -708,17 +708,17 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
-			printWriter.append("process messagereception [incf:any, msg:any, outf:any] is\n");
-			printWriter.append(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var\n");
-			printWriter.append("end process\n");
+			stringBuilder.append("process messagereception [incf:any, msg:any, outf:any] is\n");
+			stringBuilder.append(" var ident: ID in loop incf (?ident of ID); msg; outf (?ident of ID) end loop end var\n");
+			stringBuilder.append("end process\n");
 		}
 
 		@Override
-		void processLnt(StringBuilder printWriter)
+		void processLnt(StringBuilder stringBuilder)
 		{
-			this.writeLnt(printWriter); //TODO Vérifier
+			this.writeLnt(stringBuilder); //TODO Vérifier
 		}
 
 		ArrayList<String> alpha()
@@ -728,15 +728,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return result;
 		}
 
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("messagereception [");
-			printWriter.append(this.incomingFlows.get(0).identifier());
-			printWriter.append("_finish");
-			printWriter.append(this.message);
-			printWriter.append("_REC");
-			printWriter.append(this.outgoingFlows.get(0).identifier());
-			printWriter.append("_begin]");
+			stringBuilder.append("messagereception [");
+			stringBuilder.append(this.incomingFlows.get(0).identifier());
+			stringBuilder.append("_finish");
+			stringBuilder.append(this.message);
+			stringBuilder.append("_REC");
+			stringBuilder.append(this.outgoingFlows.get(0).identifier());
+			stringBuilder.append("_begin]");
 		}
 	}
 
@@ -753,11 +753,11 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(StringBuilder printWriter)
+		void processLnt(StringBuilder stringBuilder)
 		{
-			printWriter.append("task(");
-			printWriter.append(this.identifier);
-			printWriter.append(",{");
+			stringBuilder.append("task(");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(",{");
 			boolean first = true;
 
 			for (Flow inFlow : this.incomingFlows)
@@ -768,15 +768,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 				else
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 
-				printWriter.append(inFlow.identifier());
+				stringBuilder.append(inFlow.identifier());
 			}
 
-			printWriter.append("},");
+			stringBuilder.append("},");
 			first = true;
-			printWriter.append("{");
+			stringBuilder.append("{");
 
 			for (Flow outFlow : this.outgoingFlows)
 			{
@@ -786,28 +786,28 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 				else
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
-				printWriter.append(outFlow.identifier());
+				stringBuilder.append(outFlow.identifier());
 			}
-			printWriter.append("})");
+			stringBuilder.append("})");
 		}
 
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
 			final int nbInc = this.incomingFlows.size();
 			final int nbOut = this.outgoingFlows.size();
 
-			printWriter.append("process task_");
-			printWriter.append(nbInc);
-			printWriter.append("_");
-			printWriter.append(nbOut);
-			printWriter.append(" [");
+			stringBuilder.append("process task_");
+			stringBuilder.append(nbInc);
+			stringBuilder.append("_");
+			stringBuilder.append(nbOut);
+			stringBuilder.append(" [");
 
 			if (nbInc == 1)
 			{
-				printWriter.append("incf:any,");
+				stringBuilder.append("incf:any,");
 			}
 			else
 			{
@@ -815,18 +815,18 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				while (incCounter < nbInc)
 				{
-					printWriter.append("incf");
-					printWriter.append(incCounter);
-					printWriter.append(":any,");
+					stringBuilder.append("incf");
+					stringBuilder.append(incCounter);
+					stringBuilder.append(":any,");
 					incCounter++;
 				}
 			}
 
-			printWriter.append("task:any,");
+			stringBuilder.append("task:any,");
 
 			if (nbOut == 1)
 			{
-				printWriter.append("outf:any");
+				stringBuilder.append("outf:any");
 			}
 			else
 			{
@@ -834,75 +834,75 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				while (outCounter < nbOut)
 				{
-					printWriter.append("outf");
-					printWriter.append(outCounter);
-					printWriter.append(":any");
+					stringBuilder.append("outf");
+					stringBuilder.append(outCounter);
+					stringBuilder.append(":any");
 					outCounter++;
 
 					if (outCounter < nbOut)
 					{
-						printWriter.append(",");
+						stringBuilder.append(",");
 					}
 				}
 			}
 
-			printWriter.append("] is\n");
-			printWriter.append(" var ident: ID in loop ");
+			stringBuilder.append("] is\n");
+			stringBuilder.append(" var ident: ID in loop ");
 
 			if (nbInc == 1)
 			{
-				printWriter.append(" incf (?ident of ID); ");
+				stringBuilder.append(" incf (?ident of ID); ");
 			}
 			else
 			{
 				int incCounter = 0;
-				printWriter.append(" alt ");
+				stringBuilder.append(" alt ");
 
 				while (incCounter < nbInc)
 				{
-					printWriter.append("incf");
-					printWriter.append(incCounter);
-					printWriter.append(" (?ident of ID)");
+					stringBuilder.append("incf");
+					stringBuilder.append(incCounter);
+					stringBuilder.append(" (?ident of ID)");
 					incCounter++;
 
 					if (incCounter < nbInc)
 					{
-						printWriter.append(" [] ");
+						stringBuilder.append(" [] ");
 					}
 				}
 
-				printWriter.append(" end alt ; \n");
+				stringBuilder.append(" end alt ; \n");
 			}
 
-			printWriter.append("task ; ");
+			stringBuilder.append("task ; ");
 
 			if (nbOut == 1)
 			{
-				printWriter.append(" outf (?ident of ID)");
+				stringBuilder.append(" outf (?ident of ID)");
 			}
 			else
 			{
 				int outCounter = 0;
-				printWriter.append(" alt ");
+				stringBuilder.append(" alt ");
 
 				while (outCounter < nbOut)
 				{
-					printWriter.append("outf");
-					printWriter.append(outCounter);
-					printWriter.append(" (?ident of ID)");
+					stringBuilder.append("outf");
+					stringBuilder.append(outCounter);
+					stringBuilder.append(" (?ident of ID)");
 					outCounter++;
 
 					if (outCounter < nbOut)
 					{
-						printWriter.append(" [] ");
+						stringBuilder.append(" [] ");
 					}
 				}
 
-				printWriter.append(" end alt \n");
+				stringBuilder.append(" end alt \n");
 			}
 
-			printWriter.append(" end loop end var\n");
-			printWriter.append("end process\n\n");
+			stringBuilder.append(" end loop end var\n");
+			stringBuilder.append("end process\n\n");
 		}
 
 		@Override
@@ -945,21 +945,21 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
 			final int nbInc = this.incomingFlows.size();
 			final int nbOut = this.outgoingFlows.size();
 
-			printWriter.append(" task_");
-			printWriter.append(nbInc);
-			printWriter.append("_");
-			printWriter.append(nbOut);
-			printWriter.append(" [");
+			stringBuilder.append(" task_");
+			stringBuilder.append(nbInc);
+			stringBuilder.append("_");
+			stringBuilder.append(nbOut);
+			stringBuilder.append(" [");
 
 			if (nbInc == 1)
 			{
-				printWriter.append(this.incomingFlows.get(0).identifier());
-				printWriter.append("_finish,");
+				stringBuilder.append(this.incomingFlows.get(0).identifier());
+				stringBuilder.append("_finish,");
 			}
 			else
 			{
@@ -967,20 +967,20 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				while (incCounter < nbInc)
 				{
-					printWriter.append(this.incomingFlows.get(incCounter).identifier());
-					printWriter.append("_finish,");
+					stringBuilder.append(this.incomingFlows.get(incCounter).identifier());
+					stringBuilder.append("_finish,");
 					incCounter++;
 				}
 			}
 
-			printWriter.append(this.identifier);
-			printWriter.append(",");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(",");
 
 			if (nbOut == 1)
 			{
 				//TODO VOIR SI ON A VRAIMENT BESOIN DE DIFFÉRENCIER CES CAS
-				printWriter.append(this.outgoingFlows.get(0).identifier());
-				printWriter.append("_begin");
+				stringBuilder.append(this.outgoingFlows.get(0).identifier());
+				stringBuilder.append("_begin");
 			}
 			else
 			{
@@ -988,35 +988,35 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				while (outCounter < nbOut)
 				{
-					printWriter.append(this.outgoingFlows.get(outCounter).identifier());
-					printWriter.append("_begin");
+					stringBuilder.append(this.outgoingFlows.get(outCounter).identifier());
+					stringBuilder.append("_begin");
 					outCounter++;
 
 					if (outCounter < nbOut)
 					{
-						printWriter.append(",");
+						stringBuilder.append(",");
 					}
 				}
 			}
 
-			printWriter.append("] ");
+			stringBuilder.append("] ");
 		}
 
-		void dumpMaude(final StringBuilder printWriter)
+		void dumpMaude(final StringBuilder stringBuilder)
 		{
 			final Random random = new Random();
 			final int randomInt = random.nextInt(51);
-			printWriter.append("        task(");
-			printWriter.append(this.identifier);
-			printWriter.append(",\"");
-			printWriter.append(this.identifier);
-			printWriter.append("\",");
-			printWriter.append(this.incomingFlows.get(0).identifier());
-			printWriter.append(",");
-			printWriter.append(this.outgoingFlows.get(0).identifier());
-			printWriter.append(",");
-			printWriter.append(randomInt);
-			printWriter.append(")");
+			stringBuilder.append("        task(");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(",\"");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append("\",");
+			stringBuilder.append(this.incomingFlows.get(0).identifier());
+			stringBuilder.append(",");
+			stringBuilder.append(this.outgoingFlows.get(0).identifier());
+			stringBuilder.append(",");
+			stringBuilder.append(randomInt);
+			stringBuilder.append(")");
 		}
 	}
 
@@ -1037,17 +1037,17 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return new ArrayList<>();
 		}
 
-		void processLnt(final StringBuilder printWriter,
+		void processLnt(final StringBuilder stringBuilder,
 						final String pattern,
 						final String type)
 		{
-			printWriter.append("gateway(");
-			printWriter.append(this.identifier);
-			printWriter.append(",");
-			printWriter.append(pattern);
-			printWriter.append(",");
-			printWriter.append(type);
-			printWriter.append(",{");
+			stringBuilder.append("gateway(");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(",");
+			stringBuilder.append(pattern);
+			stringBuilder.append(",");
+			stringBuilder.append(type);
+			stringBuilder.append(",{");
 			boolean first = true;
 
 			for (Flow inFlow : this.incomingFlows)
@@ -1058,13 +1058,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 				else
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 
-				printWriter.append(inFlow.identifier());
+				stringBuilder.append(inFlow.identifier());
 			}
 
-			printWriter.append("},{");
+			stringBuilder.append("},{");
 			first = true;
 
 			for (Flow outFlow : this.outgoingFlows)
@@ -1075,12 +1075,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 				else
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
-				printWriter.append(outFlow.identifier());
+				stringBuilder.append(outFlow.identifier());
 			}
 
-			printWriter.append("})");
+			stringBuilder.append("})");
 		}
 	}
 
@@ -1099,30 +1099,30 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * Generates process instantiation for all split gateways
 		 *
-		 * @param printWriter
+		 * @param stringBuilder
 		 */
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
 			final int nbOut = this.outgoingFlows.size();
 			int i = 0;
 
-			printWriter.append("[");
-			printWriter.append(this.incomingFlows.get(0).identifier());
-			printWriter.append("_finish,");
+			stringBuilder.append("[");
+			stringBuilder.append(this.incomingFlows.get(0).identifier());
+			stringBuilder.append("_finish,");
 
 			while (i < nbOut)
 			{
-				printWriter.append(this.outgoingFlows.get(i).identifier());
-				printWriter.append("_begin");
+				stringBuilder.append(this.outgoingFlows.get(i).identifier());
+				stringBuilder.append("_begin");
 				i++;
 
 				if (i < nbOut)
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 			}
 
-			printWriter.append("]");
+			stringBuilder.append("]");
 		}
 
 		/**
@@ -1149,26 +1149,26 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return res;
 		}
 
-		void dumpMaude(final StringBuilder printWriter,
+		void dumpMaude(final StringBuilder stringBuilder,
 					   final String nameOp)
 		{
-			printWriter.append("        split(");
-			printWriter.append(this.identifier);
-			printWriter.append(",");
-			printWriter.append(nameOp);
-			printWriter.append(",");
-			printWriter.append(this.incomingFlows.get(0).identifier());
-			printWriter.append(",(");
+			stringBuilder.append("        split(");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(",");
+			stringBuilder.append(nameOp);
+			stringBuilder.append(",");
+			stringBuilder.append(this.incomingFlows.get(0).identifier());
+			stringBuilder.append(",(");
 			String separator = "";
 
 			for (Flow ofl : this.outgoingFlows)
 			{
-				printWriter.append(separator);
-				printWriter.append(ofl.identifier());
+				stringBuilder.append(separator);
+				stringBuilder.append(ofl.identifier());
 				separator = ",";
 			}
 
-			printWriter.append("))");
+			stringBuilder.append("))");
 		}
 	}
 
@@ -1215,13 +1215,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(printWriter); //TODO Vérifier
+			this.writeLnt(stringBuilder); //TODO Vérifier
 		}
 
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
 			final int nbOut = this.outgoingFlows.size();
 			final boolean existsDefault = this.existDefaultFlow();
@@ -1253,75 +1253,75 @@ public class Pif2Lnt extends Pif2LntGeneric
 				builder.append("]\n");
 			}
 
-			printWriter.append("process orsplit_");
-			printWriter.append(this.identifier);
-			printWriter.append(" [incf:any,");
+			stringBuilder.append("process orsplit_");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(" [incf:any,");
 
 			//We dump the process alphabet (flows + synchronization points if necessary)
 			int nbg = 1;
 
 			while (nbg <= nbOut)
 			{
-				printWriter.append("outf_");
-				printWriter.append(nbg);
-				printWriter.append(":any");
+				stringBuilder.append("outf_");
+				stringBuilder.append(nbg);
+				stringBuilder.append(":any");
 				nbg++;
 
 				if (nbg <= nbOut)
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 			}
 
 			if (nbt > 0
 					&& (!isBalanced || !this.correspOrJoin.isEmpty()))
 			{
-				printWriter.append(", ");
+				stringBuilder.append(", ");
 				int counter = 1;
 
 				for (Collection<String> combi : allCombi) //TODO Bizarre ....
 				{
-					printWriter.append(isBalanced ? this.correspOrJoin : this.identifier);
-					printWriter.append("_");
-					printWriter.append(counter);
-					printWriter.append(":any");
+					stringBuilder.append(isBalanced ? this.correspOrJoin : this.identifier);
+					stringBuilder.append("_");
+					stringBuilder.append(counter);
+					stringBuilder.append(":any");
 					counter++;
 
 					if (counter <= nbt)
 					{
-						printWriter.append(",");
+						stringBuilder.append(",");
 					}
 				}
 			}
 
-			printWriter.append(" ] is \n");
+			stringBuilder.append(" ] is \n");
 			int counterVar = allCombi.size();
-			printWriter.append(" var ");
+			stringBuilder.append(" var ");
 
 			while (counterVar > 0)
 			{
-				printWriter.append("ident");
-				printWriter.append(counterVar);
-				printWriter.append(":ID");
+				stringBuilder.append("ident");
+				stringBuilder.append(counterVar);
+				stringBuilder.append(":ID");
 				counterVar--;
 
 				if (counterVar > 0)
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 			}
 
 			if (isBalanced)
 			{
-				printWriter.append(" in  var ident: ID in loop incf (?ident of ID); \n"); //TODO We generate unnecessary variables...
-				printWriter.append(" alt ");
+				stringBuilder.append(" in  var ident: ID in loop incf (?ident of ID); \n"); //TODO We generate unnecessary variables...
+				stringBuilder.append(" alt ");
 			}
 			else
 			{
-				printWriter.append(" in \n");
-				printWriter.append("var ident: ID in loop \n");
-				printWriter.append("incf (?ident of ID); \n"); //TODO We generate unnecessary variables...
-				printWriter.append("alt ");
+				stringBuilder.append(" in \n");
+				stringBuilder.append("var ident: ID in loop \n");
+				stringBuilder.append("incf (?ident of ID); \n"); //TODO We generate unnecessary variables...
+				stringBuilder.append("alt ");
 			}
 
 			nb = 1;
@@ -1335,11 +1335,11 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				if (!isBalanced)
 				{
-					printWriter.append("\n");
-					printWriter.append(this.identifier);
-					printWriter.append("_");
-					printWriter.append(counter);
-					printWriter.append("; ");
+					stringBuilder.append("\n");
+					stringBuilder.append(this.identifier);
+					stringBuilder.append("_");
+					stringBuilder.append(counter);
+					stringBuilder.append("; ");
 					counter++;
 				}
 
@@ -1349,19 +1349,19 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					if (isBalanced)
 					{
-						printWriter.append(" par ");
+						stringBuilder.append(" par ");
 					}
 					else
 					{
-						printWriter.append("\npar\n");
+						stringBuilder.append("\npar\n");
 					}
 
 					for (String s : element)
 					{
-						printWriter.append(s);
-						printWriter.append(" (?ident");
-						printWriter.append(counterVar);
-						printWriter.append(" of ID)");
+						stringBuilder.append(s);
+						stringBuilder.append(" (?ident");
+						stringBuilder.append(counterVar);
+						stringBuilder.append(" of ID)");
 						counterVar--;
 						nb2++;
 
@@ -1369,28 +1369,28 @@ public class Pif2Lnt extends Pif2LntGeneric
 						{
 							if (isBalanced)
 							{
-								printWriter.append("||");
+								stringBuilder.append("||");
 							}
 							else
 							{
-								printWriter.append("\n||\n");
+								stringBuilder.append("\n||\n");
 							}
 						}
 					}
 
 					if (isBalanced)
 					{
-						printWriter.append(" end par ");
+						stringBuilder.append(" end par ");
 					}
 					else
 					{
-						printWriter.append("\nend par");
+						stringBuilder.append("\nend par");
 					}
 				}
 				else
 				{
-					printWriter.append(element.iterator().next());
-					printWriter.append(" (?ident of ID)");
+					stringBuilder.append(element.iterator().next());
+					stringBuilder.append(" (?ident of ID)");
 				}
 
 				if (isBalanced)
@@ -1398,10 +1398,10 @@ public class Pif2Lnt extends Pif2LntGeneric
 					//Add synchronization points if there's a corresponding join
 					if (!this.correspOrJoin.isEmpty())
 					{
-						printWriter.append(" ; ");
-						printWriter.append(this.correspOrJoin);
-						printWriter.append("_");
-						printWriter.append(counter);
+						stringBuilder.append(" ; ");
+						stringBuilder.append(this.correspOrJoin);
+						stringBuilder.append("_");
+						stringBuilder.append(counter);
 						counter++;
 					}
 				}
@@ -1412,36 +1412,36 @@ public class Pif2Lnt extends Pif2LntGeneric
 				{
 					if (isBalanced)
 					{
-						printWriter.append(" [] ");
+						stringBuilder.append(" [] ");
 					}
 					else
 					{
-						printWriter.append("\n[] ");
+						stringBuilder.append("\n[] ");
 					}
 				}
 			}
 
 			if (isBalanced)
 			{
-				printWriter.append(" end alt end loop end var end var\n");
-				printWriter.append("end process\n");
+				stringBuilder.append(" end alt end loop end var end var\n");
+				stringBuilder.append("end process\n");
 			}
 			else
 			{
-				printWriter.append("\nend alt \n");
-				printWriter.append("end loop \n");
-				printWriter.append("end var\n");
-				printWriter.append("end var\n");
-				printWriter.append("end process\n\n");
+				stringBuilder.append("\nend alt \n");
+				stringBuilder.append("end loop \n");
+				stringBuilder.append("end var\n");
+				stringBuilder.append("end var\n");
+				stringBuilder.append("end process\n\n");
 			}
 		}
 
 		/**
 		 * Generates process instantiation for main LNT process.
 		 *
-		 * @param printWriter
+		 * @param stringBuilder
 		 */
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
 			if (!this.correspOrJoin.isEmpty()
 					|| !isBalanced)
@@ -1468,67 +1468,67 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 						for (ArrayList<String> combination : allCombinations) //TODO Bizarre...
 						{
-							printWriter.append(this.correspOrJoin);
-							printWriter.append("_");
-							printWriter.append(counter);
+							stringBuilder.append(this.correspOrJoin);
+							stringBuilder.append("_");
+							stringBuilder.append(counter);
 							counter++;
 
 							if (counter <= nbCombi)
 							{
-								printWriter.append(",");
+								stringBuilder.append(",");
 							}
 						}
 
-						printWriter.append(" -> ");
+						stringBuilder.append(" -> ");
 					}
 				}
 
 				//Process call + alphabet
-				printWriter.append("orsplit_");
-				printWriter.append(this.identifier);
-				printWriter.append("[");
-				printWriter.append(this.incomingFlows.get(0).identifier());
-				printWriter.append("_finish,");
+				stringBuilder.append("orsplit_");
+				stringBuilder.append(this.identifier);
+				stringBuilder.append("[");
+				stringBuilder.append(this.incomingFlows.get(0).identifier());
+				stringBuilder.append("_finish,");
 				int i = 0;
 
 				while (i < nbOut)
 				{
-					printWriter.append(this.outgoingFlows.get(i).identifier());
-					printWriter.append("_begin");
+					stringBuilder.append(this.outgoingFlows.get(i).identifier());
+					stringBuilder.append("_begin");
 					i++;
 
 					if (i < nbOut)
 					{
-						printWriter.append(",");
+						stringBuilder.append(",");
 					}
 				}
 
 				if (nbCombi > 0)
 				{
-					printWriter.append(", ");
+					stringBuilder.append(", ");
 					int counter = 1;
 
 					for (ArrayList<String> combination : allCombinations)
 					{
-						printWriter.append(isBalanced ? this.correspOrJoin : this.identifier);
-						printWriter.append("_");
-						printWriter.append(counter);
+						stringBuilder.append(isBalanced ? this.correspOrJoin : this.identifier);
+						stringBuilder.append("_");
+						stringBuilder.append(counter);
 						counter++;
 
 						if (counter <= nbCombi)
 						{
-							printWriter.append(",");
+							stringBuilder.append(",");
 						}
 					}
 				}
 
-				printWriter.append("]");
+				stringBuilder.append("]");
 			}
 			else
 			{
-				printWriter.append("orsplit_");
-				printWriter.append(this.identifier);
-				super.writeMainLnt(printWriter);
+				stringBuilder.append("orsplit_");
+				stringBuilder.append(this.identifier);
+				super.writeMainLnt(stringBuilder);
 			}
 		}
 
@@ -1561,19 +1561,19 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return result;
 		}
 
-		public void dumpMaude(final StringBuilder printWriter)
+		public void dumpMaude(final StringBuilder stringBuilder)
 		{
 			if (isBalanced)
 			{
-				super.dumpMaude(printWriter, "inclusive");
+				super.dumpMaude(stringBuilder, "inclusive");
 			}
 			else
 			{
-				printWriter.append("        split(");
-				printWriter.append(this.identifier);
-				printWriter.append(",inclusive,");
-				printWriter.append(this.incomingFlows.get(0).identifier());
-				printWriter.append(",(");
+				stringBuilder.append("        split(");
+				stringBuilder.append(this.identifier);
+				stringBuilder.append(",inclusive,");
+				stringBuilder.append(this.incomingFlows.get(0).identifier());
+				stringBuilder.append(",(");
 				int counter = this.outgoingFlows.size();
 
 				for (Flow outFlow : this.outgoingFlows)
@@ -1581,16 +1581,16 @@ public class Pif2Lnt extends Pif2LntGeneric
 					final Random random = new Random();
 					final double proba = Math.round(random.nextDouble() * 100.0) / 100.0;
 					counter--;
-					printWriter.append("(");
-					printWriter.append(outFlow.identifier());
-					printWriter.append(",");
-					printWriter.append(proba);
-					printWriter.append(")");
+					stringBuilder.append("(");
+					stringBuilder.append(outFlow.identifier());
+					stringBuilder.append(",");
+					stringBuilder.append(proba);
+					stringBuilder.append(")");
 
-					if (counter > 0) printWriter.append(" ");
+					if (counter > 0) stringBuilder.append(" ");
 				}
 
-				printWriter.append("))");
+				stringBuilder.append("))");
 			}
 		}
 
@@ -1616,66 +1616,66 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(printWriter); //TODO Vérifier
+			this.writeLnt(stringBuilder); //TODO Vérifier
 		}
 
 		/**
 		 * Generates the process for exclusive split gateway.
 		 * Takes as input the number of outgoing flows.
 		 *
-		 * @param printWriter
+		 * @param stringBuilder
 		 */
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
 			final int nbOut = this.outgoingFlows.size();
-			printWriter.append("process xorsplit_");
-			printWriter.append(this.identifier);
-			printWriter.append(" [incf:any,");
+			stringBuilder.append("process xorsplit_");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(" [incf:any,");
 			int nb = 1;
 
 			while (nb <= nbOut)
 			{
-				printWriter.append("outf_");
-				printWriter.append(nb);
-				printWriter.append(":any");
+				stringBuilder.append("outf_");
+				stringBuilder.append(nb);
+				stringBuilder.append(":any");
 				nb++;
 
 				if (nb <= nbOut)
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 			}
 
-			printWriter.append(" ] is \n");
-			printWriter.append(" var ident: ID in loop incf (?ident of ID); \n");
-			printWriter.append(" alt ");
+			stringBuilder.append(" ] is \n");
+			stringBuilder.append(" var ident: ID in loop incf (?ident of ID); \n");
+			stringBuilder.append(" alt ");
 			nb = 1;
 
 			while (nb <= nbOut)
 			{
-				printWriter.append("outf_");
-				printWriter.append(nb);
-				printWriter.append("(?ident of ID)");
+				stringBuilder.append("outf_");
+				stringBuilder.append(nb);
+				stringBuilder.append("(?ident of ID)");
 				nb++;
 
 				if (nb <= nbOut)
 				{
-					printWriter.append("[]");
+					stringBuilder.append("[]");
 				}
 			}
 
-			printWriter.append(" end alt end loop end var\n");
-			printWriter.append("end process\n\n");
+			stringBuilder.append(" end alt end loop end var\n");
+			stringBuilder.append("end process\n\n");
 		}
 
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("xorsplit_");
-			printWriter.append(this.identifier);
-			super.writeMainLnt(printWriter);
+			stringBuilder.append("xorsplit_");
+			stringBuilder.append(this.identifier);
+			super.writeMainLnt(stringBuilder);
 		}
 
 		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
@@ -1684,38 +1684,38 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return super.reachableOrJoin(visited, depth);
 		}
 
-		void dumpMaude(final StringBuilder printWriter)
+		void dumpMaude(final StringBuilder stringBuilder)
 		{
 			if (isBalanced)
 			{
-				super.dumpMaude(printWriter, "exclusive");
+				super.dumpMaude(stringBuilder, "exclusive");
 			}
 			else
 			{
-				printWriter.append("        split(");
-				printWriter.append(this.identifier);
-				printWriter.append(",exclusive,");
-				printWriter.append(this.incomingFlows.get(0).identifier());
-				printWriter.append(",(");
+				stringBuilder.append("        split(");
+				stringBuilder.append(this.identifier);
+				stringBuilder.append(",exclusive,");
+				stringBuilder.append(this.incomingFlows.get(0).identifier());
+				stringBuilder.append(",(");
 				int counter = this.outgoingFlows.size();
 				double proba = ((1d / (double) counter) * 1000.0) / 1000.0;
 
 				for (Flow outFlow : this.outgoingFlows)
 				{
 					counter--;
-					printWriter.append("(");
-					printWriter.append(outFlow.identifier());
-					printWriter.append(",");
-					printWriter.append(proba);
-					printWriter.append(")");
+					stringBuilder.append("(");
+					stringBuilder.append(outFlow.identifier());
+					stringBuilder.append(",");
+					stringBuilder.append(proba);
+					stringBuilder.append(")");
 
 					if (counter > 0)
 					{
-						printWriter.append(" ");
+						stringBuilder.append(" ");
 					}
 				}
 
-				printWriter.append("))");
+				stringBuilder.append("))");
 			}
 		}
 	}
@@ -1733,86 +1733,86 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(printWriter); //TODO Vérifier
+			this.writeLnt(stringBuilder); //TODO Vérifier
 		}
 
 		/**
 		 * Generates the process for parallel split gateway.
 		 * Takes as input the number of outgoing flows.
 		 *
-		 * @param printWriter
+		 * @param stringBuilder
 		 */
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
 			final int nbOut = this.outgoingFlows.size();
-			printWriter.append("process andsplit_");
-			printWriter.append(this.identifier);
-			printWriter.append(" [incf:any,");
+			stringBuilder.append("process andsplit_");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(" [incf:any,");
 			int nb = 1;
 
 			while (nb <= nbOut)
 			{
-				printWriter.append("outf_");
-				printWriter.append(nb);
-				printWriter.append(":any");
+				stringBuilder.append("outf_");
+				stringBuilder.append(nb);
+				stringBuilder.append(":any");
 				nb++;
 
 				if (nb <= nbOut)
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 			}
 
-			printWriter.append(" ] is \n");
+			stringBuilder.append(" ] is \n");
 			int variablesCounter = nbOut;
-			printWriter.append(" var ");
+			stringBuilder.append(" var ");
 
 			while (variablesCounter > 0)
 			{
-				printWriter.append("ident");
-				printWriter.append(variablesCounter);
-				printWriter.append(":ID");
+				stringBuilder.append("ident");
+				stringBuilder.append(variablesCounter);
+				stringBuilder.append(":ID");
 				variablesCounter--;
 
 				if (variablesCounter > 0)
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 			}
 
-			printWriter.append(" in  var ident: ID in loop incf (?ident of ID); \n");
-			printWriter.append(" par ");
+			stringBuilder.append(" in  var ident: ID in loop incf (?ident of ID); \n");
+			stringBuilder.append(" par ");
 			nb = 1;
 			variablesCounter = nbOut;
 
 			while (nb <= nbOut)
 			{
-				printWriter.append("outf_");
-				printWriter.append(nb);
-				printWriter.append("(?ident");
-				printWriter.append(variablesCounter);
-				printWriter.append(" of ID)");
+				stringBuilder.append("outf_");
+				stringBuilder.append(nb);
+				stringBuilder.append("(?ident");
+				stringBuilder.append(variablesCounter);
+				stringBuilder.append(" of ID)");
 				variablesCounter--;
 				nb++;
 
 				if (nb <= nbOut)
 				{
-					printWriter.append("||");
+					stringBuilder.append("||");
 				}
 			}
 
-			printWriter.append(" end par end loop end var end var\n");
-			printWriter.append("end process\n\n");
+			stringBuilder.append(" end par end loop end var end var\n");
+			stringBuilder.append("end process\n\n");
 		}
 
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("andsplit_");
-			printWriter.append(this.identifier);
-			super.writeMainLnt(printWriter);
+			stringBuilder.append("andsplit_");
+			stringBuilder.append(this.identifier);
+			super.writeMainLnt(stringBuilder);
 		}
 
 		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
@@ -1821,9 +1821,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return super.reachableOrJoin(visited, depth);
 		}
 
-		void dumpMaude(final StringBuilder printWriter)
+		void dumpMaude(final StringBuilder stringBuilder)
 		{
-			super.dumpMaude(printWriter, "parallel");
+			super.dumpMaude(stringBuilder, "parallel");
 		}
 	}
 
@@ -1842,25 +1842,25 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * Generates process instantiation for all join gateways.
 		 *
-		 * @param printWriter
+		 * @param stringBuilder
 		 */
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
 			//We assume one outgoing flow
 			final int nbInc = this.incomingFlows.size();
-			printWriter.append("[");
+			stringBuilder.append("[");
 			int i = 0;
 
 			while (i < nbInc)
 			{
-				printWriter.append(this.incomingFlows.get(i).identifier());
-				printWriter.append("_finish");
+				stringBuilder.append(this.incomingFlows.get(i).identifier());
+				stringBuilder.append("_finish");
 				i++;
-				printWriter.append(",");
+				stringBuilder.append(",");
 			}
 
-			printWriter.append(this.outgoingFlows.get(0).identifier());
-			printWriter.append("_begin]");
+			stringBuilder.append(this.outgoingFlows.get(0).identifier());
+			stringBuilder.append("_begin]");
 		}
 
 		/**
@@ -1886,32 +1886,32 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * Dumps a Maude line of code into the given file.
 		 *
-		 * @param printWriter
+		 * @param stringBuilder
 		 */
-		void dumpMaude(final StringBuilder printWriter,
+		void dumpMaude(final StringBuilder stringBuilder,
 					   final String nameOp)
 		{
-			printWriter.append("        merge(");
-			printWriter.append(this.identifier);
-			printWriter.append(",");
-			printWriter.append(nameOp);
-			printWriter.append(",(");
+			stringBuilder.append("        merge(");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(",");
+			stringBuilder.append(nameOp);
+			stringBuilder.append(",(");
 			int nbInc = this.incomingFlows.size();
 
 			for (Flow ofl : this.incomingFlows) //TODO : Bizarre "ofl" VS "incomingFlows"
 			{
 				nbInc--;
-				printWriter.append(ofl.identifier());
+				stringBuilder.append(ofl.identifier());
 
 				if (nbInc > 0)
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 			}
 
-			printWriter.append("),");
-			printWriter.append(this.outgoingFlows.get(0).identifier());
-			printWriter.append(")");
+			stringBuilder.append("),");
+			stringBuilder.append(this.outgoingFlows.get(0).identifier());
+			stringBuilder.append(")");
 		}
 	}
 
@@ -1936,19 +1936,19 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(printWriter); //TODO Vérifier
+			this.writeLnt(stringBuilder); //TODO Vérifier
 		}
 
 		/**
 		 * Generates the process for inclusive join gateway.
 		 * Takes as input the number of incoming flows.
 		 *
-		 * @param printWriter
+		 * @param stringBuilder
 		 */
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
 			final int nbInc = this.incomingFlows.size();
 
@@ -1966,61 +1966,61 @@ public class Pif2Lnt extends Pif2LntGeneric
 				final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(alphaInc);
 				final int nbCombi = allCombinations.size();
 
-				printWriter.append("process orjoin_");
-				printWriter.append(this.identifier);
-				printWriter.append(" [");
+				stringBuilder.append("process orjoin_");
+				stringBuilder.append(this.identifier);
+				stringBuilder.append(" [");
 				nb = 1;
 
 				while (nb <= nbInc)
 				{
-					printWriter.append("incf_");
-					printWriter.append(nb);
-					printWriter.append(":any,");
+					stringBuilder.append("incf_");
+					stringBuilder.append(nb);
+					stringBuilder.append(":any,");
 					nb++;
 				}
 
-				printWriter.append("outf:any ");
+				stringBuilder.append("outf:any ");
 
 				//we add to the alphabet potential additional synchronization points
 				if (nbCombi > 0
 						&& !this.correspondingOrSplit.isEmpty())
 				{
 					int counter = 1;
-					printWriter.append(",");
+					stringBuilder.append(",");
 
 					for (ArrayList<String> combination : allCombinations)
 					{
-						printWriter.append(this.identifier);
-						printWriter.append("_");
-						printWriter.append(counter);
-						printWriter.append(":any");
+						stringBuilder.append(this.identifier);
+						stringBuilder.append("_");
+						stringBuilder.append(counter);
+						stringBuilder.append(":any");
 						counter++;
 
 						if (counter <= nbCombi)
 						{
-							printWriter.append(",");
+							stringBuilder.append(",");
 						}
 					}
 				}
 
-				printWriter.append("] is \n");
-				printWriter.append(" var ");
+				stringBuilder.append("] is \n");
+				stringBuilder.append(" var ");
 				int variablesCounter = allCombinations.size();
 
 				while (variablesCounter > 0) //TODO: we generate unnecessary variables
 				{
-					printWriter.append("ident");
-					printWriter.append(variablesCounter);
-					printWriter.append(":ID");
+					stringBuilder.append("ident");
+					stringBuilder.append(variablesCounter);
+					stringBuilder.append(":ID");
 					variablesCounter--;
 
 					if (variablesCounter > 0)
 					{
-						printWriter.append(",");
+						stringBuilder.append(",");
 					}
 				}
 
-				printWriter.append(" in  var ident: ID in loop alt ");
+				stringBuilder.append(" in  var ident: ID in loop alt ");
 				nb = 1;
 				int counter = 1;
 
@@ -2032,101 +2032,101 @@ public class Pif2Lnt extends Pif2LntGeneric
 					// add synchronization points if there's a corresponding split
 					if (!this.correspondingOrSplit.isEmpty())
 					{
-						printWriter.append(this.identifier);
-						printWriter.append("_");
-						printWriter.append(counter);
-						printWriter.append(";");
+						stringBuilder.append(this.identifier);
+						stringBuilder.append("_");
+						stringBuilder.append(counter);
+						stringBuilder.append(";");
 						counter++;
 					}
 
 					if (nbElem > 1)
 					{
 						variablesCounter = allCombinations.size();
-						printWriter.append(" par ");
+						stringBuilder.append(" par ");
 
 						for (String element : combination)
 						{
-							printWriter.append(element);
-							printWriter.append(" (?ident");
-							printWriter.append(variablesCounter);
-							printWriter.append(" of ID)");
+							stringBuilder.append(element);
+							stringBuilder.append(" (?ident");
+							stringBuilder.append(variablesCounter);
+							stringBuilder.append(" of ID)");
 							variablesCounter--;
 							nb2++;
 
 							if (nb2 <= nbElem)
 							{
-								printWriter.append("||");
+								stringBuilder.append("||");
 							}
 						}
 
-						printWriter.append(" end par ");
+						stringBuilder.append(" end par ");
 					}
 					else
 					{
-						printWriter.append(combination.iterator().next());
-						printWriter.append(" (?ident of ID)");
+						stringBuilder.append(combination.iterator().next());
+						stringBuilder.append(" (?ident of ID)");
 					}
 
 					nb++;
 
 					if (nb <= nbCombi)
 					{
-						printWriter.append(" [] ");
+						stringBuilder.append(" [] ");
 					}
 				}
 
-				printWriter.append(" end alt ; outf (?ident of ID) end loop end var end var \n");
-				printWriter.append("end process\n");
+				stringBuilder.append(" end alt ; outf (?ident of ID) end loop end var end var \n");
+				stringBuilder.append("end process\n");
 			}
 			else
 			{
-				printWriter.append("process orjoin_");
-				printWriter.append(this.identifier);
-				printWriter.append(" [");
+				stringBuilder.append("process orjoin_");
+				stringBuilder.append(this.identifier);
+				stringBuilder.append(" [");
 				int nb = 1;
 
 				while (nb <= nbInc)
 				{
-					printWriter.append("incf_");
-					printWriter.append(nb);
-					printWriter.append(":any,");
+					stringBuilder.append("incf_");
+					stringBuilder.append(nb);
+					stringBuilder.append(":any,");
 					nb++;
 				}
 
-				printWriter.append("outf:any, MoveOn:any] (mergeid: ID) is \n");
-				printWriter.append("var mergestatus:Bool, ident:ID in \n");
-				printWriter.append(" loop\n");
-				printWriter.append("mergestatus := False;\n");
-				printWriter.append("while mergestatus == False loop \n");
-				printWriter.append("alt\n");
+				stringBuilder.append("outf:any, MoveOn:any] (mergeid: ID) is \n");
+				stringBuilder.append("var mergestatus:Bool, ident:ID in \n");
+				stringBuilder.append(" loop\n");
+				stringBuilder.append("mergestatus := False;\n");
+				stringBuilder.append("while mergestatus == False loop \n");
+				stringBuilder.append("alt\n");
 
 				nb = 1;
 
 				while (nb <= nbInc)
 				{
-					printWriter.append("incf_");
-					printWriter.append(nb);
-					printWriter.append(" (?ident of ID)");
+					stringBuilder.append("incf_");
+					stringBuilder.append(nb);
+					stringBuilder.append(" (?ident of ID)");
 					nb++;
 
 					if (nb <= nbInc)
 					{
-						printWriter.append("\n[]");
+						stringBuilder.append("\n[]");
 					}
 				}
 
-				printWriter.append("\n[] MoveOn(mergeid); mergestatus := True\n");
-				printWriter.append("end alt\n");
-				printWriter.append("end loop;\n");
-				printWriter.append("outf (?ident of ID)\n");
-				printWriter.append("end loop\n");
-				printWriter.append("end var\n");
-				printWriter.append("end process\n\n");
+				stringBuilder.append("\n[] MoveOn(mergeid); mergestatus := True\n");
+				stringBuilder.append("end alt\n");
+				stringBuilder.append("end loop;\n");
+				stringBuilder.append("outf (?ident of ID)\n");
+				stringBuilder.append("end loop\n");
+				stringBuilder.append("end var\n");
+				stringBuilder.append("end process\n\n");
 			}
 		}
 
 		//Generates process instantiation for main LNT process
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
 			if (isBalanced)
 			{
@@ -2152,84 +2152,84 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 						for (ArrayList<String> combination : allCombinations)
 						{
-							printWriter.append(this.identifier);
-							printWriter.append("_");
-							printWriter.append(counter);
+							stringBuilder.append(this.identifier);
+							stringBuilder.append("_");
+							stringBuilder.append(counter);
 							counter++;
 
 							if (counter <= nbCombi)
 							{
-								printWriter.append(",");
+								stringBuilder.append(",");
 							}
 						}
 
-						printWriter.append(" -> ");
+						stringBuilder.append(" -> ");
 					}
 
 					//Process call + alphabet
-					printWriter.append("orjoin_");
-					printWriter.append(this.identifier);
-					printWriter.append("[");
+					stringBuilder.append("orjoin_");
+					stringBuilder.append(this.identifier);
+					stringBuilder.append("[");
 					int i = 0;
 
 					while (i < nbInc)
 					{
-						printWriter.append(this.incomingFlows.get(i).identifier());
-						printWriter.append("_finish,");
+						stringBuilder.append(this.incomingFlows.get(i).identifier());
+						stringBuilder.append("_finish,");
 						i++;
 					}
 
-					printWriter.append(this.outgoingFlows.get(0).identifier());
-					printWriter.append("_begin");
+					stringBuilder.append(this.outgoingFlows.get(0).identifier());
+					stringBuilder.append("_begin");
 
 					if (nbCombi > 0)
 					{
 						int counter = 1;
-						printWriter.append(",");
+						stringBuilder.append(",");
 
 						for (ArrayList<String> combination : allCombinations)
 						{
-							printWriter.append(this.identifier);
-							printWriter.append("_");
-							printWriter.append(counter);
+							stringBuilder.append(this.identifier);
+							stringBuilder.append("_");
+							stringBuilder.append(counter);
 							counter++;
 
 							if (counter <= nbCombi)
 							{
-								printWriter.append(",");
+								stringBuilder.append(",");
 							}
 						}
 					}
 
-					printWriter.append("]");
+					stringBuilder.append("]");
 				}
 				else
 				{
-					printWriter.append("orjoin_");
-					printWriter.append(this.identifier);
-					super.writeMainLnt(printWriter);
+					stringBuilder.append("orjoin_");
+					stringBuilder.append(this.identifier);
+					super.writeMainLnt(stringBuilder);
 				}
 			}
 			else
 			{
-				printWriter.append("orjoin_");
-				printWriter.append(this.identifier);
+				stringBuilder.append("orjoin_");
+				stringBuilder.append(this.identifier);
 				//We assume one outgoing flow
 				final int nbInc = this.incomingFlows.size();
-				printWriter.append("[");
+				stringBuilder.append("[");
 				int i = 0;
 
 				while (i < nbInc)
 				{
-					printWriter.append(this.incomingFlows.get(i).identifier());
-					printWriter.append("_finish,");
+					stringBuilder.append(this.incomingFlows.get(i).identifier());
+					stringBuilder.append("_finish,");
 					i++;
 				}
 
-				printWriter.append(this.outgoingFlows.get(0).identifier());
-				printWriter.append("_begin, MoveOn] (");
-				printWriter.append(this.identifier);
-				printWriter.append(")");
+				stringBuilder.append(this.outgoingFlows.get(0).identifier());
+				stringBuilder.append("_begin, MoveOn] (");
+				stringBuilder.append(this.identifier);
+				stringBuilder.append(")");
 			}
 		}
 
@@ -2259,9 +2259,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return result;
 		}
 
-		void dumpMaude(final StringBuilder printWriter)
+		void dumpMaude(final StringBuilder stringBuilder)
 		{
-			super.dumpMaude(printWriter, "inclusive");
+			super.dumpMaude(stringBuilder, "inclusive");
 		}
 	}
 
@@ -2278,60 +2278,60 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(printWriter); //TODO Vérifier
+			this.writeLnt(stringBuilder); //TODO Vérifier
 		}
 
 		/**
 		 * Generates the process for exclusive join gateway.
 		 * Takes as input the number of incoming flows.
 		 *
-		 * @param printWriter
+		 * @param stringBuilder
 		 */
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
 			final int nbInc = this.incomingFlows.size();
-			printWriter.append("process xorjoin_");
-			printWriter.append(this.identifier);
-			printWriter.append(" [");
+			stringBuilder.append("process xorjoin_");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(" [");
 			int nb = 1;
 
 			while (nb <= nbInc)
 			{
-				printWriter.append("incf_");
-				printWriter.append(nb);
-				printWriter.append(":any,");
+				stringBuilder.append("incf_");
+				stringBuilder.append(nb);
+				stringBuilder.append(":any,");
 				nb++;
 			}
 
-			printWriter.append("outf:any] is \n");
-			printWriter.append(" var ident: ID in loop alt ");
+			stringBuilder.append("outf:any] is \n");
+			stringBuilder.append(" var ident: ID in loop alt ");
 			nb = 1;
 
 			while (nb <= nbInc)
 			{
-				printWriter.append("incf_");
-				printWriter.append(nb);
-				printWriter.append(" (?ident of ID)");
+				stringBuilder.append("incf_");
+				stringBuilder.append(nb);
+				stringBuilder.append(" (?ident of ID)");
 				nb++;
 
 				if (nb <= nbInc)
 				{
-					printWriter.append("[]");
+					stringBuilder.append("[]");
 				}
 			}
 
-			printWriter.append(" end alt ; outf (?ident of ID) end loop end var \n");
-			printWriter.append("end process\n\n");
+			stringBuilder.append(" end alt ; outf (?ident of ID) end loop end var \n");
+			stringBuilder.append("end process\n\n");
 		}
 
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("xorjoin_");
-			printWriter.append(this.identifier);
-			super.writeMainLnt(printWriter);
+			stringBuilder.append("xorjoin_");
+			stringBuilder.append(this.identifier);
+			super.writeMainLnt(stringBuilder);
 		}
 
 		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
@@ -2340,9 +2340,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return super.reachableOrJoin(visited, depth);
 		}
 
-		void dumpMaude(final StringBuilder printWriter)
+		void dumpMaude(final StringBuilder stringBuilder)
 		{
-			super.dumpMaude(printWriter, "exclusive");
+			super.dumpMaude(stringBuilder, "exclusive");
 		}
 	}
 
@@ -2359,80 +2359,80 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder printWriter)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(printWriter); //TODO Vérifier
+			this.writeLnt(stringBuilder); //TODO Vérifier
 		}
 
 		/**
 		 * Generates the process for parallel join gateway.
 		 * Takes as input the number of incoming flows.
 		 *
-		 * @param printWriter
+		 * @param stringBuilder
 		 */
 		@Override
-		void writeLnt(StringBuilder printWriter)
+		void writeLnt(StringBuilder stringBuilder)
 		{
 			final int nbInc = this.incomingFlows.size();
-			printWriter.append("process andjoin_");
-			printWriter.append(this.identifier);
-			printWriter.append(" [");
+			stringBuilder.append("process andjoin_");
+			stringBuilder.append(this.identifier);
+			stringBuilder.append(" [");
 			int nb = 1;
 
 			while (nb <= nbInc)
 			{
-				printWriter.append("incf_");
-				printWriter.append(nb);
-				printWriter.append(":any,");
+				stringBuilder.append("incf_");
+				stringBuilder.append(nb);
+				stringBuilder.append(":any,");
 				nb++;
 			}
 
-			printWriter.append("outf:any] is \n");
+			stringBuilder.append("outf:any] is \n");
 			int variablesCounter = nbInc;
-			printWriter.append(" var ");
+			stringBuilder.append(" var ");
 
 			while (variablesCounter > 0)
 			{
-				printWriter.append("ident");
-				printWriter.append(variablesCounter);
-				printWriter.append(":ID");
+				stringBuilder.append("ident");
+				stringBuilder.append(variablesCounter);
+				stringBuilder.append(":ID");
 				variablesCounter--;
 
 				if (variablesCounter > 0)
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 			}
 
-			printWriter.append(" in  var ident:ID in loop par ");
+			stringBuilder.append(" in  var ident:ID in loop par ");
 			nb = 1;
 			variablesCounter = nbInc;
 
 			while (nb <= nbInc)
 			{
-				printWriter.append("incf_");
-				printWriter.append(nb);
-				printWriter.append(" (?ident");
-				printWriter.append(variablesCounter);
-				printWriter.append(" of ID)");
+				stringBuilder.append("incf_");
+				stringBuilder.append(nb);
+				stringBuilder.append(" (?ident");
+				stringBuilder.append(variablesCounter);
+				stringBuilder.append(" of ID)");
 				variablesCounter--;
 				nb++;
 
 				if (nb <= nbInc)
 				{
-					printWriter.append("||");
+					stringBuilder.append("||");
 				}
 			}
 
-			printWriter.append(" end par ; outf (?ident of ID) end loop end var end var \n");
-			printWriter.append("end process\n\n");
+			stringBuilder.append(" end par ; outf (?ident of ID) end loop end var end var \n");
+			stringBuilder.append("end process\n\n");
 		}
 
-		void writeMainLnt(final StringBuilder printWriter)
+		void writeMainLnt(final StringBuilder stringBuilder)
 		{
-			printWriter.append("andjoin_");
-			printWriter.append(this.identifier);
-			super.writeMainLnt(printWriter);
+			stringBuilder.append("andjoin_");
+			stringBuilder.append(this.identifier);
+			super.writeMainLnt(stringBuilder);
 		}
 
 		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
@@ -2441,9 +2441,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return super.reachableOrJoin(visited, depth);
 		}
 
-		void dumpMaude(final StringBuilder printWriter)
+		void dumpMaude(final StringBuilder stringBuilder)
 		{
-			super.dumpMaude(printWriter, "parallel");
+			super.dumpMaude(stringBuilder, "parallel");
 		}
 	}
 
@@ -2651,7 +2651,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		//Dumps the alphabet for the scheduler process
-		void dumpFlowsMsgs(final StringBuilder printWriter,
+		void dumpFlowsMsgs(final StringBuilder stringBuilder,
 						   final boolean withAny)
 		{
 			final int nbFlows = this.flows.size();
@@ -2659,28 +2659,28 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			for (Flow fl : this.flows)
 			{
-				printWriter.append(fl.identifier());
-				printWriter.append("_begin");
+				stringBuilder.append(fl.identifier());
+				stringBuilder.append("_begin");
 
 				if (withAny)
 				{
-					printWriter.append(":any");
+					stringBuilder.append(":any");
 				}
 
-				printWriter.append(", ");
-				printWriter.append(fl.identifier());
-				printWriter.append("_finish");
+				stringBuilder.append(", ");
+				stringBuilder.append(fl.identifier());
+				stringBuilder.append("_finish");
 
 				if (withAny)
 				{
-					printWriter.append(":any");
+					stringBuilder.append(":any");
 				}
 
 				counter++;
 
 				if (counter <= nbFlows)
 				{
-					printWriter.append(", ");
+					stringBuilder.append(", ");
 				}
 			}
 		}
@@ -2718,20 +2718,20 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return PyToJavaUtils.join(flowString, "");
 		}
 
-		void processDump(final StringBuilder printWriter)
+		void processDump(final StringBuilder stringBuilder)
 		{
-			printWriter.append("\nfunction p1(): BPROCESS is \n\n");
-			printWriter.append(" return proc ( \n");
-			printWriter.append(this.name);
-			printWriter.append(",\n");
-			printWriter.append("{\n");
-			printWriter.append("\ti ( ");
-			this.initial.processLnt(printWriter);
-			printWriter.append(" ),\n");
+			stringBuilder.append("\nfunction p1(): BPROCESS is \n\n");
+			stringBuilder.append(" return proc ( \n");
+			stringBuilder.append(this.name);
+			stringBuilder.append(",\n");
+			stringBuilder.append("{\n");
+			stringBuilder.append("\ti ( ");
+			this.initial.processLnt(stringBuilder);
+			stringBuilder.append(" ),\n");
 
 			//handle final
 			boolean first = true;
-			printWriter.append("\tf ( { ");
+			stringBuilder.append("\tf ( { ");
 
 			for (Node fnode : this.finals)
 			{
@@ -2741,17 +2741,17 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 				else
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 
-				fnode.processLnt(printWriter);
+				fnode.processLnt(stringBuilder);
 			}
 
-			printWriter.append(" } ),\n");
+			stringBuilder.append(" } ),\n");
 
 			//TODO: eliminate iterating twice / Separate printer class?
 			//handle tasks
-			printWriter.append("\tt ( { ");
+			stringBuilder.append("\tt ( { ");
 			first = true;
 
 			for (Node pNode : this.nodes)
@@ -2764,17 +2764,17 @@ public class Pif2Lnt extends Pif2LntGeneric
 					}
 					else
 					{
-						printWriter.append(",");
+						stringBuilder.append(",");
 					}
 
-					pNode.processLnt(printWriter);
+					pNode.processLnt(stringBuilder);
 				}
 			}
 
-			printWriter.append(" } ), \n");
+			stringBuilder.append(" } ), \n");
 
 			//handle gateways
-			printWriter.append("\tg ( { ");
+			stringBuilder.append("\tg ( { ");
 			first = true;
 
 			for (Node pNode : this.nodes)
@@ -2787,40 +2787,40 @@ public class Pif2Lnt extends Pif2LntGeneric
 					}
 					else
 					{
-						printWriter.append(",");
+						stringBuilder.append(",");
 					}
 
 					if (pNode instanceof XOrJoinGateway)
 					{
-						((XOrJoinGateway) pNode).processLnt(printWriter, "merge", "xor");
+						((XOrJoinGateway) pNode).processLnt(stringBuilder, "merge", "xor");
 					}
 					if (pNode instanceof XOrSplitGateway)
 					{
-						((XOrSplitGateway) pNode).processLnt(printWriter, "split", "xor");
+						((XOrSplitGateway) pNode).processLnt(stringBuilder, "split", "xor");
 					}
 					if (pNode instanceof OrJoinGateway)
 					{
-						((OrJoinGateway) pNode).processLnt(printWriter, "merge", "or");
+						((OrJoinGateway) pNode).processLnt(stringBuilder, "merge", "or");
 					}
 					if (pNode instanceof OrSplitGateway)
 					{
-						((OrSplitGateway) pNode).processLnt(printWriter, "split", "or");
+						((OrSplitGateway) pNode).processLnt(stringBuilder, "split", "or");
 					}
 					if (pNode instanceof AndJoinGateway)
 					{
-						((AndJoinGateway) pNode).processLnt(printWriter, "merge", "and");
+						((AndJoinGateway) pNode).processLnt(stringBuilder, "merge", "and");
 					}
 					if (pNode instanceof AndSplitGateway)
 					{
-						((AndSplitGateway) pNode).processLnt(printWriter, "split", "and");
+						((AndSplitGateway) pNode).processLnt(stringBuilder, "split", "and");
 					}
 				}
 			}
 
-			printWriter.append(" } )\n");
-			printWriter.append("},\n");
+			stringBuilder.append(" } )\n");
+			stringBuilder.append("},\n");
 			//flows
-			printWriter.append("{ \n");
+			stringBuilder.append("{ \n");
 			first = true;
 
 			for (Flow flow : this.flows)
@@ -2831,15 +2831,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 				else
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 
-				flow.processLnt(printWriter);
+				flow.processLnt(stringBuilder);
 			}
 
-			printWriter.append("\n}\n");
-			printWriter.append(")\n");
-			printWriter.append("end function\n\n");
+			stringBuilder.append("\n}\n");
+			stringBuilder.append(")\n");
+			stringBuilder.append("end function\n\n");
 		}
 
 		//TODO A vérifier : passage de networkx à JGraphT
@@ -2870,29 +2870,29 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return false;
 		}
 
-		void generateScheduler(final StringBuilder printWriter)
+		void generateScheduler(final StringBuilder stringBuilder)
 		{
-			printWriter.append("\nprocess scheduler [");
-			printWriter.append(this.getFlowMsgs(true));
+			stringBuilder.append("\nprocess scheduler [");
+			stringBuilder.append(this.getFlowMsgs(true));
 			//Add split synchro params
 			final ArrayList<String> synchroParams = this.computeAddSynchroPoints(true);
 
 			if (!synchroParams.isEmpty())
 			{
-				printWriter.append(",");
+				stringBuilder.append(",");
 
 				String separator = "";
 
 				for (String synchroParam : synchroParams)
 				{
-					printWriter.append(separator);
-					printWriter.append(synchroParam);
+					stringBuilder.append(separator);
+					stringBuilder.append(synchroParam);
 					separator = ",";
 				}
 			}
 
 			//This parameter stores the set of active flows/tokens
-			printWriter.append(", MoveOn:any] (activeflows: IDS, bpmn: BPROCESS, syncstore: IDS, mergestore:IDS, " +
+			stringBuilder.append(", MoveOn:any] (activeflows: IDS, bpmn: BPROCESS, syncstore: IDS, mergestore:IDS, " +
 					"parstore:IDS) is\n");
 
 			final ArrayList<String> identSet = new ArrayList<>();
@@ -3209,7 +3209,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			//Generate var
 			identSet.add("ident1"); //For initial/final
-			printWriter.append("var ");
+			stringBuilder.append("var ");
 			boolean first = true;
 
 			for (String ident : new HashSet<>(identSet)) //TODO Intéret ? Randomiser ?
@@ -3220,28 +3220,28 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 				else
 				{
-					printWriter.append(",");
+					stringBuilder.append(",");
 				}
 
-				printWriter.append(ident);
-				printWriter.append(": ID");
+				stringBuilder.append(ident);
+				stringBuilder.append(": ID");
 			}
 
-			printWriter.append(", mergeid: ID in \n");
-			printWriter.append("alt \n");
+			stringBuilder.append(", mergeid: ID in \n");
+			stringBuilder.append("alt \n");
 
 			//Handle initial and final
-			printWriter.append("(*---------- Initial node ---------------------*)\n");
-			printWriter.append(this.initial.firstOutgoingFlow().identifier());
-			printWriter.append("_begin (?ident1 of ID);");
-			printWriter.append(this.getSchedulerString(
+			stringBuilder.append("(*---------- Initial node ---------------------*)\n");
+			stringBuilder.append(this.initial.firstOutgoingFlow().identifier());
+			stringBuilder.append("_begin (?ident1 of ID);");
+			stringBuilder.append(this.getSchedulerString(
 					"{}",
 					"{ident1}",
 					SYNC_STORE,
 					MERGE_STORE,
 					PAR_STORE
 			));
-			printWriter.append("\n[]\n");
+			stringBuilder.append("\n[]\n");
 
 			first = true;
 
@@ -3253,38 +3253,38 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 				else
 				{
-					printWriter.append("\n[]");
+					stringBuilder.append("\n[]");
 				}
 
-				printWriter.append(flow);
+				stringBuilder.append(flow);
 			}
 
-			printWriter.append("\n[]\n\n");
-			printWriter.append("(*----------------- Final node ----------------------*)\n");
-			printWriter.append(this.finals.get(0).firstIncomingFlow().identifier());
-			printWriter.append("_finish (?ident1 of ID);");
-			printWriter.append(this.getSchedulerString(
+			stringBuilder.append("\n[]\n\n");
+			stringBuilder.append("(*----------------- Final node ----------------------*)\n");
+			stringBuilder.append(this.finals.get(0).firstIncomingFlow().identifier());
+			stringBuilder.append("_finish (?ident1 of ID);");
+			stringBuilder.append(this.getSchedulerString(
 					"{ident1}",
 					"{}",
 					SYNC_STORE,
 					MERGE_STORE,
 					PAR_STORE
 			));
-			printWriter.append("\n[]\n");
-			printWriter.append(" mergeid := any ID where member(mergeid, mergestore);\n");
-			printWriter.append("if (is_merge_possible_v2(bpmn,activeflows,mergeid) and is_sync_done(bpmn, " +
+			stringBuilder.append("\n[]\n");
+			stringBuilder.append(" mergeid := any ID where member(mergeid, mergestore);\n");
+			stringBuilder.append("if (is_merge_possible_v2(bpmn,activeflows,mergeid) and is_sync_done(bpmn, " +
 					"activeflows, syncstore, mergeid)) then\n");
-			printWriter.append("MoveOn(mergeid);");
+			stringBuilder.append("MoveOn(mergeid);");
 
 			if (!incJoinBeginList.isEmpty())
 			{
-				printWriter.append("alt \n");
-				printWriter.append(PyToJavaUtils.join(incJoinBeginList, "[]\n"));
-				printWriter.append("end alt \n");
+				stringBuilder.append("alt \n");
+				stringBuilder.append(PyToJavaUtils.join(incJoinBeginList, "[]\n"));
+				stringBuilder.append("end alt \n");
 			}
 			else
 			{
-				printWriter.append(this.getSchedulerString(
+				stringBuilder.append(this.getSchedulerString(
 						"{}",
 						"{}",
 						SYNC_STORE,
@@ -3293,34 +3293,34 @@ public class Pif2Lnt extends Pif2LntGeneric
 				));
 			}
 
-			printWriter.append("else \n\n");
-			printWriter.append("scheduler [");
-			printWriter.append(this.getFlowMsgs(false));
+			stringBuilder.append("else \n\n");
+			stringBuilder.append("scheduler [");
+			stringBuilder.append(this.getFlowMsgs(false));
 			ArrayList<String> res = this.computeAddSynchroPoints(false);
 
 			if (!res.isEmpty())
 			{
-				printWriter.append(",");
-				printWriter.append(PyToJavaUtils.join(res, ","));
+				stringBuilder.append(",");
+				stringBuilder.append(PyToJavaUtils.join(res, ","));
 			}
 
-			printWriter.append(", MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)\n");
-			printWriter.append("end if\n");
+			stringBuilder.append(", MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)\n");
+			stringBuilder.append("end if\n");
 
 			//Outflow of parallel merge
-			printWriter.append("\n[]\n");
-			printWriter.append(" mergeid := any ID where member(mergeid, parstore);\n");
-			printWriter.append(("if (is_merge_possible_par(bpmn,syncstore,mergeid)) then \n"));
+			stringBuilder.append("\n[]\n");
+			stringBuilder.append(" mergeid := any ID where member(mergeid, parstore);\n");
+			stringBuilder.append(("if (is_merge_possible_par(bpmn,syncstore,mergeid)) then \n"));
 
 			if (!parJoinBeginList.isEmpty())
 			{
-				printWriter.append("alt \n");
-				printWriter.append(PyToJavaUtils.join(parJoinBeginList, "[]\n"));
-				printWriter.append("end alt ");
+				stringBuilder.append("alt \n");
+				stringBuilder.append(PyToJavaUtils.join(parJoinBeginList, "[]\n"));
+				stringBuilder.append("end alt ");
 			}
 			else
 			{
-				printWriter.append(this.getSchedulerString(
+				stringBuilder.append(this.getSchedulerString(
 						"{}",
 						"{}",
 						SYNC_STORE,
@@ -3329,22 +3329,22 @@ public class Pif2Lnt extends Pif2LntGeneric
 				));
 			}
 
-			printWriter.append("else \n\n");
-			printWriter.append("scheduler [");
-			printWriter.append(this.getFlowMsgs(false));
+			stringBuilder.append("else \n\n");
+			stringBuilder.append("scheduler [");
+			stringBuilder.append(this.getFlowMsgs(false));
 			res = this.computeAddSynchroPoints(false);
 
 			if (!res.isEmpty())
 			{
-				printWriter.append(",");
-				printWriter.append(PyToJavaUtils.join(res, ","));
+				stringBuilder.append(",");
+				stringBuilder.append(PyToJavaUtils.join(res, ","));
 			}
 
-			printWriter.append(", MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)\n");
-			printWriter.append("end if\n");
-			printWriter.append("end alt\n");
-			printWriter.append("end var\n");
-			printWriter.append("end process\n\n");
+			stringBuilder.append(", MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)\n");
+			stringBuilder.append("end if\n");
+			stringBuilder.append("end alt\n");
+			stringBuilder.append("end var\n");
+			stringBuilder.append("end process\n\n");
 		}
 
 		String getSchedulerString(final String incIds,
