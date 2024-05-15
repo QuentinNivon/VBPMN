@@ -63,6 +63,8 @@ public class Main
 	private static final int BUCHI_AUTOMATA_HAS_NO_LABELS = 32;
 	private static final int PROPERTY_LABELS_CONTAIN_RESERVED_LTL_KEYWORD = 33;
 	private static final int DIAGNOSTIC_FILE_MISSING = 34;
+	private static final int SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD = 35;
+	private static final int WARNING_FILE_WRITING_FAILED = 36;
 	private static final int UNEXPECTED_ERROR = 146548449;
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
@@ -165,7 +167,13 @@ public class Main
 
 				System.out.println("Verifying property labels...");
 				final long propertyLabelsVerificationStartTime = System.nanoTime();
-				Main.retrieveAndVerifyPropertyLabels(workingDirectory, labelsAndReturnCode.getLeft(), buchiAutomataAndReturnValue.getLeft());
+				final int exitCode = Main.retrieveAndVerifyPropertyLabels(workingDirectory, labelsAndReturnCode.getLeft(), buchiAutomataAndReturnValue.getLeft());
+
+				if (exitCode != ReturnCodes.TERMINATION_OK)
+				{
+					System.exit(exitCode);
+				}
+
 				final long propertyLabelsVerificationEndTime = System.nanoTime();
 				final long propertyLabelsVerificationTime = propertyLabelsVerificationEndTime - propertyLabelsVerificationStartTime;
 				System.out.println("Property labels verified in " + Utils.nanoSecToReadable(propertyLabelsVerificationTime) + ".\n");
@@ -540,10 +548,16 @@ public class Main
 		{
 			if (object instanceof Task)
 			{
-				if (LTLKeyword.ALL_KEYWORDS.contains(object.name().toUpperCase()))
+				if (LTLKeywords.ALL_KEYWORDS.contains(object.name().toUpperCase()))
 				{
 					System.out.println("The specification contains tasks whose labels are reserved LTL keywords.");
 					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
+				}
+
+				if (LNTKeywords.ALL_KEYWORDS.contains(object.name().toUpperCase()))
+				{
+					System.out.println("The specification contains tasks whose labels are reserved LNT keywords.");
+					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD);
 				}
 
 				labels.add(object.name());
@@ -820,9 +834,9 @@ public class Main
 		return Pair.of(new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + "_weak.aut"), ReturnCodes.TERMINATION_OK);
 	}
 
-	private static void retrieveAndVerifyPropertyLabels(final File workingDirectory,
-														final ArrayList<String> specificationLabels,
-														final String buchiAutomata)
+	private static int retrieveAndVerifyPropertyLabels(final File workingDirectory,
+													   final ArrayList<String> specificationLabels,
+													   final String buchiAutomata)
 	{
 		//Retrieve Büchi automata labels line
 		final String[] buchiAutomataLines = buchiAutomata.split("\\r?\\n");
@@ -839,7 +853,7 @@ public class Main
 
 		if (labelsLine == null)
 		{
-			System.exit(BUCHI_AUTOMATA_HAS_NO_LABELS);
+			return BUCHI_AUTOMATA_HAS_NO_LABELS;
 		}
 
 		//Retrieve Büchi automata labels
@@ -858,15 +872,15 @@ public class Main
 
 		if (buchiAutomataLabels.isEmpty())
 		{
-			System.exit(BUCHI_AUTOMATA_HAS_NO_LABELS);
+			return BUCHI_AUTOMATA_HAS_NO_LABELS;
 		}
 
 		//Verify that property does not contain reserved LTL keywords
 		for (String buchiLabel : buchiAutomataLabels)
 		{
-			if (LTLKeyword.ALL_KEYWORDS.contains(buchiLabel.toUpperCase()))
+			if (LTLKeywords.ALL_KEYWORDS.contains(buchiLabel.toUpperCase()))
 			{
-				System.exit(PROPERTY_LABELS_CONTAIN_RESERVED_LTL_KEYWORD);
+				return PROPERTY_LABELS_CONTAIN_RESERVED_LTL_KEYWORD;
 			}
 		}
 
@@ -890,9 +904,11 @@ public class Main
 			}
 			catch (FileNotFoundException e)
 			{
-				throw new RuntimeException(e);
+				return WARNING_FILE_WRITING_FAILED;
 			}
 		}
+
+		return ReturnCodes.TERMINATION_OK;
 	}
 
 	private static void finalClean(File workingDirectory)
