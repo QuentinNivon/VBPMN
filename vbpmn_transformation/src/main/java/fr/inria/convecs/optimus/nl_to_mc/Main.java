@@ -61,6 +61,8 @@ public class Main
 	private static final int WRITING_LTL_PROPERTY_FAILED = 28;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS = 31;
 	private static final int BUCHI_AUTOMATA_HAS_NO_LABELS = 32;
+	private static final int PROPERTY_LABELS_CONTAIN_RESERVED_LTL_KEYWORD = 33;
+	private static final int DIAGNOSTIC_FILE_MISSING = 34;
 	private static final int UNEXPECTED_ERROR = 146548449;
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
@@ -98,7 +100,7 @@ public class Main
 					(String) commandLineParser.get(CommandLineOption.API_KEY)
 			);
 
-			if (ltlPropertyAndReturnValue.getRight() != 0)
+			if (ltlPropertyAndReturnValue.getRight() != ReturnCodes.TERMINATION_OK)
 			{
 				System.exit(ltlPropertyAndReturnValue.getRight());
 			}
@@ -123,7 +125,7 @@ public class Main
 			final long lntFileGenerationStartTime = System.nanoTime();
 			final Triple<File, Boolean, Integer> lntSpecAndEvaluation = Main.generateLNT(workingDirectory, pifFile, ltlPropertyAndReturnValue.getLeft());
 
-			if (lntSpecAndEvaluation.getRight() != 0)
+			if (lntSpecAndEvaluation.getRight() != ReturnCodes.TERMINATION_OK)
 			{
 				System.exit(lntSpecAndEvaluation.getRight());
 			}
@@ -139,7 +141,7 @@ public class Main
 				final long labelsComputationStartTime = System.nanoTime();
 				final Pair<ArrayList<String>, Integer> labelsAndReturnCode = Main.computeSpecLabels(bpmnFile);
 
-				if (labelsAndReturnCode.getRight() != 0)
+				if (labelsAndReturnCode.getRight() != ReturnCodes.TERMINATION_OK)
 				{
 					System.exit(labelsAndReturnCode.getRight());
 				}
@@ -152,7 +154,7 @@ public class Main
 				final long buchiAutomataGenerationStartTime = System.nanoTime();
 				final Pair<String, Integer> buchiAutomataAndReturnValue = Main.generateBuchiAutomata(workingDirectory, ltlPropertyAndReturnValue.getLeft());
 
-				if (buchiAutomataAndReturnValue.getRight() != 0)
+				if (buchiAutomataAndReturnValue.getRight() != ReturnCodes.TERMINATION_OK)
 				{
 					System.exit(buchiAutomataAndReturnValue.getRight());
 				}
@@ -172,7 +174,7 @@ public class Main
 				final long svlScriptGenerationStartTime = System.nanoTime();
 				final int svlGenReturnValue = Main.generateSVLScript(workingDirectory, lntSpecAndEvaluation.getLeft(), labelsAndReturnCode.getLeft());
 
-				if (svlGenReturnValue != 0)
+				if (svlGenReturnValue != ReturnCodes.TERMINATION_OK)
 				{
 					System.exit(svlGenReturnValue);
 				}
@@ -185,7 +187,7 @@ public class Main
 				final long svlScriptExecutionStartTime = System.nanoTime();
 				final int svlExecReturnValue = Main.executeSVLScript(workingDirectory);
 
-				if (svlExecReturnValue != 0)
+				if (svlExecReturnValue != ReturnCodes.TERMINATION_OK)
 				{
 					System.exit(svlExecReturnValue);
 				}
@@ -199,7 +201,7 @@ public class Main
 			final long cleaningCounterExampleStartTime = System.nanoTime();
 			final Pair<File, Integer> counterExample = Main.generateProperCounterexample(workingDirectory);
 
-			if (counterExample.getRight() != 0)
+			if (counterExample.getRight() != ReturnCodes.TERMINATION_OK)
 			{
 				System.exit(counterExample.getRight());
 			}
@@ -323,7 +325,7 @@ public class Main
 			}
 
 			Main.cleanDirBeforeEvaluation(dirFiles);
-			return Triple.of(lntSpec, null, 0);
+			return Triple.of(lntSpec, null, ReturnCodes.TERMINATION_OK);
 		}
 		else
 		{
@@ -402,7 +404,7 @@ public class Main
 			printWriter.flush();
 			printWriter.close();
 
-			return Triple.of(counterExample, result, 0);
+			return Triple.of(counterExample, result, ReturnCodes.TERMINATION_OK);
 		}
 	}
 
@@ -473,7 +475,7 @@ public class Main
 			return Pair.of(null, WRITING_LTL_PROPERTY_FAILED);
 		}
 
-		return Pair.of(ltlPropertyFile, 0);
+		return Pair.of(ltlPropertyFile, ReturnCodes.TERMINATION_OK);
 	}
 
 	private static File parseAndTransform(File workingDir,
@@ -562,7 +564,7 @@ public class Main
 			return Pair.of(new ArrayList<>(), LNT_TO_BCG_FAILED);
 		}
 
-		if (lntOpenCommandManager.returnValue() != 0)
+		if (lntOpenCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
 			return Pair.of(new ArrayList<>(), LNT_TO_BCG_FAILED);
 		}
@@ -581,7 +583,7 @@ public class Main
 			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
 		}
 
-		if (bcgInfoCommandManager.returnValue() != 0)
+		if (bcgInfoCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
 			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
 		}
@@ -669,7 +671,7 @@ public class Main
 			return Pair.of("", TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED);
 		}
 
-		if (ltl2tgbaCommandManager.returnValue() != 0)
+		if (ltl2tgbaCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
 			return Pair.of("", TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED);
 		}
@@ -714,12 +716,12 @@ public class Main
 			return SVL_SCRIPT_GENERATION_FAILED;
 		}
 
-		if (svlCommandManager.returnValue() != 0)
+		if (svlCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
 			return SVL_SCRIPT_GENERATION_FAILED;
 		}
 
-		return 0;
+		return ReturnCodes.TERMINATION_OK;
 	}
 
 	private static int executeSVLScript(File workingDir)
@@ -737,7 +739,7 @@ public class Main
 			return SVL_SCRIPT_EXECUTION_FAILED;
 		}
 
-		if (svlCommandManager.returnValue() != 0)
+		if (svlCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
 			return SVL_SCRIPT_EXECUTION_FAILED;
 		}
@@ -767,17 +769,17 @@ public class Main
 		printWriter.flush();
 		printWriter.close();
 
-		return 0;
+		return ReturnCodes.TERMINATION_OK;
 	}
 
 	private static Pair<File, Integer> generateProperCounterexample(File workingDir)
 	{
 		if (!new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + ".bcg").exists())
 		{
-			return Pair.of(null, 0);
+			return Pair.of(null, DIAGNOSTIC_FILE_MISSING);
 		}
 
-		//Minimize counterexample with divbranching to remove "i" transitions
+		//Minimize counterexample with weaktrace to remove "i" transitions
 		final String bcgMinCommand = "bcg_open";
 		final String[] bcgMinArgs = new String[]{COUNTEREXAMPLE_FILE + ".bcg", "reductor", "-weaktrace", COUNTEREXAMPLE_FILE + "_weak.bcg"};
 		final CommandManager bcgMinCommandManager = new CommandManager(bcgMinCommand, workingDir, bcgMinArgs);
@@ -791,7 +793,7 @@ public class Main
 			return Pair.of(null, COUNTEREXAMPLE_DETERMINATION_FAILED);
 		}
 
-		if (bcgMinCommandManager.returnValue() != 0)
+		if (bcgMinCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
 			return Pair.of(null, COUNTEREXAMPLE_DETERMINATION_FAILED);
 		}
@@ -810,12 +812,12 @@ public class Main
 			return Pair.of(null, COUNTEREXAMPLE_TO_AUT_FAILED);
 		}
 
-		if (bcgIOCommandManager.returnValue() != 0)
+		if (bcgIOCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
 			return Pair.of(null, COUNTEREXAMPLE_TO_AUT_FAILED);
 		}
 
-		return Pair.of(new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + "_weak.aut"), 0);
+		return Pair.of(new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + "_weak.aut"), ReturnCodes.TERMINATION_OK);
 	}
 
 	private static void retrieveAndVerifyPropertyLabels(final File workingDirectory,
@@ -852,6 +854,20 @@ public class Main
 			buchiAutomataLabels.add(currentLabel.toUpperCase());
 			labelsLine = labelsLine.substring(nextQuoteIndex + 1);
 			doubleQuoteIndex = labelsLine.indexOf('"');
+		}
+
+		if (buchiAutomataLabels.isEmpty())
+		{
+			System.exit(BUCHI_AUTOMATA_HAS_NO_LABELS);
+		}
+
+		//Verify that property does not contain reserved LTL keywords
+		for (String buchiLabel : buchiAutomataLabels)
+		{
+			if (LTLKeyword.ALL_KEYWORDS.contains(buchiLabel.toUpperCase()))
+			{
+				System.exit(PROPERTY_LABELS_CONTAIN_RESERVED_LTL_KEYWORD);
+			}
 		}
 
 		//Remove specification labels from Buchi automata labels
