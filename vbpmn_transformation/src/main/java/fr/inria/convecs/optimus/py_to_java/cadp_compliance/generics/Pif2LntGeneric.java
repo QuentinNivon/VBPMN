@@ -6,6 +6,7 @@ import java.util.Collection;
 
 public abstract class Pif2LntGeneric
 {
+	protected static final boolean ADD_LTL_DUMMY_LABELS = true;
 	protected boolean isBalanced;
 	protected String outputFolder;
 
