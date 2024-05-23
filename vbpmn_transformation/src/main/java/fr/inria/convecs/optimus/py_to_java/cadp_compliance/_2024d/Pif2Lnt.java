@@ -65,7 +65,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 	 */
 	public void dumpAlphabet(final ArrayList<String> alphabet,
 							 final StringBuilder stringBuilder,
-							 final boolean addAny)
+							 final boolean addAny,
+							 final boolean addLTLDummyLoopyLabel)
 	{
 		final int nbElem = alphabet.size();
 
@@ -91,9 +92,21 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 			}
 
+			if (addLTLDummyLoopyLabel)
+			{
+				stringBuilder.append(", DUMMY_LOOPY_LABEL:any");
+			}
+
 			stringBuilder.append("]");
 			//stringBuilder.close();
 		}
+	}
+
+	public void dumpAlphabet(final ArrayList<String> alphabet,
+							 final StringBuilder stringBuilder,
+							 final boolean addAny)
+	{
+		this.dumpAlphabet(alphabet, stringBuilder, addAny, false);
 	}
 
 	/**
@@ -3529,6 +3542,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 			}
 
+			if (ADD_LTL_DUMMY_LABELS)
+			{
+				lntBuilder.append("process dummy_node [incf:any, name:any] is\n")
+						.append(" var ident: ID in loop incf (?ident of ID); while true loop name end loop end loop end var\n")
+						.append("end process\n");
+			}
+
 			/*
 				Note: up to here, translation patterns are independent of the actual tasks, comm, etc.
 				The actual names will be used only in the MAIN process when computing the process alphabet
@@ -3546,7 +3566,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			lntBuilder.append("\nprocess MAIN ");
 			final ArrayList<String> alpha = this.alpha();
-			dumpAlphabet(alpha, lntBuilder, true);
+			dumpAlphabet(alpha, lntBuilder, true, ADD_LTL_DUMMY_LABELS);
 			lntBuilder.append(" is\n\n");
 
 			//Computes additional synchros for or splits/joins
@@ -3718,9 +3738,18 @@ public class Pif2Lnt extends Pif2LntGeneric
 			//Processes instantiations for final nodes
 			for (Node n : this.finals)
 			{
-				lntBuilder.append("final [")
-						.append(n.incomingFlows().get(0).identifier())
-						.append("_finish, finish]");   //We assume a single incoming flow
+				if (ADD_LTL_DUMMY_LABELS)
+				{
+					lntBuilder.append("dummy_node [")
+							.append(n.incomingFlows().get(0).identifier())
+							.append("_finish, DUMMY_LOOPY_LABEL]");   //We assume a single incoming flow
+				}
+				else
+				{
+					lntBuilder.append("final [")
+							.append(n.incomingFlows().get(0).identifier())
+							.append("_finish, finish]");   //We assume a single incoming flow
+				}
 				cter++;
 
 				if (cter <= nbFlows)
