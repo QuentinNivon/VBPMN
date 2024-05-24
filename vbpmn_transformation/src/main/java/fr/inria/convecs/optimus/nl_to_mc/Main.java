@@ -26,6 +26,7 @@ import java.util.*;
 public class Main
 {
 	private static final boolean LOCAL_TESTING = false;
+	private static final int BCG_FILE_REDUCTION_THRESHOLD = 1000;
 	private static final String DUMMY_LOOPY_LABEL = "DUMMY_LOOPY_LABEL";
 	private static final String LNT_GENERIC_NAME = "process";
 	private static final String COUNTEREXAMPLE_FILE = "diag";
@@ -36,6 +37,7 @@ public class Main
 	private static final String TRUE_RESULT_FILE_NAME = "res_true.txt";
 	private static final String FALSE_RESULT_FILE_NAME = "res_false.txt";
 	private static final String WARNING_FILE_NAME = "warning.txt";
+	private static final String BCG_SPEC_FILE_NAME = "problem.bcg";
 	private static final String LTL_PROPERTY = "property.ltl";
 	private static final String ID_FILE = "id.lnt";
 	private static final String BPMN_TYPES_FILE = "bpmntypes.lnt";
@@ -65,6 +67,7 @@ public class Main
 	private static final int DIAGNOSTIC_FILE_MISSING = 34;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD = 35;
 	private static final int WARNING_FILE_WRITING_FAILED = 36;
+	private static final int BCG_GENERATION_FAILED = 37;
 	private static final int UNEXPECTED_ERROR = 146548449;
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
@@ -138,6 +141,29 @@ public class Main
 
 			if (lntSpecAndEvaluation.getMiddle() == null)
 			{
+				//Generate the BCG of the LNT spec
+				System.out.println("Generating BCG file...");
+				final long bcgFileGenerationStartTime = System.nanoTime();
+				final int bcgFileGenerationReturnCode = Main.generateBCGFile(lntSpecAndEvaluation.getLeft(), workingDirectory);
+
+				if (bcgFileGenerationReturnCode != ReturnCodes.TERMINATION_OK)
+				{
+					System.exit(bcgFileGenerationReturnCode);
+				}
+
+				final long bcgFileGenerationEndTime = System.nanoTime();
+				final long bcgFileGenerationTime = bcgFileGenerationEndTime - bcgFileGenerationStartTime;
+				System.out.println("BCG file generated in " + Utils.nanoSecToReadable(bcgFileGenerationTime) + ".\n");
+
+				//Get the size of the BCG file (CAN NOT FAIL)
+				System.out.println("Retrieving BCG file size...");
+				final long bcgFileSizeRetrievalStartTime = System.nanoTime();
+				final int bcgFileSize = Main.retrieveBCGFileSize(workingDirectory, BCG_SPEC_FILE_NAME);
+				final boolean performReduction = bcgFileSize > BCG_FILE_REDUCTION_THRESHOLD;
+				final long bcgFileSizeRetrievalEndTime = System.nanoTime();
+				final long bcgFileSizeRetrievalTime = bcgFileSizeRetrievalEndTime - bcgFileSizeRetrievalStartTime;
+				System.out.println("BCG file size retrieved in " + Utils.nanoSecToReadable(bcgFileSizeRetrievalTime) + ".\n");
+
 				//The property is not written in MCL
 				System.out.println("Computing specification labels...");
 				final long labelsComputationStartTime = System.nanoTime();
@@ -180,7 +206,7 @@ public class Main
 
 				System.out.println("Generating the SVL script...");
 				final long svlScriptGenerationStartTime = System.nanoTime();
-				final int svlGenReturnValue = Main.generateSVLScript(workingDirectory, lntSpecAndEvaluation.getLeft(), labelsAndReturnCode.getLeft());
+				final int svlGenReturnValue = Main.generateSVLScript(workingDirectory, lntSpecAndEvaluation.getLeft(), labelsAndReturnCode.getLeft(), performReduction);
 
 				if (svlGenReturnValue != ReturnCodes.TERMINATION_OK)
 				{
@@ -709,14 +735,16 @@ public class Main
 		return Pair.of(ltl2tgbaCommandManager.stdOut(), ReturnCodes.TERMINATION_OK);
 	}
 
-	private static int generateSVLScript(File workingDir,
-										 File lntSpecification,
-										 ArrayList<String> labels)
+	private static int generateSVLScript(final File workingDir,
+										 final File lntSpecification,
+										 final ArrayList<String> labels,
+										 final boolean performReduction)
 	{
 		final String svlCommand = "hoa2svl";
 		final ArrayList<String> svlArgs = new ArrayList<>();
 		svlArgs.add(BUCHI_AUTOMATA);
 		svlArgs.add(lntSpecification.getName());
+		if (performReduction) svlArgs.add("--reduction");
 		svlArgs.addAll(labels);
 
 		final CommandManager svlCommandManager = new CommandManager(svlCommand, workingDir, svlArgs);
@@ -795,7 +823,12 @@ public class Main
 
 		//Minimize counterexample with weaktrace to remove "i" transitions
 		final String bcgMinCommand = "bcg_open";
-		final String[] bcgMinArgs = new String[]{COUNTEREXAMPLE_FILE + ".bcg", "reductor", "-weaktrace", COUNTEREXAMPLE_FILE + "_weak.bcg"};
+		final String[] bcgMinArgs = new String[]{
+			COUNTEREXAMPLE_FILE + ".bcg",
+			"reductor",
+			"-weaktrace",
+			COUNTEREXAMPLE_FILE + "_weak.bcg"
+		};
 		final CommandManager bcgMinCommandManager = new CommandManager(bcgMinCommand, workingDir, bcgMinArgs);
 
 		try
@@ -814,7 +847,10 @@ public class Main
 
 		//Convert example to AUT
 		final String bcgIOCommand = "bcg_io";
-		final String[] bcgIOArgs = new String[]{COUNTEREXAMPLE_FILE + "_weak.bcg", COUNTEREXAMPLE_FILE + "_weak.aut"};
+		final String[] bcgIOArgs = new String[]{
+			COUNTEREXAMPLE_FILE + "_weak.bcg",
+			COUNTEREXAMPLE_FILE + "_weak.aut"
+		};
 		final CommandManager bcgIOCommandManager = new CommandManager(bcgIOCommand, workingDir, bcgIOArgs);
 
 		try
@@ -909,6 +945,65 @@ public class Main
 		}
 
 		return ReturnCodes.TERMINATION_OK;
+	}
+
+	private static int generateBCGFile(final File lntSpec,
+									   final File workingDir)
+	{
+		final String lntOpenCommand = "lnt.open";
+		final String[] lntOpenArgs = new String[]{lntSpec.getName(), "generator", "problem.bcg"};
+		final CommandManager lntOpenCommandManager = new CommandManager(lntOpenCommand, workingDir, lntOpenArgs);
+
+		try
+		{
+			lntOpenCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			return BCG_GENERATION_FAILED;
+		}
+
+		if (lntOpenCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
+		{
+			return BCG_GENERATION_FAILED;
+		}
+
+		return ReturnCodes.TERMINATION_OK;
+	}
+
+	private static int retrieveBCGFileSize(final File workingDir,
+										   final String bcgFileName)
+	{
+		final String bcgInfoCommand = "bcg_info";
+		final String[] bcgInfoArgs = new String[]{
+			"-size",
+			bcgFileName
+		};
+		final CommandManager bcgInfoCommandManager = new CommandManager(bcgInfoCommand, workingDir, bcgInfoArgs);
+
+		try
+		{
+			bcgInfoCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			throw new RuntimeException();
+		}
+
+		if (bcgInfoCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
+		{
+			throw new RuntimeException();
+		}
+
+		final String answer = bcgInfoCommandManager.stdOut();
+		final String sizeStr = Utils.trim(answer.substring(0, answer.indexOf("states")));
+
+		if (!Utils.isAnInt(sizeStr))
+		{
+			throw new RuntimeException();
+		}
+
+		return Integer.parseInt(sizeStr);
 	}
 
 	private static void finalClean(File workingDirectory)

@@ -1,0 +1,65 @@
+package fr.inria.convecs.optimus.aut;
+
+import java.util.HashSet;
+
+public class AutNode
+{
+	private final int label;
+	private final HashSet<AutEdge> incomingEdges;
+	private final HashSet<AutEdge> outgoingEdges;
+
+	public AutNode(final int label)
+	{
+		this.label = label;
+		this.incomingEdges = new HashSet<>();
+		this.outgoingEdges = new HashSet<>();
+	}
+
+	public int label()
+	{
+		return this.label;
+	}
+
+	public String labelString()
+	{
+		return String.valueOf(this.label);
+	}
+
+	public void addIncomingEdge(final AutEdge edge)
+	{
+		this.incomingEdges.add(edge);
+	}
+
+	public void addOutgoingEdge(final AutEdge edge)
+	{
+		this.outgoingEdges.add(edge);
+	}
+
+	public HashSet<AutEdge> incomingEdges()
+	{
+		return this.incomingEdges;
+	}
+
+	public HashSet<AutEdge> outgoingEdges()
+	{
+		return this.outgoingEdges;
+	}
+
+	//Override
+	@Override
+	public boolean equals(Object o)
+	{
+		if (!(o instanceof AutNode))
+		{
+			return false;
+		}
+
+		return ((AutNode) o).label() == this.label();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return this.label;
+	}
+}
