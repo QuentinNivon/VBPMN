@@ -11,19 +11,19 @@ Date:		Thu Dec 21 11:33:37 CET 2023
 Report:		Frederic Lang (INRIA/CONVECS)
 Author:		Hubert Garavel (INRIA/CONVECS)
 Files:		lib/LNT_V1.h, demos/demo_08/interface.lnt,
-		demos/demo_08/PORT.lnt, demos/demo_08/rel_rel_C.lnt
+		    demos/demo_08/PORT.lnt, demos/demo_08/rel_rel_C.lnt
 
-Nature:		To align LNT2LOTOS with TRAIAN, the predefined library
-		"LNT_V1" of LNT2LOTOS was extended with new functions FIRST
-		and LAST for the predefined types BOOL and CHAR.
+Nature:	    To align LNT2LOTOS with TRAIAN, the predefined library
+            "LNT_V1" of LNT2LOTOS was extended with new functions FIRST
+            and LAST for the predefined types BOOL and CHAR.
 
-		In a few cases, this change may cause incompatibilities in
-		existing LNT specifications that already contain FIRST and/or
-		LAST functions. This was the case with some LNT files of
-		demo_08, where a function FIRST : -> TYPEMSG was defined,
-		making it impossible to CAESAR.ADT to resolve overloading
-		in the generated LOTOS code. This problem was easily solved
-		by replacing "FIRST" with "FIRST of TYPEMSG" where needed.
+            In a few cases, this change may cause incompatibilities in
+            existing LNT specifications that already contain FIRST and/or
+            LAST functions. This was the case with some LNT files of
+            demo_08, where a function FIRST : -> TYPEMSG was defined,
+            making it impossible to CAESAR.ADT to resolve overloading
+            in the generated LOTOS code. This problem was easily solved
+            by replacing "FIRST" with "FIRST of TYPEMSG" where needed.
 
 -------------------#2951: NOTHING TO DO-------------------
 
