@@ -1,9 +1,9 @@
 When CADP is updated (i.e., every month), it often breaks VBPMN due to the changes
 made to the LNT language, that are not necessarily backward compatible.
 To ease the usage of VBPMN and facilitate its migration from one version of CADP to
-another, the following procedure has been created:
+another, the following procedure has been created (author: Quentin NIVON/quentin.nivon@inria.fr):
 
-1) Check the version of CADP installed on your computer using the ``cadp_lib'' command.
+1) Check the version of CADP installed on your computer using the ``cadp_lib -1'' command.
 
 2) Go to the ``vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance''
    directory (accessible from the current directory).
