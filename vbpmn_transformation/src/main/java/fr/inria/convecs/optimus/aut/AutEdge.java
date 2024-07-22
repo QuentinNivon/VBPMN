@@ -1,5 +1,7 @@
 package fr.inria.convecs.optimus.aut;
 
+import fr.inria.convecs.optimus.bpmn.types.diagram.Edge;
+
 public class AutEdge
 {
 	private final String label;

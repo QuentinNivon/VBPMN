@@ -155,7 +155,7 @@ public class Main
 				final long bcgFileGenerationTime = bcgFileGenerationEndTime - bcgFileGenerationStartTime;
 				System.out.println("BCG file generated in " + Utils.nanoSecToReadable(bcgFileGenerationTime) + ".\n");
 
-				//Get the size of the BCG file (CAN NOT FAIL)
+				//Get the size of the BCG file (CANNOT FAIL)
 				System.out.println("Retrieving BCG file size...");
 				final long bcgFileSizeRetrievalStartTime = System.nanoTime();
 				final int bcgFileSize = Main.retrieveBCGFileSize(workingDirectory, BCG_SPEC_FILE_NAME);
