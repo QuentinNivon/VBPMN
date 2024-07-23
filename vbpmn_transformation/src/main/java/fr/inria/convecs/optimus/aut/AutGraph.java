@@ -1,5 +1,7 @@
 package fr.inria.convecs.optimus.aut;
 
+import jdk.internal.net.http.common.Pair;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +42,15 @@ public class AutGraph
 	public int sourceStateLabel()
 	{
 		return this.startNode.label();
+	}
+
+	public Pair<HashSet<AutNode>, HashSet<AutEdge>> nodesAndEdges()
+	{
+		final HashSet<AutNode> nodes = new HashSet<>();
+		final HashSet<AutEdge> edges = new HashSet<>();
+		this.retrieveNodesAndEdges(this.startNode, nodes, edges);
+
+		return new Pair<>(nodes, edges);
 	}
 
 	public AutGraph copy()
