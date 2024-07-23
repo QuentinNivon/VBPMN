@@ -4,13 +4,10 @@ import fr.inria.convecs.optimus.util.Utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_TESTING;
 
 public class CommandLineParser
 {
@@ -58,31 +55,19 @@ public class CommandLineParser
 
     private void parse(String[] commandLineArgs)
     {
-        if (LOCAL_TESTING)
+        if (commandLineArgs.length < 1)
         {
-            if (commandLineArgs.length < 1) return;
-
-            this.put(CommandLineOption.WORKING_DIRECTORY, new File(commandLineArgs[0]));
+            return;
         }
-        else
+
+        if (!new File(commandLineArgs[0]).exists()
+            || !new File(commandLineArgs[0]).isDirectory())
         {
-            if (commandLineArgs.length < 3) return;
-
-            this.put(CommandLineOption.API_KEY, commandLineArgs[0]);
-            this.put(CommandLineOption.TEMPORAL_PROPERTY, commandLineArgs[1]);
-            final String leafDirectoryName = commandLineArgs[2];
-
-            try
-            {
-                final File file = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-                final File finalDirectory = this.buildArborescence(file, leafDirectoryName);
-                this.put(CommandLineOption.WORKING_DIRECTORY, finalDirectory);
-            }
-            catch (URISyntaxException e)
-            {
-                throw new RuntimeException(e);
-            }
+            System.out.println(commandLineArgs[0] + " does not exist or is not a directory.");
+            return;
         }
+
+        this.put(CommandLineOption.WORKING_DIRECTORY, new File(commandLineArgs[0]));
 	}
 
     private boolean isIAT(final String arg)
@@ -105,6 +90,12 @@ public class CommandLineParser
     private boolean isBpmnProcess(final String arg)
     {
         return arg.endsWith(".bpmn")
+                && new File(arg).isFile();
+    }
+
+    private boolean isBCGProduct(final String arg)
+    {
+        return arg.endsWith("product.bcg")
                 && new File(arg).isFile();
     }
 
@@ -156,15 +147,13 @@ public class CommandLineParser
 
         for (File file : Objects.requireNonNull(workingDirectory.listFiles()))
         {
-            if (isBpmnProcess(file.getPath()))
+            if (isBCGProduct(file.getPath()))
             {
-                System.out.println(file.getPath());
-                this.commands.put(CommandLineOption.BPMN_FILE, file);
+                this.commands.put(CommandLineOption.BCG_PRODUCT, file);
             }
-            else if (isTemporalLogicProperty(file.getPath()))
+            else if (isBpmnProcess(file.getPath()))
             {
-                System.out.println(file.getPath());
-                this.commands.put(CommandLineOption.TEMPORAL_PROPERTY, file);
+                this.commands.put(CommandLineOption.BPMN_FILE, file);
             }
         }
     }
@@ -172,10 +161,8 @@ public class CommandLineParser
     private boolean verifyArgs()
     {
         return this.commands.get(CommandLineOption.WORKING_DIRECTORY) != null
-                && this.commands.get(CommandLineOption.BPMN_FILE) != null
-                && this.commands.get(CommandLineOption.TEMPORAL_PROPERTY) != null
-                && (this.commands.get(CommandLineOption.TEMPORAL_PROPERTY) instanceof File || !((String) this.commands.get(CommandLineOption.TEMPORAL_PROPERTY)).isEmpty())
-               ;
+                && this.commands.get(CommandLineOption.BCG_PRODUCT) != null
+                && this.commands.get(CommandLineOption.BPMN_FILE) != null;
     }
 
     /**

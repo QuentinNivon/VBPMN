@@ -5,5 +5,6 @@ public enum CommandLineOption
     WORKING_DIRECTORY,
     API_KEY,
     BPMN_FILE,
-    TEMPORAL_PROPERTY
+    TEMPORAL_PROPERTY,
+    BCG_PRODUCT
 }
