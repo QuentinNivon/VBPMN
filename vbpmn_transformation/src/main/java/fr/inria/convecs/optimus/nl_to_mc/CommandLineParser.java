@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_TESTING;
+
 public class CommandLineParser
 {
     private final Map<CommandLineOption, Object> commands;
@@ -56,21 +58,30 @@ public class CommandLineParser
 
     private void parse(String[] commandLineArgs)
     {
-        if (commandLineArgs.length < 3) return;
-
-        this.put(CommandLineOption.API_KEY, commandLineArgs[0]);
-        this.put(CommandLineOption.TEMPORAL_PROPERTY, commandLineArgs[1]);
-        final String leafDirectoryName = commandLineArgs[2];
-
-        try
+        if (LOCAL_TESTING)
         {
-            final File file = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            final File finalDirectory = this.buildArborescence(file, leafDirectoryName);
-            this.put(CommandLineOption.WORKING_DIRECTORY, finalDirectory);
+            if (commandLineArgs.length < 1) return;
+
+            this.put(CommandLineOption.WORKING_DIRECTORY, new File(commandLineArgs[0]));
         }
-        catch (URISyntaxException e)
+        else
         {
-            throw new RuntimeException(e);
+            if (commandLineArgs.length < 3) return;
+
+            this.put(CommandLineOption.API_KEY, commandLineArgs[0]);
+            this.put(CommandLineOption.TEMPORAL_PROPERTY, commandLineArgs[1]);
+            final String leafDirectoryName = commandLineArgs[2];
+
+            try
+            {
+                final File file = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                final File finalDirectory = this.buildArborescence(file, leafDirectoryName);
+                this.put(CommandLineOption.WORKING_DIRECTORY, finalDirectory);
+            }
+            catch (URISyntaxException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
 	}
 
@@ -147,10 +158,12 @@ public class CommandLineParser
         {
             if (isBpmnProcess(file.getPath()))
             {
+                System.out.println(file.getPath());
                 this.commands.put(CommandLineOption.BPMN_FILE, file);
             }
             else if (isTemporalLogicProperty(file.getPath()))
             {
+                System.out.println(file.getPath());
                 this.commands.put(CommandLineOption.TEMPORAL_PROPERTY, file);
             }
         }
@@ -162,7 +175,7 @@ public class CommandLineParser
                 && this.commands.get(CommandLineOption.BPMN_FILE) != null
                 && this.commands.get(CommandLineOption.TEMPORAL_PROPERTY) != null
                 && (this.commands.get(CommandLineOption.TEMPORAL_PROPERTY) instanceof File || !((String) this.commands.get(CommandLineOption.TEMPORAL_PROPERTY)).isEmpty())
-                && this.commands.get(CommandLineOption.API_KEY) != null;
+               ;
     }
 
     /**

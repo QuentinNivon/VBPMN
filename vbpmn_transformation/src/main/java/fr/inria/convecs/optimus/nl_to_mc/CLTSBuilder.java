@@ -3,7 +3,6 @@ package fr.inria.convecs.optimus.nl_to_mc;
 import fr.inria.convecs.optimus.aut.AutEdge;
 import fr.inria.convecs.optimus.aut.AutGraph;
 import fr.inria.convecs.optimus.aut.AutNode;
-import fr.inria.convecs.optimus.model.Node;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,9 +11,15 @@ import java.util.Iterator;
 
 public class CLTSBuilder
 {
-	public CLTSBuilder()
-	{
+	public static final boolean CONSIDER_FULL_PATH = false;
+	private final AutGraph autGraph;
+	private final HashSet<String> specLabels;
 
+	public CLTSBuilder(final AutGraph autGraph,
+					   final ArrayList<String> specLabels)
+	{
+		this.autGraph = autGraph.copy();
+		this.specLabels = new HashSet<>(specLabels);
 	}
 
 	/**
@@ -28,16 +33,16 @@ public class CLTSBuilder
 	 * All the transitions that are not labeled with elements of the
 	 * original specification are also removed.
 	 *
-	 * @param autGraph
 	 * @return
 	 */
-	public AutGraph buildCLTS(final AutGraph autGraph,
-							  final ArrayList<String> specLabels)
+	public AutGraph buildCLTS()
 	{
-		final AutGraph copy = autGraph.copy();
 		final HashMap<AutNode, HashSet<String>> reachableTransitionLabels = new HashMap<>();
+		this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), reachableTransitionLabels);
 		final HashSet<AutNode> nodesToCutBefore = new HashSet<>();
-		this.computeNodesToRemove(copy.startNode(), new HashSet<>(), nodesToCutBefore, reachableTransitionLabels);
+		this.computeNodesToRemove(this.autGraph.startNode(), new HashSet<>(), nodesToCutBefore, reachableTransitionLabels);
+
+		System.out.println("Nodes to cut before: " + nodesToCutBefore);
 
 		for (AutNode node : nodesToCutBefore)
 		{
@@ -52,25 +57,58 @@ public class CLTSBuilder
 			specification.
 		 */
 		final HashMap<AutNode, HashSet<AutNode>> reducingCorrespondences = new HashMap<>();
-		this.computeReducingCorrespondences(copy.startNode(), reducingCorrespondences, new HashSet<>(specLabels));
+		this.computeReducingCorrespondences(this.autGraph.startNode(), reducingCorrespondences, new HashSet<>());
+		System.out.println("Reducing correspondences: " + reducingCorrespondences);
 
 		for (AutNode key : reducingCorrespondences.keySet())
 		{
 			final HashSet<AutNode> correspondences = reducingCorrespondences.get(key);
-
-
-
 			final HashSet<AutEdge> goodEdges = new HashSet<>();
 
 			for (AutEdge outgoingEdge : key.outgoingEdges())
 			{
-				if (specLabels.contains(outgoingEdge.label()))
+				final String labelToConsider =
+					CONSIDER_FULL_PATH ?
+					outgoingEdge.label().replace(" !ACC", "").replace("\"","") :
+					outgoingEdge.label()
+				;
+
+				if (this.specLabels.contains(labelToConsider))
 				{
 					goodEdges.add(outgoingEdge);
 				}
 			}
 
-			//key.outgoingEdges().clear();
+			if (goodEdges.size() == key.outgoingEdges().size())
+			{
+				/*
+					This node only has good edges, so there is nothing to do
+				 */
+				continue;
+			}
+
+			key.outgoingEdges().clear();
+
+			for (AutNode correspondence : correspondences)
+			{
+				for (Iterator<AutEdge> iterator = correspondence.outgoingEdges().iterator(); iterator.hasNext(); )
+				{
+					final AutEdge outgoingEdge = iterator.next();
+					final AutEdge newEdge = new AutEdge(key, outgoingEdge.label(), outgoingEdge.targetNode());
+					key.addOutgoingEdge(newEdge);
+					outgoingEdge.targetNode().removeIncomingEdge(new AutEdge(correspondence, outgoingEdge.label(), outgoingEdge.targetNode()));
+					iterator.remove();
+					outgoingEdge.targetNode().addIncomingEdge(newEdge);
+				}
+			}
+
+			for (AutEdge goodEdge : goodEdges)
+			{
+				key.addOutgoingEdge(goodEdge);
+			}
+
+
+			/*//key.outgoingEdges().clear();
 			final HashSet<AutNode> parentNodes = new HashSet<>();
 
 			for (AutEdge incomingEdge : key.incomingEdges())
@@ -97,52 +135,64 @@ public class CLTSBuilder
 
 				for (AutNode correspondence : correspondences)
 				{
-
 					final AutEdge newEdge = new AutEdge(parent, edgeToConsider.label(), correspondence);
 					parent.addOutgoingEdge(newEdge);
 					correspondence.addIncomingEdge(newEdge);
 				}
 
-				for (AutEdge goodEdge : goodEdges)
-				{
-					final AutEdge newEdge = new AutEdge(parent, goodEdge.label(), goodEdge.targetNode());
-					parent.addOutgoingEdge(newEdge);
-					goodEdge.targetNode().incomingEdges().remove(goodEdge);
-					goodEdge.targetNode().addIncomingEdge(newEdge);
-				}
-			}
+
+			}*/
 		}
+
+		return this.autGraph;
 	}
 
 	//Private methods
 
 	private void computeReducingCorrespondences(final AutNode currentNode,
 												final HashMap<AutNode, HashSet<AutNode>> reducingCorrespondences,
-												final HashSet<String> specLabels)
+												final HashSet<AutNode> visitedNodes)
 	{
+		if (visitedNodes.contains(currentNode))
+		{
+			return;
+		}
+
+		visitedNodes.add(currentNode);
+
 		final HashSet<AutNode> correspondences = reducingCorrespondences.computeIfAbsent(currentNode, h -> new HashSet<>());
 
 		for (AutEdge outgoingEdge : currentNode.outgoingEdges())
 		{
-			if (!specLabels.contains(outgoingEdge.label()))
+			final String labelToConsider =
+				CONSIDER_FULL_PATH ?
+				outgoingEdge.label().replace(" !ACC", "").replace("\"","") :
+				outgoingEdge.label()
+			;
+			System.out.println("Label to consider: " + labelToConsider);
+
+			if (!this.specLabels.contains(labelToConsider))
 			{
 				//Unknown label => find all the nodes to merge
 				final HashSet<AutNode> nodesToMerge = new HashSet<>();
-				this.findAllNodesToMerge(currentNode, new HashSet<>(), nodesToMerge, specLabels);
+				this.findAllNodesToMerge(currentNode, new HashSet<>(), nodesToMerge);
 				correspondences.addAll(nodesToMerge);
+			}
+			else
+			{
+				this.computeReducingCorrespondences(outgoingEdge.targetNode(), reducingCorrespondences, visitedNodes);
 			}
 		}
 
 		for (AutNode nodeToMerge : correspondences)
 		{
-			this.computeReducingCorrespondences(nodeToMerge, reducingCorrespondences, specLabels);
+			this.computeReducingCorrespondences(nodeToMerge, reducingCorrespondences, visitedNodes);
 		}
 	}
 
 	private void findAllNodesToMerge(final AutNode currentNode,
 									 final HashSet<AutNode> visitedNodes,
-									 final HashSet<AutNode> nodesToMerge,
-									 final HashSet<String> specLabels)
+									 final HashSet<AutNode> nodesToMerge)
 	{
 		if (visitedNodes.contains(currentNode))
 		{
@@ -155,7 +205,13 @@ public class CLTSBuilder
 
 		for (AutEdge outgoingEdge : currentNode.outgoingEdges())
 		{
-			if (specLabels.contains(outgoingEdge.label()))
+			final String labelToConsider =
+				CONSIDER_FULL_PATH ?
+				outgoingEdge.label().replace(" !ACC", "").replace("\"","") :
+				outgoingEdge.label()
+			;
+
+			if (this.specLabels.contains(labelToConsider))
 			{
 				validNode = true;
 				break;
@@ -170,20 +226,26 @@ public class CLTSBuilder
 		{
 			for (AutEdge outgoingEdge : currentNode.outgoingEdges())
 			{
-				this.findAllNodesToMerge(outgoingEdge.targetNode(), visitedNodes, nodesToMerge, specLabels);
+				this.findAllNodesToMerge(outgoingEdge.targetNode(), visitedNodes, nodesToMerge);
 			}
 		}
 	}
 
 	private void computeReachableTransitionLabels(final AutNode currentNode,
+												  final HashSet<AutNode> visitedNodes,
 												  final HashMap<AutNode, HashSet<String>> reachableTransitionLabels)
 	{
 		final HashSet<String> currentSet = reachableTransitionLabels.computeIfAbsent(currentNode, h -> new HashSet<>());
 
-		for (AutEdge outgoingTransition : currentNode.outgoingEdges())
+		if (!visitedNodes.contains(currentNode))
 		{
-			currentSet.add(outgoingTransition.label());
-			this.computeReachableTransitionLabels(outgoingTransition.targetNode(), reachableTransitionLabels);
+			visitedNodes.add(currentNode);
+
+			for (AutEdge outgoingTransition : currentNode.outgoingEdges())
+			{
+				currentSet.add(outgoingTransition.label());
+				this.computeReachableTransitionLabels(outgoingTransition.targetNode(), visitedNodes, reachableTransitionLabels);
+			}
 		}
 
 		for (AutEdge outgoingTransition : currentNode.outgoingEdges())

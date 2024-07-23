@@ -1,6 +1,6 @@
 package fr.inria.convecs.optimus.aut;
 
-import jdk.internal.net.http.common.Pair;
+import fr.inria.convecs.optimus.util.Pair;
 
 import java.util.Collection;
 import java.util.HashMap;

@@ -3,7 +3,7 @@ package fr.inria.convecs.optimus.nl_to_mc;
 import fr.inria.convecs.optimus.aut.AutEdge;
 import fr.inria.convecs.optimus.aut.AutGraph;
 import fr.inria.convecs.optimus.aut.AutNode;
-import jdk.internal.net.http.common.Pair;
+import fr.inria.convecs.optimus.util.Pair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,10 +12,16 @@ import java.util.HashSet;
 
 public class Aut2Force3DGraph
 {
-	private static final int GROUP = 1;
+	private static final int DEFAULT_GROUP = 1;
+	private static final int INITIAL_GROUP = 2;
+	private static final int TERMINAL_GROUP = 3;
+	private static final String DEFAULT_COLOR = "#0000FF";
+	private static final String INITIAL_COLOR = "#FFFF00";
+	private static final String TERMINAL_COLOR = "#FF0000";
 	private static final String NODES_KEYWORD = "nodes";
 	private static final String ID_KEYWORD = "id";
 	private static final String GROUP_KEYWORD = "group";
+	private static final String COLOR_KEYWORD = "color";
 	private static final String LINKS_KEYWORD = "links";
 	private static final String SOURCE_KEYWORD = "source";
 	private static final String TARGET_KEYWORD = "target";
@@ -30,31 +36,31 @@ public class Aut2Force3DGraph
 		this.autGraph = autGraph;
 	}
 
-	public void generateForce3DGraph() throws FileNotFoundException
+	public void generateForce3DGraphFile() throws FileNotFoundException
 	{
 		final PrintWriter printWriter = new PrintWriter(this.forceGraphFile);
 		final Pair<HashSet<AutNode>, HashSet<AutEdge>> nodesAndEdges = this.autGraph.nodesAndEdges();
 
 		printWriter.println("{");
-		printWriter.print("	 \"");
+		printWriter.print("  \"");
 		printWriter.print(NODES_KEYWORD);
-		printWriter.print("\": [");
+		printWriter.println("\": [");
 
 		int i = 0;
 
-		for (AutNode autNode : nodesAndEdges.first)
+		for (AutNode autNode : nodesAndEdges.getFirst())
 		{
-			printWriter.print("	   {\"");
+			printWriter.print("    {\"");
 			printWriter.print(ID_KEYWORD);
 			printWriter.print("\": \"");
 			printWriter.print(autNode.label());
 			printWriter.print("\", \"");
-			printWriter.print(GROUP_KEYWORD);
-			printWriter.print("\": ");
-			printWriter.print(GROUP);
-			printWriter.print("}");
+			printWriter.print(COLOR_KEYWORD);
+			printWriter.print("\": \"");
+			printWriter.print(autNode.incomingEdges().isEmpty() ? INITIAL_COLOR : (autNode.outgoingEdges().isEmpty() ? TERMINAL_COLOR : DEFAULT_COLOR));
+			printWriter.print("\"}");
 
-			if (i != nodesAndEdges.first.size() - 1)
+			if (i != nodesAndEdges.getFirst().size() - 1)
 			{
 				printWriter.print(",");
 			}
@@ -70,23 +76,27 @@ public class Aut2Force3DGraph
 
 		i = 0;
 
-		for (AutEdge autEdge : nodesAndEdges.second)
+		for (AutEdge autEdge : nodesAndEdges.getSecond())
 		{
-			printWriter.print("	   {\"");
+			printWriter.print("    {\"");
 			printWriter.print(SOURCE_KEYWORD);
 			printWriter.print("\": \"");
 			printWriter.print(autEdge.sourceNode().label());
 			printWriter.print("\", \"");
 			printWriter.print(TARGET_KEYWORD);
-			printWriter.print("\": ");
+			printWriter.print("\": \"");
 			printWriter.print(autEdge.targetNode().label());
 			printWriter.print("\", \"");
 			printWriter.print(VALUE_KEYWORD);
-			printWriter.print("\": ");
-			printWriter.print(autEdge.label());
-			printWriter.print("}");
+			printWriter.print("\": \"");
+			printWriter.print(
+				CLTSBuilder.CONSIDER_FULL_PATH ?
+				autEdge.label().replace(" !ACC", "").replace("\"", "") :
+				autEdge.label()
+			);
+			printWriter.print("\"}");
 
-			if (i != nodesAndEdges.first.size() - 1)
+			if (i != nodesAndEdges.getSecond().size() - 1)
 			{
 				printWriter.print(",");
 			}
@@ -97,5 +107,6 @@ public class Aut2Force3DGraph
 
 		printWriter.println("  ]");
 		printWriter.println("}");
+		printWriter.close();
 	}
 }

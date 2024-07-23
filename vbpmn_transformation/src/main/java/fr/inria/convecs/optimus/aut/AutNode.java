@@ -30,9 +30,19 @@ public class AutNode
 		this.incomingEdges.add(edge);
 	}
 
+	public void removeIncomingEdge(final AutEdge autEdge)
+	{
+		this.incomingEdges.remove(autEdge);
+	}
+
 	public void addOutgoingEdge(final AutEdge edge)
 	{
 		this.outgoingEdges.add(edge);
+	}
+
+	public void removeOutgoingEdge(final AutEdge edge)
+	{
+		this.outgoingEdges.remove(edge);
 	}
 
 	public HashSet<AutEdge> incomingEdges()
@@ -61,5 +71,11 @@ public class AutNode
 	public int hashCode()
 	{
 		return this.label;
+	}
+
+	@Override
+	public String toString()
+	{
+		return String.valueOf(this.label);
 	}
 }
