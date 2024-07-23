@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="travail" />
+    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="travail">
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,10 +24,13 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="py_to_java" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/generics/BpmnTypesBuilderGeneric.java" root0="SKIP_INSPECTION" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -39,6 +45,7 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;JUnit.Test30.executor&quot;: &quot;Run&quot;,
     &quot;Maven.transformation [clean].executor&quot;: &quot;Run&quot;,
     &quot;Maven.transformation [compile].executor&quot;: &quot;Run&quot;,
     &quot;Maven.transformation [deploy].executor&quot;: &quot;Run&quot;,
@@ -62,30 +69,37 @@
     &quot;Maven.transformation [verify].executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/quentin/Documents/vbpmn/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/quentin/Documents/VBPMN/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024g&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c" />
-      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024b" />
-      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024a" />
-      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2023l" />
-      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024g" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/bpmn/proba" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/bpmn/resources" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/bpmn/constants" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="fr.inria.convecs.optimus.bpmn.constants" />
+      <recent name="fr.inria.convecs.optimus.nl_to_mc" />
     </key>
   </component>
-  <component name="RunManager">
-    <configuration default="true" type="JetRunConfigurationType">
+  <component name="RunManager" selected="JUnit.Test30">
+    <configuration name="Test30" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="transformation" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="transformation" />
-      <option name="filePath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.unit_tests.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests" />
+      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.Test30" />
+      <option name="TEST_OBJECT" value="class" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -120,87 +134,15 @@
       </MavenSettings>
       <method v="2" />
     </configuration>
-    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
-      <module name="transformation" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="Tox" factoryName="Tox">
-      <module name="transformation" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Autodetect">
-      <module name="transformation" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Doctests">
-      <module name="transformation" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.Test30" />
+        <item itemvalue="Maven.transformation [site]" />
+        <item itemvalue="Maven.transformation [site]" />
         <item itemvalue="Maven.transformation [site]" />
         <item itemvalue="Maven.transformation [site]" />
       </list>
     </recent_temporary>
-  </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="jdk-11.0.16-jbr_dcevm-11.0.16-4caba194b151-a86c5f01" />
-      </set>
-    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -259,7 +201,111 @@
       <option name="project" value="LOCAL" />
       <updated>1712325462763</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="jar update">
+      <option name="closed" value="true" />
+      <created>1714038508191</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1714038508191</updated>
+    </task>
+    <task id="LOCAL-00008" summary="error handling">
+      <option name="closed" value="true" />
+      <created>1714382478720</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1714382478720</updated>
+    </task>
+    <task id="LOCAL-00009" summary="added execution time verification and allowed vbpmn to only translate to LNT (does not verify anything)">
+      <option name="closed" value="true" />
+      <created>1714988753794</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1714988753794</updated>
+    </task>
+    <task id="LOCAL-00010" summary="removed weaktracing bcg to get labels">
+      <option name="closed" value="true" />
+      <created>1714990184853</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1714990184853</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Vbpmn.java#execute() splitting">
+      <option name="closed" value="true" />
+      <created>1714990290472</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1714990290472</updated>
+    </task>
+    <task id="LOCAL-00012" summary="corrections bugs">
+      <option name="closed" value="true" />
+      <created>1714998557648</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1714998557648</updated>
+    </task>
+    <task id="LOCAL-00013" summary="better perfs">
+      <option name="closed" value="true" />
+      <created>1714999692151</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1714999692151</updated>
+    </task>
+    <task id="LOCAL-00014" summary="better parsing of gpt answer">
+      <option name="closed" value="true" />
+      <created>1715007719108</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1715007719108</updated>
+    </task>
+    <task id="LOCAL-00015" summary="erreur si spec contient des taches dont les labels sont des mots clés LTL">
+      <option name="closed" value="true" />
+      <created>1715071029976</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1715071029976</updated>
+    </task>
+    <task id="LOCAL-00016" summary="prop ltl est désormais en majuscule">
+      <option name="closed" value="true" />
+      <created>1715096678765</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1715096678765</updated>
+    </task>
+    <task id="LOCAL-00017" summary="ajout parser + corrections de bugs">
+      <option name="closed" value="true" />
+      <created>1715610499683</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1715610499683</updated>
+    </task>
+    <task id="LOCAL-00018" summary="v 2024g">
+      <option name="closed" value="true" />
+      <created>1721030660894</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1721030660894</updated>
+    </task>
+    <task id="LOCAL-00019" summary="travail">
+      <option name="closed" value="true" />
+      <created>1721654240386</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1721654240386</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -278,6 +324,19 @@
     <MESSAGE value="merge" />
     <MESSAGE value="fin traduction pif2lntv1" />
     <MESSAGE value="fin traduction pif2lntv1.py et pif2lntv7.py + merge des deux dans la classe Pif2Lnt.java" />
+    <MESSAGE value="jar update" />
+    <MESSAGE value="error handling" />
+    <MESSAGE value="added execution time verification and allowed vbpmn to only translate to LNT (does not verify anything)" />
+    <MESSAGE value="removed weaktracing bcg to get labels" />
+    <MESSAGE value="Vbpmn.java#execute() splitting" />
+    <MESSAGE value="corrections bugs" />
+    <MESSAGE value="better perfs" />
+    <MESSAGE value="better parsing of gpt answer" />
+    <MESSAGE value="erreur si spec contient des taches dont les labels sont des mots clés LTL" />
+    <MESSAGE value="prop ltl est désormais en majuscule" />
+    <MESSAGE value="ajout parser + corrections de bugs" />
+    <MESSAGE value="correction ; a la place de : + mauvais code retour en cas de loop inclusive" />
+    <MESSAGE value="v 2024g" />
     <MESSAGE value="travail" />
     <option name="LAST_COMMIT_MESSAGE" value="travail" />
   </component>
