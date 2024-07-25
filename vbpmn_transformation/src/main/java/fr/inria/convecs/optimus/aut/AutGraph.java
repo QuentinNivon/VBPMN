@@ -24,19 +24,9 @@ public class AutGraph
 		return this.startNode;
 	}
 
-	public int nbNodes()
-	{
-		return this.autNodes.size();
-	}
-
 	public void addNodes(final Collection<AutNode> nodes)
 	{
 		this.autNodes.addAll(nodes);
-	}
-
-	public int nbEdges()
-	{
-		return this.autEdges.size();
 	}
 
 	public int sourceStateLabel()
@@ -58,12 +48,41 @@ public class AutGraph
 		final HashSet<AutNode> nodes = new HashSet<>();
 		final HashSet<AutEdge> edges = new HashSet<>();
 		this.retrieveNodesAndEdges(this.startNode, nodes, edges);
+		System.out.println("Nodes: " + nodes);
+		System.out.println("Edges: " + edges);
 
 		final HashMap<AutNode, AutNode> correspondences = new HashMap<>();
 
 		for (AutNode autNode : nodes)
 		{
 			correspondences.put(autNode, new AutNode(autNode.label()));
+		}
+
+		System.out.println("Correspondences: " + correspondences);
+
+		for (AutEdge autEdge : edges)
+		{
+			final AutNode newSourceNode = correspondences.get(autEdge.sourceNode());
+			final AutNode newTargetNode = correspondences.get(autEdge.targetNode());
+			final AutEdge copy = new AutEdge(newSourceNode, autEdge.label(), newTargetNode);
+			newSourceNode.addOutgoingEdge(copy);
+			newTargetNode.addIncomingEdge(copy);
+		}
+
+		return new AutGraph(correspondences.get(this.startNode));
+	}
+
+	public AutGraph copyAndShift(final int shift)
+	{
+		final HashSet<AutNode> nodes = new HashSet<>();
+		final HashSet<AutEdge> edges = new HashSet<>();
+		this.retrieveNodesAndEdges(this.startNode, nodes, edges);
+
+		final HashMap<AutNode, AutNode> correspondences = new HashMap<>();
+
+		for (AutNode autNode : nodes)
+		{
+			correspondences.put(autNode, new AutNode(autNode.label() + shift));
 		}
 
 		for (AutEdge autEdge : edges)
@@ -78,7 +97,54 @@ public class AutGraph
 		return new AutGraph(correspondences.get(this.startNode));
 	}
 
+	public int getMaxNodeLabel()
+	{
+		final int maxLabel = this.getMaxNodeLabel(this.startNode);
+
+		if (maxLabel + 1 < this.nbNodes())
+		{
+			throw new IllegalStateException();
+		}
+
+		return maxLabel;
+	}
+
+	public int nbNodes()
+	{
+		final HashSet<AutNode> nodes = new HashSet<>();
+		this.getNbNodes(this.startNode, nodes);
+		return nodes.size();
+	}
+
 	//Private methods
+
+	private void getNbNodes(final AutNode currentNode,
+							final HashSet<AutNode> visitedNodes)
+	{
+		if (visitedNodes.contains(currentNode))
+		{
+			return;
+		}
+
+		visitedNodes.add(currentNode);
+
+		for (AutEdge outgoingEdge : currentNode.outgoingEdges())
+		{
+			this.getNbNodes(outgoingEdge.targetNode(), visitedNodes);
+		}
+	}
+
+	private int getMaxNodeLabel(final AutNode currentNode)
+	{
+		int max = currentNode.label();
+
+		for (AutEdge autEdge : currentNode.outgoingEdges())
+		{
+			max = Math.max(max, getMaxNodeLabel(autEdge.targetNode()));
+		}
+
+		return max;
+	}
 
 	private void retrieveNodesAndEdges(final AutNode currentNode,
 									   final HashSet<AutNode> nodes,

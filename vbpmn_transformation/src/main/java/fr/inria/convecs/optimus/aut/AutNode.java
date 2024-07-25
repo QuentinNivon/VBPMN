@@ -55,6 +55,11 @@ public class AutNode
 		return this.outgoingEdges;
 	}
 
+	public AutNode copy()
+	{
+		return new AutNode(this.label);
+	}
+
 	//Override
 	@Override
 	public boolean equals(Object o)

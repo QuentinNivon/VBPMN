@@ -7,6 +7,7 @@ public class AutEdge
 	private final String label;
 	private final AutNode sourceNode;
 	private final AutNode targetNode;
+	private AutColor color;
 
 	public AutEdge(final AutNode sourceNode,
 				   final String label,
@@ -15,6 +16,27 @@ public class AutEdge
 		this.sourceNode = sourceNode;
 		this.label = label;
 		this.targetNode = targetNode;
+	}
+
+	public AutEdge(final AutNode sourceNode,
+				   final String label,
+				   final AutNode targetNode,
+				   final AutColor color)
+	{
+		this.sourceNode = sourceNode;
+		this.label = label;
+		this.targetNode = targetNode;
+		this.color = color;
+	}
+
+	public void setColor(final AutColor color)
+	{
+		this.color = color;
+	}
+
+	public AutColor getColor()
+	{
+		return this.color;
 	}
 
 	public AutNode sourceNode()
@@ -62,5 +84,11 @@ public class AutEdge
 		hash = hash * 31 + this.targetNode.hashCode();
 
 		return hash;
+	}
+
+	@Override
+	public String toString()
+	{
+		return this.sourceNode.label() + " --> " + this.targetNode.label();
 	}
 }
