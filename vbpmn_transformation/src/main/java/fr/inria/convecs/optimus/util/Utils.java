@@ -1,5 +1,7 @@
 package fr.inria.convecs.optimus.util;
 
+import fr.inria.convecs.optimus.nl_to_mc.MyOwnLogger;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.math.RoundingMode;
@@ -18,6 +20,33 @@ public class Utils
 	private Utils()
 	{
 
+	}
+
+	public static void print(final String message,
+							 final boolean log)
+	{
+		if (log)
+		{
+			MyOwnLogger.append(message);
+		}
+		else
+		{
+			System.out.println(message);
+		}
+	}
+
+	public static void print(final String message,
+							 final long duration,
+							 final boolean log)
+	{
+		if (log)
+		{
+			MyOwnLogger.append(message + Utils.nanoSecToReadable(duration) + ".");
+		}
+		else
+		{
+			System.out.println(message + Utils.nanoSecToReadable(duration) + ".\n");
+		}
 	}
 
 	public static boolean isAnInt(final char s)

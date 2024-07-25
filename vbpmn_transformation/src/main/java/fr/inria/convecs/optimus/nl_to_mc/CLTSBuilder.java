@@ -106,42 +106,6 @@ public class CLTSBuilder
 			{
 				key.addOutgoingEdge(goodEdge);
 			}
-
-
-			/*//key.outgoingEdges().clear();
-			final HashSet<AutNode> parentNodes = new HashSet<>();
-
-			for (AutEdge incomingEdge : key.incomingEdges())
-			{
-				parentNodes.add(incomingEdge.sourceNode());
-			}
-
-			for (AutNode parent : parentNodes)
-			{
-				AutEdge edgeToConsider = null;
-
-				for (AutEdge autEdge : parent.outgoingEdges())
-				{
-					if (autEdge.targetNode().equals(key))
-					{
-						edgeToConsider = autEdge;
-						break;
-					}
-				}
-
-				if (edgeToConsider == null) throw new IllegalStateException();
-
-				parent.outgoingEdges().remove(edgeToConsider);
-
-				for (AutNode correspondence : correspondences)
-				{
-					final AutEdge newEdge = new AutEdge(parent, edgeToConsider.label(), correspondence);
-					parent.addOutgoingEdge(newEdge);
-					correspondence.addIncomingEdge(newEdge);
-				}
-
-
-			}*/
 		}
 
 		return this.autGraph;
