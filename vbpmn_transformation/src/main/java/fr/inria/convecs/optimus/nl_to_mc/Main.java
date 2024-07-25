@@ -28,7 +28,6 @@ import java.util.*;
 public class Main
 {
 	public static final boolean LOCAL_TESTING = true;
-	private static final boolean TEST_CLTS = true;
 	private static final int BCG_FILE_REDUCTION_THRESHOLD = 1000;
 	private static final String DUMMY_LOOPY_LABEL = "DUMMY_LOOPY_LABEL";
 	private static final String LNT_GENERIC_NAME = "process";
@@ -50,8 +49,6 @@ public class Main
 	private static final int TRANSLATION_TO_PIF_FAILED = 12;
 	private static final int TRANSLATION_TO_LNT_FAILED = 13;
 	private static final int PROPERTY_GENERATION_FAILED = 14;
-	private static final int LNT_TO_BCG_FAILED = 15;
-	private static final int WEAKTRACING_BCG_FAILED = 16;
 	private static final int RETRIEVING_LABELS_FAILED = 17;
 	private static final int READING_PROPERTY_FILE_FAILED = 18;
 	private static final int WRITING_PROPERTY_NEGATION_FAILED = 19;
@@ -96,84 +93,6 @@ public class Main
 			{
 				//throw new IllegalStateException("Path \"" + workingDirectory.getAbsolutePath() + "\" does not point to a valid directory.");
 				System.exit(4);
-			}
-
-			if (TEST_CLTS)
-			{
-				boolean goodDir = false;
-
-				for (File file : workingDirectory.listFiles())
-				{
-					if (file.getName().equals("product.bcg"))
-					{
-						goodDir = true;
-						break;
-					}
-				}
-
-				if (!goodDir) throw new InterruptedException("File \"product.bcg\" was not found in directory \"" + workingDirectory.getAbsolutePath() + "\".");
-
-				final String bcgOpenCommand = "bcg_open";
-				final String[] bcgOpenArgs = new String[]{"product.bcg", "reductor", "-weaktrace", "product_weak.bcg"};
-				final CommandManager bcgOpenCommandManager = new CommandManager(bcgOpenCommand, workingDirectory, bcgOpenArgs);
-
-				try
-				{
-					bcgOpenCommandManager.execute();
-				}
-				catch (IOException | InterruptedException e)
-				{
-					System.exit(BCG_GENERATION_FAILED);
-				}
-
-				if (bcgOpenCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
-				{
-					System.exit(BCG_GENERATION_FAILED);
-				}
-
-				final String bcgIOCommand = "bcg_io";
-				final String[] bcgIOArgs = new String[]{"product_weak.bcg", "product_weak.aut"};
-				final CommandManager bcgIOCommandManager = new CommandManager(bcgIOCommand, workingDirectory, bcgIOArgs);
-
-				try
-				{
-					bcgIOCommandManager.execute();
-				}
-				catch (IOException | InterruptedException e)
-				{
-					System.exit(BCG_GENERATION_FAILED);
-				}
-
-				if (bcgIOCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
-				{
-					System.exit(BCG_GENERATION_FAILED);
-				}
-
-				final AutParser autParser = new AutParser(new File(workingDirectory + File.separator + "product_weak.aut"));
-				final AutGraph autGraph = autParser.parse();
-
-				final File bpmnFile = (File) commandLineParser.get(CommandLineOption.BPMN_FILE);
-
-				System.out.println("Computing specification labels...");
-				final long labelsComputationStartTime = System.nanoTime();
-				final Pair<ArrayList<String>, Integer> labelsAndReturnCode = Main.computeSpecLabels(bpmnFile);
-
-				if (labelsAndReturnCode.getRight() != ReturnCodes.TERMINATION_OK)
-				{
-					System.exit(labelsAndReturnCode.getRight());
-				}
-
-				final long labelsComputationEndTime = System.nanoTime();
-				final long labelsComputationTime = labelsComputationEndTime - labelsComputationStartTime;
-				System.out.println("Labels \"" + labelsAndReturnCode.getLeft() + "\" computed in " + Utils.nanoSecToReadable(labelsComputationTime) + ".\n");
-
-				final CLTSBuilder cltsBuilder = new CLTSBuilder(autGraph, labelsAndReturnCode.getLeft());
-				final AutGraph clts = cltsBuilder.buildCLTS();
-
-				final Aut2Force3DGraph aut2Force3DGraph = new Aut2Force3DGraph(new File(workingDirectory + File.separator + "clts.graph3D"), clts);
-				aut2Force3DGraph.generateForce3DGraphFile();
-
-				return;
 			}
 
 			final File bpmnFile = (File) commandLineParser.get(CommandLineOption.BPMN_FILE);
