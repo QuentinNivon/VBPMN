@@ -39,6 +39,8 @@ import fr.inria.convecs.optimus.util.XmlUtil;
 import fr.inria.convecs.optimus.validator.ModelValidator;
 import fr.inria.convecs.optimus.validator.RuntimeValidator;
 
+import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_TESTING;
+
 /**
  * @author silverquick TODO: dirty implementation - add a resource interface to invoke service,
  *         implement JSON data.
@@ -47,13 +49,15 @@ import fr.inria.convecs.optimus.validator.RuntimeValidator;
 @Path("/runtime")
 public class RuntimeValidationService {
 
+	private static final String REMOTE_PIF_FILE_LOCATION = "/home/quentin_nivon/nl_to_mc/public/";
+	private static final String LOCAL_PIF_FILE_LOCATION = "/home/quentin/Documents/VBPMN/vbpmn_transformation/src/main/resources/";
 	private static final Logger logger = LoggerFactory.getLogger(ValidationService.class);
 
 	private static final String OUTPUT_PATH = AppProperty.getInstance().getFolder("OUTPUT_PATH");
 
 	private static final String SCRIPTS_PATH = "/WEB-INF/classes";
 
-	private static final String PIF_SCHEMA = "/pif.xsd";
+	private static final String PIF_SCHEMA = "pif.xsd";
 
 	@Context ServletContext servletContext;
 
@@ -165,7 +169,9 @@ public class RuntimeValidationService {
 
 	public File parseAndTransform(File input) {
 		try {
-			String pifSchema = ValidationService.class.getResource(PIF_SCHEMA).getFile();
+			String pifSchema = LOCAL_TESTING ?
+					LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA:
+					REMOTE_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA;
 
 			ContentHandler baseHandler = new BaseContentHandler(input);
 			baseHandler.handle();

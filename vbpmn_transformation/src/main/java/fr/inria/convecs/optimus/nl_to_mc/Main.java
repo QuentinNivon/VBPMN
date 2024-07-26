@@ -23,6 +23,7 @@ import java.util.*;
 
 public class Main
 {
+	public static final boolean LOCAL_TESTING = false;
 	private static final boolean MINIMIZE_CLTS = true;
 	private static final int RETRIEVING_LABELS_FAILED = 17;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS = 31;

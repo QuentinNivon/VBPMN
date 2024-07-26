@@ -1,14 +1,15 @@
 package fr.inria.convecs.optimus.nl_to_mc;
 
+import fr.inria.convecs.optimus.aut.AutColor;
 import fr.inria.convecs.optimus.aut.AutEdge;
 import fr.inria.convecs.optimus.aut.AutGraph;
 import fr.inria.convecs.optimus.aut.AutNode;
+import fr.inria.convecs.optimus.bpmn.BpmnColor;
 import fr.inria.convecs.optimus.bpmn.graph.Graph;
 import fr.inria.convecs.optimus.bpmn.graph.Node;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessFactory;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessType;
 import fr.inria.convecs.optimus.bpmn.types.process.Gateway;
-import fr.inria.convecs.optimus.bpmn.types.process.SequenceFlow;
 import fr.inria.convecs.optimus.util.Pair;
 
 import java.util.ArrayList;
@@ -154,6 +155,15 @@ public class CLTStoBPMN
 		for (AutEdge outgoingEdge : currentCltsNode.outgoingEdges())
 		{
 			final Node task =  new Node(BpmnProcessFactory.generateTask("Task_" + BpmnProcessFactory.generateID(15), outgoingEdge.label()));
+
+			if (outgoingEdge.getColor() == AutColor.GREEN)
+			{
+				task.bpmnObject().setBpmnColor(BpmnColor.GREEN);
+			}
+			else if (outgoingEdge.getColor() == AutColor.RED)
+			{
+				task.bpmnObject().setBpmnColor(BpmnColor.RED);
+			}
 
 			if (secondNodeToUse.bpmnObject().type() == BpmnProcessType.SEQUENCE_FLOW)
 			{
