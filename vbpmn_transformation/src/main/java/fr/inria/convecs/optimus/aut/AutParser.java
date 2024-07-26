@@ -1,5 +1,6 @@
 package fr.inria.convecs.optimus.aut;
 
+import fr.inria.convecs.optimus.util.Pair;
 import fr.inria.convecs.optimus.util.Utils;
 
 import java.io.File;
@@ -14,11 +15,21 @@ public class AutParser
 {
 	private final File autFile;
 	private final HashMap<Integer, AutNode> correspondences;
+	private final boolean enhance;
 
 	public AutParser(final File file)
 	{
 		this.autFile = file;
 		this.correspondences = new HashMap<>();
+		this.enhance = false;
+	}
+
+	public AutParser(final File file,
+					 final boolean enhance)
+	{
+		this.autFile = file;
+		this.correspondences = new HashMap<>();
+		this.enhance = enhance;
 	}
 
 	public AutGraph parse() throws IOException
@@ -78,8 +89,8 @@ public class AutParser
 			final String label = Utils.trim(line.substring(firstComaIndex + 1, lastComaIndex));
 			final String targetStateIndexStr = Utils.trim(line.substring(lastComaIndex + 1, lastParenthesisIndex));
 
-			if (!Utils.isAnInt(sourceStateIndexStr)
-				|| !Utils.isAnInt(targetStateIndexStr))
+			if (!this.enhance
+				&& (!Utils.isAnInt(sourceStateIndexStr) || !Utils.isAnInt(targetStateIndexStr)))
 			{
 				throw new IllegalStateException("Either source state (\"" + sourceStateIndexStr + "\"), target state (\"" + targetStateIndexStr + "\"), or both, are not integers.");
 			}
@@ -87,15 +98,95 @@ public class AutParser
 			//Do not parse DUMMY_LOOPY transitions
 			if (label.contains("DUMMY")) return -1;
 
-			final int sourceStateIndex = Integer.parseInt(sourceStateIndexStr);
-			final int targetStateIndex = Integer.parseInt(targetStateIndexStr);
-			final AutNode sourceState = this.correspondences.computeIfAbsent(sourceStateIndex, n -> new AutNode(sourceStateIndex));
-			final AutNode targetState = this.correspondences.computeIfAbsent(targetStateIndex, n -> new AutNode(targetStateIndex));
-			final AutEdge autEdge = new AutEdge(sourceState, label, targetState);
+			final Pair<Integer, StateType> sourceStateInfo = this.parseState(sourceStateIndexStr);
+			final Pair<Integer, StateType> targetStateInfo = this.parseState(targetStateIndexStr);
+			final Pair<String, AutColor> labelInfo = this.parseLabel(label);
+			final AutNode sourceState = this.correspondences.computeIfAbsent(sourceStateInfo.getFirst(), n -> new AutNode(sourceStateInfo.getFirst()));
+			sourceState.setStateType(sourceStateInfo.getSecond());
+			final AutNode targetState = this.correspondences.computeIfAbsent(targetStateInfo.getFirst(), n -> new AutNode(targetStateInfo.getFirst()));
+			targetState.setStateType(targetStateInfo.getSecond());
+			final AutEdge autEdge = new AutEdge(sourceState, labelInfo.getFirst(), targetState);
+			autEdge.setColor(labelInfo.getSecond());
 			sourceState.addOutgoingEdge(autEdge);
 			targetState.addIncomingEdge(autEdge);
 
 			return -1;
 		}
+	}
+
+	private Pair<Integer, StateType> parseState(final String stateStr)
+	{
+		if (!this.enhance)
+		{
+			return new Pair<>(Integer.parseInt(stateStr), null);
+		}
+
+		if (Utils.isAnInt(stateStr))
+		{
+			return new Pair<>(Integer.parseInt(stateStr), null);
+		}
+
+		final int firstColonIndex = stateStr.indexOf(':');
+		final int lastColonIndex = stateStr.lastIndexOf(':');
+
+		if (firstColonIndex == -1
+			|| lastColonIndex == -1)
+		{
+			throw new IllegalStateException("Enhanced state information \"" + stateStr + "\" is not compliant with" +
+					" the AUTX format.");
+		}
+
+		final String indexStr = stateStr.substring(0, firstColonIndex);
+		final String n = stateStr.substring(firstColonIndex + 1, lastColonIndex);
+		final String stateTypeStr = stateStr.substring(lastColonIndex + 1);
+
+		if (!Utils.isAnInt(indexStr))
+		{
+			throw new IllegalStateException("State index in state information \"" + stateStr + "\" is not an integer" +
+					" (" + indexStr + ").");
+		}
+
+		if (!n.equals("N"))
+		{
+			throw new IllegalStateException("Second information in state information \"" + stateStr + "\" should be" +
+					" equal to \"N\". Got \"" + n + "\"");
+		}
+
+		final StateType stateType = StateType.strToStateType(stateTypeStr);
+
+		if (stateType == null)
+		{
+			throw new IllegalStateException("Third information in state information \"" + stateStr + "\" should be" +
+					" a valid state type (i.e., \"G\", \"R\", \"GR\" or \"GRB\". Got \"" + stateTypeStr + "\".");
+		}
+
+		return new Pair<>(Integer.parseInt(indexStr), stateType);
+	}
+
+	private Pair<String, AutColor> parseLabel(final String labelInfo)
+	{
+		if (!this.enhance)
+		{
+			return new Pair<>(labelInfo, AutColor.BLACK);
+		}
+
+		final int lastColonIndex = labelInfo.lastIndexOf(':');
+
+		if (lastColonIndex == -1)
+		{
+			throw new IllegalStateException("AUTX edge label should contain the edge type (i.e. \"BLACK\", \"GREEN\"" +
+					" or \"RED\" as last element. It was not provided here (" + labelInfo + ").");
+		}
+
+		final String label = labelInfo.substring(0, lastColonIndex);
+		final AutColor color = AutColor.strToColor(labelInfo.substring(lastColonIndex + 1));
+
+		if (color == null)
+		{
+			throw new IllegalStateException("AUTX edge label should contain the edge type (i.e. \"BLACK\", \"GREEN\"" +
+					" or \"RED\" as last element, not \"" + labelInfo + "\".");
+		}
+
+		return new Pair<>(label, color);
 	}
 }

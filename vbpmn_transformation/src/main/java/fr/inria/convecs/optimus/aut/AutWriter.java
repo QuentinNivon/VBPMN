@@ -10,12 +10,23 @@ public class AutWriter
 {
 	private final AutGraph graph;
 	private final File cltsFile;
+	private final boolean enhance;	//Controls whether the output file should be in AUT or AUTX (extended AUT) format
 
 	public AutWriter(final AutGraph graph,
 					 final File file)
 	{
 		this.graph = graph;
 		this.cltsFile = file;
+		this.enhance = false;
+	}
+
+	public AutWriter(final AutGraph graph,
+					 final File file,
+					 final boolean enhance)
+	{
+		this.graph = graph;
+		this.cltsFile = file;
+		this.enhance = enhance;
 	}
 
 	public void write() throws FileNotFoundException
@@ -75,8 +86,23 @@ public class AutWriter
 		{
 			printWriter.print("(");
 			printWriter.print(correspondences.get(autEdge.sourceNode().label()));
+
+			if (this.enhance
+				&& autEdge.sourceNode().getStateType() != null)
+			{
+				printWriter.print(":N:");
+				printWriter.print(autEdge.sourceNode().getStateType().getValue());
+			}
+
 			printWriter.print(", ");
 			printWriter.print(autEdge.label());
+
+			if (this.enhance)
+			{
+				printWriter.print(":");
+				printWriter.print(autEdge.getColor().getValue());
+			}
+
 			printWriter.print(", ");
 			printWriter.print(correspondences.get(autEdge.targetNode().label()));
 			printWriter.println(")");

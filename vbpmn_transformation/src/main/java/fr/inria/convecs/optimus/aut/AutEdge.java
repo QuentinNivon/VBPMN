@@ -16,6 +16,7 @@ public class AutEdge
 		this.sourceNode = sourceNode;
 		this.label = label;
 		this.targetNode = targetNode;
+		this.color = AutColor.BLACK;
 	}
 
 	public AutEdge(final AutNode sourceNode,

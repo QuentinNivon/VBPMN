@@ -20,6 +20,7 @@ import java.util.*;
 
 public class Main
 {
+	private static final boolean MINIMIZE_CLTS = true;
 	private static final int RETRIEVING_LABELS_FAILED = 17;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS = 31;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD = 35;
@@ -27,6 +28,9 @@ public class Main
 	private static final int BCG_PRODUCT_TO_AUT_FAILED = 39;
 	private static final int BCG_SPEC_TO_AUT_FAILED = 40;
 	private static final int WEAKTRACE_SPEC_FAILED = 41;
+	private static final int CLTS_AUT_TO_BCG_FAILED = 42;
+	private static final int CLTS_WEAKTRACE_FAILED = 43;
+	private static final int CLTS_BCG_TO_AUT_FAILED = 44;
 	private static final String BCG_SPECIFICATION = "problem.bcg";
 	private static final String BCG_SPECIFICATION_WEAK = "problem_weak.bcg";
 	private static final String AUT_SPECIFICATION = "problem.aut";
@@ -36,7 +40,10 @@ public class Main
 	private static final String WEAK_AUT_PRODUCT = "product_weak.aut";
 	private static final String GRAPH_3D_CLTS = "clts.graph3D";
 	private static final String AUT_CLTS = "clts.aut";
+	private static final String BCG_CLTS = "clts.bcg";
+	private static final String WEAK_BCG_CLTS = "clts_weak.bcg";
 	private static final String AUT_FULL_CLTS = "clts_full.aut";
+	private static final String AUTX_FULL_CLTS = "clts_full.autx";
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
 	{
@@ -113,6 +120,81 @@ public class Main
 			final long autSpecParsingTime = autSpecParsingEndTime - autSpecParsingStartTime;
 			System.out.println("AUT specification parsed in " + Utils.nanoSecToReadable(autSpecParsingTime) + ".\n");
 
+			if (MINIMIZE_CLTS)
+			{
+				System.out.println("Converting CLTS to BCG...");
+				final long cltsAutToBcgStartTime = System.nanoTime();
+				final String bcgIOCommand2 = "bcg_io";
+				final String[] bcgIOArgs2 = new String[]{AUT_CLTS, BCG_CLTS};
+				final CommandManager bcgIOCommandManager2 = new CommandManager(bcgIOCommand2, workingDirectory, bcgIOArgs2);
+
+				try
+				{
+					bcgIOCommandManager2.execute();
+				}
+				catch (IOException | InterruptedException e)
+				{
+					System.exit(CLTS_AUT_TO_BCG_FAILED);
+				}
+
+				if (bcgIOCommandManager2.returnValue() != ReturnCodes.TERMINATION_OK)
+				{
+					System.exit(CLTS_AUT_TO_BCG_FAILED);
+				}
+
+				final long cltsAutToBcgEndTime = System.nanoTime();
+				final long cltsAutToBcgTime = cltsAutToBcgEndTime - cltsAutToBcgStartTime;
+				System.out.println("CLTS converted to BCG in " + Utils.nanoSecToReadable(cltsAutToBcgTime) + ".\n");
+
+				System.out.println("Reducing CLTS (weaktrace)...");
+				final long cltsReductionStartTime = System.nanoTime();
+				final String bcgOpenCommand2 = "bcg_open";
+				final String[] bcgOpenArgs2 = new String[]{BCG_CLTS, "reductor", "-weaktrace", WEAK_BCG_CLTS};
+				final CommandManager bcgOpenCommandManager2 = new CommandManager(bcgOpenCommand2, workingDirectory, bcgOpenArgs2);
+
+				try
+				{
+					bcgOpenCommandManager2.execute();
+				}
+				catch (IOException | InterruptedException e)
+				{
+					System.exit(CLTS_WEAKTRACE_FAILED);
+				}
+
+				if (bcgOpenCommandManager2.returnValue() != ReturnCodes.TERMINATION_OK)
+				{
+					System.exit(CLTS_WEAKTRACE_FAILED);
+				}
+
+				final long cltsReductionEndTime = System.nanoTime();
+				final long cltsReductionTime = cltsReductionEndTime - cltsReductionStartTime;
+				System.out.println("CLTS reduced in " + Utils.nanoSecToReadable(cltsReductionTime) + ".\n");
+
+				System.out.println("Converting CLTS to AUT...");
+				final long cltsBcgToAutStartTime = System.nanoTime();
+				final String bcgIOCommand3 = "bcg_io";
+				final String[] bcgIOArgs3 = new String[]{WEAK_BCG_CLTS, AUT_CLTS};
+				final CommandManager bcgIOCommandManager3 = new CommandManager(bcgIOCommand3, workingDirectory, bcgIOArgs3);
+
+				try
+				{
+					bcgIOCommandManager3.execute();
+				}
+				catch (IOException | InterruptedException e)
+				{
+					System.exit(CLTS_BCG_TO_AUT_FAILED);
+				}
+
+				if (bcgIOCommandManager3.returnValue() != ReturnCodes.TERMINATION_OK)
+				{
+					System.exit(CLTS_BCG_TO_AUT_FAILED);
+				}
+
+				final long cltsBcgToAutEndTime = System.nanoTime();
+				final long cltsBcgToAutTime = cltsBcgToAutEndTime - cltsBcgToAutStartTime;
+				System.out.println("CLTS converted in " + Utils.nanoSecToReadable(cltsBcgToAutTime) + ".\n");
+			}
+
 			System.out.println("Parsing CLTS...");
 			final long cltsParsingStartTime = System.nanoTime();
 			final AutParser autCltsParser = new AutParser(new File(workingDirectory + File.separator + AUT_CLTS));
@@ -129,10 +211,20 @@ public class Main
 			final long cltsBuildingTime = cltsBuildingEndTime - cltsBuildingStartTime;
 			System.out.println("Full CLTS built in " + Utils.nanoSecToReadable(cltsBuildingTime) + ".\n");
 
+			System.out.println("Setting CLTS colors...");
+			final long cltsColorSettingStartTime = System.nanoTime();
+			final CLTSColorManager cltsColorManager = new CLTSColorManager(fullCLTS);
+			cltsColorManager.setProperColors();
+			final long cltsColorSettingEndTime = System.nanoTime();
+			final long cltsColorSettingTime = cltsColorSettingEndTime - cltsColorSettingStartTime;
+			System.out.println("CLTS colors set in " + Utils.nanoSecToReadable(cltsColorSettingTime) + ".\n");
+
 			System.out.println("Writing CLTS to file...");
 			final long cltsDumpingStartTime = System.nanoTime();
-			final AutWriter autWriter = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + AUT_FULL_CLTS));
+			final AutWriter autWriter = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + AUT_FULL_CLTS), false);
 			autWriter.write();
+			final AutWriter autxWriter = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + AUTX_FULL_CLTS), true);
+			autxWriter.write();
 			final long cltsDumpingEndTime = System.nanoTime();
 			final long cltsDumpingTime = cltsDumpingEndTime - cltsDumpingStartTime;
 			System.out.println("CLTS written in " + Utils.nanoSecToReadable(cltsDumpingTime) + ".\n");
@@ -146,102 +238,5 @@ public class Main
 			}
 			throw e;
 		}
-	}
-
-	private static Pair<ArrayList<String>, Integer> computeSpecLabels(final File bpmnFile)
-	{
-		final BpmnParser bpmnParser;
-
-		try
-		{
-			bpmnParser = new BpmnParser(bpmnFile);
-			bpmnParser.parse();
-		}
-		catch (ParserConfigurationException | IOException | SAXException e)
-		{
-			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
-		}
-
-		final ArrayList<String> labels = new ArrayList<>();
-
-		for (BpmnProcessObject object : bpmnParser.bpmnProcess().objects())
-		{
-			if (object instanceof Task)
-			{
-				if (LTLKeywords.ALL_KEYWORDS.contains(object.name().toUpperCase()))
-				{
-					System.out.println("The specification contains tasks whose labels are reserved LTL keywords.");
-					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
-				}
-
-				if (LNTKeywords.ALL_KEYWORDS.contains(object.name().toUpperCase()))
-				{
-					System.out.println("The specification contains tasks whose labels are reserved LNT keywords.");
-					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD);
-				}
-
-				labels.add(object.name());
-			}
-		}
-
-		/*//Convert LNT spec to BCG
-		final String lntOpenCommand = "lnt.open";
-		final String[] lntOpenArgs = new String[]{"-silent", lntSpec.getName(), "generator", LNT_GENERIC_NAME + ".bcg"};
-		final CommandManager lntOpenCommandManager = new CommandManager(lntOpenCommand, workingDir, lntOpenArgs);
-
-		try
-		{
-			lntOpenCommandManager.execute();
-		}
-		catch (IOException | InterruptedException e)
-		{
-			return Pair.of(new ArrayList<>(), LNT_TO_BCG_FAILED);
-		}
-
-		if (lntOpenCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
-		{
-			return Pair.of(new ArrayList<>(), LNT_TO_BCG_FAILED);
-		}
-
-		//Retrieve LTS labels
-		final String bcgInfoCommand = "bcg_info";
-		final String[] bcgInfoArgs = new String[]{"-labels", LNT_GENERIC_NAME + ".bcg"};
-		final CommandManager bcgInfoCommandManager = new CommandManager(bcgInfoCommand, workingDir, bcgInfoArgs);
-
-		try
-		{
-			bcgInfoCommandManager.execute();
-		}
-		catch (IOException | InterruptedException e)
-		{
-			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
-		}
-
-		if (bcgInfoCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
-		{
-			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
-		}
-
-		final String[] splitStdout = bcgInfoCommandManager.stdOut().split("\n");
-		final ArrayList<String> labels = new ArrayList<>();
-
-		for (int i = 1; i < splitStdout.length; i++)
-		{
-			final String label = splitStdout[i];
-			final String trimmedLabel = Utils.trim(label);
-
-			if (!trimmedLabel.equals("i"))
-			{
-				if (LTLKeyword.ALL_KEYWORDS.contains(trimmedLabel))
-				{
-					System.out.println("The specification contains tasks whose labels are reserved LTL keywords.");
-					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
-				}
-
-				labels.add(trimmedLabel);
-			}
-		}*/
-
-		return Pair.of(labels, ReturnCodes.TERMINATION_OK);
 	}
 }

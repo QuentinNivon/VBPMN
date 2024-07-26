@@ -17,4 +17,17 @@ public enum AutColor
 	{
 		return this.value;
 	}
+
+	public static AutColor strToColor(final String s)
+	{
+		for (AutColor autColor : AutColor.values())
+		{
+			if (autColor.getValue().equals(s))
+			{
+				return autColor;
+			}
+		}
+
+		return null;
+	}
 }

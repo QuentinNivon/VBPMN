@@ -18,4 +18,17 @@ public enum StateType
 	{
 		return this.value;
 	}
+
+	public static StateType strToStateType(final String s)
+	{
+		for (StateType stateType : StateType.values())
+		{
+			if (stateType.getValue().equals(s))
+			{
+				return stateType;
+			}
+		}
+
+		return null;
+	}
 }
