@@ -1,14 +1,15 @@
 package fr.inria.convecs.optimus.aut;
 
-public enum AutColor
+public enum StateType
 {
-	BLACK("BLACK"),
-	GREEN("GREEN"),
-	RED("RED");
+	GREEN_BLACK("G"),
+	GREEN_RED("GR"),
+	RED_BLACK("R"),
+	GREEN_RED_BLACK("GRB");
 
 	private final String value;
 
-	AutColor(final String value)
+	StateType(final String value)
 	{
 		this.value = value;
 	}

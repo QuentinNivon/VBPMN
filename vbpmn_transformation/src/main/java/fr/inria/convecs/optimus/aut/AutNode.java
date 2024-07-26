@@ -7,12 +7,33 @@ public class AutNode
 	private final int label;
 	private final HashSet<AutEdge> incomingEdges;
 	private final HashSet<AutEdge> outgoingEdges;
+	private StateType stateType;
 
 	public AutNode(final int label)
 	{
 		this.label = label;
+		this.stateType = null;
 		this.incomingEdges = new HashSet<>();
 		this.outgoingEdges = new HashSet<>();
+	}
+
+	public AutNode(final int label,
+				   final StateType stateType)
+	{
+		this.label = label;
+		this.stateType = stateType;
+		this.incomingEdges = new HashSet<>();
+		this.outgoingEdges = new HashSet<>();
+	}
+
+	public void setStateType(final StateType stateType)
+	{
+		this.stateType = stateType;
+	}
+
+	public StateType getStateType()
+	{
+		return this.stateType;
 	}
 
 	public int label()
@@ -57,7 +78,7 @@ public class AutNode
 
 	public AutNode copy()
 	{
-		return new AutNode(this.label);
+		return new AutNode(this.label, this.stateType);
 	}
 
 	//Override

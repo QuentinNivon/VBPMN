@@ -83,10 +83,9 @@ public class FullCLTSBuilder
 						Thus, we add all the sub-lts of the specification starting from the next node
 					 */
 					System.out.println("Spec edge \"" + specEdge + "\" has no matching edge in the CLTS.");
-					final AutGraph greenSpecPart = new AutGraph(specEdge.targetNode()).copy();
+					final AutGraph greenSpecPart = new AutGraph(specEdge.targetNode()).copyAndShift(this.lastNodeLabel + 1);
 					this.lastNodeLabel = greenSpecPart.getMaxNodeLabel();
-					final AutEdge edgeToAdd = new AutEdge(currentFullCltsNode, specEdge.label(), greenSpecPart.startNode());
-					edgeToAdd.setColor(AutColor.GREEN);
+					final AutEdge edgeToAdd = new AutEdge(currentFullCltsNode, specEdge.label(), greenSpecPart.startNode(), AutColor.GREEN);
 					edgesToAdd.add(edgeToAdd);
 				}
 			}

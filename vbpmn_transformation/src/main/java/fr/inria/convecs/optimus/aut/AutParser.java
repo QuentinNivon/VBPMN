@@ -84,6 +84,9 @@ public class AutParser
 				throw new IllegalStateException("Either source state (\"" + sourceStateIndexStr + "\"), target state (\"" + targetStateIndexStr + "\"), or both, are not integers.");
 			}
 
+			//Do not parse DUMMY_LOOPY transitions
+			if (label.contains("DUMMY")) return -1;
+
 			final int sourceStateIndex = Integer.parseInt(sourceStateIndexStr);
 			final int targetStateIndex = Integer.parseInt(targetStateIndexStr);
 			final AutNode sourceState = this.correspondences.computeIfAbsent(sourceStateIndex, n -> new AutNode(sourceStateIndex));

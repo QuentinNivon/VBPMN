@@ -64,7 +64,7 @@ public class AutGraph
 		{
 			final AutNode newSourceNode = correspondences.get(autEdge.sourceNode());
 			final AutNode newTargetNode = correspondences.get(autEdge.targetNode());
-			final AutEdge copy = new AutEdge(newSourceNode, autEdge.label(), newTargetNode);
+			final AutEdge copy = new AutEdge(newSourceNode, autEdge.label(), newTargetNode, autEdge.getColor());
 			newSourceNode.addOutgoingEdge(copy);
 			newTargetNode.addIncomingEdge(copy);
 		}
@@ -89,7 +89,7 @@ public class AutGraph
 		{
 			final AutNode newSourceNode = correspondences.get(autEdge.sourceNode());
 			final AutNode newTargetNode = correspondences.get(autEdge.targetNode());
-			final AutEdge copy = new AutEdge(newSourceNode, autEdge.label(), newTargetNode);
+			final AutEdge copy = new AutEdge(newSourceNode, autEdge.label(), newTargetNode, autEdge.getColor());
 			newSourceNode.addOutgoingEdge(copy);
 			newTargetNode.addIncomingEdge(copy);
 		}
@@ -156,7 +156,7 @@ public class AutGraph
 		}
 
 		nodes.add(currentNode);
-		edges.addAll(currentNode.incomingEdges());
+		//edges.addAll(currentNode.incomingEdges());
 		edges.addAll(currentNode.outgoingEdges());
 
 		for (AutEdge outgoingEdge : currentNode.outgoingEdges())
