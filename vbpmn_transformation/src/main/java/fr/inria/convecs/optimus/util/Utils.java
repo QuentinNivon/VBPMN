@@ -20,6 +20,28 @@ public class Utils
 
 	}
 
+	public static String quote(final String s)
+	{
+		return "\"" + s + "\"";
+	}
+
+	public static String quote(final int i)
+	{
+		return "\"" + i + "\"";
+	}
+
+	public static String quote(final char c)
+	{
+		return "\"" + c + "\"";
+	}
+
+	 public static String protectString(String s)
+    {
+        return s.replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("&", "&amp;");
+    }
+
 	public static boolean isAnInt(final char s)
 	{
 		try

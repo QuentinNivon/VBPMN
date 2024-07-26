@@ -183,6 +183,33 @@ public class BpmnProcessFactory
         return new Event(BpmnProcessType.START_EVENT, "StartEvent_" + generateID());
     }
 
+    public static Task generateTask(final String id,
+                                    final String name,
+                                    final int duration)
+    {
+        final Task task = new Task(id, BpmnProcessType.TASK, duration);
+        task.setName(name);
+
+        return task;
+    }
+
+    public static Task generateTask(final String id,
+                                    final String name)
+    {
+        return BpmnProcessFactory.generateTask(id, name, -1);
+    }
+
+    public static Task generateTask(final String id,
+                                    final int duration)
+    {
+        return BpmnProcessFactory.generateTask(id, id, duration);
+    }
+
+    public static Task generateTask(final String id)
+    {
+        return BpmnProcessFactory.generateTask(id, id);
+    }
+
     //Private methods
 
     private static BpmnProcessObject generateGateway(BpmnProcessType type)
@@ -190,7 +217,7 @@ public class BpmnProcessFactory
         return new Gateway(type, "Gateway_" + generateID());
     }
 
-    private static synchronized String generateID(int nbCharacters)
+    public static synchronized String generateID(int nbCharacters)
     {
         StringBuilder builder = new StringBuilder();
 

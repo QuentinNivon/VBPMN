@@ -163,7 +163,7 @@ public class RuntimeValidationService {
 		return httpResponse;
 	}
 
-	private File parseAndTransform(File input) {
+	public File parseAndTransform(File input) {
 		try {
 			String pifSchema = ValidationService.class.getResource(PIF_SCHEMA).getFile();
 

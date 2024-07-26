@@ -1,5 +1,6 @@
 package fr.inria.convecs.optimus.bpmn.types.process;
 
+import fr.inria.convecs.optimus.bpmn.BpmnColor;
 import fr.inria.convecs.optimus.bpmn.constants.FlowDirection;
 
 import java.util.*;
@@ -13,6 +14,7 @@ public abstract class BpmnProcessObject
     protected final Map<String, FlowDirection> tempFlows;
     private String name;
     protected double probability;
+    private BpmnColor bpmnColor;
 
     public BpmnProcessObject(BpmnProcessType type,
                              String id)
@@ -22,9 +24,20 @@ public abstract class BpmnProcessObject
         this.flows = new HashMap<>();
         this.tempFlows = new HashMap<>();
         this.probability = 1d;
+        this.bpmnColor = null;
     }
 
     //Used only when renaming copied nodes in graph
+
+    public void setBpmnColor(final BpmnColor color)
+    {
+        this.bpmnColor = color;
+    }
+
+    public BpmnColor getBpmnColor()
+    {
+        return this.bpmnColor;
+    }
 
     public void setId(final String id)
     {

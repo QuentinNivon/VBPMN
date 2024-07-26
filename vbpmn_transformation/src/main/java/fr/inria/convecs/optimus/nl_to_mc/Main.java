@@ -4,8 +4,11 @@ import fr.inria.convecs.optimus.aut.AutGraph;
 import fr.inria.convecs.optimus.aut.AutParser;
 import fr.inria.convecs.optimus.aut.AutWriter;
 import fr.inria.convecs.optimus.bpmn.BpmnParser;
+import fr.inria.convecs.optimus.bpmn.graph.Graph;
+import fr.inria.convecs.optimus.bpmn.graph.GraphToList;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessObject;
 import fr.inria.convecs.optimus.bpmn.types.process.Task;
+import fr.inria.convecs.optimus.bpmn.writing.generation.GraphicalGenerationWriter;
 import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
 import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
 import fr.inria.convecs.optimus.util.CommandManager;
@@ -228,6 +231,19 @@ public class Main
 			final long cltsDumpingEndTime = System.nanoTime();
 			final long cltsDumpingTime = cltsDumpingEndTime - cltsDumpingStartTime;
 			System.out.println("CLTS written in " + Utils.nanoSecToReadable(cltsDumpingTime) + ".\n");
+
+			final CLTStoBPMN cltStoBPMN = new CLTStoBPMN(fullCLTS);
+			final Graph bpmnProcess = cltStoBPMN.convert();
+			System.out.println(bpmnProcess.toString());
+
+			final GraphToList graphToList = new GraphToList(bpmnProcess);
+			graphToList.convert();
+			final GraphicalGenerationWriter graphicalGenerationWriter = new GraphicalGenerationWriter(
+					commandLineParser,
+					graphToList.objectsList(),
+					"colored"
+			);
+			graphicalGenerationWriter.write();
 		}
 		catch (Exception e)
 		{
