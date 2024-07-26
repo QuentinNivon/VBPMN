@@ -11,7 +11,7 @@ import java.util.Iterator;
 
 public class CLTSBuilder
 {
-	public static final boolean CONSIDER_FULL_PATH = false;
+	public static final boolean CONSIDER_FULL_PATH = true;
 	private final AutGraph autGraph;
 	private final HashSet<String> specLabels;
 
