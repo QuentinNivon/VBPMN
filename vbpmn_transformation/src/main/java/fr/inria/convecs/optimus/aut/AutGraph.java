@@ -99,7 +99,7 @@ public class AutGraph
 
 	public int getMaxNodeLabel()
 	{
-		final int maxLabel = this.getMaxNodeLabel(this.startNode);
+		final int maxLabel = this.getMaxNodeLabel(this.startNode, new HashSet<>());
 
 		if (maxLabel + 1 < this.nbNodes())
 		{
@@ -134,13 +134,21 @@ public class AutGraph
 		}
 	}
 
-	private int getMaxNodeLabel(final AutNode currentNode)
+	private int getMaxNodeLabel(final AutNode currentNode,
+								final HashSet<AutNode> visitedNodes)
 	{
+		if (visitedNodes.contains(currentNode))
+		{
+			return -1;
+		}
+
+		visitedNodes.add(currentNode);
+
 		int max = currentNode.label();
 
 		for (AutEdge autEdge : currentNode.outgoingEdges())
 		{
-			max = Math.max(max, getMaxNodeLabel(autEdge.targetNode()));
+			max = Math.max(max, getMaxNodeLabel(autEdge.targetNode(), visitedNodes));
 		}
 
 		return max;
