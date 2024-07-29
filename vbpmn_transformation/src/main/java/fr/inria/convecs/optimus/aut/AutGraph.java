@@ -78,7 +78,34 @@ public class AutGraph
 		return new AutGraph(correspondences.get(this.startNode));
 	}
 
+	public void setCurvatures()
+	{
+		for (AutEdge autEdge : this.startNode.outgoingEdges())
+		{
+			final HashSet<AutNode> visitedNodes = new HashSet<>();
+			visitedNodes.add(this.startNode);
+			this.setCurvatures(autEdge, visitedNodes);
+		}
+	}
+
 	//Private methods
+
+	private void setCurvatures(final AutEdge currentEdge,
+							   final HashSet<AutNode> visitedNodes)
+	{
+		if (visitedNodes.contains(currentEdge.targetNode()))
+		{
+			currentEdge.setCurved();
+			return;
+		}
+
+		visitedNodes.add(currentEdge.targetNode());
+
+		for (AutEdge outgoingEdge : currentEdge.targetNode().outgoingEdges())
+		{
+			this.setCurvatures(outgoingEdge, new HashSet<>(visitedNodes));
+		}
+	}
 
 	private void retrieveNodesAndEdges(final AutNode currentNode,
 									   final HashSet<AutNode> nodes,

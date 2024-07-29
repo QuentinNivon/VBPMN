@@ -7,6 +7,7 @@ public class AutEdge
 	private final String label;
 	private final AutNode sourceNode;
 	private final AutNode targetNode;
+	private boolean curved;
 
 	public AutEdge(final AutNode sourceNode,
 				   final String label,
@@ -15,6 +16,7 @@ public class AutEdge
 		this.sourceNode = sourceNode;
 		this.label = label;
 		this.targetNode = targetNode;
+		this.curved = false;
 	}
 
 	public AutNode sourceNode()
@@ -30,6 +32,16 @@ public class AutEdge
 	public String label()
 	{
 		return this.label;
+	}
+
+	public boolean isCurved()
+	{
+		return this.curved;
+	}
+
+	public void setCurved()
+	{
+		this.curved = true;
 	}
 
 	//Override

@@ -15,6 +15,7 @@ public class Aut2Force3DGraph
 	private static final int DEFAULT_GROUP = 1;
 	private static final int INITIAL_GROUP = 2;
 	private static final int TERMINAL_GROUP = 3;
+	private static final double CURVATURE_VALUE = 0.8;
 	private static final String DEFAULT_COLOR = "#0000FF";
 	private static final String INITIAL_COLOR = "#FFFF00";
 	private static final String TERMINAL_COLOR = "#FF0000";
@@ -26,6 +27,7 @@ public class Aut2Force3DGraph
 	private static final String SOURCE_KEYWORD = "source";
 	private static final String TARGET_KEYWORD = "target";
 	private static final String VALUE_KEYWORD = "value";
+	private static final String CURVATURE_KEYWORD = "curvature";
 	private final File forceGraphFile;
 	private final AutGraph autGraph;
 
@@ -87,6 +89,15 @@ public class Aut2Force3DGraph
 			printWriter.print("\": \"");
 			printWriter.print(autEdge.targetNode().label());
 			printWriter.print("\", \"");
+
+			if (autEdge.isCurved())
+			{
+				printWriter.print(CURVATURE_KEYWORD);
+				printWriter.print("\": ");
+				printWriter.print(CURVATURE_VALUE);
+				printWriter.print(", \"");
+			}
+
 			printWriter.print(VALUE_KEYWORD);
 			printWriter.print("\": \"");
 			printWriter.print(

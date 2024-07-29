@@ -108,6 +108,9 @@ public class CLTSBuilder
 			}
 		}
 
+		//Add curvatures
+		this.autGraph.setCurvatures();
+
 		return this.autGraph;
 	}
 
