@@ -147,11 +147,7 @@ public class CommandLineParser
 
         for (File file : Objects.requireNonNull(workingDirectory.listFiles()))
         {
-            if (isBCGProduct(file.getPath()))
-            {
-                this.commands.put(CommandLineOption.BCG_PRODUCT, file);
-            }
-            else if (isBpmnProcess(file.getPath()))
+            if (isBpmnProcess(file.getPath()))
             {
                 this.commands.put(CommandLineOption.BPMN_FILE, file);
             }

@@ -223,6 +223,8 @@ public class Main
 			final long cltsColorSettingTime = cltsColorSettingEndTime - cltsColorSettingStartTime;
 			System.out.println("CLTS colors set in " + Utils.nanoSecToReadable(cltsColorSettingTime) + ".\n");
 
+
+
 			System.out.println("Writing CLTS to file...");
 			final long cltsDumpingStartTime = System.nanoTime();
 			final AutWriter autWriter = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + AUT_FULL_CLTS), false);
