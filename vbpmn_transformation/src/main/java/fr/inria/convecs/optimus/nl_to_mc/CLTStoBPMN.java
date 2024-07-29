@@ -34,12 +34,17 @@ public class CLTStoBPMN
 		graph.initialNode().addChild(firstFlow);
 		firstFlow.addParent(graph.initialNode());
 		this.buildGraph(this.clts.startNode(), firstFlow, new HashSet<>(), new HashMap<>());
-		//Add the end event
-		final Node lastFlow = this.getLastFlow(graph.initialNode(), new HashSet<>());
-		if (lastFlow == null) throw new IllegalStateException();
-		final Node endEvent = new Node(BpmnProcessFactory.generateEndEvent());
-		lastFlow.addChild(endEvent);
-		endEvent.addParent(lastFlow);
+		//Add the end event(s)
+		final HashSet<Node> lastFlows = new HashSet<>();
+		this.getLastFlows(graph.initialNode(), lastFlows, new HashSet<>());
+		if (lastFlows.isEmpty()) throw new IllegalStateException();
+
+		for (Node lastFlow : lastFlows)
+		{
+			final Node endEvent = new Node(BpmnProcessFactory.generateEndEvent());
+			lastFlow.addChild(endEvent);
+			endEvent.addParent(lastFlow);
+		}
 
 		return this.bpmn = graph;
 	}
@@ -51,32 +56,26 @@ public class CLTStoBPMN
 
 	//Private methods
 
-	private Node getLastFlow(final Node currentNode,
-							 final HashSet<Node> visitedNodes)
+	private void getLastFlows(final Node currentNode,
+							  final HashSet<Node> lastFlows,
+							  final HashSet<Node> visitedNodes)
 	{
 		if (visitedNodes.contains(currentNode))
 		{
-			return null;
+			return;
 		}
 
 		visitedNodes.add(currentNode);
 
 		if (currentNode.childNodes().isEmpty())
 		{
-			return currentNode;
+			lastFlows.add(currentNode);
 		}
 
 		for (Node child : currentNode.childNodes())
 		{
-			final Node lastFlow = this.getLastFlow(child, visitedNodes);
-
-			if (lastFlow != null)
-			{
-				return lastFlow;
-			}
+			this.getLastFlows(child, lastFlows, visitedNodes);
 		}
-
-		return null;
 	}
 
 	private void buildGraph(final AutNode currentCltsNode,
