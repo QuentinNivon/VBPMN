@@ -9,14 +9,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
-public class CLTSBuilder
+public class CLTSBuilderV2
 {
 	public static final boolean CONSIDER_FULL_PATH = true;
 	private final AutGraph autGraph;
 	private final HashSet<String> specLabels;
 
-	public CLTSBuilder(final AutGraph autGraph,
-					   final ArrayList<String> specLabels)
+	public CLTSBuilderV2(final AutGraph autGraph,
+						 final ArrayList<String> specLabels)
 	{
 		this.autGraph = autGraph.copy();
 		this.specLabels = new HashSet<>(specLabels);
@@ -37,76 +37,7 @@ public class CLTSBuilder
 	 */
 	public AutGraph buildCLTS()
 	{
-		final HashMap<AutNode, HashSet<String>> reachableTransitionLabels = new HashMap<>();
-		this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), reachableTransitionLabels);
-		final HashSet<AutNode> nodesToCutBefore = new HashSet<>();
-		this.computeNodesToRemove(this.autGraph.startNode(), new HashSet<>(), nodesToCutBefore, reachableTransitionLabels);
-
-		System.out.println("Nodes to cut before: " + nodesToCutBefore);
-
-		for (AutNode node : nodesToCutBefore)
-		{
-			for (AutEdge autEdge : node.incomingEdges())
-			{
-				autEdge.sourceNode().outgoingEdges().remove(autEdge);
-			}
-		}
-
-		/*
-			We built the CLTS. We now have to remove all the transitions that are not transitions of the original
-			specification.
-		 */
-		final HashMap<AutNode, HashSet<AutNode>> reducingCorrespondences = new HashMap<>();
-		this.computeReducingCorrespondences(this.autGraph.startNode(), reducingCorrespondences, new HashSet<>());
-		System.out.println("Reducing correspondences: " + reducingCorrespondences);
-
-		for (AutNode key : reducingCorrespondences.keySet())
-		{
-			final HashSet<AutNode> correspondences = reducingCorrespondences.get(key);
-			final HashSet<AutEdge> goodEdges = new HashSet<>();
-
-			for (AutEdge outgoingEdge : key.outgoingEdges())
-			{
-				final String labelToConsider =
-					CONSIDER_FULL_PATH ?
-					outgoingEdge.label().replace(" !ACC", "").replace("\"","") :
-					outgoingEdge.label()
-				;
-
-				if (this.specLabels.contains(labelToConsider))
-				{
-					goodEdges.add(outgoingEdge);
-				}
-			}
-
-			if (goodEdges.size() == key.outgoingEdges().size())
-			{
-				/*
-					This node only has good edges, so there is nothing to do
-				 */
-				continue;
-			}
-
-			key.outgoingEdges().clear();
-
-			for (AutNode correspondence : correspondences)
-			{
-				for (Iterator<AutEdge> iterator = correspondence.outgoingEdges().iterator(); iterator.hasNext(); )
-				{
-					final AutEdge outgoingEdge = iterator.next();
-					final AutEdge newEdge = new AutEdge(key, outgoingEdge.label(), outgoingEdge.targetNode());
-					key.addOutgoingEdge(newEdge);
-					outgoingEdge.targetNode().removeIncomingEdge(new AutEdge(correspondence, outgoingEdge.label(), outgoingEdge.targetNode()));
-					iterator.remove();
-					outgoingEdge.targetNode().addIncomingEdge(newEdge);
-				}
-			}
-
-			for (AutEdge goodEdge : goodEdges)
-			{
-				key.addOutgoingEdge(goodEdge);
-			}
-		}
+		this.removeUnnecessaryEdges(this.autGraph.startNode(), new HashSet<>());
 
 		//Add curvatures
 		this.autGraph.setCurvatures();
@@ -115,6 +46,61 @@ public class CLTSBuilder
 	}
 
 	//Private methods
+
+	private void removeUnnecessaryEdges(final AutNode currentNode,
+										final HashSet<AutNode> visitedNodes)
+	{
+		if (visitedNodes.contains(currentNode))
+		{
+			return;
+		}
+
+		visitedNodes.add(currentNode);
+
+		boolean changed = true;
+
+		while (changed)
+		{
+			changed = false;
+
+			final HashSet<AutEdge> originalOutgoingEdges = new HashSet<>(currentNode.outgoingEdges());
+
+			for (AutEdge outgoingEdge : originalOutgoingEdges)
+			{
+				final String labelToConsider =
+					CONSIDER_FULL_PATH ?
+					outgoingEdge.label().replace(" !ACC", "").replace("\"","") :
+					outgoingEdge.label()
+				;
+
+				if (!this.specLabels.contains(labelToConsider))
+				{
+					//Useless edge
+					changed = true;
+					currentNode.removeOutgoingEdge(outgoingEdge);
+
+					for (AutEdge autEdge : outgoingEdge.targetNode().outgoingEdges())
+					{
+						final AutEdge newEdge = new AutEdge(currentNode, autEdge.label(), autEdge.targetNode());
+						currentNode.addOutgoingEdge(newEdge);
+						autEdge.targetNode().addIncomingEdge(newEdge);
+						outgoingEdge.targetNode().removeIncomingEdge(outgoingEdge);
+
+						if (outgoingEdge.targetNode().incomingEdges().isEmpty())
+						{
+							//The target node is no longer accessible => remove it
+							autEdge.targetNode().incomingEdges().remove(new AutEdge(outgoingEdge.targetNode(), autEdge.label(), autEdge.targetNode()));
+						}
+					}
+				}
+			}
+		}
+
+		for (AutEdge outgoingEdge : currentNode.outgoingEdges())
+		{
+			this.removeUnnecessaryEdges(outgoingEdge.targetNode(), visitedNodes);
+		}
+	}
 
 	private void computeReducingCorrespondences(final AutNode currentNode,
 												final HashMap<AutNode, HashSet<AutNode>> reducingCorrespondences,

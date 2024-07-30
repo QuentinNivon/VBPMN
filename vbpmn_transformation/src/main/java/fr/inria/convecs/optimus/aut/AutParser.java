@@ -78,6 +78,9 @@ public class AutParser
 			final String label = Utils.trim(line.substring(firstComaIndex + 1, lastComaIndex));
 			final String targetStateIndexStr = Utils.trim(line.substring(lastComaIndex + 1, lastParenthesisIndex));
 
+			//Do not parse DUMMY_LOOPY transitions
+			if (label.contains("DUMMY")) return -1;
+
 			if (!Utils.isAnInt(sourceStateIndexStr)
 				|| !Utils.isAnInt(targetStateIndexStr))
 			{

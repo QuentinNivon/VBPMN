@@ -249,7 +249,7 @@ public class Utils
 
 		while (i < nbTab)
 		{
-			tabBuilder.append("		");
+			tabBuilder.append("    ");
 			i++;
 		}
 

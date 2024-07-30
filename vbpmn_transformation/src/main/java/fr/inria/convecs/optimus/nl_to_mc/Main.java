@@ -131,7 +131,7 @@ public class Main
 
 			System.out.println("Building CLTS...");
 			final long cltsBuildingStartTime = System.nanoTime();
-			final CLTSBuilder cltsBuilder = new CLTSBuilder(autGraph, labelsAndReturnCode.getLeft());
+			final CLTSBuilderV2 cltsBuilder = new CLTSBuilderV2(autGraph, labelsAndReturnCode.getLeft());
 			final AutGraph clts = cltsBuilder.buildCLTS();
 			final long cltsBuildingEndTime = System.nanoTime();
 			final long cltsBuildingTime = cltsBuildingEndTime - cltsBuildingStartTime;

@@ -1,5 +1,7 @@
 package fr.inria.convecs.optimus.aut;
 
+import fr.inria.convecs.optimus.util.Utils;
+
 import java.util.HashSet;
 
 public class AutNode
