@@ -17,8 +17,8 @@ public class CLTSColorManager
 
 	public void setProperColors()
 	{
-		final HashMap<AutNode, HashSet<AutEdge>> reachableTransitions = new HashMap<>();
-		final Pair<HashSet<AutNode>, HashSet<AutEdge>> allNodes = this.clts.nodesAndEdges();
+		final HashMap<AutState, HashSet<AutEdge>> reachableTransitions = new HashMap<>();
+		final Pair<HashSet<AutState>, HashSet<AutEdge>> allNodes = this.clts.nodesAndEdges();
 		this.computeReachableTransitions(this.clts.startNode(), new HashSet<>(), reachableTransitions);
 		this.colorEdges(reachableTransitions, allNodes.getSecond());
 		this.setFaultyStates(allNodes.getFirst());
@@ -26,15 +26,15 @@ public class CLTSColorManager
 
 	//Private methods
 
-	private void setFaultyStates(final HashSet<AutNode> nodes)
+	private void setFaultyStates(final HashSet<AutState> nodes)
 	{
-		for (AutNode autNode : nodes)
+		for (AutState autState : nodes)
 		{
 			boolean hasBlackOut = false;
 			boolean hasGreenOut = false;
 			boolean hasRedOut = false;
 
-			for (AutEdge autEdge : autNode.outgoingEdges())
+			for (AutEdge autEdge : autState.outgoingEdges())
 			{
 				if (autEdge.getColor() == AutColor.BLACK)
 				{
@@ -54,27 +54,27 @@ public class CLTSColorManager
 				&& hasGreenOut
 				&& hasRedOut)
 			{
-				autNode.setStateType(StateType.GREEN_RED_BLACK);
+				autState.setStateType(StateType.GREEN_RED_BLACK);
 			}
 			else if (hasBlackOut
 					&& hasGreenOut)
 			{
-				autNode.setStateType(StateType.GREEN_BLACK);
+				autState.setStateType(StateType.GREEN_BLACK);
 			}
 			else if (hasBlackOut
 					&& hasRedOut)
 			{
-				autNode.setStateType(StateType.RED_BLACK);
+				autState.setStateType(StateType.RED_BLACK);
 			}
 			else if (hasGreenOut
 					&& hasRedOut)
 			{
-				autNode.setStateType(StateType.GREEN_RED);
+				autState.setStateType(StateType.GREEN_RED);
 			}
 		}
 	}
 
-	private void colorEdges(final HashMap<AutNode, HashSet<AutEdge>> reachableTransitions,
+	private void colorEdges(final HashMap<AutState, HashSet<AutEdge>> reachableTransitions,
 							final HashSet<AutEdge> allEdges)
 	{
 		for (AutEdge autEdge : allEdges)
@@ -109,9 +109,9 @@ public class CLTSColorManager
 		}
 	}
 
-	private void computeReachableTransitions(final AutNode currentNode,
-											 final HashSet<AutNode> visitedNodes,
-											 final HashMap<AutNode, HashSet<AutEdge>> reachableTransitions)
+	private void computeReachableTransitions(final AutState currentNode,
+											 final HashSet<AutState> visitedNodes,
+											 final HashMap<AutState, HashSet<AutEdge>> reachableTransitions)
 	{
 		final HashSet<AutEdge> currentSet = reachableTransitions.computeIfAbsent(currentNode, h -> new HashSet<>());
 

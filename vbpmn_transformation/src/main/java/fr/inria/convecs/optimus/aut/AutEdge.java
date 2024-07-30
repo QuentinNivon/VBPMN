@@ -1,17 +1,15 @@
 package fr.inria.convecs.optimus.aut;
 
-import fr.inria.convecs.optimus.bpmn.types.diagram.Edge;
-
 public class AutEdge
 {
 	private final String label;
-	private final AutNode sourceNode;
-	private final AutNode targetNode;
+	private final AutState sourceNode;
+	private final AutState targetNode;
 	private AutColor color;
 
-	public AutEdge(final AutNode sourceNode,
+	public AutEdge(final AutState sourceNode,
 				   final String label,
-				   final AutNode targetNode)
+				   final AutState targetNode)
 	{
 		this.sourceNode = sourceNode;
 		this.label = label;
@@ -19,9 +17,9 @@ public class AutEdge
 		this.color = AutColor.BLACK;
 	}
 
-	public AutEdge(final AutNode sourceNode,
+	public AutEdge(final AutState sourceNode,
 				   final String label,
-				   final AutNode targetNode,
+				   final AutState targetNode,
 				   final AutColor color)
 	{
 		this.sourceNode = sourceNode;
@@ -40,12 +38,12 @@ public class AutEdge
 		return this.color;
 	}
 
-	public AutNode sourceNode()
+	public AutState sourceNode()
 	{
 		return this.sourceNode;
 	}
 
-	public AutNode targetNode()
+	public AutState targetNode()
 	{
 		return this.targetNode;
 	}

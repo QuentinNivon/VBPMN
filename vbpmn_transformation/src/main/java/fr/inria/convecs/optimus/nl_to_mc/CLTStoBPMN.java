@@ -3,7 +3,7 @@ package fr.inria.convecs.optimus.nl_to_mc;
 import fr.inria.convecs.optimus.aut.AutColor;
 import fr.inria.convecs.optimus.aut.AutEdge;
 import fr.inria.convecs.optimus.aut.AutGraph;
-import fr.inria.convecs.optimus.aut.AutNode;
+import fr.inria.convecs.optimus.aut.AutState;
 import fr.inria.convecs.optimus.bpmn.BpmnColor;
 import fr.inria.convecs.optimus.bpmn.graph.Graph;
 import fr.inria.convecs.optimus.bpmn.graph.Node;
@@ -78,10 +78,10 @@ public class CLTStoBPMN
 		}
 	}
 
-	private void buildGraph(final AutNode currentCltsNode,
+	private void buildGraph(final AutState currentCltsNode,
 							final Node currentBpmnNode,
-							final HashSet<AutNode> visitedNodes,
-							final HashMap<AutNode, Pair<Node, Node>> correspondences)
+							final HashSet<AutState> visitedNodes,
+							final HashMap<AutState, Pair<Node, Node>> correspondences)
 	{
 		if (visitedNodes.contains(currentCltsNode))
 		{

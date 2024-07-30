@@ -5,16 +5,14 @@ import fr.inria.convecs.optimus.util.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Scanner;
 
 public class AutParser
 {
 	private final File autFile;
-	private final HashMap<Integer, AutNode> correspondences;
+	private final HashMap<Integer, AutState> correspondences;
 	private final boolean enhance;
 
 	public AutParser(final File file)
@@ -101,9 +99,9 @@ public class AutParser
 			final Pair<Integer, StateType> sourceStateInfo = this.parseState(sourceStateIndexStr);
 			final Pair<Integer, StateType> targetStateInfo = this.parseState(targetStateIndexStr);
 			final Pair<String, AutColor> labelInfo = this.parseLabel(label);
-			final AutNode sourceState = this.correspondences.computeIfAbsent(sourceStateInfo.getFirst(), n -> new AutNode(sourceStateInfo.getFirst()));
+			final AutState sourceState = this.correspondences.computeIfAbsent(sourceStateInfo.getFirst(), n -> new AutState(sourceStateInfo.getFirst()));
 			sourceState.setStateType(sourceStateInfo.getSecond());
-			final AutNode targetState = this.correspondences.computeIfAbsent(targetStateInfo.getFirst(), n -> new AutNode(targetStateInfo.getFirst()));
+			final AutState targetState = this.correspondences.computeIfAbsent(targetStateInfo.getFirst(), n -> new AutState(targetStateInfo.getFirst()));
 			targetState.setStateType(targetStateInfo.getSecond());
 			final AutEdge autEdge = new AutEdge(sourceState, labelInfo.getFirst(), targetState);
 			autEdge.setColor(labelInfo.getSecond());

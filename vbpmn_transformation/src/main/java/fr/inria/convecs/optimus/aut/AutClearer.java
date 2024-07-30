@@ -15,11 +15,11 @@ public class AutClearer
 
 	public static AutGraph clear(final AutGraph autGraph)
 	{
-		final AutNode firstNode = AutClearer.findFirstUsefulNode(autGraph.startNode(), new HashSet<>());
+		final AutState firstNode = AutClearer.findFirstUsefulNode(autGraph.startNode(), new HashSet<>());
 
 		if (firstNode == null) throw new IllegalStateException("No interesting node found in the counter-example!");
 
-		final AutGraph clearedGraph = new AutGraph(new AutNode(firstNode.label()));
+		final AutGraph clearedGraph = new AutGraph(new AutState(firstNode.label()));
 
 
 
@@ -28,8 +28,8 @@ public class AutClearer
 
 	//Private methods
 
-	private static AutNode findFirstUsefulNode(final AutNode currentNode,
-											   final HashSet<AutNode> visitedNodes)
+	private static AutState findFirstUsefulNode(final AutState currentNode,
+												final HashSet<AutState> visitedNodes)
 	{
 		if (visitedNodes.contains(currentNode))
 		{
@@ -51,7 +51,7 @@ public class AutClearer
 
 		for (final AutEdge outgoingTransition : currentNode.outgoingEdges())
 		{
-			final AutNode usefulNode = AutClearer.findFirstUsefulNode(outgoingTransition.targetNode(), visitedNodes);
+			final AutState usefulNode = AutClearer.findFirstUsefulNode(outgoingTransition.targetNode(), visitedNodes);
 
 			if (usefulNode != null)
 			{

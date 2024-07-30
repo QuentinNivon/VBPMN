@@ -2,14 +2,14 @@ package fr.inria.convecs.optimus.aut;
 
 import java.util.HashSet;
 
-public class AutNode
+public class AutState
 {
 	private final int label;
 	private final HashSet<AutEdge> incomingEdges;
 	private final HashSet<AutEdge> outgoingEdges;
 	private StateType stateType;
 
-	public AutNode(final int label)
+	public AutState(final int label)
 	{
 		this.label = label;
 		this.stateType = null;
@@ -17,8 +17,8 @@ public class AutNode
 		this.outgoingEdges = new HashSet<>();
 	}
 
-	public AutNode(final int label,
-				   final StateType stateType)
+	public AutState(final int label,
+					final StateType stateType)
 	{
 		this.label = label;
 		this.stateType = stateType;
@@ -56,6 +56,11 @@ public class AutNode
 		this.incomingEdges.remove(autEdge);
 	}
 
+	public void removeIncomingEdges()
+	{
+		this.incomingEdges.clear();
+	}
+
 	public void addOutgoingEdge(final AutEdge edge)
 	{
 		this.outgoingEdges.add(edge);
@@ -76,21 +81,21 @@ public class AutNode
 		return this.outgoingEdges;
 	}
 
-	public AutNode copy()
+	public AutState copy()
 	{
-		return new AutNode(this.label, this.stateType);
+		return new AutState(this.label, this.stateType);
 	}
 
 	//Override
 	@Override
 	public boolean equals(Object o)
 	{
-		if (!(o instanceof AutNode))
+		if (!(o instanceof AutState))
 		{
 			return false;
 		}
 
-		return ((AutNode) o).label() == this.label();
+		return ((AutState) o).label() == this.label();
 	}
 
 	@Override

@@ -3,9 +3,8 @@ package fr.inria.convecs.optimus.nl_to_mc;
 import fr.inria.convecs.optimus.aut.AutColor;
 import fr.inria.convecs.optimus.aut.AutEdge;
 import fr.inria.convecs.optimus.aut.AutGraph;
-import fr.inria.convecs.optimus.aut.AutNode;
+import fr.inria.convecs.optimus.aut.AutState;
 
-import javax.swing.plaf.synth.SynthUI;
 import java.util.HashSet;
 
 public class FullCLTSBuilder
@@ -19,7 +18,7 @@ public class FullCLTSBuilder
 	{
 		this.fullCLTS = clts.copy();
 		this.specification = specification;
-		this.lastNodeLabel = this.fullCLTS.getMaxNodeLabel();
+		this.lastNodeLabel = this.fullCLTS.getMaxStateLabel();
 	}
 
 	public AutGraph build()
@@ -43,10 +42,10 @@ public class FullCLTSBuilder
 
 	//Private methods
 
-	private void buildFullCLTS(final AutNode currentSpecNode,
-							   final AutNode currentFullCltsNode,
+	private void buildFullCLTS(final AutState currentSpecNode,
+							   final AutState currentFullCltsNode,
 							   final HashSet<AutEdge> edgesToAdd,
-							   final HashSet<AutNode> visitedNodes)
+							   final HashSet<AutState> visitedNodes)
 	{
 		if (visitedNodes.contains(currentFullCltsNode))
 		{
@@ -84,7 +83,7 @@ public class FullCLTSBuilder
 					 */
 					System.out.println("Spec edge \"" + specEdge + "\" has no matching edge in the CLTS.");
 					final AutGraph greenSpecPart = new AutGraph(specEdge.targetNode()).copyAndShift(this.lastNodeLabel + 1);
-					this.lastNodeLabel = greenSpecPart.getMaxNodeLabel();
+					this.lastNodeLabel = greenSpecPart.getMaxStateLabel();
 					final AutEdge edgeToAdd = new AutEdge(currentFullCltsNode, specEdge.label(), greenSpecPart.startNode(), AutColor.GREEN);
 					edgesToAdd.add(edgeToAdd);
 				}

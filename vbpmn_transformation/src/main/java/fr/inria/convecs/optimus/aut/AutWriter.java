@@ -54,7 +54,7 @@ public class AutWriter
 	 */
 	private void normalize(final HashMap<Integer, Integer> correspondences,
 						   final HashSet<AutEdge> edges,
-						   final AutNode currentNode)
+						   final AutState currentNode)
 	{
 		if (correspondences.containsKey(currentNode.label()))
 		{

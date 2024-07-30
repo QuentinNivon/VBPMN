@@ -24,7 +24,6 @@ import java.util.*;
 public class Main
 {
 	public static final boolean LOCAL_TESTING = true;
-	private static final boolean MINIMIZE_CLTS = true;
 	private static final int RETRIEVING_LABELS_FAILED = 17;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS = 31;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD = 35;
@@ -124,81 +123,6 @@ public class Main
 			final long autSpecParsingTime = autSpecParsingEndTime - autSpecParsingStartTime;
 			System.out.println("AUT specification parsed in " + Utils.nanoSecToReadable(autSpecParsingTime) + ".\n");
 
-			if (MINIMIZE_CLTS)
-			{
-				System.out.println("Converting CLTS to BCG...");
-				final long cltsAutToBcgStartTime = System.nanoTime();
-				final String bcgIOCommand2 = "bcg_io";
-				final String[] bcgIOArgs2 = new String[]{AUT_CLTS, BCG_CLTS};
-				final CommandManager bcgIOCommandManager2 = new CommandManager(bcgIOCommand2, workingDirectory, bcgIOArgs2);
-
-				try
-				{
-					bcgIOCommandManager2.execute();
-				}
-				catch (IOException | InterruptedException e)
-				{
-					System.exit(CLTS_AUT_TO_BCG_FAILED);
-				}
-
-				if (bcgIOCommandManager2.returnValue() != ReturnCodes.TERMINATION_OK)
-				{
-					System.exit(CLTS_AUT_TO_BCG_FAILED);
-				}
-
-				final long cltsAutToBcgEndTime = System.nanoTime();
-				final long cltsAutToBcgTime = cltsAutToBcgEndTime - cltsAutToBcgStartTime;
-				System.out.println("CLTS converted to BCG in " + Utils.nanoSecToReadable(cltsAutToBcgTime) + ".\n");
-
-				System.out.println("Reducing CLTS (weaktrace)...");
-				final long cltsReductionStartTime = System.nanoTime();
-				final String bcgOpenCommand2 = "bcg_open";
-				final String[] bcgOpenArgs2 = new String[]{BCG_CLTS, "reductor", "-weaktrace", WEAK_BCG_CLTS};
-				final CommandManager bcgOpenCommandManager2 = new CommandManager(bcgOpenCommand2, workingDirectory, bcgOpenArgs2);
-
-				try
-				{
-					bcgOpenCommandManager2.execute();
-				}
-				catch (IOException | InterruptedException e)
-				{
-					System.exit(CLTS_WEAKTRACE_FAILED);
-				}
-
-				if (bcgOpenCommandManager2.returnValue() != ReturnCodes.TERMINATION_OK)
-				{
-					System.exit(CLTS_WEAKTRACE_FAILED);
-				}
-
-				final long cltsReductionEndTime = System.nanoTime();
-				final long cltsReductionTime = cltsReductionEndTime - cltsReductionStartTime;
-				System.out.println("CLTS reduced in " + Utils.nanoSecToReadable(cltsReductionTime) + ".\n");
-
-				System.out.println("Converting CLTS to AUT...");
-				final long cltsBcgToAutStartTime = System.nanoTime();
-				final String bcgIOCommand3 = "bcg_io";
-				final String[] bcgIOArgs3 = new String[]{WEAK_BCG_CLTS, AUT_CLTS};
-				final CommandManager bcgIOCommandManager3 = new CommandManager(bcgIOCommand3, workingDirectory, bcgIOArgs3);
-
-				try
-				{
-					bcgIOCommandManager3.execute();
-				}
-				catch (IOException | InterruptedException e)
-				{
-					System.exit(CLTS_BCG_TO_AUT_FAILED);
-				}
-
-				if (bcgIOCommandManager3.returnValue() != ReturnCodes.TERMINATION_OK)
-				{
-					System.exit(CLTS_BCG_TO_AUT_FAILED);
-				}
-
-				final long cltsBcgToAutEndTime = System.nanoTime();
-				final long cltsBcgToAutTime = cltsBcgToAutEndTime - cltsBcgToAutStartTime;
-				System.out.println("CLTS converted in " + Utils.nanoSecToReadable(cltsBcgToAutTime) + ".\n");
-			}
-
 			System.out.println("Parsing CLTS...");
 			final long cltsParsingStartTime = System.nanoTime();
 			final AutParser autCltsParser = new AutParser(new File(workingDirectory + File.separator + AUT_CLTS));
@@ -223,6 +147,14 @@ public class Main
 			final long cltsColorSettingTime = cltsColorSettingEndTime - cltsColorSettingStartTime;
 			System.out.println("CLTS colors set in " + Utils.nanoSecToReadable(cltsColorSettingTime) + ".\n");
 
+			System.out.println("Flattening CLTS...");
+			final long cltsFlatteningStartTime = System.nanoTime();
+			final CLTSFlattener flattener = new CLTSFlattener(fullCLTS);
+			flattener.flatten();
+			final long cltsFlatteningEndTime = System.nanoTime();
+			final long cltsFlatteningTime = cltsFlatteningEndTime - cltsFlatteningStartTime;
+			System.out.println("CLTS flattened in " + Utils.nanoSecToReadable(cltsFlatteningTime) + ".\n");
+
 			System.out.println("Writing CLTS to file...");
 			final long cltsDumpingStartTime = System.nanoTime();
 			final AutWriter autWriter = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + AUT_FULL_CLTS), false);
@@ -237,11 +169,9 @@ public class Main
 			final Graph bpmnProcess = cltStoBPMN.convert();
 			System.out.println(bpmnProcess.toString());
 
-			final BPMNFolder folder = new BPMNFolder(bpmnProcess);
-			final Graph foldedProcess = folder.fold();
-			System.out.println("Folded process:\n\n" + foldedProcess);
 
-			final GraphToList graphToList = new GraphToList(foldedProcess);
+
+			final GraphToList graphToList = new GraphToList(bpmnProcess);
 			graphToList.convert();
 			final GraphicalGenerationWriter graphicalGenerationWriter = new GraphicalGenerationWriter(
 					commandLineParser,
