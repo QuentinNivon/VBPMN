@@ -2,6 +2,7 @@ package fr.inria.convecs.optimus.bpmn;
 
 public enum BpmnColor
 {
+	BLACK("#000000", "#000000"),
 	RED("#FF0000", "#FFA0A0"),
 	GREEN("#0D9319", "#ABF5B2");
 

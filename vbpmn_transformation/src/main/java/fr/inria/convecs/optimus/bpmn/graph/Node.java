@@ -54,7 +54,7 @@ public class Node
         this.parentNodes.add(node);
     }
 
-    public void removeChildren(Node node)
+    public void removeChild(Node node)
     {
         this.childNodes.remove(node);
     }
@@ -391,5 +391,11 @@ public class Node
         }
 
         return this.bpmnObject.equals(((Node) o).bpmnObject);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Node \"" + this.bpmnObject.id() + "\"" + (this.bpmnObject.name() != null && !this.bpmnObject.name().isEmpty() ? " (" + this.bpmnObject.name() + ")." : ".");
     }
 }

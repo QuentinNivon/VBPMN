@@ -1,5 +1,6 @@
 package fr.inria.convecs.optimus.bpmn.graph;
 
+import fr.inria.convecs.optimus.bpmn.BpmnColor;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessObject;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessType;
 import fr.inria.convecs.optimus.bpmn.types.process.Gateway;
@@ -21,6 +22,11 @@ public class Graph
         this.initialNode = initialNode;
         this.id = Utils.generateRandomIdentifier();
         this.hasStrongFlows = false;
+    }
+
+    public BpmnColor getColor()
+    {
+        return this.getBpmnColor(this.initialNode, new HashSet<>());
     }
 
     public Node getNodeFromObject(BpmnProcessObject object)
@@ -153,6 +159,34 @@ public class Graph
     }
 
     //Private methods
+
+    private BpmnColor getBpmnColor(final Node currentNode,
+                                   final HashSet<Node> visitedNodes)
+    {
+        if (visitedNodes.contains(currentNode))
+        {
+            return null;
+        }
+
+        visitedNodes.add(currentNode);
+
+        if (currentNode.bpmnObject().type() == BpmnProcessType.TASK)
+        {
+            return currentNode.bpmnObject().getBpmnColor() == null ? BpmnColor.BLACK : currentNode.bpmnObject().getBpmnColor();
+        }
+
+        for (Node child : currentNode.childNodes())
+        {
+            final BpmnColor childColor = this.getBpmnColor(child, visitedNodes);
+
+            if (childColor != null)
+            {
+                return childColor;
+            }
+        }
+
+        return null;
+    }
 
     private void clearParallelGatewayTime(final Node currentNode,
                                           final HashSet<Node> visitedNodes)

@@ -23,7 +23,7 @@ import java.util.*;
 
 public class Main
 {
-	public static final boolean LOCAL_TESTING = false;
+	public static final boolean LOCAL_TESTING = true;
 	private static final boolean MINIMIZE_CLTS = true;
 	private static final int RETRIEVING_LABELS_FAILED = 17;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS = 31;
@@ -223,8 +223,6 @@ public class Main
 			final long cltsColorSettingTime = cltsColorSettingEndTime - cltsColorSettingStartTime;
 			System.out.println("CLTS colors set in " + Utils.nanoSecToReadable(cltsColorSettingTime) + ".\n");
 
-
-
 			System.out.println("Writing CLTS to file...");
 			final long cltsDumpingStartTime = System.nanoTime();
 			final AutWriter autWriter = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + AUT_FULL_CLTS), false);
@@ -239,7 +237,11 @@ public class Main
 			final Graph bpmnProcess = cltStoBPMN.convert();
 			System.out.println(bpmnProcess.toString());
 
-			final GraphToList graphToList = new GraphToList(bpmnProcess);
+			final BPMNFolder folder = new BPMNFolder(bpmnProcess);
+			final Graph foldedProcess = folder.fold();
+			System.out.println("Folded process:\n\n" + foldedProcess);
+
+			final GraphToList graphToList = new GraphToList(foldedProcess);
 			graphToList.convert();
 			final GraphicalGenerationWriter graphicalGenerationWriter = new GraphicalGenerationWriter(
 					commandLineParser,

@@ -31,7 +31,7 @@ public abstract class BpmnProcessObject
 
     public void setBpmnColor(final BpmnColor color)
     {
-        this.bpmnColor = color;
+        this.bpmnColor = color == BpmnColor.BLACK ? null : color;
     }
 
     public BpmnColor getBpmnColor()

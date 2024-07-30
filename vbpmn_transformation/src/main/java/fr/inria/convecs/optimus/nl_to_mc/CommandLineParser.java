@@ -157,7 +157,6 @@ public class CommandLineParser
     private boolean verifyArgs()
     {
         return this.commands.get(CommandLineOption.WORKING_DIRECTORY) != null
-                && this.commands.get(CommandLineOption.BCG_PRODUCT) != null
                 && this.commands.get(CommandLineOption.BPMN_FILE) != null;
     }
 

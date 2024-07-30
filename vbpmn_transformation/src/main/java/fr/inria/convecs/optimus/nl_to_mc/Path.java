@@ -426,11 +426,6 @@ public class Path<T>
 		return this.hasNonEmptyIntersectionWith(path.elements(), loopElement);
 	}
 
-	public boolean weakEquals(final Path<T> path)
-	{
-
-	}
-
 	//Overrides
 	@Override
 	public String toString()

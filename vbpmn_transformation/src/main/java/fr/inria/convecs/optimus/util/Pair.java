@@ -37,4 +37,10 @@ public class Pair<U,V>
 	{
 		this.second = elem;
 	}
+
+	@Override
+	public String toString()
+	{
+		return "Pair of (" + this.first.toString() + ", " + this.second.toString() + ")";
+	}
 }

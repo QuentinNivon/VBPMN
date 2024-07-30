@@ -6,15 +6,13 @@ import fr.inria.convecs.optimus.bpmn.graph.Node;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessFactory;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessType;
 import fr.inria.convecs.optimus.bpmn.types.process.Gateway;
+import fr.inria.convecs.optimus.util.Pair;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 
 public class BPMNFolder
 {
-	private Graph bpmnGraph;
+	private final Graph bpmnGraph;
 	private final HashMap<Node, Node> brokenConnections;
 
 	public BPMNFolder(final Graph originalGraph)
@@ -37,7 +35,7 @@ public class BPMNFolder
 			final Node value = this.brokenConnections.get(key);
 			final Node valueParentFlow = value.parentNodes().iterator().next();
 			value.removeParent(valueParentFlow);
-			key.removeChildren(valueParentFlow);
+			key.removeChild(valueParentFlow);
 
 			if (key.bpmnObject().type() != BpmnProcessType.TASK)
 			{
@@ -58,7 +56,7 @@ public class BPMNFolder
 		//Manage each subgraph
 		for (Graph subGraph : subGraphs)
 		{
-			this.foldSubGraph(subGraph);
+			this.foldSubGraph(subGraph, subGraph.getColor());
 		}
 
 		//Replug subgraphs
@@ -70,7 +68,7 @@ public class BPMNFolder
 			{
 				//this is a dummy replacement => remove it
 				final Node parentFlow = key.parentNodes().iterator().next();
-				parentFlow.removeChildren(key);
+				parentFlow.removeChild(key);
 				key.removeParent(parentFlow);
 				parentFlow.addChild(value);
 				value.addParent(parentFlow);
@@ -124,38 +122,317 @@ public class BPMNFolder
 		}
 	}
 
-	private void foldSubGraph(final Graph graph)
+	private void foldSubGraph(final Graph graph,
+							  final BpmnColor graphColor)
 	{
-		final HashSet<Node> exclusiveSplitGateways = new HashSet<>();
-		final HashSet<Node> exclusiveMergeGateways = new HashSet<>();
-		this.findAllGraphExclusiveGateways(graph.initialNode(), exclusiveSplitGateways, exclusiveMergeGateways, new HashSet<>());
-		final HashMap<Node, Foldability> gatewaysInformation = new HashMap<>();
+		Graph originalGraph = graph.weakCopy();
 
-		for (Node exclusiveGateway : exclusiveSplitGateways)
+		do
 		{
-			final Foldability foldability = new Foldability();
-			foldability.setMaxDegree(exclusiveGateway.childNodes().size());
-			gatewaysInformation.put(exclusiveGateway, foldability);
-			final Node correspondingMerge = this.findCorrespondingMergeGateway(exclusiveGateway, exclusiveMergeGateways);
-			foldability.setCorrespondingMerge(correspondingMerge);
+			final HashSet<Node> exclusiveSplitGateways = new HashSet<>();
+			final HashSet<Node> exclusiveMergeGateways = new HashSet<>();
+			this.findAllGraphExclusiveGateways(graph.initialNode(), exclusiveSplitGateways, exclusiveMergeGateways, new HashSet<>());
+			final HashMap<Node, Foldability> gatewaysInformation = new HashMap<>();
 
-			if (correspondingMerge != null
-				&& correspondingMerge.parentNodes().size() == exclusiveGateway.childNodes().size())
+			for (Node exclusiveGateway : exclusiveSplitGateways)
 			{
-				foldability.setPerfectMatching();
+				final Foldability foldability = new Foldability(exclusiveGateway);
+				foldability.setMaxDegree(exclusiveGateway.childNodes().size());
+				gatewaysInformation.put(exclusiveGateway, foldability);
+				final Node correspondingMerge = this.findCorrespondingMergeGateway(exclusiveGateway, exclusiveMergeGateways);
+				foldability.setCorrespondingMerge(correspondingMerge);
+
+				if (correspondingMerge != null
+					&& correspondingMerge.parentNodes().size() == exclusiveGateway.childNodes().size())
+				{
+					foldability.setPerfectMatching();
+				}
+			}
+
+			for (Node exclusiveSplitGateway : exclusiveSplitGateways)
+			{
+				this.finalizeFoldability(exclusiveSplitGateway, gatewaysInformation);
+			}
+
+			int maxFoldability = -1;
+
+			for (Foldability foldability : gatewaysInformation.values())
+			{
+				if (foldability.getRealDegree() > maxFoldability)
+				{
+					maxFoldability = foldability.getRealDegree();
+				}
+			}
+
+			if (maxFoldability < 2) return;
+
+			for (Node gateway : gatewaysInformation.keySet())
+			{
+				if (!graph.hasNodeOfId(gateway.bpmnObject().id()))
+				{
+					//The current gateway has already been folded in a bigger gateway
+					continue;
+				}
+
+				final Foldability currentFoldability = gatewaysInformation.get(gateway);
+
+				if (currentFoldability.getRealDegree() == maxFoldability)
+				{
+					//Manage this gateway
+					if (gateway.childNodes().size() == currentFoldability.getRealDegree())
+					{
+						//The gateway will be removed
+						final Node correspondingMergeGateway = currentFoldability.getCorrespondingMerge();
+
+						if (correspondingMergeGateway == null)
+						{
+							final Node firstOutOfScopeNode = currentFoldability.getOutOfScopeNodes().iterator().next();
+							firstOutOfScopeNode.removeParents();
+							final Node parentFlow = gateway.parentNodes().iterator().next();
+							parentFlow.removeChildren();
+							final Node splitParallelGateway = new Node(BpmnProcessFactory.generateParallelGateway());
+							parentFlow.addChild(splitParallelGateway);
+							splitParallelGateway.addParent(parentFlow);
+							final Node mergeParallelGateway = new Node(BpmnProcessFactory.generateParallelGateway(true));
+							final Node mergeToOutOfScopeFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+							mergeParallelGateway.addChild(mergeToOutOfScopeFlow);
+							mergeToOutOfScopeFlow.addParent(mergeParallelGateway);
+							mergeToOutOfScopeFlow.addChild(firstOutOfScopeNode);
+							firstOutOfScopeNode.addParent(mergeToOutOfScopeFlow);
+							
+							for (String parallelTask : currentFoldability.getFoldableTasksNames())
+							{
+								final Node task = new Node(BpmnProcessFactory.generateTask());
+								task.bpmnObject().setName(parallelTask);
+								task.bpmnObject().setBpmnColor(graphColor);
+								final Node beforeFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+								final Node afterFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+								splitParallelGateway.addChild(beforeFlow);
+								beforeFlow.addParent(splitParallelGateway);
+								beforeFlow.addChild(task);
+								task.addParent(beforeFlow);
+								task.addChild(afterFlow);
+								afterFlow.addParent(task);
+								afterFlow.addChild(mergeParallelGateway);
+								mergeParallelGateway.addParent(afterFlow);
+							}
+						}
+						else
+						{
+							boolean exactCorrespondence = true;
+
+							for (Node parentFlow : correspondingMergeGateway.parentNodes())
+							{
+								if (!parentFlow.hasAncestor(gateway))
+								{
+									exactCorrespondence = false;
+									break;
+								}
+							}
+
+							if (exactCorrespondence)
+							{
+								//TODO VOIR SI CA FONCTIONNE BIEN
+								//The gateway can be removed completely
+								final Node mergeGatewayChildFlow = correspondingMergeGateway.childNodes().iterator().next();
+								mergeGatewayChildFlow.removeParent(correspondingMergeGateway);
+								final Node splitGatewayParentFlow = gateway.parentNodes().iterator().next();
+								splitGatewayParentFlow.removeChild(gateway);
+								final Node splitParallelGateway = new Node(BpmnProcessFactory.generateParallelGateway());
+								final Node mergeParallelGateway = new Node(BpmnProcessFactory.generateParallelGateway(true));
+								splitGatewayParentFlow.addChild(splitParallelGateway);
+								splitParallelGateway.addParent(splitGatewayParentFlow);
+								mergeParallelGateway.addChild(mergeGatewayChildFlow);
+								mergeGatewayChildFlow.addParent(mergeParallelGateway);
+
+								for (String parallelTask : currentFoldability.getFoldableTasksNames())
+								{
+									final Node task = new Node(BpmnProcessFactory.generateTask());
+									task.bpmnObject().setName(parallelTask);
+									task.bpmnObject().setBpmnColor(graphColor);
+									final Node beforeFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+									final Node afterFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+									splitParallelGateway.addChild(beforeFlow);
+									beforeFlow.addParent(splitParallelGateway);
+									beforeFlow.addChild(task);
+									task.addParent(beforeFlow);
+									task.addChild(afterFlow);
+									afterFlow.addParent(task);
+									afterFlow.addChild(mergeParallelGateway);
+									mergeParallelGateway.addParent(afterFlow);
+								}
+							}
+							else
+							{
+								//TODO VOIR SI CA FONCTIONNE BIEN
+								/*
+									The corresponding merge gateway corresponds only partially to the split,
+									i.e., some of its parent flows do not start from the split gateway.
+								 */
+								correspondingMergeGateway.parentNodes().removeIf(node -> node.hasAncestor(gateway));
+								final Node splitGatewayParentFlow = gateway.parentNodes().iterator().next();
+								splitGatewayParentFlow.removeChild(gateway);
+								final Node splitParallelGateway = new Node(BpmnProcessFactory.generateParallelGateway());
+								final Node mergeParallelGateway = new Node(BpmnProcessFactory.generateParallelGateway(true));
+								splitGatewayParentFlow.addChild(splitParallelGateway);
+								splitParallelGateway.addParent(splitGatewayParentFlow);
+								final Node mergeParallelChild = new Node(BpmnProcessFactory.generateSequenceFlow());
+								mergeParallelGateway.addChild(mergeParallelChild);
+								mergeParallelChild.addParent(mergeParallelGateway);
+								mergeParallelChild.addChild(correspondingMergeGateway);
+								correspondingMergeGateway.addParent(mergeParallelChild);
+
+								for (String parallelTask : currentFoldability.getFoldableTasksNames())
+								{
+									final Node task = new Node(BpmnProcessFactory.generateTask());
+									task.bpmnObject().setName(parallelTask);
+									task.bpmnObject().setBpmnColor(graphColor);
+									final Node beforeFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+									final Node afterFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+									splitParallelGateway.addChild(beforeFlow);
+									beforeFlow.addParent(splitParallelGateway);
+									beforeFlow.addChild(task);
+									task.addParent(beforeFlow);
+									task.addChild(afterFlow);
+									afterFlow.addParent(task);
+									afterFlow.addChild(mergeParallelGateway);
+									mergeParallelGateway.addParent(afterFlow);
+								}
+							}
+						}
+					}
+					else
+					{
+						//Some paths of the gateway will be removed but not the whole gateway
+						final Node correspondingMergeGateway = currentFoldability.getCorrespondingMerge();
+
+						if (correspondingMergeGateway == null)
+						{
+							for (Iterator<Node> iterator = gateway.childNodes().iterator(); iterator.hasNext(); )
+							{
+								final Node childFlow = iterator.next();
+								final Node task = childFlow.childNodes().iterator().next();
+
+								if (currentFoldability.getFoldableTasksNames().contains(task.bpmnObject().name()))
+								{
+									iterator.remove();
+								}
+							}
+
+							final Node firstOutOfScopeNode = currentFoldability.getOutOfScopeNodes().iterator().next();
+							firstOutOfScopeNode.removeParents();
+							final Node splitParallelGateway = new Node(BpmnProcessFactory.generateParallelGateway());
+							final Node splitOutFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+							gateway.addChild(splitOutFlow);
+							splitOutFlow.addParent(gateway);
+							splitOutFlow.addChild(splitParallelGateway);
+							splitParallelGateway.addParent(splitOutFlow);
+							final Node mergeParallelGateway = new Node(BpmnProcessFactory.generateParallelGateway(true));
+							final Node mergeToOutOfScopeFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+							mergeParallelGateway.addChild(mergeToOutOfScopeFlow);
+							mergeToOutOfScopeFlow.addParent(mergeParallelGateway);
+							mergeToOutOfScopeFlow.addChild(firstOutOfScopeNode);
+							firstOutOfScopeNode.addParent(mergeToOutOfScopeFlow);
+
+							for (String parallelTask : currentFoldability.getFoldableTasksNames())
+							{
+								final Node task = new Node(BpmnProcessFactory.generateTask());
+								task.bpmnObject().setName(parallelTask);
+								task.bpmnObject().setBpmnColor(graphColor);
+								final Node beforeFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+								final Node afterFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+								splitParallelGateway.addChild(beforeFlow);
+								beforeFlow.addParent(splitParallelGateway);
+								beforeFlow.addChild(task);
+								task.addParent(beforeFlow);
+								task.addChild(afterFlow);
+								afterFlow.addParent(task);
+								afterFlow.addChild(mergeParallelGateway);
+								mergeParallelGateway.addParent(afterFlow);
+							}
+						}
+						else
+						{
+							final HashSet<Node> removedChildren = new HashSet<>();
+
+							for (Iterator<Node> iterator = gateway.childNodes().iterator(); iterator.hasNext(); )
+							{
+								final Node childFlow = iterator.next();
+								final Node task = childFlow.childNodes().iterator().next();
+
+								if (currentFoldability.getFoldableTasksNames().contains(task.bpmnObject().name()))
+								{
+									removedChildren.add(childFlow);
+									iterator.remove();
+								}
+							}
+
+							for (Iterator<Node> iterator = correspondingMergeGateway.parentNodes().iterator(); iterator.hasNext(); )
+							{
+								boolean childFound = false;
+
+								for (Node removedChild : removedChildren)
+								{
+									if (iterator.next().hasAncestor(removedChild))
+									{
+										childFound = true;
+										break;
+									}
+								}
+
+								if (childFound)
+								{
+									iterator.remove();
+								}
+							}
+
+							final Node splitParallelGateway = new Node(BpmnProcessFactory.generateParallelGateway());
+							final Node splitOutFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+							gateway.addChild(splitOutFlow);
+							splitOutFlow.addParent(gateway);
+							splitOutFlow.addChild(splitParallelGateway);
+							splitParallelGateway.addParent(splitOutFlow);
+							final Node mergeParallelGateway = new Node(BpmnProcessFactory.generateParallelGateway(true));
+							final Node mergeParallelChild = new Node(BpmnProcessFactory.generateSequenceFlow());
+							mergeParallelGateway.addChild(mergeParallelChild);
+							mergeParallelChild.addParent(mergeParallelGateway);
+							mergeParallelChild.addChild(correspondingMergeGateway);
+							correspondingMergeGateway.addParent(mergeParallelChild);
+
+							for (String parallelTask : currentFoldability.getFoldableTasksNames())
+							{
+								final Node task = new Node(BpmnProcessFactory.generateTask());
+								task.bpmnObject().setName(parallelTask);
+								task.bpmnObject().setBpmnColor(graphColor);
+								final Node beforeFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+								final Node afterFlow = new Node(BpmnProcessFactory.generateSequenceFlow());
+								splitParallelGateway.addChild(beforeFlow);
+								beforeFlow.addParent(splitParallelGateway);
+								beforeFlow.addChild(task);
+								task.addParent(beforeFlow);
+								task.addChild(afterFlow);
+								afterFlow.addParent(task);
+								afterFlow.addChild(mergeParallelGateway);
+								mergeParallelGateway.addParent(afterFlow);
+							}
+						}
+					}
+				}
 			}
 		}
-
-		for (Node exclusiveSplitGateway : exclusiveSplitGateways)
-		{
-			this.finalizeFoldability(exclusiveSplitGateway, gatewaysInformation);
-		}
+		while (!SyntacticAnalyzer.compare(originalGraph, graph));
 	}
 
 	private void finalizeFoldability(final Node gateway,
 									 final HashMap<Node, Foldability> gatewaysInformation)
 	{
 		final Foldability foldability = gatewaysInformation.get(gateway);
+
+		if (foldability.alreadyManaged())
+		{
+			//Foldability already managed => return
+			return;
+		}
 
 		if (foldability.getMaxDegree() == 2)
 		{
@@ -172,10 +449,139 @@ public class BPMNFolder
 			{
 				foldability.setRealDegree(0);
 			}
+			else
+			{
+				//Diamond found => we look for the paths after the diamond
+				final Graph firstSubGraph = new Graph(firstPathSecondNode.childNodes().iterator().next().childNodes().iterator().next());
+				final Graph secondSubGraph = new Graph(secondPathSecondNode.childNodes().iterator().next().childNodes().iterator().next());
+
+				if (SyntacticAnalyzer.compare(firstSubGraph, secondSubGraph))
+				{
+					//Both are equivalent => the gateway can be folded
+					foldability.setRealDegree(2);
+					foldability.addFoldableTaskName(firstPathFirstNode.bpmnObject().name());
+					foldability.addFoldableTaskName(firstPathSecondNode.bpmnObject().name());
+					foldability.addOutOfScopeNode(firstSubGraph.initialNode());
+				}
+				else
+				{
+					foldability.setRealDegree(0);
+				}
+			}
 		}
 		else
 		{
+			/*
+				For a foldability degree greater than 2, we should check for paths
+				of form "TASK --> <X> ...".
+				These paths can possibly be folded.
+			 */
+			final HashSet<Pair<Node, Node>> eligibleGateways = new HashSet<>();
+			final HashSet<Node> nonEligibleChildren = new HashSet<>();
 
+			for (Node childFlow : gateway.childNodes())
+			{
+				final Node childNode = childFlow.childNodes().iterator().next();
+
+				if (childNode.bpmnObject().type() == BpmnProcessType.TASK)
+				{
+					final Node childChildNode = childNode.childNodes().iterator().next().childNodes().iterator().next();
+
+					if (childChildNode.bpmnObject().type() == BpmnProcessType.EXCLUSIVE_GATEWAY
+						&& ((Gateway) childChildNode.bpmnObject()).isSplitGateway())
+					{
+						//We found an exclusive split gateway at the expected position
+						this.finalizeFoldability(childChildNode, gatewaysInformation);
+						final Foldability currentFoldability = gatewaysInformation.get(childChildNode);
+
+						if (currentFoldability.foldable())
+						{
+							eligibleGateways.add(new Pair<>(childFlow, childChildNode));
+						}
+						else
+						{
+							nonEligibleChildren.add(childFlow);
+						}
+					}
+					else
+					{
+						nonEligibleChildren.add(childFlow);
+					}
+				}
+				else
+				{
+					nonEligibleChildren.add(childFlow);
+				}
+			}
+
+			System.out.println("Eligible gateways: " + eligibleGateways);
+
+			final HashMap<HashSet<String>, Pair<HashSet<String>, ArrayList<Foldability>>> infos = new HashMap<>();
+
+			if (eligibleGateways.size() >= 3)
+			{
+				for (Pair<Node, Node> eligibleGateway : eligibleGateways)
+				{
+					final Node firstTask = eligibleGateway.getFirst().childNodes().iterator().next();
+					final Foldability currentFoldability = gatewaysInformation.get(eligibleGateway.getSecond());
+					System.out.println("Current foldability: " + currentFoldability);
+					final HashSet<String> foldableTasks = new HashSet<>();
+					foldableTasks.add(firstTask.bpmnObject().name());
+					foldableTasks.addAll(currentFoldability.getFoldableTasksNames());
+
+					if (infos.containsKey(foldableTasks))
+					{
+						final Pair<HashSet<String>, ArrayList<Foldability>> currentInfos = infos.get(foldableTasks);
+						currentInfos.getFirst().add(firstTask.bpmnObject().name());
+						currentInfos.getSecond().add(currentFoldability);
+					}
+					else
+					{
+						final HashSet<String> firstTasks = new HashSet<>();
+						firstTasks.add(firstTask.bpmnObject().name());
+						final ArrayList<Foldability> foldabilities = new ArrayList<>();
+						foldabilities.add(currentFoldability);
+						infos.put(foldableTasks, new Pair<>(firstTasks, foldabilities));
+					}
+				}
+			}
+
+			for (HashSet<String> tasks : infos.keySet())
+			{
+				final Pair<HashSet<String>, ArrayList<Foldability>> currentInfos = infos.get(tasks);
+				System.out.println("Tasks: " + tasks);
+				System.out.println("Current infos first: " + currentInfos.getFirst());
+
+				if (currentInfos.getFirst().size() == tasks.size())
+				{
+					System.out.println("Good size");
+					boolean identicalOutOfScopePaths = true;
+					final Foldability firstFoldability = currentInfos.getSecond().remove(0);
+					final Graph firstOutOfScopeGraph = new Graph(firstFoldability.getOutOfScopeNodes().iterator().next());
+					
+					for (Foldability currentFoldability : currentInfos.getSecond())
+					{
+						final Graph currentOutOfScopeGraph = new Graph(currentFoldability.getOutOfScopeNodes().iterator().next());
+						
+						if (!SyntacticAnalyzer.compare(firstOutOfScopeGraph, currentOutOfScopeGraph))
+						{
+							identicalOutOfScopePaths = false;
+							break;
+						}
+					}
+					
+					if (identicalOutOfScopePaths)
+					{
+						//The current gateway is (at least partially foldable)
+						foldability.setRealDegree(tasks.size());
+						foldability.addFoldableTaskNames(tasks);
+						foldability.addOutOfScopeNodes(firstFoldability.getOutOfScopeNodes());
+						break; //Necessary to avoid overwriting data when gateway can be merged several times
+					}
+				}
+			}
+
+			System.out.println("Currently handled foldability: " + foldability);
 		}
 	}
 
@@ -248,18 +654,20 @@ public class BPMNFolder
 
 	static class Foldability
 	{
+		private final Node split;
 		private int maxDegree;
 		private int realDegree;
 		private Node correspondingMerge;
 		private boolean perfectMatching;
-		private final ArrayList<Path<Node>> impurePaths;
-		private final ArrayList<Path<Node>> afterPaths;
+		private final HashSet<Node> impureNodes;
+		private final HashSet<Node> outOfScopeNodes;
 		private final HashSet<String> foldableTaskNames;
 
-		public Foldability()
+		public Foldability(final Node split)
 		{
-			this.impurePaths = new ArrayList<>();
-			this.afterPaths = new ArrayList<>();
+			this.split = split;
+			this.impureNodes = new HashSet<>();
+			this.outOfScopeNodes = new HashSet<>();
 			this.foldableTaskNames = new HashSet<>();
 			this.maxDegree = -1;
 			this.realDegree = -1;
@@ -307,19 +715,78 @@ public class BPMNFolder
 			return this.perfectMatching;
 		}
 
-		public void addImpurePath(final Path<Node> path)
+		public void addImpurePath(final Node node)
 		{
-			this.impurePaths.add(path);
+			this.impureNodes.add(node);
 		}
 
-		public ArrayList<Path<Node>> getImpurePaths()
+		public void addImpureNodes(final Collection<Node> nodes)
 		{
-			return this.impurePaths;
+			this.impureNodes.addAll(nodes);
+		}
+
+		public HashSet<Node> getImpureNodes()
+		{
+			return this.impureNodes;
+		}
+
+		public void addOutOfScopeNode(final Node node)
+		{
+			this.outOfScopeNodes.add(node);
+		}
+
+		public void addOutOfScopeNodes(final Collection<Node> nodes)
+		{
+			this.outOfScopeNodes.addAll(nodes);
+		}
+
+		public HashSet<Node> getOutOfScopeNodes()
+		{
+			return this.outOfScopeNodes;
+		}
+
+		public void addFoldableTaskName(final String name)
+		{
+			this.foldableTaskNames.add(name);
+		}
+
+		public void addFoldableTaskNames(final Collection<String> names)
+		{
+			this.foldableTaskNames.addAll(names);
+		}
+
+		public HashSet<String> getFoldableTasksNames()
+		{
+			return this.foldableTaskNames;
 		}
 
 		public boolean foldable()
 		{
 			return this.realDegree >= 2;
+		}
+
+		public boolean alreadyManaged()
+		{
+			return this.realDegree != -1;
+		}
+
+		@Override
+		public String toString()
+		{
+			return "Foldability of gateway \"" +
+					this.split.bpmnObject().id() +
+					"\" contains the following elements:\n" +
+					"- Corresponding merge gateway: " +
+					this.correspondingMerge +
+					"\n- Maximum foldability degree: " +
+					this.maxDegree +
+					"\n- Real foldability degree: " +
+					this.realDegree +
+					"\n- Foldable task labels: " +
+					this.foldableTaskNames +
+					"\n- Out-of-scope nodes: " +
+					this.outOfScopeNodes +
+					"\n";
 		}
 	}
 }

@@ -142,6 +142,62 @@ public class BpmnProcessFactory
         }
     }
 
+    public static synchronized String generateID(BpmnProcessType type)
+    {
+        final String builder = generateID();
+        final String id;
+
+        if (type == BpmnProcessType.TASK
+            || type == BpmnProcessType.TASK_MANUAL
+            || type == BpmnProcessType.TASK_RECEIVE
+            || type == BpmnProcessType.TASK_SCRIPT
+            || type == BpmnProcessType.TASK_SEND
+            || type == BpmnProcessType.TASK_BUSINESS_RULE
+            || type == BpmnProcessType.TASK_SERVICE
+            || type == BpmnProcessType.TASK_USER)
+        {
+            id = "Activity_" + builder;
+        }
+        else if (type == BpmnProcessType.COMPLEX_GATEWAY
+                || type == BpmnProcessType.EXCLUSIVE_GATEWAY
+                || type == BpmnProcessType.INCLUSIVE_GATEWAY
+                || type == BpmnProcessType.PARALLEL_GATEWAY)
+        {
+            id = "Gateway_" + builder;
+        }
+        else if (type == BpmnProcessType.START_EVENT
+                || type == BpmnProcessType.START_CONDITIONAL_EVENT
+                || type == BpmnProcessType.START_MESSAGE_EVENT
+                || type == BpmnProcessType.START_SIGNAL_EVENT
+                || type == BpmnProcessType.START_TIMER_EVENT)
+        {
+            id = "StartEvent_" + builder;
+        }
+        else if (type.toString().toLowerCase().contains("event"))
+        {
+            id = "Event_" + builder;
+        }
+        else if (type == BpmnProcessType.SEQUENCE_FLOW)
+        {
+            id = "Flow_" + builder;
+        }
+        else
+        {
+            //logger.error("Object {} not managed", object.id());
+            throw new UnsupportedOperationException(String.format("Type |%s| not managed.", type));
+        }
+
+        if (validID(id))
+        {
+            objectIDs.add(id);
+            return id;
+        }
+        else
+        {
+            return generateID(type);
+        }
+    }
+
     public static BpmnProcessObject generateExclusiveGateway()
     {
         return BpmnProcessFactory.generateGateway(BpmnProcessType.EXCLUSIVE_GATEWAY);
@@ -149,7 +205,19 @@ public class BpmnProcessFactory
 
     public static BpmnProcessObject generateParallelGateway()
     {
-        return BpmnProcessFactory.generateGateway(BpmnProcessType.PARALLEL_GATEWAY);
+        return generateParallelGateway(false);
+    }
+
+    public static BpmnProcessObject generateParallelGateway(boolean isMerge)
+    {
+        final BpmnProcessObject parallelGateway = BpmnProcessFactory.generateGateway(BpmnProcessType.PARALLEL_GATEWAY);
+
+        if (isMerge)
+        {
+            ((Gateway) parallelGateway).markAsMergeGateway();
+        }
+
+        return parallelGateway;
     }
 
     public static BpmnProcessObject generateInclusiveGateway()
@@ -208,6 +276,11 @@ public class BpmnProcessFactory
     public static Task generateTask(final String id)
     {
         return BpmnProcessFactory.generateTask(id, id);
+    }
+
+    public static Task generateTask()
+    {
+        return BpmnProcessFactory.generateTask(BpmnProcessFactory.generateID(BpmnProcessType.TASK));
     }
 
     //Private methods
