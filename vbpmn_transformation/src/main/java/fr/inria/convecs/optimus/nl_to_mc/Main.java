@@ -33,11 +33,24 @@ public class Main
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD = 35;
 	private static final int WEAKTRACE_FAILED = 38;
 	private static final int BCG_TO_AUT_FAILED = 39;
+	private static final int BCG_SPEC_TO_AUT_FAILED = 40;
+	private static final int WEAKTRACE_SPEC_FAILED = 41;
+	private static final int CLTS_AUT_TO_BCG_FAILED = 42;
+	private static final int CLTS_WEAKTRACE_FAILED = 43;
+	private static final int CLTS_BCG_TO_AUT_FAILED = 44;
+	private static final String BCG_SPECIFICATION = "problem.bcg";
+	private static final String BCG_SPECIFICATION_WEAK = "problem_weak.bcg";
+	private static final String AUT_SPECIFICATION = "problem.aut";
+	private static final String AUT_SPECIFICATION_WEAK = "problem_weak.aut";
 	private static final String BCG_PRODUCT = "product.bcg";
 	private static final String WEAK_BCG_PRODUCT = "product_weak.bcg";
 	private static final String WEAK_AUT_PRODUCT = "product_weak.aut";
 	private static final String GRAPH_3D_CLTS = "clts.graph3D";
 	private static final String AUT_CLTS = "clts.aut";
+	private static final String BCG_CLTS = "clts.bcg";
+	private static final String WEAK_BCG_CLTS = "clts_weak.bcg";
+	private static final String AUT_FULL_CLTS = "clts_full.aut";
+	private static final String AUTX_FULL_CLTS = "clts_full.autx";
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
 	{
@@ -145,9 +158,89 @@ public class Main
 			final long cltsDumpingTime = cltsDumpingEndTime - cltsDumpingStartTime;
 			System.out.println("CLTS written in " + Utils.nanoSecToReadable(cltsDumpingTime) + ".\n");
 
+			System.out.println("Converting CLTS to BCG...");
+			final long cltsAutToBcgStartTime = System.nanoTime();
+			final String bcgIOCommand2 = "bcg_io";
+			final String[] bcgIOArgs2 = new String[]{AUT_CLTS, BCG_CLTS};
+			final CommandManager bcgIOCommandManager2 = new CommandManager(bcgIOCommand2, workingDirectory, bcgIOArgs2);
+
+			try
+			{
+				bcgIOCommandManager2.execute();
+			}
+			catch (IOException | InterruptedException e)
+			{
+				System.exit(CLTS_AUT_TO_BCG_FAILED);
+			}
+
+			if (bcgIOCommandManager2.returnValue() != ReturnCodes.TERMINATION_OK)
+			{
+				System.exit(CLTS_AUT_TO_BCG_FAILED);
+			}
+
+			final long cltsAutToBcgEndTime = System.nanoTime();
+			final long cltsAutToBcgTime = cltsAutToBcgEndTime - cltsAutToBcgStartTime;
+			System.out.println("CLTS converted to BCG in " + Utils.nanoSecToReadable(cltsAutToBcgTime) + ".\n");
+
+			System.out.println("Reducing CLTS (weaktrace)...");
+			final long cltsReductionStartTime = System.nanoTime();
+			final String bcgOpenCommand2 = "bcg_open";
+			final String[] bcgOpenArgs2 = new String[]{BCG_CLTS, "reductor", "-weaktrace", WEAK_BCG_CLTS};
+			final CommandManager bcgOpenCommandManager2 = new CommandManager(bcgOpenCommand2, workingDirectory, bcgOpenArgs2);
+
+			try
+			{
+				bcgOpenCommandManager2.execute();
+			}
+			catch (IOException | InterruptedException e)
+			{
+				System.exit(CLTS_WEAKTRACE_FAILED);
+			}
+
+			if (bcgOpenCommandManager2.returnValue() != ReturnCodes.TERMINATION_OK)
+			{
+				System.exit(CLTS_WEAKTRACE_FAILED);
+			}
+
+			final long cltsReductionEndTime = System.nanoTime();
+			final long cltsReductionTime = cltsReductionEndTime - cltsReductionStartTime;
+			System.out.println("CLTS reduced in " + Utils.nanoSecToReadable(cltsReductionTime) + ".\n");
+
+			System.out.println("Converting CLTS to AUT...");
+			final long cltsBcgToAutStartTime = System.nanoTime();
+			final String bcgIOCommand3 = "bcg_io";
+			final String[] bcgIOArgs3 = new String[]{WEAK_BCG_CLTS, AUT_CLTS};
+			final CommandManager bcgIOCommandManager3 = new CommandManager(bcgIOCommand3, workingDirectory, bcgIOArgs3);
+
+			try
+			{
+				bcgIOCommandManager3.execute();
+			}
+			catch (IOException | InterruptedException e)
+			{
+				System.exit(CLTS_BCG_TO_AUT_FAILED);
+			}
+
+			if (bcgIOCommandManager3.returnValue() != ReturnCodes.TERMINATION_OK)
+			{
+				System.exit(CLTS_BCG_TO_AUT_FAILED);
+			}
+
+			final long cltsBcgToAutEndTime = System.nanoTime();
+			final long cltsBcgToAutTime = cltsBcgToAutEndTime - cltsBcgToAutStartTime;
+			System.out.println("CLTS converted in " + Utils.nanoSecToReadable(cltsBcgToAutTime) + ".\n");
+
+			System.out.println("Parsing AUT file...");
+			final long cltsParsingStartTime = System.nanoTime();
+			final AutParser cltsParser = new AutParser(new File(workingDirectory + File.separator + AUT_CLTS));
+			final AutGraph cltsGraph = cltsParser.parse();
+			final long cltsParsingEndTime = System.nanoTime();
+			final long cltsParsingTime = cltsParsingEndTime - cltsParsingStartTime;
+			System.out.println("AUT file parsed in " + Utils.nanoSecToReadable(cltsParsingTime) + ".\n");
+
 			System.out.println("Converting CLTS to 3DForceGraph...");
 			final long cltsConversionStartTime = System.nanoTime();
-			final Aut2Force3DGraph aut2Force3DGraph = new Aut2Force3DGraph(new File(workingDirectory + File.separator + GRAPH_3D_CLTS), clts);
+			final Aut2Force3DGraph aut2Force3DGraph = new Aut2Force3DGraph(new File(workingDirectory + File.separator + GRAPH_3D_CLTS), cltsGraph);
 			aut2Force3DGraph.generateForce3DGraphFile();
 			final long cltsConversionEndTime = System.nanoTime();
 			final long cltsConversionTime = cltsConversionEndTime - cltsConversionStartTime;
