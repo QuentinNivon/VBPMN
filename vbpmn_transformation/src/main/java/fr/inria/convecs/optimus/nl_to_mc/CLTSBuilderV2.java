@@ -37,6 +37,23 @@ public class CLTSBuilderV2
 	 */
 	public AutGraph buildCLTS()
 	{
+		//Truncate correct parts of the product
+		final HashMap<AutNode, HashSet<String>> reachableTransitionLabels = new HashMap<>();
+		this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), reachableTransitionLabels);
+		final HashSet<AutNode> nodesToCutBefore = new HashSet<>();
+		this.computeNodesToRemove(this.autGraph.startNode(), new HashSet<>(), nodesToCutBefore, reachableTransitionLabels);
+
+		System.out.println("Nodes to cut before: " + nodesToCutBefore);
+
+		for (AutNode node : nodesToCutBefore)
+		{
+			for (AutEdge autEdge : node.incomingEdges())
+			{
+				autEdge.sourceNode().outgoingEdges().remove(autEdge);
+			}
+		}
+
+		//Remove non-specification edges
 		this.removeUnnecessaryEdges(this.autGraph.startNode(), new HashSet<>());
 
 		//Add curvatures
