@@ -169,9 +169,10 @@ public class Main
 			final Graph bpmnProcess = cltStoBPMN.convert();
 			System.out.println(bpmnProcess.toString());
 
+			final BPMNFolder bpmnFolder = new BPMNFolder(bpmnProcess);
+			final Graph foldedBpmn = bpmnFolder.fold();
 
-
-			final GraphToList graphToList = new GraphToList(bpmnProcess);
+			final GraphToList graphToList = new GraphToList(foldedBpmn);
 			graphToList.convert();
 			final GraphicalGenerationWriter graphicalGenerationWriter = new GraphicalGenerationWriter(
 					commandLineParser,
