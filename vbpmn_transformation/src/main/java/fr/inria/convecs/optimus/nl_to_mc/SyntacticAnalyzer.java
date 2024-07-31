@@ -29,12 +29,6 @@ public class SyntacticAnalyzer
 	public static boolean compare(final Graph graph1,
 								  final Graph graph2)
 	{
-		if (graph1.initialNode().equals(graph2.initialNode()))
-		{
-			//Early return if the two graphs share exactly the same initial node
-			return true;
-		}
-
 		final LoopFinder loopFinder1 = new LoopFinder(graph1);
 		loopFinder1.findLoops();
 

@@ -23,7 +23,7 @@ import java.util.*;
 
 public class Main
 {
-	public static final boolean LOCAL_TESTING = true;
+	public static final boolean LOCAL_TESTING = false;
 	private static final int RETRIEVING_LABELS_FAILED = 17;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS = 31;
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD = 35;
@@ -165,13 +165,34 @@ public class Main
 			final long cltsDumpingTime = cltsDumpingEndTime - cltsDumpingStartTime;
 			System.out.println("CLTS written in " + Utils.nanoSecToReadable(cltsDumpingTime) + ".\n");
 
+			System.out.println("Converting CLTS to BPMN...");
+			final long cltsConversionStartTime = System.nanoTime();
 			final CLTStoBPMN cltStoBPMN = new CLTStoBPMN(fullCLTS);
 			final Graph bpmnProcess = cltStoBPMN.convert();
-			System.out.println(bpmnProcess.toString());
+			final long cltsConversionEndTime = System.nanoTime();
+			final long cltsConversionTime = cltsConversionEndTime - cltsConversionStartTime;
+			if (LOCAL_TESTING) System.out.println("Original BPMN process:\n\n" + bpmnProcess);
+			System.out.println("CLTS converted to BPMN in " + Utils.nanoSecToReadable(cltsConversionTime) + ".\n");
 
+			System.out.println("Folding BPMN process...");
+			final long bpmnFoldingStartTime = System.nanoTime();
 			final BPMNFolder bpmnFolder = new BPMNFolder(bpmnProcess);
 			final Graph foldedBpmn = bpmnFolder.fold();
+			final long bpmnFoldingEndTime = System.nanoTime();
+			final long bpmnFoldingTime = bpmnFoldingEndTime - bpmnFoldingStartTime;
+			if (LOCAL_TESTING) System.out.println("Folded BPMN process:\n\n" + foldedBpmn);
+			System.out.println("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
 
+			System.out.println("Merging useless BPMN gateways...");
+			final long uselessGatewaysMergingStartTime = System.nanoTime();
+			final GatewaysMerger merger = new GatewaysMerger(foldedBpmn);
+			merger.mergeGateways();
+			final long uselessGatewaysMergingEndTime = System.nanoTime();
+			final long uselessGatewaysMergingTime = uselessGatewaysMergingEndTime - uselessGatewaysMergingStartTime;
+			System.out.println("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
+
+			System.out.println("Writing BPMN process to file...");
+			final long writingBPMNStartTime = System.nanoTime();
 			final GraphToList graphToList = new GraphToList(foldedBpmn);
 			graphToList.convert();
 			final GraphicalGenerationWriter graphicalGenerationWriter = new GraphicalGenerationWriter(
@@ -180,6 +201,9 @@ public class Main
 					"colored"
 			);
 			graphicalGenerationWriter.write();
+			final long writingBPMNEndTime = System.nanoTime();
+			final long writingBPMNTime = writingBPMNEndTime - writingBPMNStartTime;
+			System.out.println("BPMN process written to file in " + Utils.nanoSecToReadable(writingBPMNTime) + ".\n");
 		}
 		catch (Exception e)
 		{

@@ -43,4 +43,25 @@ public class Pair<U,V>
 	{
 		return "Pair of (" + this.first.toString() + ", " + this.second.toString() + ")";
 	}
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if (!(o instanceof Pair))
+		{
+			return false;
+		}
+
+		return this.first.equals(((Pair<?, ?>) o).getFirst())
+				&& this.second.equals(((Pair<?, ?>) o).getSecond());
+	}
+
+	@Override
+	public int hashCode()
+	{
+		int hashCode = 31 + (this.first == null ? 0 : this.first.hashCode());
+		hashCode = 31 * hashCode + (this.second == null ? 0 : this.second.hashCode());
+
+		return hashCode;
+	}
 }
