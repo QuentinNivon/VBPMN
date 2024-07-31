@@ -85,6 +85,9 @@ public class CLTSFlattener
 						final HashMap<AutState, AutState> correspondences = new HashMap<>();
 						final AutGraph copy = new AutGraph(autState).copyAndShift(nextStateLabel, correspondences);
 						nextStateLabel = copy.getMaxStateLabel() + 1;
+						final AutEdge newEdge = new AutEdge(incomingTransition.sourceNode(), incomingTransition.label(), copy.startNode());
+						incomingTransition.sourceNode().addOutgoingEdge(newEdge);
+						copy.startNode().addIncomingEdge(newEdge);
 
 						for (AutState loopState : stateCorrespondences.keySet())
 						{
