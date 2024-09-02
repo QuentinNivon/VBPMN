@@ -664,7 +664,7 @@ public class Main
 			final Scanner scanner = new Scanner(inputStream);
 			String separator = "";
 
-			while(scanner.hasNextLine())
+			while (scanner.hasNextLine())
 			{
 				final String line = Utils.trim(scanner.nextLine());
 
@@ -746,7 +746,11 @@ public class Main
 		svlArgs.add(BUCHI_AUTOMATA);
 		svlArgs.add(lntSpecification.getName());
 		if (performReduction) svlArgs.add("--reduction");
-		svlArgs.addAll(labels);
+
+		for (String label : labels)
+		{
+			svlArgs.add(label.toUpperCase());
+		}
 
 		final CommandManager svlCommandManager = new CommandManager(svlCommand, workingDir, svlArgs);
 
