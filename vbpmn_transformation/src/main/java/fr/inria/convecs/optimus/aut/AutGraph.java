@@ -8,35 +8,25 @@ import java.util.HashSet;
 
 public class AutGraph
 {
-	private final AutNode startNode;
-	private final HashSet<AutNode> autNodes;
+	private final AutState startNode;
+	private final HashSet<AutState> autStates;
 	private final HashSet<AutEdge> autEdges;
 
-	public AutGraph(final AutNode startNode)
+	public AutGraph(final AutState startNode)
 	{
 		this.startNode = startNode;
-		this.autNodes = new HashSet<>();
+		this.autStates = new HashSet<>();
 		this.autEdges = new HashSet<>();
 	}
 
-	public AutNode startNode()
+	public AutState startNode()
 	{
 		return this.startNode;
 	}
 
-	public int nbNodes()
+	public void addNodes(final Collection<AutState> nodes)
 	{
-		return this.autNodes.size();
-	}
-
-	public void addNodes(final Collection<AutNode> nodes)
-	{
-		this.autNodes.addAll(nodes);
-	}
-
-	public int nbEdges()
-	{
-		return this.autEdges.size();
+		this.autStates.addAll(nodes);
 	}
 
 	public int sourceStateLabel()
@@ -44,9 +34,9 @@ public class AutGraph
 		return this.startNode.label();
 	}
 
-	public Pair<HashSet<AutNode>, HashSet<AutEdge>> nodesAndEdges()
+	public Pair<HashSet<AutState>, HashSet<AutEdge>> nodesAndEdges()
 	{
-		final HashSet<AutNode> nodes = new HashSet<>();
+		final HashSet<AutState> nodes = new HashSet<>();
 		final HashSet<AutEdge> edges = new HashSet<>();
 		this.retrieveNodesAndEdges(this.startNode, nodes, edges);
 
@@ -55,22 +45,26 @@ public class AutGraph
 
 	public AutGraph copy()
 	{
-		final HashSet<AutNode> nodes = new HashSet<>();
+		final HashSet<AutState> nodes = new HashSet<>();
 		final HashSet<AutEdge> edges = new HashSet<>();
 		this.retrieveNodesAndEdges(this.startNode, nodes, edges);
+		System.out.println("Nodes: " + nodes);
+		System.out.println("Edges: " + edges);
 
-		final HashMap<AutNode, AutNode> correspondences = new HashMap<>();
+		final HashMap<AutState, AutState> correspondences = new HashMap<>();
 
-		for (AutNode autNode : nodes)
+		for (AutState autState : nodes)
 		{
-			correspondences.put(autNode, new AutNode(autNode.label()));
+			correspondences.put(autState, new AutState(autState.label()));
 		}
+
+		System.out.println("Correspondences: " + correspondences);
 
 		for (AutEdge autEdge : edges)
 		{
-			final AutNode newSourceNode = correspondences.get(autEdge.sourceNode());
-			final AutNode newTargetNode = correspondences.get(autEdge.targetNode());
-			final AutEdge copy = new AutEdge(newSourceNode, autEdge.label(), newTargetNode);
+			final AutState newSourceNode = correspondences.get(autEdge.sourceNode());
+			final AutState newTargetNode = correspondences.get(autEdge.targetNode());
+			final AutEdge copy = new AutEdge(newSourceNode, autEdge.label(), newTargetNode, autEdge.getColor());
 			newSourceNode.addOutgoingEdge(copy);
 			newTargetNode.addIncomingEdge(copy);
 		}
@@ -78,11 +72,106 @@ public class AutGraph
 		return new AutGraph(correspondences.get(this.startNode));
 	}
 
+	public AutGraph copyAndShift(final int shift)
+	{
+		final HashSet<AutState> nodes = new HashSet<>();
+		final HashSet<AutEdge> edges = new HashSet<>();
+		this.retrieveNodesAndEdges(this.startNode, nodes, edges);
+
+		final HashMap<AutState, AutState> correspondences = new HashMap<>();
+
+		for (AutState autState : nodes)
+		{
+			correspondences.put(autState, new AutState(autState.label() + shift));
+		}
+
+		for (AutEdge autEdge : edges)
+		{
+			final AutState newSourceNode = correspondences.get(autEdge.sourceNode());
+			final AutState newTargetNode = correspondences.get(autEdge.targetNode());
+			final AutEdge copy = new AutEdge(newSourceNode, autEdge.label(), newTargetNode, autEdge.getColor());
+			newSourceNode.addOutgoingEdge(copy);
+			newTargetNode.addIncomingEdge(copy);
+		}
+
+		return new AutGraph(correspondences.get(this.startNode));
+	}
+
+	public AutGraph copy(final HashMap<AutState, AutState> correspondences)
+	{
+		final HashSet<AutState> nodes = new HashSet<>();
+		final HashSet<AutEdge> edges = new HashSet<>();
+		this.retrieveNodesAndEdges(this.startNode, nodes, edges);
+		System.out.println("Nodes: " + nodes);
+		System.out.println("Edges: " + edges);
+
+		for (AutState autState : nodes)
+		{
+			correspondences.put(autState, new AutState(autState.label()));
+		}
+
+		System.out.println("Correspondences: " + correspondences);
+
+		for (AutEdge autEdge : edges)
+		{
+			final AutState newSourceNode = correspondences.get(autEdge.sourceNode());
+			final AutState newTargetNode = correspondences.get(autEdge.targetNode());
+			final AutEdge copy = new AutEdge(newSourceNode, autEdge.label(), newTargetNode, autEdge.getColor());
+			newSourceNode.addOutgoingEdge(copy);
+			newTargetNode.addIncomingEdge(copy);
+		}
+
+		return new AutGraph(correspondences.get(this.startNode));
+	}
+
+	public AutGraph copyAndShift(final int shift,
+								 final HashMap<AutState, AutState> correspondences)
+	{
+		final HashSet<AutState> nodes = new HashSet<>();
+		final HashSet<AutEdge> edges = new HashSet<>();
+		this.retrieveNodesAndEdges(this.startNode, nodes, edges);
+
+		for (AutState autState : nodes)
+		{
+			correspondences.put(autState, new AutState(autState.label() + shift));
+		}
+
+		for (AutEdge autEdge : edges)
+		{
+			final AutState newSourceNode = correspondences.get(autEdge.sourceNode());
+			final AutState newTargetNode = correspondences.get(autEdge.targetNode());
+			final AutEdge copy = new AutEdge(newSourceNode, autEdge.label(), newTargetNode, autEdge.getColor());
+			newSourceNode.addOutgoingEdge(copy);
+			newTargetNode.addIncomingEdge(copy);
+		}
+
+		return new AutGraph(correspondences.get(this.startNode));
+	}
+
+	public int getMaxStateLabel()
+	{
+		final int maxLabel = this.getMaxStateLabel(this.startNode, new HashSet<>());
+
+		if (maxLabel + 1 < this.nbNodes())
+		{
+			throw new IllegalStateException();
+		}
+
+		return maxLabel;
+	}
+
+	public int nbNodes()
+	{
+		final HashSet<AutState> nodes = new HashSet<>();
+		this.getNbNodes(this.startNode, nodes);
+		return nodes.size();
+	}
+
 	public void setCurvatures()
 	{
 		for (AutEdge autEdge : this.startNode.outgoingEdges())
 		{
-			final HashSet<AutNode> visitedNodes = new HashSet<>();
+			final HashSet<AutState> visitedNodes = new HashSet<>();
 			visitedNodes.add(this.startNode);
 			this.setCurvatures(autEdge, visitedNodes);
 		}
@@ -91,7 +180,7 @@ public class AutGraph
 	//Private methods
 
 	private void setCurvatures(final AutEdge currentEdge,
-							   final HashSet<AutNode> visitedNodes)
+							   final HashSet<AutState> visitedNodes)
 	{
 		if (visitedNodes.contains(currentEdge.targetNode()))
 		{
@@ -107,8 +196,44 @@ public class AutGraph
 		}
 	}
 
-	private void retrieveNodesAndEdges(final AutNode currentNode,
-									   final HashSet<AutNode> nodes,
+	private void getNbNodes(final AutState currentNode,
+							final HashSet<AutState> visitedNodes)
+	{
+		if (visitedNodes.contains(currentNode))
+		{
+			return;
+		}
+
+		visitedNodes.add(currentNode);
+
+		for (AutEdge outgoingEdge : currentNode.outgoingEdges())
+		{
+			this.getNbNodes(outgoingEdge.targetNode(), visitedNodes);
+		}
+	}
+
+	private int getMaxStateLabel(final AutState currentNode,
+								 final HashSet<AutState> visitedNodes)
+	{
+		if (visitedNodes.contains(currentNode))
+		{
+			return -1;
+		}
+
+		visitedNodes.add(currentNode);
+
+		int max = currentNode.label();
+
+		for (AutEdge autEdge : currentNode.outgoingEdges())
+		{
+			max = Math.max(max, getMaxStateLabel(autEdge.targetNode(), visitedNodes));
+		}
+
+		return max;
+	}
+
+	private void retrieveNodesAndEdges(final AutState currentNode,
+									   final HashSet<AutState> nodes,
 									   final HashSet<AutEdge> edges)
 	{
 		if (nodes.contains(currentNode))
@@ -117,7 +242,7 @@ public class AutGraph
 		}
 
 		nodes.add(currentNode);
-		edges.addAll(currentNode.incomingEdges());
+		//edges.addAll(currentNode.incomingEdges());
 		edges.addAll(currentNode.outgoingEdges());
 
 		for (AutEdge outgoingEdge : currentNode.outgoingEdges())

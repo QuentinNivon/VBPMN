@@ -238,9 +238,102 @@ public class Main
 			final long cltsParsingTime = cltsParsingEndTime - cltsParsingStartTime;
 			System.out.println("AUT file parsed in " + Utils.nanoSecToReadable(cltsParsingTime) + ".\n");
 
+			//MANDATORY TO HAVE THE GREEN PART OF THE CLTS
+			System.out.println("Reducing BCG specification (weaktrace)...");
+			final long bcgSpecificationReductionStartTime = System.nanoTime();
+			final String bcgOpenCommand3 = "bcg_open";
+			final String[] bcgOpenArgs3 = new String[]{BCG_SPECIFICATION, "reductor", "-weaktrace", BCG_SPECIFICATION_WEAK};
+			final CommandManager bcgOpenCommandManager3 = new CommandManager(bcgOpenCommand3, workingDirectory, bcgOpenArgs3);
+
+			try
+			{
+				bcgOpenCommandManager3.execute();
+			}
+			catch (IOException | InterruptedException e)
+			{
+				System.exit(WEAKTRACE_SPEC_FAILED);
+			}
+
+			if (bcgOpenCommandManager3.returnValue() != ReturnCodes.TERMINATION_OK)
+			{
+				System.exit(WEAKTRACE_SPEC_FAILED);
+			}
+
+			final long bcgSpecificationReductionEndTime = System.nanoTime();
+			final long bcgSpecificationReductionTime = bcgSpecificationReductionEndTime - bcgSpecificationReductionStartTime;
+			System.out.println("BCG specification reduced in " + Utils.nanoSecToReadable(bcgSpecificationReductionTime) + ".\n");
+
+			System.out.println("Converting BCG specification to AUT...");
+			final long bcgSpecificationConversionStartTime = System.nanoTime();
+			final String bcgIOCommand4 = "bcg_io";
+			final String[] bcgIOArgs4 = new String[]{BCG_SPECIFICATION_WEAK, AUT_SPECIFICATION_WEAK};
+			final CommandManager bcgIOCommandManager4 = new CommandManager(bcgIOCommand4, workingDirectory, bcgIOArgs4);
+
+			try
+			{
+				bcgIOCommandManager4.execute();
+			}
+			catch (IOException | InterruptedException e)
+			{
+				System.exit(BCG_SPEC_TO_AUT_FAILED);
+			}
+
+			if (bcgIOCommandManager4.returnValue() != ReturnCodes.TERMINATION_OK)
+			{
+				System.exit(BCG_SPEC_TO_AUT_FAILED);
+			}
+
+			final long bcgSpecificationConversionEndTime = System.nanoTime();
+			final long bcgSpecificationConversionTime = bcgSpecificationConversionEndTime - bcgSpecificationConversionStartTime;
+			System.out.println("BCG specification converted in " + Utils.nanoSecToReadable(bcgSpecificationConversionTime) + ".\n");
+
+			System.out.println("Parsing AUT specification...");
+			final long autSpecParsingStartTime = System.nanoTime();
+			final AutParser autSpecParser = new AutParser(new File(workingDirectory + File.separator + AUT_SPECIFICATION_WEAK));
+			final AutGraph specGraph = autSpecParser.parse();
+			final long autSpecParsingEndTime = System.nanoTime();
+			final long autSpecParsingTime = autSpecParsingEndTime - autSpecParsingStartTime;
+			System.out.println("AUT specification parsed in " + Utils.nanoSecToReadable(autSpecParsingTime) + ".\n");
+
+			System.out.println("Building full CLTS...");
+			final long fullCltsBuildingStartTime = System.nanoTime();
+			final FullCLTSBuilder fullCLTSBuilder = new FullCLTSBuilder(specGraph, cltsGraph);
+			final AutGraph fullCLTS = fullCLTSBuilder.build();
+			final long fullCltsBuildingEndTime = System.nanoTime();
+			final long fullCltsBuildingTime = fullCltsBuildingEndTime - fullCltsBuildingStartTime;
+			System.out.println("Full CLTS built in " + Utils.nanoSecToReadable(fullCltsBuildingTime) + ".\n");
+
+			System.out.println("Setting CLTS colors...");
+			final long cltsColorSettingStartTime = System.nanoTime();
+			final CLTSColorManager cltsColorManager = new CLTSColorManager(fullCLTS);
+			cltsColorManager.setProperColors();
+			final long cltsColorSettingEndTime = System.nanoTime();
+			final long cltsColorSettingTime = cltsColorSettingEndTime - cltsColorSettingStartTime;
+			System.out.println("CLTS colors set in " + Utils.nanoSecToReadable(cltsColorSettingTime) + ".\n");
+
+			System.out.println("Writing full CLTS to file...");
+			final long fullCltsDumpingStartTime = System.nanoTime();
+			final AutWriter autWriter2 = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + AUT_FULL_CLTS));
+			autWriter2.write();
+			final AutWriter autxWriter = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + AUTX_FULL_CLTS), true);
+			autxWriter.write();
+			final long fullCltsDumpingEndTime = System.nanoTime();
+			final long fullCltsDumpingTime = fullCltsDumpingEndTime - fullCltsDumpingStartTime;
+			System.out.println("Full CLTS written in " + Utils.nanoSecToReadable(fullCltsDumpingTime) + ".\n");
+
+			if ((Boolean) commandLineParser.get(CommandLineOption.TRUNCATE_CLTS))
+			{
+				System.out.println("Truncating full CLTS...");
+				final long cltsTruncationStartTime = System.nanoTime();
+				fullCLTSBuilder.truncate();
+				final long cltsTruncationEndTime = System.nanoTime();
+				final long cltsTruncationTime = cltsTruncationEndTime - cltsTruncationStartTime;
+				System.out.println("Full CLTS truncated in " + Utils.nanoSecToReadable(cltsTruncationTime) + ".\n");
+			}
+
 			System.out.println("Converting CLTS to 3DForceGraph...");
 			final long cltsConversionStartTime = System.nanoTime();
-			final Aut2Force3DGraph aut2Force3DGraph = new Aut2Force3DGraph(new File(workingDirectory + File.separator + GRAPH_3D_CLTS), cltsGraph);
+			final Aut2Force3DGraph aut2Force3DGraph = new Aut2Force3DGraph(new File(workingDirectory + File.separator + GRAPH_3D_CLTS), fullCLTS);
 			aut2Force3DGraph.generateForce3DGraphFile();
 			final long cltsConversionEndTime = System.nanoTime();
 			final long cltsConversionTime = cltsConversionEndTime - cltsConversionStartTime;

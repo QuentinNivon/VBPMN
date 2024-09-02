@@ -1,7 +1,5 @@
 package fr.inria.convecs.optimus.aut;
 
-import fr.inria.convecs.optimus.nl_to_mc.CLTSBuilder;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -12,12 +10,23 @@ public class AutWriter
 {
 	private final AutGraph graph;
 	private final File cltsFile;
+	private final boolean enhance;    //Controls whether the output file should be in AUT or AUTX (extended AUT) format
 
 	public AutWriter(final AutGraph graph,
 					 final File file)
 	{
 		this.graph = graph;
 		this.cltsFile = file;
+		this.enhance = false;
+	}
+
+	public AutWriter(final AutGraph graph,
+					 final File file,
+					 final boolean enhance)
+	{
+		this.graph = graph;
+		this.cltsFile = file;
+		this.enhance = enhance;
 	}
 
 	public void write() throws FileNotFoundException
@@ -40,12 +49,12 @@ public class AutWriter
 	 * with the AUT format.
 	 *
 	 * @param correspondences the correspondence between old labels and new labels (filled by this method)
-	 * @param edges the edges of the graph
-	 * @param currentNode the node on which the computation should be performed
+	 * @param edges           the edges of the graph
+	 * @param currentNode     the node on which the computation should be performed
 	 */
 	private void normalize(final HashMap<Integer, Integer> correspondences,
 						   final HashSet<AutEdge> edges,
-						   final AutNode currentNode)
+						   final AutState currentNode)
 	{
 		if (correspondences.containsKey(currentNode.label()))
 		{
@@ -77,12 +86,23 @@ public class AutWriter
 		{
 			printWriter.print("(");
 			printWriter.print(correspondences.get(autEdge.sourceNode().label()));
+
+			if (this.enhance
+					&& autEdge.sourceNode().getStateType() != null)
+			{
+				printWriter.print(":N:");
+				printWriter.print(autEdge.sourceNode().getStateType().getValue());
+			}
+
 			printWriter.print(", ");
-			printWriter.print(
-				CLTSBuilder.CONSIDER_FULL_PATH ?
-				autEdge.label().replace(" !ACC", "").replace("\"", "") :
-				autEdge.label()
-			);
+			printWriter.print(autEdge.label());
+
+			if (this.enhance)
+			{
+				printWriter.print(":");
+				printWriter.print(autEdge.getColor().getValue());
+			}
+
 			printWriter.print(", ");
 			printWriter.print(correspondences.get(autEdge.targetNode().label()));
 			printWriter.println(")");

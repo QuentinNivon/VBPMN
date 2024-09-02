@@ -4,16 +4,14 @@ import fr.inria.convecs.optimus.util.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Scanner;
 
 public class AutParser
 {
 	private final File autFile;
-	private final HashMap<Integer, AutNode> correspondences;
+	private final HashMap<Integer, AutState> correspondences;
 
 	public AutParser(final File file)
 	{
@@ -89,8 +87,8 @@ public class AutParser
 
 			final int sourceStateIndex = Integer.parseInt(sourceStateIndexStr);
 			final int targetStateIndex = Integer.parseInt(targetStateIndexStr);
-			final AutNode sourceState = this.correspondences.computeIfAbsent(sourceStateIndex, n -> new AutNode(sourceStateIndex));
-			final AutNode targetState = this.correspondences.computeIfAbsent(targetStateIndex, n -> new AutNode(targetStateIndex));
+			final AutState sourceState = this.correspondences.computeIfAbsent(sourceStateIndex, n -> new AutState(sourceStateIndex));
+			final AutState targetState = this.correspondences.computeIfAbsent(targetStateIndex, n -> new AutState(targetStateIndex));
 			final AutEdge autEdge = new AutEdge(sourceState, label, targetState);
 			sourceState.addOutgoingEdge(autEdge);
 			targetState.addIncomingEdge(autEdge);

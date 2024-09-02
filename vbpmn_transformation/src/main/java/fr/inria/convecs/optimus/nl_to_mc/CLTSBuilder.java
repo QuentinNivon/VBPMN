@@ -2,7 +2,7 @@ package fr.inria.convecs.optimus.nl_to_mc;
 
 import fr.inria.convecs.optimus.aut.AutEdge;
 import fr.inria.convecs.optimus.aut.AutGraph;
-import fr.inria.convecs.optimus.aut.AutNode;
+import fr.inria.convecs.optimus.aut.AutState;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,14 +37,14 @@ public class CLTSBuilder
 	 */
 	public AutGraph buildCLTS()
 	{
-		final HashMap<AutNode, HashSet<String>> reachableTransitionLabels = new HashMap<>();
+		final HashMap<AutState, HashSet<String>> reachableTransitionLabels = new HashMap<>();
 		this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), reachableTransitionLabels);
-		final HashSet<AutNode> nodesToCutBefore = new HashSet<>();
+		final HashSet<AutState> nodesToCutBefore = new HashSet<>();
 		this.computeNodesToRemove(this.autGraph.startNode(), new HashSet<>(), nodesToCutBefore, reachableTransitionLabels);
 
 		System.out.println("Nodes to cut before: " + nodesToCutBefore);
 
-		for (AutNode node : nodesToCutBefore)
+		for (AutState node : nodesToCutBefore)
 		{
 			for (AutEdge autEdge : node.incomingEdges())
 			{
@@ -56,13 +56,13 @@ public class CLTSBuilder
 			We built the CLTS. We now have to remove all the transitions that are not transitions of the original
 			specification.
 		 */
-		final HashMap<AutNode, HashSet<AutNode>> reducingCorrespondences = new HashMap<>();
+		final HashMap<AutState, HashSet<AutState>> reducingCorrespondences = new HashMap<>();
 		this.computeReducingCorrespondences(this.autGraph.startNode(), reducingCorrespondences, new HashSet<>());
 		System.out.println("Reducing correspondences: " + reducingCorrespondences);
 
-		for (AutNode key : reducingCorrespondences.keySet())
+		for (AutState key : reducingCorrespondences.keySet())
 		{
-			final HashSet<AutNode> correspondences = reducingCorrespondences.get(key);
+			final HashSet<AutState> correspondences = reducingCorrespondences.get(key);
 			final HashSet<AutEdge> goodEdges = new HashSet<>();
 
 			for (AutEdge outgoingEdge : key.outgoingEdges())
@@ -89,7 +89,7 @@ public class CLTSBuilder
 
 			key.outgoingEdges().clear();
 
-			for (AutNode correspondence : correspondences)
+			for (AutState correspondence : correspondences)
 			{
 				for (Iterator<AutEdge> iterator = correspondence.outgoingEdges().iterator(); iterator.hasNext(); )
 				{
@@ -116,9 +116,9 @@ public class CLTSBuilder
 
 	//Private methods
 
-	private void computeReducingCorrespondences(final AutNode currentNode,
-												final HashMap<AutNode, HashSet<AutNode>> reducingCorrespondences,
-												final HashSet<AutNode> visitedNodes)
+	private void computeReducingCorrespondences(final AutState currentNode,
+												final HashMap<AutState, HashSet<AutState>> reducingCorrespondences,
+												final HashSet<AutState> visitedNodes)
 	{
 		if (visitedNodes.contains(currentNode))
 		{
@@ -127,7 +127,7 @@ public class CLTSBuilder
 
 		visitedNodes.add(currentNode);
 
-		final HashSet<AutNode> correspondences = reducingCorrespondences.computeIfAbsent(currentNode, h -> new HashSet<>());
+		final HashSet<AutState> correspondences = reducingCorrespondences.computeIfAbsent(currentNode, h -> new HashSet<>());
 
 		for (AutEdge outgoingEdge : currentNode.outgoingEdges())
 		{
@@ -141,7 +141,7 @@ public class CLTSBuilder
 			{
 				System.out.println("Label \"" + labelToConsider + "\" does not belong to the specification!");
 				//Unknown label => find all the nodes to merge
-				final HashSet<AutNode> nodesToMerge = new HashSet<>();
+				final HashSet<AutState> nodesToMerge = new HashSet<>();
 				this.findAllNodesToMerge(currentNode, new HashSet<>(), nodesToMerge);
 				correspondences.addAll(nodesToMerge);
 			}
@@ -152,15 +152,15 @@ public class CLTSBuilder
 			}
 		}
 
-		for (AutNode nodeToMerge : correspondences)
+		for (AutState nodeToMerge : correspondences)
 		{
 			this.computeReducingCorrespondences(nodeToMerge, reducingCorrespondences, visitedNodes);
 		}
 	}
 
-	private void findAllNodesToMerge(final AutNode currentNode,
-									 final HashSet<AutNode> visitedNodes,
-									 final HashSet<AutNode> nodesToMerge)
+	private void findAllNodesToMerge(final AutState currentNode,
+									 final HashSet<AutState> visitedNodes,
+									 final HashSet<AutState> nodesToMerge)
 	{
 		if (visitedNodes.contains(currentNode))
 		{
@@ -199,9 +199,9 @@ public class CLTSBuilder
 		}
 	}
 
-	private void computeReachableTransitionLabels(final AutNode currentNode,
-												  final HashSet<AutNode> visitedNodes,
-												  final HashMap<AutNode, HashSet<String>> reachableTransitionLabels)
+	private void computeReachableTransitionLabels(final AutState currentNode,
+												  final HashSet<AutState> visitedNodes,
+												  final HashMap<AutState, HashSet<String>> reachableTransitionLabels)
 	{
 		final HashSet<String> currentSet = reachableTransitionLabels.computeIfAbsent(currentNode, h -> new HashSet<>());
 
@@ -222,10 +222,10 @@ public class CLTSBuilder
 		}
 	}
 
-	private void computeNodesToRemove(final AutNode currentNode,
-									  final HashSet<AutNode> visitedNodes,
-									  final HashSet<AutNode> nodesToCutAfter,
-									  final HashMap<AutNode, HashSet<String>> reachableTransitionLabels)
+	private void computeNodesToRemove(final AutState currentNode,
+									  final HashSet<AutState> visitedNodes,
+									  final HashSet<AutState> nodesToCutAfter,
+									  final HashMap<AutState, HashSet<String>> reachableTransitionLabels)
 	{
 		if (visitedNodes.contains(currentNode))
 		{

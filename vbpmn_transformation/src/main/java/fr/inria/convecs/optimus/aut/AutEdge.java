@@ -1,30 +1,50 @@
 package fr.inria.convecs.optimus.aut;
 
-import fr.inria.convecs.optimus.bpmn.types.diagram.Edge;
-
 public class AutEdge
 {
 	private final String label;
-	private final AutNode sourceNode;
-	private final AutNode targetNode;
+	private final AutState sourceNode;
+	private final AutState targetNode;
 	private boolean curved;
+	private AutColor color;
 
-	public AutEdge(final AutNode sourceNode,
+	public AutEdge(final AutState sourceNode,
 				   final String label,
-				   final AutNode targetNode)
+				   final AutState targetNode)
 	{
 		this.sourceNode = sourceNode;
 		this.label = label;
 		this.targetNode = targetNode;
-		this.curved = false;
+		this.color = AutColor.BLACK;
 	}
 
-	public AutNode sourceNode()
+	public AutEdge(final AutState sourceNode,
+				   final String label,
+				   final AutState targetNode,
+				   final AutColor color)
+	{
+		this.sourceNode = sourceNode;
+		this.label = label;
+		this.targetNode = targetNode;
+		this.color = color;
+	}
+
+	public void setColor(final AutColor color)
+	{
+		this.color = color;
+	}
+
+	public AutColor getColor()
+	{
+		return this.color;
+	}
+
+	public AutState sourceNode()
 	{
 		return this.sourceNode;
 	}
 
-	public AutNode targetNode()
+	public AutState targetNode()
 	{
 		return this.targetNode;
 	}
@@ -74,5 +94,11 @@ public class AutEdge
 		hash = hash * 31 + this.targetNode.hashCode();
 
 		return hash;
+	}
+
+	@Override
+	public String toString()
+	{
+		return this.sourceNode.label() + " --> " + this.targetNode.label();
 	}
 }

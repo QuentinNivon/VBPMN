@@ -67,6 +67,9 @@ public class CommandLineParser
             return;
         }
 
+        //TODO MANAGER DIFFERENTLY
+        this.put(CommandLineOption.TRUNCATE_CLTS, true);
+
         this.put(CommandLineOption.WORKING_DIRECTORY, new File(commandLineArgs[0]));
 	}
 

@@ -6,5 +6,6 @@ public enum CommandLineOption
     API_KEY,
     BPMN_FILE,
     TEMPORAL_PROPERTY,
-    BCG_PRODUCT
+    BCG_PRODUCT,
+    TRUNCATE_CLTS
 }
