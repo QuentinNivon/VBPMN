@@ -59,13 +59,14 @@ public class Pif2Lnt extends Pif2LntGeneric
 	/**
 	 * Dumps alphabet (list of strings) in the given file.
 	 *
-	 * @param alphabet is the alphabet to dump
-	 * @param stringBuilder is the stringBuilder representing the file to where the alphabet should be dumped
-	 * @param addAny is a boolean indicating whether to add "any" or not
+	 * @param alphabet      is the alphabet to dump
+	 * @param stringBuilder is the stringBuilder in which the alphabet is dumped
+	 * @param addAny        is a boolean indicating whether to add "any" or not
 	 */
 	public void dumpAlphabet(final ArrayList<String> alphabet,
 							 final StringBuilder stringBuilder,
-							 final boolean addAny)
+							 final boolean addAny,
+							 final boolean addLtlDummyLoopyLabel)
 	{
 		final int nbElem = alphabet.size();
 
@@ -91,9 +92,21 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 			}
 
+			if (addLtlDummyLoopyLabel)
+			{
+				stringBuilder.append(", DUMMY_LOOPY_LABEL:any");
+			}
+
 			stringBuilder.append("]");
 			//stringBuilder.close();
 		}
+	}
+
+	public void dumpAlphabet(final ArrayList<String> alphabet,
+							 final StringBuilder stringBuilder,
+							 final boolean addAny)
+	{
+		this.dumpAlphabet(alphabet, stringBuilder, addAny, false);
 	}
 
 	/**
@@ -139,7 +152,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 	 * and a number of outgoing flows. Checks if all flows lead to a same join.
 	 *
 	 * @param couplesList is the list of couples
-	 * @param nbFlows is the number of flows
+	 * @param nbFlows     is the number of flows
 	 * @return the join identifier if yes, "" otherwise.
 	 */
 	public String analyzeReachabilityResults(final ArrayList<Pair<String, Integer>> couplesList,
@@ -250,8 +263,11 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		abstract void writeMainLnt(final StringBuilder stringBuilder);
+
 		abstract void processLnt(final StringBuilder stringBuilder);
+
 		abstract void writeLnt(final StringBuilder stringBuilder);
+
 		abstract ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
 																  final int depth);
 	}
@@ -383,7 +399,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		 * Returns the list of reachable or joins.
 		 *
 		 * @param visited the list of visited elements
-		 * @param depth the current depth
+		 * @param depth   the current depth
 		 * @return the list of reachable or joins
 		 */
 		@Override
@@ -412,7 +428,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final String incIds = "{ident}";
 			final String outIds = "{}";
 
-			return new HashMap<String, String>(){{
+			return new HashMap<String, String>()
+			{{
 				put("flowString", flowString);
 				put("incIds", incIds);
 				put("outIds", outIds);
@@ -504,7 +521,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final String incIds = "{}";
 			final String outIds = "{ident}";
 
-			return new HashMap<String, String>(){{
+			return new HashMap<String, String>()
+			{{
 				put("flowString", flowString);
 				put("incIds", incIds);
 				put("OutIds", outIds);
@@ -1199,6 +1217,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 		/**
 		 * Checks whether the set of outgoing flows contains a default flow
+		 *
 		 * @return
 		 */
 		boolean existDefaultFlow()
@@ -1240,7 +1259,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final ArrayList<ArrayList<String>> allCombi = computeAllCombinations(alphaOut);
 			final int nbt = allCombi.size();
 
-			final StringBuilder builder  = new StringBuilder();
+			final StringBuilder builder = new StringBuilder();
 			for (ArrayList<String> collection : allCombi)
 			{
 				builder.append("Collection: [");
@@ -3529,6 +3548,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 			}
 
+			if (ADD_LTL_DUMMY_LABELS)
+			{
+				lntBuilder.append("process dummy_node [incf:any, name:any] is\n")
+						.append(" var ident: ID in loop incf (?ident of ID); while true loop name end loop end loop end var\n")
+						.append("end process\n");
+			}
+
 			/*
 				Note: up to here, translation patterns are independent of the actual tasks, comm, etc.
 				The actual names will be used only in the MAIN process when computing the process alphabet
@@ -3546,7 +3572,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			lntBuilder.append("\nprocess MAIN ");
 			final ArrayList<String> alpha = this.alpha();
-			dumpAlphabet(alpha, lntBuilder, true);
+			dumpAlphabet(alpha, lntBuilder, true, ADD_LTL_DUMMY_LABELS);
 			lntBuilder.append(" is\n\n");
 
 			//Computes additional synchros for or splits/joins
@@ -3718,9 +3744,19 @@ public class Pif2Lnt extends Pif2LntGeneric
 			//Processes instantiations for final nodes
 			for (Node n : this.finals)
 			{
-				lntBuilder.append("final [")
-						.append(n.incomingFlows().get(0).identifier())
-						.append("_finish, finish]");   //We assume a single incoming flow
+				if (ADD_LTL_DUMMY_LABELS)
+				{
+					lntBuilder.append("dummy_node [")
+							.append(n.incomingFlows().get(0).identifier())
+							.append("_finish, DUMMY_LOOPY_LABEL]");   //We assume a single incoming flow
+				}
+				else
+				{
+					lntBuilder.append("final [")
+							.append(n.incomingFlows().get(0).identifier())
+							.append("_finish, finish]");   //We assume a single incoming flow
+				}
+
 				cter++;
 
 				if (cter <= nbFlows)
@@ -4007,7 +4043,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 	 * Computes the LTS model (BCG file) for a PIF model.
 	 *
 	 * @param pifFileName is the name of the PIF file
-	 * @return (Integer, String, Collection<String>), return code, name of the model
+	 * @return (Integer, String, Collection < String >), return code, name of the model
 	 * (can be different from the filename) and its alphabet
 	 */
 	@Override
@@ -4020,7 +4056,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 	 * Computes the LTS model (BCG file) for a PIF model.
 	 *
 	 * @param pifFileName is the name of the PIF file
-	 * @return (Integer, String, Collection<String>), return code, name of the model
+	 * @return (Integer, String, Collection < String >), return code, name of the model
 	 * (can be different from the filename) and its alphabet
 	 */
 	@Override
@@ -4033,10 +4069,10 @@ public class Pif2Lnt extends Pif2LntGeneric
 	/**
 	 * Computes the LTS model (BCG file) for a PIF model.
 	 *
-	 * @param pifFileName is the name of the PIF file.
+	 * @param pifFileName    is the name of the PIF file.
 	 * @param smartReduction is true if a smart reduction is done on the LTS when loading it, false otherwise.
-	 * @param debug is true if debug information are displayed, false otherwise.
-	 * @return (Integer, String, Collection<String>), return code, name of the model
+	 * @param debug          is true if debug information are displayed, false otherwise.
+	 * @return (Integer, String, Collection < String >), return code, name of the model
 	 * (can be different from the filename) and its alphabet.
 	 */
 	@Override
@@ -4090,7 +4126,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 	 * Gets the name and the alphabet of the LTS for the PIF model.
 	 *
 	 * @param pifFileName is the name of the PIF file
-	 * @return (Integer, String, Collection<String>), return code, name of the model
+	 * @return (Integer, String, Collection < String >), return code, name of the model
 	 * (can be different from the filename) and its alphabet
 	 */
 	@Override
@@ -4103,7 +4139,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 	 * Gets the name and the alphabet of the LTS for the PIF model.
 	 *
 	 * @param pifFileName is the name of the PIF file
-	 * @return (Integer, String, Collection<String>), return code, name of the model
+	 * @return (Integer, String, Collection < String >), return code, name of the model
 	 * (can be different from the filename) and its alphabet
 	 */
 	@Override
@@ -4116,10 +4152,10 @@ public class Pif2Lnt extends Pif2LntGeneric
 	/**
 	 * Gets the name and the alphabet of the LTS for the PIF model.
 	 *
-	 * @param pifFileName is the name of the PIF file.
+	 * @param pifFileName    is the name of the PIF file.
 	 * @param smartReduction is true if a smart reduction is done on the LTS when loading it, false otherwise.
-	 * @param debug is true if debug information are displayed, false otherwise.
-	 * @return (Integer, String, Collection<String>), return code, name of the model
+	 * @param debug          is true if debug information are displayed, false otherwise.
+	 * @return (Integer, String, Collection < String >), return code, name of the model
 	 * (can be different from the filename) and its alphabet.
 	 */
 	@Override
