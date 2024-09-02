@@ -227,7 +227,7 @@ public class CLTSBuilderV2
 
 	private void computeNodesToRemove(final AutNode currentNode,
 									  final HashSet<AutNode> visitedNodes,
-									  final HashSet<AutNode> nodesToCutAfter,
+									  final HashSet<AutNode> nodesToCutBefore,
 									  final HashMap<AutNode, HashSet<String>> reachableTransitionLabels)
 	{
 		if (visitedNodes.contains(currentNode))
@@ -237,7 +237,7 @@ public class CLTSBuilderV2
 
 		visitedNodes.add(currentNode);
 
-		if (currentNode.outgoingEdges().isEmpty()) return;
+		//if (currentNode.outgoingEdges().isEmpty()) return; //TODO CHECK FONCTIONNEMENT
 
 		final HashSet<String> currentReachableTransitionLabels = reachableTransitionLabels.get(currentNode);
 
@@ -254,13 +254,13 @@ public class CLTSBuilderV2
 
 		if (canBeRemoved)
 		{
-			nodesToCutAfter.add(currentNode);
+			nodesToCutBefore.add(currentNode);
 		}
 		else
 		{
 			for (AutEdge outgoingTransition : currentNode.outgoingEdges())
 			{
-				this.computeNodesToRemove(outgoingTransition.targetNode(), visitedNodes, nodesToCutAfter, reachableTransitionLabels);
+				this.computeNodesToRemove(outgoingTransition.targetNode(), visitedNodes, nodesToCutBefore, reachableTransitionLabels);
 			}
 		}
 	}
