@@ -1,5 +1,7 @@
 package fr.inria.convecs.optimus.aut;
 
+import fr.inria.convecs.optimus.nl_to_mc.CLTSBuilderV2;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -95,7 +97,11 @@ public class AutWriter
 			}
 
 			printWriter.print(", ");
-			printWriter.print(autEdge.label());
+			printWriter.print(
+				CLTSBuilderV2.CONSIDER_FULL_PATH ?
+				autEdge.label().replace(" !ACC", "").replace("\"", "") :
+				autEdge.label()
+			);
 
 			if (this.enhance)
 			{
