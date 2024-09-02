@@ -39,6 +39,7 @@ import fr.inria.convecs.optimus.util.XmlUtil;
 import fr.inria.convecs.optimus.validator.ModelValidator;
 import fr.inria.convecs.optimus.validator.RuntimeValidator;
 
+import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_SITE;
 import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_TESTING;
 
 /**
@@ -169,8 +170,8 @@ public class RuntimeValidationService {
 
 	public File parseAndTransform(File input) {
 		try {
-			String pifSchema = LOCAL_TESTING ?
-					LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA:
+			String pifSchema = LOCAL_SITE ? LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA : LOCAL_TESTING ?
+					LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA :
 					REMOTE_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA;
 
 			ContentHandler baseHandler = new BaseContentHandler(input);
