@@ -76,6 +76,7 @@ public class CommandLineParser
             {
                 final File file = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                 final File finalDirectory = this.buildArborescence(file, leafDirectoryName);
+                System.out.println("Final directory: " + finalDirectory);
                 this.put(CommandLineOption.WORKING_DIRECTORY, finalDirectory);
             }
             catch (URISyntaxException e)
@@ -153,6 +154,7 @@ public class CommandLineParser
 
         //Working directory was specified --> check whether it contains a BPMN process and an LTL property
         final File workingDirectory = (File) this.commands.get(CommandLineOption.WORKING_DIRECTORY);
+        MyOwnLogger.append("Working directory: " + workingDirectory);
 
         for (File file : Objects.requireNonNull(workingDirectory.listFiles()))
         {

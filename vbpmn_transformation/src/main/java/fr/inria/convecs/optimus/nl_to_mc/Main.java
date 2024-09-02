@@ -27,7 +27,8 @@ import java.util.*;
 
 public class Main
 {
-	public static final boolean LOCAL_TESTING = true;
+	public static final boolean LOCAL_SITE = true;
+	public static final boolean LOCAL_TESTING = false;
 	private static final int BCG_FILE_REDUCTION_THRESHOLD = 1000;
 	private static final String DUMMY_LOOPY_LABEL = "DUMMY_LOOPY_LABEL";
 	private static final String LNT_GENERIC_NAME = "process";
@@ -515,7 +516,7 @@ public class Main
 	private static File parseAndTransform(File workingDir,
 										  File input)
 	{
-		final String pifSchema = LOCAL_TESTING ? LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA : REMOTE_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA;
+		final String pifSchema = LOCAL_SITE ? LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA : (LOCAL_TESTING ? LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA : REMOTE_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA);
 		final ContentHandler baseHandler = new BaseContentHandler(input);
 		baseHandler.handle();
 		final Process processOutput = (Process) baseHandler.getOutput();
