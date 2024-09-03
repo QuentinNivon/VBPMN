@@ -77,7 +77,7 @@ public class AutParser
 			final String targetStateIndexStr = Utils.trim(line.substring(lastComaIndex + 1, lastParenthesisIndex));
 
 			//Do not parse DUMMY_LOOPY transitions
-			if (label.contains("DUMMY")) return -1;
+			//if (label.contains("DUMMY")) return -1;
 
 			if (!Utils.isAnInt(sourceStateIndexStr)
 				|| !Utils.isAnInt(targetStateIndexStr))
@@ -86,9 +86,19 @@ public class AutParser
 			}
 
 			final int sourceStateIndex = Integer.parseInt(sourceStateIndexStr);
-			final int targetStateIndex = Integer.parseInt(targetStateIndexStr);
 			final AutState sourceState = this.correspondences.computeIfAbsent(sourceStateIndex, n -> new AutState(sourceStateIndex));
-			final AutState targetState = this.correspondences.computeIfAbsent(targetStateIndex, n -> new AutState(targetStateIndex));
+			final AutState targetState;
+
+			if (label.contains("DUMMY"))
+			{
+				targetState = this.correspondences.computeIfAbsent(-1, n -> new AutState(-1));
+			}
+			else
+			{
+				final int targetStateIndex = Integer.parseInt(targetStateIndexStr);
+				targetState = this.correspondences.computeIfAbsent(targetStateIndex, n -> new AutState(targetStateIndex));
+			}
+
 			final AutEdge autEdge = new AutEdge(sourceState, label, targetState);
 			sourceState.addOutgoingEdge(autEdge);
 			targetState.addIncomingEdge(autEdge);

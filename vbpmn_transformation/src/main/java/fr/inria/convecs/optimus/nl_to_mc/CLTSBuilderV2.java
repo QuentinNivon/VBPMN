@@ -55,9 +55,6 @@ public class CLTSBuilderV2
 		//Remove non-specification edges
 		this.removeUnnecessaryEdges(this.autGraph.startNode(), new HashSet<>());
 
-		//Add curvatures
-		this.autGraph.setCurvatures();
-
 		return this.autGraph;
 	}
 
@@ -238,18 +235,8 @@ public class CLTSBuilderV2
 
 		//if (currentNode.outgoingEdges().isEmpty()) return; //TODO CHECK FONCTIONNEMENT
 
-		final HashSet<String> currentReachableTransitionLabels = reachableTransitionLabels.get(currentNode);
-
-		boolean canBeRemoved = true;
-
-		for (String label : currentReachableTransitionLabels)
-		{
-			if (label.contains("!ACC"))
-			{
-				canBeRemoved = false;
-				break;
-			}
-		}
+		final HashSet<String> currentReachableTransitionLabels = reachableTransitionLabels.computeIfAbsent(currentNode, n -> new HashSet<>());
+		final boolean canBeRemoved = !currentReachableTransitionLabels.contains("\"DUMMY_LOOPY_LABEL !ACC\"");
 
 		if (canBeRemoved)
 		{

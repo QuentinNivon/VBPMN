@@ -86,11 +86,13 @@ public class AutWriter
 		//Transitions
 		for (AutEdge autEdge : edges)
 		{
+			if (autEdge.label().contains("DUMMY")) continue; //Do not rewrite DUMMY_LOOPY_LABELS
+
 			printWriter.print("(");
 			printWriter.print(correspondences.get(autEdge.sourceNode().label()));
 
 			if (this.enhance
-					&& autEdge.sourceNode().getStateType() != null)
+				&& autEdge.sourceNode().getStateType() != null)
 			{
 				printWriter.print(":N:");
 				printWriter.print(autEdge.sourceNode().getStateType().getValue());
