@@ -101,7 +101,7 @@ public class Aut2Force3DGraph
 			printWriter.print(VALUE_KEYWORD);
 			printWriter.print("\": \"");
 			printWriter.print(
-				CLTSBuilder.CONSIDER_FULL_PATH ?
+				CLTSBuilderV2.CONSIDER_FULL_PATH ?
 				autEdge.label().replace(" !ACC", "").replace("\"", "") :
 				autEdge.label()
 			);
