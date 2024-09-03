@@ -7,6 +7,7 @@ import java.nio.file.Path;
 
 public class MyOwnLogger
 {
+	private static final String BASE_FILENAME = "std_coloration";
 	private static final StringBuilder builder = new StringBuilder();
 
 	private MyOwnLogger()
@@ -21,7 +22,7 @@ public class MyOwnLogger
 
 	public static void writeStdOut(final File workingDirectory)
 	{
-		final String stdOutPath = workingDirectory.getPath() + File.separator + "std.out";
+		final String stdOutPath = workingDirectory.getPath() + File.separator + BASE_FILENAME + ".out";
 		final File stdOutFile = new File(stdOutPath);
 
 		if (stdOutFile.exists()) stdOutFile.delete();
@@ -45,7 +46,7 @@ public class MyOwnLogger
 	public static void writeStdErr(final File workingDirectory,
 								   final String msg)
 	{
-		final String stdErrPath = workingDirectory.getPath() + File.separator + "std.err";
+		final String stdErrPath = workingDirectory.getPath() + File.separator + BASE_FILENAME + ".err";
 		final File stdErrFile = new File(stdErrPath);
 
 		if (stdErrFile.exists()) stdErrFile.delete();
