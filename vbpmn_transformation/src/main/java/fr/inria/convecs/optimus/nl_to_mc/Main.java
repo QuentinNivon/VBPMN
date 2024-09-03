@@ -27,11 +27,9 @@ import java.util.*;
 
 public class Main
 {
-	public static final boolean LOCAL_SITE = true;
+	public static final boolean LOCAL_SITE = false;
 	public static final boolean LOCAL_TESTING = false;
 	private static final int BCG_FILE_REDUCTION_THRESHOLD = 1000;
-	private static final String DUMMY_LOOPY_LABEL = "DUMMY_LOOPY_LABEL";
-	private static final String LNT_GENERIC_NAME = "process";
 	private static final String COUNTEREXAMPLE_FILE = "diag";
 	private static final String TEMPORARY_COUNTEREXAMPLE = COUNTEREXAMPLE_FILE + ".tmp";
 	private static final String VBPMN_COUNTEREXAMPLE_FILE = "evaluator.bcg";
@@ -69,7 +67,6 @@ public class Main
 	private static final int SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD = 35;
 	private static final int WARNING_FILE_WRITING_FAILED = 36;
 	private static final int BCG_GENERATION_FAILED = 37;
-	private static final int UNEXPECTED_ERROR = 146548449;
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
 	{
@@ -77,6 +74,8 @@ public class Main
 
 		try
 		{
+			final long programStartTime = System.nanoTime();
+
 			try
 			{
 				commandLineParser = new CommandLineParser(args);
@@ -99,6 +98,7 @@ public class Main
 			final File bpmnFile = (File) commandLineParser.get(CommandLineOption.BPMN_FILE);
 
 			System.out.println("Retrieving temporal logic property...");
+			MyOwnLogger.append("Retrieving temporal logic property...");
 			final long propertyRetrievingStartTime = System.nanoTime();
 			final Pair<File, Integer> ltlPropertyAndReturnValue = Main.retrieveLTLProperty(
 					workingDirectory,
@@ -108,143 +108,185 @@ public class Main
 
 			if (ltlPropertyAndReturnValue.getRight() != ReturnCodes.TERMINATION_OK)
 			{
+				MyOwnLogger.append("Temporal logic property retrieval failed.");
+				System.out.println("Temporal logic property retrieval failed.");
 				System.exit(ltlPropertyAndReturnValue.getRight());
 			}
 			final long propertyRetrievingEndTime = System.nanoTime();
 			final long propertyRetrievingTime = propertyRetrievingEndTime - propertyRetrievingStartTime;
+			MyOwnLogger.append("Temporal logic property retrieved in " + Utils.nanoSecToReadable(propertyRetrievingTime) + "\n");
 			System.out.println("Temporal logic property retrieved in " + Utils.nanoSecToReadable(propertyRetrievingTime) + "\n");
 
 			System.out.println("Generating PIF file...");
+			MyOwnLogger.append("Generating PIF file...");
 			final long pifFileGenerationStartTime = System.nanoTime();
 			final File pifFile = Main.parseAndTransform(workingDirectory, bpmnFile);
 
 			if (pifFile == null)
 			{
+				MyOwnLogger.append("The BPMN process could not be translated to the PIF format.");
+				System.out.println("The BPMN process could not be translated to the PIF format.");
 				System.exit(TRANSLATION_TO_PIF_FAILED);
 			}
 
 			final long pifFileGenerationEndTime = System.nanoTime();
 			final long pifFileGenerationTime = pifFileGenerationEndTime - pifFileGenerationStartTime;
+			MyOwnLogger.append("PIF file generated in " + Utils.nanoSecToReadable(pifFileGenerationTime) + ".\n");
 			System.out.println("PIF file generated in " + Utils.nanoSecToReadable(pifFileGenerationTime) + ".\n");
 
 			System.out.println("Generating LNT file...");
+			MyOwnLogger.append("Generating LNT file...");
 			final long lntFileGenerationStartTime = System.nanoTime();
 			final Triple<File, Boolean, Integer> lntSpecAndEvaluation = Main.generateLNT(workingDirectory, pifFile, ltlPropertyAndReturnValue.getLeft());
 
 			if (lntSpecAndEvaluation.getRight() != ReturnCodes.TERMINATION_OK)
 			{
+				MyOwnLogger.append("The generation of the LNT file failed.");
+				System.out.println("The generation of the LNT file failed.");
 				System.exit(lntSpecAndEvaluation.getRight());
 			}
 
 			final long lntFileGenerationEndTime = System.nanoTime();
 			final long lntFileGenerationTime = lntFileGenerationEndTime - lntFileGenerationStartTime;
+			MyOwnLogger.append("LNT file generated in " + Utils.nanoSecToReadable(lntFileGenerationTime) + ".\n");
 			System.out.println("LNT file generated in " + Utils.nanoSecToReadable(lntFileGenerationTime) + ".\n");
 
 			if (lntSpecAndEvaluation.getMiddle() == null)
 			{
 				//Generate the BCG of the LNT spec
 				System.out.println("Generating BCG file...");
+				MyOwnLogger.append("Generating BCG file...");
 				final long bcgFileGenerationStartTime = System.nanoTime();
 				final int bcgFileGenerationReturnCode = Main.generateBCGFile(lntSpecAndEvaluation.getLeft(), workingDirectory);
 
 				if (bcgFileGenerationReturnCode != ReturnCodes.TERMINATION_OK)
 				{
+					MyOwnLogger.append("The generation of the BCG file failed.");
+					System.out.println("The generation of the BCG file failed.");
 					System.exit(bcgFileGenerationReturnCode);
 				}
 
 				final long bcgFileGenerationEndTime = System.nanoTime();
 				final long bcgFileGenerationTime = bcgFileGenerationEndTime - bcgFileGenerationStartTime;
+				MyOwnLogger.append("BCG file generated in " + Utils.nanoSecToReadable(bcgFileGenerationTime) + ".\n");
 				System.out.println("BCG file generated in " + Utils.nanoSecToReadable(bcgFileGenerationTime) + ".\n");
 
 				//Get the size of the BCG file (CANNOT FAIL)
 				System.out.println("Retrieving BCG file size...");
+				MyOwnLogger.append("Retrieving BCG file size...");
 				final long bcgFileSizeRetrievalStartTime = System.nanoTime();
 				final int bcgFileSize = Main.retrieveBCGFileSize(workingDirectory, BCG_SPEC_FILE_NAME);
 				final boolean performReduction = bcgFileSize > BCG_FILE_REDUCTION_THRESHOLD;
 				final long bcgFileSizeRetrievalEndTime = System.nanoTime();
 				final long bcgFileSizeRetrievalTime = bcgFileSizeRetrievalEndTime - bcgFileSizeRetrievalStartTime;
+				MyOwnLogger.append("BCG file size retrieved in " + Utils.nanoSecToReadable(bcgFileSizeRetrievalTime) + ".\n");
 				System.out.println("BCG file size retrieved in " + Utils.nanoSecToReadable(bcgFileSizeRetrievalTime) + ".\n");
 
 				//The property is not written in MCL
 				System.out.println("Computing specification labels...");
+				MyOwnLogger.append("Computing specification labels...");
 				final long labelsComputationStartTime = System.nanoTime();
 				final Pair<ArrayList<String>, Integer> labelsAndReturnCode = Main.computeSpecLabels(bpmnFile);
 
 				if (labelsAndReturnCode.getRight() != ReturnCodes.TERMINATION_OK)
 				{
+					MyOwnLogger.append("The generation of the BCG file failed.");
+					System.out.println("The generation of the BCG file failed.");
 					System.exit(labelsAndReturnCode.getRight());
 				}
 
 				final long labelsComputationEndTime = System.nanoTime();
 				final long labelsComputationTime = labelsComputationEndTime - labelsComputationStartTime;
+				MyOwnLogger.append("Labels \"" + labelsAndReturnCode.getLeft() + "\" computed in " + Utils.nanoSecToReadable(labelsComputationTime) + ".\n");
 				System.out.println("Labels \"" + labelsAndReturnCode.getLeft() + "\" computed in " + Utils.nanoSecToReadable(labelsComputationTime) + ".\n");
 
 				System.out.println("Generating Büchi automata...");
+				MyOwnLogger.append("Generating Büchi automata...");
 				final long buchiAutomataGenerationStartTime = System.nanoTime();
 				final Pair<String, Integer> buchiAutomataAndReturnValue = Main.generateBuchiAutomata(workingDirectory, ltlPropertyAndReturnValue.getLeft());
 
 				if (buchiAutomataAndReturnValue.getRight() != ReturnCodes.TERMINATION_OK)
 				{
+					MyOwnLogger.append("The generation of the Büchi automata failed.");
+					System.out.println("The generation of the Büchi automata failed.");
 					System.exit(buchiAutomataAndReturnValue.getRight());
 				}
 
 				final long buchiAutomataGenerationEndTime = System.nanoTime();
 				final long buchiAutomataGenerationTime = buchiAutomataGenerationEndTime - buchiAutomataGenerationStartTime;
+				MyOwnLogger.append("Büchi automata generated in " + Utils.nanoSecToReadable(buchiAutomataGenerationTime) + ".\n");
 				System.out.println("Büchi automata generated in " + Utils.nanoSecToReadable(buchiAutomataGenerationTime) + ".\n");
 
 				System.out.println("Verifying property labels...");
+				MyOwnLogger.append("Verifying property labels...");
 				final long propertyLabelsVerificationStartTime = System.nanoTime();
 				final int exitCode = Main.retrieveAndVerifyPropertyLabels(workingDirectory, labelsAndReturnCode.getLeft(), buchiAutomataAndReturnValue.getLeft());
 
 				if (exitCode != ReturnCodes.TERMINATION_OK)
 				{
+					MyOwnLogger.append("The verification of the property labels failed.");
+					System.out.println("The verification of the property labels failed.");
 					System.exit(exitCode);
 				}
 
 				final long propertyLabelsVerificationEndTime = System.nanoTime();
 				final long propertyLabelsVerificationTime = propertyLabelsVerificationEndTime - propertyLabelsVerificationStartTime;
+				MyOwnLogger.append("Property labels verified in " + Utils.nanoSecToReadable(propertyLabelsVerificationTime) + ".\n");
 				System.out.println("Property labels verified in " + Utils.nanoSecToReadable(propertyLabelsVerificationTime) + ".\n");
 
 				System.out.println("Generating the SVL script...");
+				MyOwnLogger.append("Generating the SVL script...");
 				final long svlScriptGenerationStartTime = System.nanoTime();
 				final int svlGenReturnValue = Main.generateSVLScript(workingDirectory, lntSpecAndEvaluation.getLeft(), labelsAndReturnCode.getLeft(), performReduction);
 
 				if (svlGenReturnValue != ReturnCodes.TERMINATION_OK)
 				{
+					MyOwnLogger.append("The generation of the SVL script failed.");
+					System.out.println("The generation of the SVL script failed.");
 					System.exit(svlGenReturnValue);
 				}
 
 				final long svlScriptGenerationEndTime = System.nanoTime();
 				final long svlScriptGenerationTime = svlScriptGenerationEndTime - svlScriptGenerationStartTime;
+				MyOwnLogger.append("SVL script generated in " + Utils.nanoSecToReadable(svlScriptGenerationTime) + ".\n");
 				System.out.println("SVL script generated in " + Utils.nanoSecToReadable(svlScriptGenerationTime) + ".\n");
 
 				System.out.println("Executing the SVL script...");
+				MyOwnLogger.append("Executing the SVL script...");
 				final long svlScriptExecutionStartTime = System.nanoTime();
 				final int svlExecReturnValue = Main.executeSVLScript(workingDirectory);
 
 				if (svlExecReturnValue != ReturnCodes.TERMINATION_OK)
 				{
+					MyOwnLogger.append("The execution of the SVL script failed.");
+					System.out.println("The execution of the SVL script failed.");
 					System.exit(svlExecReturnValue);
 				}
 
 				final long svlScriptExecutionEndTime = System.nanoTime();
 				final long svlScriptExecutionTime = svlScriptExecutionEndTime - svlScriptExecutionStartTime;
+				MyOwnLogger.append("SVL script executed in " + Utils.nanoSecToReadable(svlScriptExecutionTime) + ".\n");
 				System.out.println("SVL script executed in " + Utils.nanoSecToReadable(svlScriptExecutionTime) + ".\n");
 			}
 
 			System.out.println("Cleaning the counterexample...");
+			MyOwnLogger.append("Cleaning the counterexample...");
 			final long cleaningCounterExampleStartTime = System.nanoTime();
 			final Pair<File, Integer> counterExample = Main.generateProperCounterexample(workingDirectory);
 
 			if (counterExample.getRight() != ReturnCodes.TERMINATION_OK)
 			{
+				MyOwnLogger.append("The cleaning of the counterexample failed.");
+				System.out.println("The cleaning of the counterexample failed.");
 				System.exit(counterExample.getRight());
 			}
 			final long cleaningCounterExampleEndTime = System.nanoTime();
 			final long cleaningCounterExampleTime = cleaningCounterExampleEndTime - cleaningCounterExampleStartTime;
+			MyOwnLogger.append("Counterexample cleaned in " + Utils.nanoSecToReadable(cleaningCounterExampleTime) + ".\n");
 			System.out.println("Counterexample cleaned in " + Utils.nanoSecToReadable(cleaningCounterExampleTime) + ".\n");
 
 			System.out.println("Converting counterexample to VIS format...");
+			MyOwnLogger.append("Converting counterexample to VIS format...");
 			final long convertingCounterExampleStartTime = System.nanoTime();
 			try
 			{
@@ -253,18 +295,25 @@ public class Main
 			}
 			catch (IOException e)
 			{
+				System.out.println("The translation of the counter-example to VIS failed.");
+				MyOwnLogger.append("The translation of the counter-example to VIS failed.");
 				System.exit(AUT_TO_VIS_CONVERSION_FAILED);
 			}
 			final long convertingCounterExampleEndTime = System.nanoTime();
 			final long convertingCounterExampleTime = convertingCounterExampleEndTime - convertingCounterExampleStartTime;
+			MyOwnLogger.append("Counterexample converted in " + Utils.nanoSecToReadable(convertingCounterExampleTime) + ".\n");
 			System.out.println("Counterexample converted in " + Utils.nanoSecToReadable(convertingCounterExampleTime) + ".\n");
 
 			System.out.println("Cleaning working directory...");
+			MyOwnLogger.append("Cleaning working directory...");
 			Main.finalClean(workingDirectory);
 			System.out.println("Directory cleaned.\n");
+			MyOwnLogger.append("Directory cleaned.\n");
 
-			MyOwnLogger.writeStdOut((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY));
-			MyOwnLogger.writeStdErr((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY), "");
+			final long programEndTime = System.nanoTime();
+			final long programTime = programEndTime - programStartTime;
+			System.out.println("Generation and verification of the property took " + Utils.nanoSecToReadable(programTime) + ".\n");
+			MyOwnLogger.append("Generation and verification of the property took " + Utils.nanoSecToReadable(programTime) + ".\n");
 		}
 		catch (Exception e)
 		{
@@ -275,6 +324,8 @@ public class Main
 			}
 			throw e;
 		}
+
+		MyOwnLogger.writeStdOut((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY));
 	}
 
 	private static Triple<File, Boolean, Integer> generateLNT(final File workingDir,
