@@ -37,6 +37,7 @@ public class Main
 				//throw new IllegalStateException("Some necessary files have not been found or are not valid.");
 				e.printStackTrace();
 				System.exit(4);
+				return;
 			}
 
 			final File workingDirectory = ((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY));
@@ -53,6 +54,7 @@ public class Main
 			}
 			catch (ParserConfigurationException | IOException | SAXException e)
 			{
+				e.printStackTrace();
 				System.exit(4);
 				return;
 			}
