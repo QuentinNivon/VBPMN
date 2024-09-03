@@ -382,7 +382,7 @@ public class Main
 					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD);
 				}
 
-				labels.add(object.name());
+				labels.add(object.name().toUpperCase());
 			}
 		}
 
