@@ -2,12 +2,15 @@ package fr.inria.convecs.optimus.nl_to_mc;
 
 import fr.inria.convecs.optimus.aut.AutGraph;
 import fr.inria.convecs.optimus.aut.AutParser;
+import fr.inria.convecs.optimus.bpmn.BpmnParser;
 import fr.inria.convecs.optimus.bpmn.graph.Graph;
 import fr.inria.convecs.optimus.bpmn.graph.GraphToList;
 import fr.inria.convecs.optimus.bpmn.writing.generation.GraphicalGenerationWriter;
 import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
 import fr.inria.convecs.optimus.util.Utils;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URISyntaxException;
 
@@ -36,6 +39,24 @@ public class Main
 
 			final File workingDirectory = ((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY));
 
+			System.out.println("Parsing original BPMN process...");
+			final long bpmnProcessParsingStartTime = System.nanoTime();
+			final BpmnParser bpmnParser;
+
+			try
+			{
+				bpmnParser = new BpmnParser((File) commandLineParser.get(CommandLineOption.BPMN_FILE));
+				bpmnParser.parse();
+			}
+			catch (ParserConfigurationException | IOException | SAXException e)
+			{
+				System.exit(4);
+				return;
+			}
+			final long bpmnProcessParsingEndTime = System.nanoTime();
+			final long bpmnProcessParsingTime = bpmnProcessParsingEndTime - bpmnProcessParsingStartTime;
+			System.out.println("Original BPMN process parsed in " + Utils.nanoSecToReadable(bpmnProcessParsingTime) + ".\n");
+
 			System.out.println("Parsing full CLTS...");
 			final long fullCltsParsingStartTime = System.nanoTime();
 			final AutParser fullCltsParser = new AutParser(new File(workingDirectory + File.separator + AUTX_FULL_CLTS), true);
@@ -54,7 +75,7 @@ public class Main
 
 			System.out.println("Converting CLTS to BPMN...");
 			final long cltsConversionStartTime = System.nanoTime();
-			final CLTStoBPMN cltStoBPMN = new CLTStoBPMN(fullCLTS);
+			final CLTStoBPMN cltStoBPMN = new CLTStoBPMN(fullCLTS, bpmnParser.bpmnProcess().tasks());
 			final Graph bpmnProcess = cltStoBPMN.convert();
 			final long cltsConversionEndTime = System.nanoTime();
 			final long cltsConversionTime = cltsConversionEndTime - cltsConversionStartTime;

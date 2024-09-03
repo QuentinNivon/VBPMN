@@ -10,6 +10,7 @@ import fr.inria.convecs.optimus.bpmn.graph.Node;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessFactory;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessType;
 import fr.inria.convecs.optimus.bpmn.types.process.Gateway;
+import fr.inria.convecs.optimus.bpmn.types.process.Task;
 import fr.inria.convecs.optimus.util.Pair;
 
 import java.util.ArrayList;
@@ -19,11 +20,14 @@ import java.util.HashSet;
 public class CLTStoBPMN
 {
 	private final AutGraph clts;
+	private final HashSet<Task> originalTasks;
 	private Graph bpmn;
 
-	public CLTStoBPMN(final AutGraph clts)
+	public CLTStoBPMN(final AutGraph clts,
+					  final HashSet<Task> originalTasks)
 	{
 		this.clts = clts;
+		this.originalTasks = originalTasks;
 		BpmnProcessFactory.setObjectIDs(new ArrayList<>());
 	}
 
@@ -153,7 +157,7 @@ public class CLTStoBPMN
 
 		for (AutEdge outgoingEdge : currentCltsNode.outgoingEdges())
 		{
-			final Node task =  new Node(BpmnProcessFactory.generateTask("Task_" + BpmnProcessFactory.generateID(15), outgoingEdge.label()));
+			final Node task =  new Node(BpmnProcessFactory.generateTask("Task_" + BpmnProcessFactory.generateID(15), this.getRealName(outgoingEdge.label())));
 
 			if (outgoingEdge.getColor() == AutColor.GREEN)
 			{
@@ -184,5 +188,18 @@ public class CLTStoBPMN
 
 			this.buildGraph(outgoingEdge.targetNode(), outgoingFlow, visitedNodes, correspondences);
 		}
+	}
+
+	private String getRealName(final String upperCaseName)
+	{
+		for (Task t : this.originalTasks)
+		{
+			if (t.name().toUpperCase().equals(upperCaseName))
+			{
+				return t.name();
+			}
+		}
+
+		throw new IllegalStateException("No task of name \"" + upperCaseName + "\" found in the process!");
 	}
 }
