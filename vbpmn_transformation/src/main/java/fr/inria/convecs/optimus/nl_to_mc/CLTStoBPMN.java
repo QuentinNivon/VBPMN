@@ -83,12 +83,12 @@ public class CLTStoBPMN
 	//TODO A REVOIR
 	private void manageLastFlows()
 	{
-		final HashSet<Node> endEvents = this.originalBpmn.lastNodes();
+		/*final HashSet<Node> endEvents = this.originalBpmn.lastNodes();
 		final Node endEvent = endEvents.iterator().next();
 		final HashSet<Node> closestAncestorTasks = new HashSet<>();
 		this.findClosestAncestorTasks(endEvent, closestAncestorTasks, new HashSet<>());
 
-		if (closestAncestorTasks.isEmpty()) throw new IllegalStateException();
+		if (closestAncestorTasks.isEmpty()) throw new IllegalStateException();*/
 
 
 	}

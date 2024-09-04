@@ -55,7 +55,7 @@ public class CLTSFlattener
 			autEdge.sourceNode().removeOutgoingEdge(autEdge);
 			autEdge.targetNode().removeIncomingEdge(autEdge);
 			final AutState newState = new AutState(nextStateLabel++);
-			final AutEdge newEdge = new AutEdge(autEdge.sourceNode(), autEdge.label(), newState);
+			final AutEdge newEdge = new AutEdge(autEdge.sourceNode(), autEdge.label(), newState, autEdge.getColor());
 			final HashSet<AutState> correspondences = stateCorrespondences.computeIfAbsent(autEdge.targetNode(), n -> new HashSet<>());
 			correspondences.add(newState);
 			autEdge.sourceNode().addOutgoingEdge(newEdge);
@@ -158,7 +158,7 @@ public class CLTSFlattener
 				final AutEdge incomingTransition = dummyLoopState.incomingEdges().iterator().next();
 				final AutState sourceState = incomingTransition.sourceNode();
 				sourceState.removeOutgoingEdge(incomingTransition);
-				final AutEdge realEdge = new AutEdge(sourceState, incomingTransition.label(), realLoopState);
+				final AutEdge realEdge = new AutEdge(sourceState, incomingTransition.label(), realLoopState, incomingTransition.getColor());
 				sourceState.addOutgoingEdge(realEdge);
 				realLoopState.addIncomingEdge(realEdge);
 			}
