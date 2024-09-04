@@ -21,13 +21,16 @@ public class CLTStoBPMN
 {
 	private final AutGraph clts;
 	private final HashSet<Task> originalTasks;
+	private final Graph originalBpmn;
 	private Graph bpmn;
 
 	public CLTStoBPMN(final AutGraph clts,
-					  final HashSet<Task> originalTasks)
+					  final HashSet<Task> originalTasks,
+					  final Graph originalBpmn)
 	{
 		this.clts = clts;
 		this.originalTasks = originalTasks;
+		this.originalBpmn = originalBpmn;
 		BpmnProcessFactory.setObjectIDs(new ArrayList<>());
 	}
 
@@ -41,13 +44,30 @@ public class CLTStoBPMN
 		//Add the end event(s)
 		final HashSet<Node> lastFlows = new HashSet<>();
 		this.getLastFlows(graph.initialNode(), lastFlows, new HashSet<>());
-		if (lastFlows.isEmpty()) throw new IllegalStateException();
 
-		for (Node lastFlow : lastFlows)
+		MyOwnLogger.append("CURRENT PROCESS:\n\n" + graph.toString());
+
+		if (lastFlows.isEmpty())
 		{
-			final Node endEvent = new Node(BpmnProcessFactory.generateEndEvent());
-			lastFlow.addChild(endEvent);
-			endEvent.addParent(lastFlow);
+			/*
+				Happens when the exit node of the loop (the exclusive split gateway)
+				is directly connected to the end event.
+				In this case, we need to find the last loop node of the original
+				process (i.e., the one directly connected to the exit node of the loop)
+				and connect it to an exclusive split gateway being the exit node of the
+				new loop.
+			 */
+			this.manageLastFlows();
+		}
+		else
+		{
+			//TODO Revoir car on peut avoir des last flows et une boucle terminale mal gérée
+			for (Node lastFlow : lastFlows)
+			{
+				final Node endEvent = new Node(BpmnProcessFactory.generateEndEvent());
+				lastFlow.addChild(endEvent);
+				endEvent.addParent(lastFlow);
+			}
 		}
 
 		return this.bpmn = graph;
@@ -59,6 +79,43 @@ public class CLTStoBPMN
 	}
 
 	//Private methods
+
+	//TODO A REVOIR
+	private void manageLastFlows()
+	{
+		final HashSet<Node> endEvents = this.originalBpmn.lastNodes();
+		final Node endEvent = endEvents.iterator().next();
+		final HashSet<Node> closestAncestorTasks = new HashSet<>();
+		this.findClosestAncestorTasks(endEvent, closestAncestorTasks, new HashSet<>());
+
+		if (closestAncestorTasks.isEmpty()) throw new IllegalStateException();
+
+
+	}
+
+	private void findClosestAncestorTasks(final Node currentNode,
+										  final HashSet<Node> closestAncestorTasks,
+										  final HashSet<Node> visitedNodes)
+	{
+		if (visitedNodes.contains(currentNode))
+		{
+			return;
+		}
+
+		visitedNodes.add(currentNode);
+
+		if (currentNode.bpmnObject() instanceof Task)
+		{
+			closestAncestorTasks.add(currentNode);
+		}
+		else
+		{
+			for (Node parent : currentNode.parentNodes())
+			{
+				this.findClosestAncestorTasks(parent, closestAncestorTasks, visitedNodes);
+			}
+		}
+	}
 
 	private void getLastFlows(final Node currentNode,
 							  final HashSet<Node> lastFlows,

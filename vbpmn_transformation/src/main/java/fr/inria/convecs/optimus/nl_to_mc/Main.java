@@ -5,6 +5,7 @@ import fr.inria.convecs.optimus.aut.AutParser;
 import fr.inria.convecs.optimus.bpmn.BpmnParser;
 import fr.inria.convecs.optimus.bpmn.graph.Graph;
 import fr.inria.convecs.optimus.bpmn.graph.GraphToList;
+import fr.inria.convecs.optimus.bpmn.graph.ListToGraph;
 import fr.inria.convecs.optimus.bpmn.writing.generation.GraphicalGenerationWriter;
 import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
 import fr.inria.convecs.optimus.util.Utils;
@@ -58,6 +59,9 @@ public class Main
 				System.exit(4);
 				return;
 			}
+
+			final ListToGraph listToGraph = new ListToGraph(bpmnParser.bpmnProcess().objects());
+			final Graph originalBpmnProcess = listToGraph.convert();
 			final long bpmnProcessParsingEndTime = System.nanoTime();
 			final long bpmnProcessParsingTime = bpmnProcessParsingEndTime - bpmnProcessParsingStartTime;
 			MyOwnLogger.append("Original BPMN process parsed in " + Utils.nanoSecToReadable(bpmnProcessParsingTime) + ".\n");
@@ -86,7 +90,7 @@ public class Main
 			System.out.println("Converting CLTS to BPMN...");
 			MyOwnLogger.append("Converting CLTS to BPMN...");
 			final long cltsConversionStartTime = System.nanoTime();
-			final CLTStoBPMN cltStoBPMN = new CLTStoBPMN(fullCLTS, bpmnParser.bpmnProcess().tasks());
+			final CLTStoBPMN cltStoBPMN = new CLTStoBPMN(fullCLTS, bpmnParser.bpmnProcess().tasks(), originalBpmnProcess);
 			final Graph bpmnProcess = cltStoBPMN.convert();
 			final long cltsConversionEndTime = System.nanoTime();
 			final long cltsConversionTime = cltsConversionEndTime - cltsConversionStartTime;

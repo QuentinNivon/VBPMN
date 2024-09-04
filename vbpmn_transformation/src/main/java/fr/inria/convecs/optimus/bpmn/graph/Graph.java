@@ -1,9 +1,13 @@
 package fr.inria.convecs.optimus.bpmn.graph;
 
 import fr.inria.convecs.optimus.bpmn.BpmnColor;
+import fr.inria.convecs.optimus.bpmn.constants.BpmnType;
+import fr.inria.convecs.optimus.bpmn.constants.Constants;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessObject;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessType;
 import fr.inria.convecs.optimus.bpmn.types.process.Gateway;
+import fr.inria.convecs.optimus.bpmn.types.process.events.Event;
+import fr.inria.convecs.optimus.nl_to_mc.MyOwnLogger;
 import fr.inria.convecs.optimus.util.Utils;
 
 import java.util.ArrayList;
@@ -83,6 +87,41 @@ public class Graph
     public Node lastNode()
     {
         return this.findLastNodeRec(this.initialNode, new HashSet<>());
+    }
+
+    public HashSet<Node> lastNodes()
+    {
+        final HashSet<Node> lastNodes = new HashSet<>();
+        this.findLastNodes(this.initialNode, lastNodes, new HashSet<>());
+
+        if (lastNodes.isEmpty())
+        {
+            System.out.println("No end event was found in the process!");
+            MyOwnLogger.append("No end event was found in the process!");
+        }
+
+        for (Node node : lastNodes)
+        {
+            if (node.bpmnObject().type() != BpmnProcessType.END_EVENT
+                && node.bpmnObject().type() != BpmnProcessType.END_MESSAGE_EVENT
+                && node.bpmnObject().type() != BpmnProcessType.END_ESCALATION_EVENT
+                && node.bpmnObject().type() != BpmnProcessType.END_ERROR_EVENT
+                && node.bpmnObject().type() != BpmnProcessType.END_COMPENSATE_EVENT
+                && node.bpmnObject().type() != BpmnProcessType.END_SIGNAL_EVENT
+                && node.bpmnObject().type() != BpmnProcessType.END_TERMINATE_EVENT)
+            {
+                System.out.println(
+                    "Warning: Node \"" + node.bpmnObject().id() + "\" (\"" + node.bpmnObject().name() + "\") has no" +
+                    " child but and is not an end event."
+                );
+                MyOwnLogger.append(
+                    "Warning: Node \"" + node.bpmnObject().id() + "\" (\"" + node.bpmnObject().name() + "\") has no" +
+                    " child but and is not an end event."
+                );
+            }
+        }
+
+        return lastNodes;
     }
 
     public Graph weakCopy()
@@ -323,6 +362,29 @@ public class Graph
         return null;
     }
 
+    private void findLastNodes(final Node currentNode,
+                               final HashSet<Node> lastNodes,
+                               final HashSet<Node> visitedNodes)
+    {
+        if (visitedNodes.contains(currentNode))
+        {
+            return;
+        }
+
+        visitedNodes.add(currentNode);
+
+        if (currentNode.childNodes().isEmpty())
+        {
+            //A node with no child is considered as an end event
+            lastNodes.add(currentNode);
+        }
+
+        for (Node child : currentNode.childNodes())
+        {
+            this.findLastNodes(child, lastNodes, visitedNodes);
+        }
+    }
+
     private Node findLastNodeRec(final Node currentNode,
                                  final HashSet<Node> visitedNodes)
     {
@@ -363,7 +425,14 @@ public class Graph
 
     public String stringify()
     {
-        return this.lastNode().stringifyRevert(0, new ArrayList<>());
+        final StringBuilder builder = new StringBuilder();
+
+        for (Node lastNode : this.lastNodes())
+        {
+            builder.append(lastNode.stringifyRevert(0, new ArrayList<>()));
+        }
+
+        return builder.toString();
     }
 
     //TODO Check if the fact that we consider two graph equals by checking
