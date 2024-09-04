@@ -76,7 +76,7 @@ public class Main
 			System.out.println("Flattening CLTS...");
 			MyOwnLogger.append("Flattening CLTS...");
 			final long cltsFlatteningStartTime = System.nanoTime();
-			final CLTSFlattener flattener = new CLTSFlattener(fullCLTS);
+			final CLTSFlattener flattener = new CLTSFlattener(fullCLTS, workingDirectory);
 			flattener.flatten();
 			final long cltsFlatteningEndTime = System.nanoTime();
 			final long cltsFlatteningTime = cltsFlatteningEndTime - cltsFlatteningStartTime;

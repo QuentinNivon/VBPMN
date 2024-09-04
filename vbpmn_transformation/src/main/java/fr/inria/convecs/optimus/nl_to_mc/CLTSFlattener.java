@@ -15,11 +15,15 @@ import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_SITE;
 public class CLTSFlattener
 {
 	private static final boolean VERIFY_FLATTENING = true;
+	private static final String ACYCLIC_CLTS = "clts_acyclic.autx";
 	private final AutGraph clts;
+	private final File workingDirectory;
 
-	public CLTSFlattener(final AutGraph clts)
+	public CLTSFlattener(final AutGraph clts,
+						 final File workingDirectory)
 	{
 		this.clts = clts;
+		this.workingDirectory = workingDirectory;
 	}
 
 	/**
@@ -55,13 +59,14 @@ public class CLTSFlattener
 			final HashSet<AutState> correspondences = stateCorrespondences.computeIfAbsent(autEdge.targetNode(), n -> new HashSet<>());
 			correspondences.add(newState);
 			autEdge.sourceNode().addOutgoingEdge(newEdge);
-			autEdge.targetNode().addIncomingEdge(newEdge);
+			newState.addIncomingEdge(newEdge);
 		}
 
 		//Debug
 		if (LOCAL_SITE)
 		{
-			final AutWriter autWriter = new AutWriter(this.clts, new File("/home/quentin/Documents/test.autx"), true);
+			final String path = this.workingDirectory.getAbsolutePath() + File.separator + ACYCLIC_CLTS;
+			final AutWriter autWriter = new AutWriter(this.clts, new File(path), true);
 			try
 			{
 				autWriter.write();
@@ -77,12 +82,14 @@ public class CLTSFlattener
 
 		while (changed)
 		{
+			MyOwnLogger.append("Entering while");
 			changed = false;
 
 			for (AutState autState : this.clts.nodesAndEdges().getFirst())
 			{
 				if (autState.incomingEdges().size() > 1)
 				{
+					MyOwnLogger.append("State " + autState.label() + " has " + autState.incomingEdges().size() + " incoming edges.");
 					final HashSet<AutEdge> incomingTransitions = new HashSet<>();
 					boolean started = false;
 
