@@ -338,7 +338,7 @@ public class Main
 			System.out.println("Parsing AUT specification...");
 			MyOwnLogger.append("Parsing AUT specification...");
 			final long autSpecParsingStartTime = System.nanoTime();
-			final AutParser autSpecParser = new AutParser(new File(workingDirectory + File.separator + AUT_SPECIFICATION_WEAK));
+			final AutParser autSpecParser = new AutParser(new File(workingDirectory + File.separator + AUT_SPECIFICATION_WEAK), false);
 			final AutGraph specGraph = autSpecParser.parse();
 			final long autSpecParsingEndTime = System.nanoTime();
 			final long autSpecParsingTime = autSpecParsingEndTime - autSpecParsingStartTime;

@@ -12,11 +12,21 @@ public class AutParser
 {
 	private final File autFile;
 	private final HashMap<Integer, AutState> correspondences;
+	private final boolean parseDummy;
 
 	public AutParser(final File file)
 	{
 		this.autFile = file;
 		this.correspondences = new HashMap<>();
+		this.parseDummy = true;
+	}
+
+	public AutParser(final File file,
+					 final boolean parseDummy)
+	{
+		this.autFile = file;
+		this.correspondences = new HashMap<>();
+		this.parseDummy = parseDummy;
 	}
 
 	public AutGraph parse() throws IOException
@@ -77,7 +87,7 @@ public class AutParser
 			final String targetStateIndexStr = Utils.trim(line.substring(lastComaIndex + 1, lastParenthesisIndex));
 
 			//Do not parse DUMMY_LOOPY transitions
-			//if (label.contains("DUMMY")) return -1;
+			if (label.contains("DUMMY") && !this.parseDummy) return -1;
 
 			if (!Utils.isAnInt(sourceStateIndexStr)
 				|| !Utils.isAnInt(targetStateIndexStr))

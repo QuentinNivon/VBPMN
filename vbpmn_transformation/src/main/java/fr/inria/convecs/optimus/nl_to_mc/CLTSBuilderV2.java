@@ -38,11 +38,24 @@ public class CLTSBuilderV2
 	{
 		//Truncate correct parts of the product
 		final HashMap<AutState, HashSet<String>> reachableTransitionLabels = new HashMap<>();
+		//Compute reachable transitions twice to properly manage loops
 		this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), reachableTransitionLabels);
+		this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), reachableTransitionLabels);
+		MyOwnLogger.append("Reachable transitions:\n\n" + reachableTransitionLabels.toString());
+
+		for (AutState autState : this.autGraph.nodesAndEdges().getFirst())
+		{
+			if (reachableTransitionLabels.get(autState) == null)
+			{
+				throw new IllegalStateException("State " + autState.label() + " has no reachable transitions!");
+			}
+		}
+
 		final HashSet<AutState> nodesToCutBefore = new HashSet<>();
 		this.computeNodesToRemove(this.autGraph.startNode(), new HashSet<>(), nodesToCutBefore, reachableTransitionLabels);
 
 		System.out.println("Nodes to cut before: " + nodesToCutBefore);
+		MyOwnLogger.append("Nodes to cut before: " + nodesToCutBefore);
 
 		for (AutState node : nodesToCutBefore)
 		{
@@ -235,7 +248,13 @@ public class CLTSBuilderV2
 
 		//if (currentNode.outgoingEdges().isEmpty()) return; //TODO CHECK FONCTIONNEMENT
 
-		final HashSet<String> currentReachableTransitionLabels = reachableTransitionLabels.computeIfAbsent(currentNode, n -> new HashSet<>());
+		final HashSet<String> currentReachableTransitionLabels = reachableTransitionLabels.get(currentNode);
+
+		if (currentReachableTransitionLabels == null)
+		{
+			throw new IllegalStateException("Node " + currentNode.label() + " does not have any reachable transition!");
+		}
+
 		final boolean canBeRemoved = !currentReachableTransitionLabels.contains("\"DUMMY_LOOPY_LABEL !ACC\"");
 
 		if (canBeRemoved)
