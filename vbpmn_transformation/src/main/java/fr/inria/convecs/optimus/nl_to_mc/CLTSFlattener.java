@@ -3,9 +3,14 @@ package fr.inria.convecs.optimus.nl_to_mc;
 import fr.inria.convecs.optimus.aut.AutEdge;
 import fr.inria.convecs.optimus.aut.AutGraph;
 import fr.inria.convecs.optimus.aut.AutState;
+import fr.inria.convecs.optimus.aut.AutWriter;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.HashSet;
+
+import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_SITE;
 
 public class CLTSFlattener
 {
@@ -51,6 +56,20 @@ public class CLTSFlattener
 			correspondences.add(newState);
 			autEdge.sourceNode().addOutgoingEdge(newEdge);
 			autEdge.targetNode().addIncomingEdge(newEdge);
+		}
+
+		//Debug
+		if (LOCAL_SITE)
+		{
+			final AutWriter autWriter = new AutWriter(this.clts, new File("/home/quentin/Documents/test.autx"), true);
+			try
+			{
+				autWriter.write();
+			}
+			catch (FileNotFoundException e)
+			{
+				throw new RuntimeException(e);
+			}
 		}
 
 		//Flatten CLTS
