@@ -15,7 +15,7 @@ public class Aut2Force3DGraph
 	private static final int DEFAULT_GROUP = 1;
 	private static final int INITIAL_GROUP = 2;
 	private static final int TERMINAL_GROUP = 3;
-	private static final double CURVATURE_VALUE = 2.0d;
+	private static final double CURVATURE_VALUE = 1.0d;
 	private static final String DEFAULT_COLOR = "#0000FF";
 	private static final String INITIAL_COLOR = "#FF0000";
 	private static final String TERMINAL_COLOR = "#FF0000";

@@ -37,22 +37,31 @@ public class CLTSBuilderV2
 	public AutGraph buildCLTS()
 	{
 		//Truncate correct parts of the product
-		final HashMap<AutState, HashSet<String>> reachableTransitionLabels = new HashMap<>();
-		//Compute reachable transitions twice to properly manage loops
-		this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), reachableTransitionLabels);
-		this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), reachableTransitionLabels);
-		MyOwnLogger.append("Reachable transitions:\n\n" + reachableTransitionLabels.toString());
+		//Compute reachable transitions repeatedly until reaching a fix point
+		final HashMap<AutState, HashSet<String>> oldReachableTransitions = new HashMap<>();
+		final HashMap<AutState, HashSet<String>> newReachableTransitions = new HashMap<>();
+		this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), newReachableTransitions);
+
+		while (!oldReachableTransitions.equals(newReachableTransitions))
+		{
+			oldReachableTransitions.clear();
+			oldReachableTransitions.putAll(newReachableTransitions);
+			//newReachableTransitions.clear();
+			this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), newReachableTransitions);
+		}
+
+		MyOwnLogger.append("Reachable transitions:\n\n" + newReachableTransitions.toString());
 
 		for (AutState autState : this.autGraph.nodesAndEdges().getFirst())
 		{
-			if (reachableTransitionLabels.get(autState) == null)
+			if (newReachableTransitions.get(autState) == null)
 			{
 				throw new IllegalStateException("State " + autState.label() + " has no reachable transitions!");
 			}
 		}
 
 		final HashSet<AutState> nodesToCutBefore = new HashSet<>();
-		this.computeNodesToRemove(this.autGraph.startNode(), new HashSet<>(), nodesToCutBefore, reachableTransitionLabels);
+		this.computeNodesToRemove(this.autGraph.startNode(), new HashSet<>(), nodesToCutBefore, newReachableTransitions);
 
 		System.out.println("Nodes to cut before: " + nodesToCutBefore);
 		MyOwnLogger.append("Nodes to cut before: " + nodesToCutBefore);
