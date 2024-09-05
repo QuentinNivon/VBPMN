@@ -128,6 +128,14 @@ public class CLTSColorManager
 
 		for (AutEdge outgoingTransition : currentNode.outgoingEdges())
 		{
+			final HashSet<AutEdge> set = reachableTransitions.get(outgoingTransition.targetNode());
+
+			if (set == null)
+			{
+				continue;
+				//throw new IllegalStateException("State " + outgoingTransition.targetNode() + " has not been managed yet!");
+			}
+
 			currentSet.addAll(reachableTransitions.get(outgoingTransition.targetNode()));
 		}
 	}
