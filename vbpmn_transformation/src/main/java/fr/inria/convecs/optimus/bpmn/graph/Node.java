@@ -74,6 +74,16 @@ public class Node
         return this.parentNodes;
     }
 
+    public boolean hasSuccessorOfName(final String name)
+    {
+        return this.hasSuccessorOfName(name, new HashSet<>());
+    }
+
+    public boolean hasAncestorOfName(final String name)
+    {
+        return this.hasAncestorOfName(name, new HashSet<>());
+    }
+
     public boolean hasChilds()
     {
         return !this.childNodes.isEmpty();
@@ -331,6 +341,56 @@ public class Node
             {
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    private boolean hasSuccessorOfName(final String name,
+                                       final HashSet<Node> visitedNodes)
+    {
+        if (visitedNodes.contains(this))
+        {
+            return false;
+        }
+
+        visitedNodes.add(this);
+
+        for (Node childNode : this.childNodes())
+        {
+            if (childNode.bpmnObject().name().equals(name))
+            {
+                return true;
+            }
+
+            final boolean hasSuccessor = childNode.hasSuccessorOfName(name, visitedNodes);
+
+            if (hasSuccessor) return true;
+        }
+
+        return false;
+    }
+
+    private boolean hasAncestorOfName(final String name,
+                                      final HashSet<Node> visitedNodes)
+    {
+        if (visitedNodes.contains(this))
+        {
+            return false;
+        }
+
+        visitedNodes.add(this);
+
+        for (Node parentNode : this.parentNodes())
+        {
+            if (parentNode.bpmnObject().name().equals(name))
+            {
+                return true;
+            }
+
+            final boolean hasAncestor = parentNode.hasAncestorOfName(name, visitedNodes);
+
+            if (hasAncestor) return true;
         }
 
         return false;
