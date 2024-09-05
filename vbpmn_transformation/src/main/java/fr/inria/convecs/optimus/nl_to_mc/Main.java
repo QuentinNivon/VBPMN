@@ -77,52 +77,73 @@ public class Main
 			MyOwnLogger.append("Full CLTS parsed in " + Utils.nanoSecToReadable(fullCltsParsingTime) + ".\n");
 			System.out.println("Full CLTS parsed in " + Utils.nanoSecToReadable(fullCltsParsingTime) + ".\n");
 
-			System.out.println("Flattening CLTS...");
-			MyOwnLogger.append("Flattening CLTS...");
-			final long cltsFlatteningStartTime = System.nanoTime();
-			final CLTSFlattener flattener = new CLTSFlattener(fullCLTS, workingDirectory);
-			flattener.flatten();
-			final long cltsFlatteningEndTime = System.nanoTime();
-			final long cltsFlatteningTime = cltsFlatteningEndTime - cltsFlatteningStartTime;
-			MyOwnLogger.append("CLTS flattened in " + Utils.nanoSecToReadable(cltsFlatteningTime) + ".\n");
-			System.out.println("CLTS flattened in " + Utils.nanoSecToReadable(cltsFlatteningTime) + ".\n");
+			System.out.println("Performing matching analysis...");
+			MyOwnLogger.append("Performing matching analysis...");
+			final long matchingAnalysisStartTime = System.nanoTime();
+			final Graph coloredProcess;
+			final MatchingAnalyzer matchingAnalyzer = new MatchingAnalyzer(fullCLTS, originalBpmnProcess);
 
-			System.out.println("Converting CLTS to BPMN...");
-			MyOwnLogger.append("Converting CLTS to BPMN...");
-			final long cltsConversionStartTime = System.nanoTime();
-			final CLTStoBPMN cltStoBPMN = new CLTStoBPMN(fullCLTS, bpmnParser.bpmnProcess().tasks(), originalBpmnProcess);
-			final Graph bpmnProcess = cltStoBPMN.convert();
-			final long cltsConversionEndTime = System.nanoTime();
-			final long cltsConversionTime = cltsConversionEndTime - cltsConversionStartTime;
-			if (LOCAL_TESTING) System.out.println("Original BPMN process:\n\n" + bpmnProcess);
-			MyOwnLogger.append("CLTS converted to BPMN in " + Utils.nanoSecToReadable(cltsConversionTime) + ".\n");
-			System.out.println("CLTS converted to BPMN in " + Utils.nanoSecToReadable(cltsConversionTime) + ".\n");
+			if (matchingAnalyzer.matches())
+			{
+				coloredProcess = originalBpmnProcess;
+				matchingAnalyzer.colorOriginalProcess();
+				final long matchingAnalysisEndTime = System.nanoTime();
+				final long matchingAnalysisTime = matchingAnalysisEndTime - matchingAnalysisStartTime;
+				System.out.println("Matching analysis performed in " + Utils.nanoSecToReadable(matchingAnalysisTime) + ".\n");
+			}
+			else
+			{
+				final long matchingAnalysisEndTime = System.nanoTime();
+				final long matchingAnalysisTime = matchingAnalysisEndTime - matchingAnalysisStartTime;
+				System.out.println("Matching analysis performed in " + Utils.nanoSecToReadable(matchingAnalysisTime) + ".\n");
 
-			System.out.println("Folding BPMN process...");
-			MyOwnLogger.append("Folding BPMN process...");
-			final long bpmnFoldingStartTime = System.nanoTime();
-			final BPMNFolder bpmnFolder = new BPMNFolder(bpmnProcess);
-			final Graph foldedBpmn = bpmnFolder.fold();
-			final long bpmnFoldingEndTime = System.nanoTime();
-			final long bpmnFoldingTime = bpmnFoldingEndTime - bpmnFoldingStartTime;
-			if (LOCAL_TESTING) System.out.println("Folded BPMN process:\n\n" + foldedBpmn);
-			MyOwnLogger.append("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
-			System.out.println("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
+				System.out.println("Flattening CLTS...");
+				MyOwnLogger.append("Flattening CLTS...");
+				final long cltsFlatteningStartTime = System.nanoTime();
+				final CLTSFlattener flattener = new CLTSFlattener(fullCLTS, workingDirectory);
+				flattener.flatten();
+				final long cltsFlatteningEndTime = System.nanoTime();
+				final long cltsFlatteningTime = cltsFlatteningEndTime - cltsFlatteningStartTime;
+				MyOwnLogger.append("CLTS flattened in " + Utils.nanoSecToReadable(cltsFlatteningTime) + ".\n");
+				System.out.println("CLTS flattened in " + Utils.nanoSecToReadable(cltsFlatteningTime) + ".\n");
 
-			System.out.println("Merging useless BPMN gateways...");
-			MyOwnLogger.append("Merging useless BPMN gateways...");
-			final long uselessGatewaysMergingStartTime = System.nanoTime();
-			final GatewaysMerger merger = new GatewaysMerger(foldedBpmn);
-			merger.mergeGateways();
-			final long uselessGatewaysMergingEndTime = System.nanoTime();
-			final long uselessGatewaysMergingTime = uselessGatewaysMergingEndTime - uselessGatewaysMergingStartTime;
-			MyOwnLogger.append("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
-			System.out.println("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
+				System.out.println("Converting CLTS to BPMN...");
+				MyOwnLogger.append("Converting CLTS to BPMN...");
+				final long cltsConversionStartTime = System.nanoTime();
+				final CLTStoBPMN cltStoBPMN = new CLTStoBPMN(fullCLTS, bpmnParser.bpmnProcess().tasks(), originalBpmnProcess);
+				coloredProcess = cltStoBPMN.convert();
+				final long cltsConversionEndTime = System.nanoTime();
+				final long cltsConversionTime = cltsConversionEndTime - cltsConversionStartTime;
+				if (LOCAL_TESTING) System.out.println("Original BPMN process:\n\n" + coloredProcess);
+				MyOwnLogger.append("CLTS converted to BPMN in " + Utils.nanoSecToReadable(cltsConversionTime) + ".\n");
+				System.out.println("CLTS converted to BPMN in " + Utils.nanoSecToReadable(cltsConversionTime) + ".\n");
+
+				System.out.println("Folding BPMN process...");
+				MyOwnLogger.append("Folding BPMN process...");
+				final long bpmnFoldingStartTime = System.nanoTime();
+				final BPMNFolder bpmnFolder = new BPMNFolder(coloredProcess);
+				final Graph foldedBpmn = bpmnFolder.fold();
+				final long bpmnFoldingEndTime = System.nanoTime();
+				final long bpmnFoldingTime = bpmnFoldingEndTime - bpmnFoldingStartTime;
+				if (LOCAL_TESTING) System.out.println("Folded BPMN process:\n\n" + foldedBpmn);
+				MyOwnLogger.append("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
+				System.out.println("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
+
+				System.out.println("Merging useless BPMN gateways...");
+				MyOwnLogger.append("Merging useless BPMN gateways...");
+				final long uselessGatewaysMergingStartTime = System.nanoTime();
+				final GatewaysMerger merger = new GatewaysMerger(foldedBpmn);
+				merger.mergeGateways();
+				final long uselessGatewaysMergingEndTime = System.nanoTime();
+				final long uselessGatewaysMergingTime = uselessGatewaysMergingEndTime - uselessGatewaysMergingStartTime;
+				MyOwnLogger.append("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
+				System.out.println("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
+			}
 
 			System.out.println("Writing BPMN process to file...");
 			MyOwnLogger.append("Writing BPMN process to file...");
 			final long writingBPMNStartTime = System.nanoTime();
-			final GraphToList graphToList = new GraphToList(foldedBpmn);
+			final GraphToList graphToList = new GraphToList(coloredProcess);
 			graphToList.convert();
 			final GraphicalGenerationWriter graphicalGenerationWriter = new GraphicalGenerationWriter(
 					commandLineParser,

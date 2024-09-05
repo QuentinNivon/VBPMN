@@ -1,14 +1,12 @@
 package fr.inria.convecs.optimus.nl_to_mc;
 
 import fr.inria.convecs.optimus.aut.*;
+import fr.inria.convecs.optimus.bpmn.BpmnColor;
 import fr.inria.convecs.optimus.bpmn.graph.Graph;
-import fr.inria.convecs.optimus.bpmn.graph.GraphToList;
 import fr.inria.convecs.optimus.bpmn.graph.Node;
-import fr.inria.convecs.optimus.bpmn.types.process.SequenceFlow;
-import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
+import fr.inria.convecs.optimus.bpmn.types.process.Task;
 import fr.inria.convecs.optimus.util.Pair;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -16,34 +14,253 @@ public class MatchingAnalyzer
 {
 	private final AutGraph clts;
 	private final Graph originalProcess;
+	private final HashMap<AutState, Node> matching;
 
 	public MatchingAnalyzer(final AutGraph clts,
-							final Graph originalProcess) throws ExpectedException
+							final Graph originalProcess)
 	{
 		this.clts = clts;
 		this.originalProcess = originalProcess;
+		this.matching = new HashMap<>();
 	}
 
 	public boolean matches()
 	{
+		//Check whether CLTS is entirely red or not
+		boolean cltsIsEntirelyRed = true;
+
+		for (AutEdge autEdge : this.clts.startNode().outgoingEdges())
+		{
+			if (autEdge.getColor() != AutColor.RED)
+			{
+				cltsIsEntirelyRed = false;
+				break;
+			}
+		}
+
+		if (cltsIsEntirelyRed)
+		{
+			this.colorTaskAndSuccessors(this.originalProcess.initialNode(), AutColor.RED, new HashSet<>());
+			return true;
+		}
+
+		//Check transitions color
 		if (!checkTransitions()) return false;
 
+		//Compute successor tasks reachable from each graph node
+		final HashMap<Node, HashSet<String>> oldSuccessorReachableTasks = new HashMap<>();
+		final HashMap<Node, HashSet<String>> newSuccessorReachableTasks = new HashMap<>();
+		this.computeSuccessorReachableTasksLabels(this.originalProcess.initialNode(), new HashSet<>(), newSuccessorReachableTasks);
+
+		while (!oldSuccessorReachableTasks.equals(newSuccessorReachableTasks))
+
+		{
+			oldSuccessorReachableTasks.clear();
+			oldSuccessorReachableTasks.putAll(newSuccessorReachableTasks);
+			this.computeSuccessorReachableTasksLabels(this.originalProcess.initialNode(), new HashSet<>(), newSuccessorReachableTasks);
+		}
+
+		//Compute ancestor tasks reachable from each graph node
+		final HashMap<Node, HashSet<String>> oldAncestorReachableTasks = new HashMap<>();
+		final HashMap<Node, HashSet<String>> newAncestorReachableTasks = new HashMap<>();
+
+		for (Node lastNode : this.originalProcess.lastNodes())
+		{
+			this.computeAncestorReachableTasksLabels(lastNode, new HashSet<>(), newAncestorReachableTasks);
+		}
+
+		while (!oldAncestorReachableTasks.equals(newAncestorReachableTasks))
+
+		{
+			oldAncestorReachableTasks.clear();
+			oldAncestorReachableTasks.putAll(newAncestorReachableTasks);
+			for (Node lastNode : this.originalProcess.lastNodes())
+			{
+				this.computeAncestorReachableTasksLabels(lastNode, new HashSet<>(), newAncestorReachableTasks);
+			}
+		}
+
+		//Try to match each faulty state to a BPMN node
 		final HashSet<AutState> faultyStates = this.getFaultyStates();
 		final HashMap<AutState, Pair<HashSet<String>, HashSet<String>>> inOutFaultyTransitions = this.getFaultyTransitions(faultyStates);
 		final HashSet<Node> graphNodes = new HashSet<>();
 		this.getGraphNodes(this.originalProcess.initialNode(), graphNodes);
-		final HashMap<AutState, Node> matching = new HashMap<>();
 
 		for (AutState autState : inOutFaultyTransitions.keySet())
 		{
 			final HashSet<String> incomingTransitionLabels = inOutFaultyTransitions.get(autState).getFirst();
 			final HashSet<String> outgoingTransitionLabels = inOutFaultyTransitions.get(autState).getSecond();
 
+			for (Node graphNode : graphNodes)
+			{
+				final HashSet<String> incomingTaskLabels = newAncestorReachableTasks.get(graphNode);
+				final HashSet<String> outgoingTaskLabels = newSuccessorReachableTasks.get(graphNode);
 
+				if (incomingTaskLabels.equals(incomingTransitionLabels)
+					&& outgoingTaskLabels.equals(outgoingTransitionLabels))
+				{
+					//We found a matching
+					if (this.matching.containsKey(autState))
+					{
+						//We already found a matching => what to do?
+						MyOwnLogger.append(
+							"Warning: AUT state " + autState.label() + " matches node " + graphNode.bpmnObject().id() +
+							" but was already matched with node " + graphNode.bpmnObject().id() + "."
+						);
+					}
+
+					this.matching.put(autState, graphNode);
+					break;
+				}
+			}
+
+			if (!this.matching.containsKey(autState))
+			{
+				//No matching was found for the current faulty state
+				MyOwnLogger.append("No matching wad found for faulty state " + autState.label());
+				this.matching.clear();
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public void colorOriginalProcess()
+	{
+		for (AutState autState : this.matching.keySet())
+		{
+			final Node bpmnNode = this.matching.get(autState);
+			final HashSet<Node> firstReachableTasks = new HashSet<>();
+			this.getFirstReachableTasks(bpmnNode, firstReachableTasks, new HashSet<>());
+
+			for (AutEdge outgoingEdge : autState.outgoingEdges())
+			{
+				if (outgoingEdge.getColor() != AutColor.BLACK)
+				{
+					for (Node firstTaskToColor : firstReachableTasks)
+					{
+						if (firstTaskToColor.bpmnObject().name().toUpperCase().equals(outgoingEdge.label()))
+						{
+							this.colorTaskAndSuccessors(firstTaskToColor, outgoingEdge.getColor(), new HashSet<>());
+						}
+					}
+				}
+			}
 		}
 	}
 
 	//Private methods
+
+	private void colorTaskAndSuccessors(final Node currentNode,
+										final AutColor color,
+										final HashSet<Node> visitedNodes)
+	{
+		if (visitedNodes.contains(currentNode))
+		{
+			return;
+		}
+
+		visitedNodes.add(currentNode);
+
+		if (currentNode.bpmnObject() instanceof Task)
+		{
+			currentNode.bpmnObject().setBpmnColor(color == AutColor.GREEN ? BpmnColor.GREEN : BpmnColor.RED);
+		}
+
+		for (Node child : currentNode.childNodes())
+		{
+			this.colorTaskAndSuccessors(child, color, visitedNodes);
+		}
+	}
+
+	private void getFirstReachableTasks(final Node currentNode,
+										final HashSet<Node> firstReachableTasks,
+										final HashSet<Node> visitedNodes)
+	{
+		if (visitedNodes.contains(currentNode))
+		{
+			return;
+		}
+
+		visitedNodes.add(currentNode);
+
+		if (currentNode.bpmnObject() instanceof Task)
+		{
+			firstReachableTasks.add(currentNode);
+		}
+		else
+		{
+			for (Node child : currentNode.childNodes())
+			{
+				this.getFirstReachableTasks(child, firstReachableTasks, visitedNodes);
+			}
+		}
+	}
+
+	private void computeSuccessorReachableTasksLabels(final Node currentNode,
+													  final HashSet<Node> visitedNodes,
+													  final HashMap<Node, HashSet<String>> reachableTransitionLabels)
+	{
+		final HashSet<String> currentSet = reachableTransitionLabels.computeIfAbsent(currentNode, h -> new HashSet<>());
+
+		if (!visitedNodes.contains(currentNode))
+		{
+			visitedNodes.add(currentNode);
+
+			if (currentNode.bpmnObject() instanceof Task)
+			{
+				currentSet.add(currentNode.bpmnObject().name().toUpperCase());
+			}
+
+			for (Node childNode : currentNode.childNodes())
+			{
+				if (childNode.bpmnObject() instanceof Task)
+				{
+					currentSet.add(childNode.bpmnObject().name().toUpperCase());
+				}
+
+				this.computeSuccessorReachableTasksLabels(childNode, visitedNodes, reachableTransitionLabels);
+			}
+		}
+
+		for (Node childNode : currentNode.childNodes())
+		{
+			currentSet.addAll(reachableTransitionLabels.get(childNode));
+		}
+	}
+
+	private void computeAncestorReachableTasksLabels(final Node currentNode,
+													 final HashSet<Node> visitedNodes,
+													 final HashMap<Node, HashSet<String>> reachableTransitionLabels)
+	{
+		final HashSet<String> currentSet = reachableTransitionLabels.computeIfAbsent(currentNode, h -> new HashSet<>());
+
+		if (!visitedNodes.contains(currentNode))
+		{
+			visitedNodes.add(currentNode);
+
+			if (currentNode.bpmnObject() instanceof Task)
+			{
+				currentSet.add(currentNode.bpmnObject().name().toUpperCase());
+			}
+
+			for (Node parentNode : currentNode.parentNodes())
+			{
+				if (parentNode.bpmnObject() instanceof Task)
+				{
+					currentSet.add(parentNode.bpmnObject().name().toUpperCase());
+				}
+
+				this.computeAncestorReachableTasksLabels(parentNode, visitedNodes, reachableTransitionLabels);
+			}
+		}
+
+		for (Node parentNode : currentNode.parentNodes())
+		{
+			currentSet.addAll(reachableTransitionLabels.get(parentNode));
+		}
+	}
 
 	private void getGraphNodes(final Node currentNode,
 							   final HashSet<Node> graphNodes)
