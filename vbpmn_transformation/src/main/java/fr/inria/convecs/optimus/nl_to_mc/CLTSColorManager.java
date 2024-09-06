@@ -54,22 +54,22 @@ public class CLTSColorManager
 				&& hasGreenOut
 				&& hasRedOut)
 			{
-				autState.setStateType(StateType.GREEN_RED_BLACK);
+				autState.setStateType(AutxStateType.GREEN_RED_BLACK);
 			}
 			else if (hasBlackOut
 					&& hasGreenOut)
 			{
-				autState.setStateType(StateType.GREEN_BLACK);
+				autState.setStateType(AutxStateType.GREEN_BLACK);
 			}
 			else if (hasBlackOut
 					&& hasRedOut)
 			{
-				autState.setStateType(StateType.RED_BLACK);
+				autState.setStateType(AutxStateType.RED_BLACK);
 			}
 			else if (hasGreenOut
 					&& hasRedOut)
 			{
-				autState.setStateType(StateType.GREEN_RED);
+				autState.setStateType(AutxStateType.GREEN_RED);
 			}
 		}
 	}

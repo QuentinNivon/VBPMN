@@ -138,9 +138,10 @@ public class MatchingAnalyzer
 		for (AutState autState : this.matching.keySet())
 		{
 			final Node bpmnNode = this.matching.get(autState);
-			MyOwnLogger.append("CLTS state " + autState.label() + " was matched with BPMN node " + bpmnNode.bpmnObject().id() + ".");
+			MyOwnLogger.append("CLTS state " + autState.label() + " was matched with BPMN node \"" + bpmnNode.bpmnObject().id() + "\".");
 			final HashSet<Node> firstReachableTasks = new HashSet<>();
 			this.getFirstReachableTasks(bpmnNode, firstReachableTasks, new HashSet<>());
+			MyOwnLogger.append("First reachable tasks of node \"" + bpmnNode.bpmnObject().id() + "\" are " + firstReachableTasks);
 
 			for (AutEdge outgoingEdge : autState.outgoingEdges())
 			{
@@ -379,6 +380,7 @@ public class MatchingAnalyzer
 
 		if (currentState.getStateType() != null)
 		{
+			MyOwnLogger.append("State " + currentState.label() + " is a faulty state");
 			faultyStates.add(currentState);
 		}
 

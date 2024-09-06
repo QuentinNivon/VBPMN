@@ -1,5 +1,6 @@
 package fr.inria.convecs.optimus.aut;
 
+import fr.inria.convecs.optimus.nl_to_mc.MyOwnLogger;
 import fr.inria.convecs.optimus.util.Pair;
 import fr.inria.convecs.optimus.util.Utils;
 
@@ -96,13 +97,15 @@ public class AutParser
 			//Do not parse DUMMY_LOOPY transitions
 			if (label.contains("DUMMY")) return -1;
 
-			final Pair<Integer, StateType> sourceStateInfo = this.parseState(sourceStateIndexStr);
-			final Pair<Integer, StateType> targetStateInfo = this.parseState(targetStateIndexStr);
+			final Pair<Integer, AutxStateType> sourceStateInfo = this.parseState(sourceStateIndexStr);
+			final Pair<Integer, AutxStateType> targetStateInfo = this.parseState(targetStateIndexStr);
 			final Pair<String, AutColor> labelInfo = this.parseLabel(label);
 			final AutState sourceState = this.correspondences.computeIfAbsent(sourceStateInfo.getFirst(), n -> new AutState(sourceStateInfo.getFirst()));
 			sourceState.setStateType(sourceStateInfo.getSecond());
+			//MyOwnLogger.append("Source state " + sourceState.label() + " is of type " + (sourceState.getStateType() == null ? null : sourceState.getStateType().toString()));
 			final AutState targetState = this.correspondences.computeIfAbsent(targetStateInfo.getFirst(), n -> new AutState(targetStateInfo.getFirst()));
-			targetState.setStateType(targetStateInfo.getSecond());
+			//targetState.setStateType(targetStateInfo.getSecond());
+			//MyOwnLogger.append("Target state " + targetState.label() + " is of type " + (targetState.getStateType() == null ? null : targetState.getStateType().toString()));
 			final AutEdge autEdge = new AutEdge(sourceState, labelInfo.getFirst(), targetState);
 			autEdge.setColor(labelInfo.getSecond());
 			sourceState.addOutgoingEdge(autEdge);
@@ -112,7 +115,7 @@ public class AutParser
 		}
 	}
 
-	private Pair<Integer, StateType> parseState(final String stateStr)
+	private Pair<Integer, AutxStateType> parseState(final String stateStr)
 	{
 		if (!this.enhance)
 		{
@@ -150,15 +153,15 @@ public class AutParser
 					" equal to \"N\". Got \"" + n + "\"");
 		}
 
-		final StateType stateType = StateType.strToStateType(stateTypeStr);
+		final AutxStateType autxStateType = AutxStateType.strToStateType(stateTypeStr);
 
-		if (stateType == null)
+		if (autxStateType == null)
 		{
 			throw new IllegalStateException("Third information in state information \"" + stateStr + "\" should be" +
 					" a valid state type (i.e., \"G\", \"R\", \"GR\" or \"GRB\". Got \"" + stateTypeStr + "\".");
 		}
 
-		return new Pair<>(Integer.parseInt(indexStr), stateType);
+		return new Pair<>(Integer.parseInt(indexStr), autxStateType);
 	}
 
 	private Pair<String, AutColor> parseLabel(final String labelInfo)

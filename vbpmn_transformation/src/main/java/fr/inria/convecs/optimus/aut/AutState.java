@@ -7,33 +7,33 @@ public class AutState
 	private final int label;
 	private final HashSet<AutEdge> incomingEdges;
 	private final HashSet<AutEdge> outgoingEdges;
-	private StateType stateType;
+	private AutxStateType autxStateType;
 
 	public AutState(final int label)
 	{
 		this.label = label;
-		this.stateType = null;
+		this.autxStateType = null;
 		this.incomingEdges = new HashSet<>();
 		this.outgoingEdges = new HashSet<>();
 	}
 
 	public AutState(final int label,
-					final StateType stateType)
+					final AutxStateType autxStateType)
 	{
 		this.label = label;
-		this.stateType = stateType;
+		this.autxStateType = autxStateType;
 		this.incomingEdges = new HashSet<>();
 		this.outgoingEdges = new HashSet<>();
 	}
 
-	public void setStateType(final StateType stateType)
+	public void setStateType(final AutxStateType autxStateType)
 	{
-		this.stateType = stateType;
+		this.autxStateType = autxStateType;
 	}
 
-	public StateType getStateType()
+	public AutxStateType getStateType()
 	{
-		return this.stateType;
+		return this.autxStateType;
 	}
 
 	public int label()
@@ -83,7 +83,7 @@ public class AutState
 
 	public AutState copy()
 	{
-		return new AutState(this.label, this.stateType);
+		return new AutState(this.label, this.autxStateType);
 	}
 
 	//Override

@@ -1,6 +1,6 @@
 package fr.inria.convecs.optimus.aut;
 
-public enum StateType
+public enum AutxStateType
 {
 	GREEN_BLACK("G"),
 	GREEN_RED("GR"),
@@ -9,7 +9,7 @@ public enum StateType
 
 	private final String value;
 
-	StateType(final String value)
+	AutxStateType(final String value)
 	{
 		this.value = value;
 	}
@@ -19,13 +19,13 @@ public enum StateType
 		return this.value;
 	}
 
-	public static StateType strToStateType(final String s)
+	public static AutxStateType strToStateType(final String s)
 	{
-		for (StateType stateType : StateType.values())
+		for (AutxStateType autxStateType : AutxStateType.values())
 		{
-			if (stateType.getValue().equals(s))
+			if (autxStateType.getValue().equals(s))
 			{
-				return stateType;
+				return autxStateType;
 			}
 		}
 
