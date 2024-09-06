@@ -49,7 +49,7 @@ public class CLTSBuilderV3
 			this.computeReachableTransitions(this.autGraph.startNode(), new HashSet<>(), newReachableTransitions);
 		}
 
-		MyOwnLogger.append("Reachable transitions:\n\n" + newReachableTransitions.toString());
+		//MyOwnLogger.append("Reachable transitions:\n\n" + newReachableTransitions.toString());
 
 		for (AutState autState : this.autGraph.nodesAndEdges().getFirst())
 		{
@@ -315,8 +315,8 @@ public class CLTSBuilderV3
 			}
 		}
 
-		MyOwnLogger.append("AUT state " + currentNode.label() + " can reach transition " +
-				currentNodeReachableTransitions + " but none is leading to an accepting cycle.");
+		//MyOwnLogger.append("AUT state " + currentNode.label() + " can reach transitions " +
+		//		currentNodeReachableTransitions + " but none is leading to an accepting cycle.");
 
 		return false;
 	}
