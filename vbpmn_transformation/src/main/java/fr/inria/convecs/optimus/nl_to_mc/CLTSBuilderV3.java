@@ -297,6 +297,12 @@ public class CLTSBuilderV3
 
 		for (AutEdge autEdge : currentNodeReachableTransitions)
 		{
+			if (autEdge.targetNode().label() == -1)
+			{
+				//Removed dummy accepting cycle
+				return true;
+			}
+
 			if (autEdge.label().contains("!ACC"))
 			{
 				final HashSet<AutEdge> targetNodeReachableTransitions = reachableTransitions.get(autEdge.targetNode());
@@ -308,6 +314,9 @@ public class CLTSBuilderV3
 				}
 			}
 		}
+
+		MyOwnLogger.append("AUT state " + currentNode.label() + " can reach transition " +
+				currentNodeReachableTransitions + " but none is leading to an accepting cycle.");
 
 		return false;
 	}
