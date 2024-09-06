@@ -136,7 +136,6 @@ public class BPMNFolder
 		{
 			final HashSet<Node> managedFlows = new HashSet<>();
 			final HashSet<Node> possiblyNonFullyFoldedGateways = new HashSet<>();
-			System.out.println("----------- LOOP ENTRY-----------------");
 			originalGraph = graph.weakCopy();
 			final HashSet<Node> exclusiveSplitGateways = new HashSet<>();
 			final HashSet<Node> exclusiveMergeGateways = new HashSet<>();
@@ -291,10 +290,10 @@ public class BPMNFolder
 								else
 								{
 									//TODO VOIR SI CA FONCTIONNE BIEN
-								/*
-									The corresponding merge gateway corresponds only partially to the split,
-									i.e., some of its parent flows do not start from the split gateway.
-								 */
+									/*
+										The corresponding merge gateway corresponds only partially to the split,
+										i.e., some of its parent flows do not start from the split gateway.
+									 */
 									correspondingMergeGateway.parentNodes().removeIf(node -> node.hasAncestor(gateway));
 									final Node splitGatewayParentFlow = gateway.parentNodes().iterator().next();
 									splitGatewayParentFlow.removeChild(gateway);
