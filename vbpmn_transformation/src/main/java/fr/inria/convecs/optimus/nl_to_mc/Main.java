@@ -89,12 +89,14 @@ public class Main
 				matchingAnalyzer.colorOriginalProcess();
 				final long matchingAnalysisEndTime = System.nanoTime();
 				final long matchingAnalysisTime = matchingAnalysisEndTime - matchingAnalysisStartTime;
+				MyOwnLogger.append("Matching analysis performed in " + Utils.nanoSecToReadable(matchingAnalysisTime) + ".\n");
 				System.out.println("Matching analysis performed in " + Utils.nanoSecToReadable(matchingAnalysisTime) + ".\n");
 			}
 			else
 			{
 				final long matchingAnalysisEndTime = System.nanoTime();
 				final long matchingAnalysisTime = matchingAnalysisEndTime - matchingAnalysisStartTime;
+				MyOwnLogger.append("Matching analysis performed in " + Utils.nanoSecToReadable(matchingAnalysisTime) + ".\n");
 				System.out.println("Matching analysis performed in " + Utils.nanoSecToReadable(matchingAnalysisTime) + ".\n");
 
 				System.out.println("Flattening CLTS...");
