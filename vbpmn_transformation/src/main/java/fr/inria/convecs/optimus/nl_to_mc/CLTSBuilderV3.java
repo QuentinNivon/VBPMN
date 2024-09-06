@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class CLTSBuilderV2
+public class CLTSBuilderV3
 {
 	public static final boolean CONSIDER_FULL_PATH = true;
 	private final AutGraph autGraph;
 	private final HashSet<String> specLabels;
 
-	public CLTSBuilderV2(final AutGraph autGraph,
+	public CLTSBuilderV3(final AutGraph autGraph,
 						 final ArrayList<String> specLabels)
 	{
 		this.autGraph = autGraph.copy();
@@ -38,15 +38,15 @@ public class CLTSBuilderV2
 	{
 		//Truncate correct parts of the product
 		//Compute reachable transitions repeatedly until reaching a fix point
-		final HashMap<AutState, HashSet<String>> oldReachableTransitions = new HashMap<>();
-		final HashMap<AutState, HashSet<String>> newReachableTransitions = new HashMap<>();
-		this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), newReachableTransitions);
+		final HashMap<AutState, HashSet<AutEdge>> oldReachableTransitions = new HashMap<>();
+		final HashMap<AutState, HashSet<AutEdge>> newReachableTransitions = new HashMap<>();
+		this.computeReachableTransitions(this.autGraph.startNode(), new HashSet<>(), newReachableTransitions);
 
 		while (this.getTotalNumberOfReachableTransitions(oldReachableTransitions) != this.getTotalNumberOfReachableTransitions(newReachableTransitions))
 		{
 			oldReachableTransitions.clear();
 			oldReachableTransitions.putAll(newReachableTransitions);
-			this.computeReachableTransitionLabels(this.autGraph.startNode(), new HashSet<>(), newReachableTransitions);
+			this.computeReachableTransitions(this.autGraph.startNode(), new HashSet<>(), newReachableTransitions);
 		}
 
 		MyOwnLogger.append("Reachable transitions:\n\n" + newReachableTransitions.toString());
@@ -219,11 +219,11 @@ public class CLTSBuilderV2
 		}
 	}
 
-	private void computeReachableTransitionLabels(final AutState currentNode,
-												  final HashSet<AutState> visitedNodes,
-												  final HashMap<AutState, HashSet<String>> reachableTransitionLabels)
+	private void computeReachableTransitions(final AutState currentNode,
+											 final HashSet<AutState> visitedNodes,
+										 final HashMap<AutState, HashSet<AutEdge>> reachableTransitionLabels)
 	{
-		final HashSet<String> currentSet = reachableTransitionLabels.computeIfAbsent(currentNode, h -> new HashSet<>());
+		final HashSet<AutEdge> currentSet = reachableTransitionLabels.computeIfAbsent(currentNode, h -> new HashSet<>());
 
 		if (!visitedNodes.contains(currentNode))
 		{
@@ -231,8 +231,8 @@ public class CLTSBuilderV2
 
 			for (AutEdge outgoingTransition : currentNode.outgoingEdges())
 			{
-				currentSet.add(outgoingTransition.label());
-				this.computeReachableTransitionLabels(outgoingTransition.targetNode(), visitedNodes, reachableTransitionLabels);
+				currentSet.add(outgoingTransition);
+				this.computeReachableTransitions(outgoingTransition.targetNode(), visitedNodes, reachableTransitionLabels);
 			}
 		}
 
@@ -245,7 +245,7 @@ public class CLTSBuilderV2
 	private void computeNodesToRemove(final AutState currentNode,
 									  final HashSet<AutState> visitedNodes,
 									  final HashSet<AutState> nodesToCutBefore,
-									  final HashMap<AutState, HashSet<String>> reachableTransitionLabels)
+									  final HashMap<AutState, HashSet<AutEdge>> reachableTransitions)
 	{
 		if (visitedNodes.contains(currentNode))
 		{
@@ -256,14 +256,14 @@ public class CLTSBuilderV2
 
 		//if (currentNode.outgoingEdges().isEmpty()) return; //TODO CHECK FONCTIONNEMENT
 
-		final HashSet<String> currentReachableTransitionLabels = reachableTransitionLabels.get(currentNode);
+		final HashSet<AutEdge> currentReachableTransitionLabels = reachableTransitions.get(currentNode);
 
 		if (currentReachableTransitionLabels == null)
 		{
 			throw new IllegalStateException("Node " + currentNode.label() + " does not have any reachable transition!");
 		}
 
-		final boolean canBeRemoved = !currentReachableTransitionLabels.contains("\"DUMMY_LOOPY_LABEL !ACC\"");
+		final boolean canBeRemoved = !this.canReachAcceptingCycle(currentNode, reachableTransitions);
 
 		if (canBeRemoved)
 		{
@@ -273,20 +273,42 @@ public class CLTSBuilderV2
 		{
 			for (AutEdge outgoingTransition : currentNode.outgoingEdges())
 			{
-				this.computeNodesToRemove(outgoingTransition.targetNode(), visitedNodes, nodesToCutBefore, reachableTransitionLabels);
+				this.computeNodesToRemove(outgoingTransition.targetNode(), visitedNodes, nodesToCutBefore, reachableTransitions);
 			}
 		}
 	}
 
-	private int getTotalNumberOfReachableTransitions(final HashMap<AutState, HashSet<String>> map)
+	private int getTotalNumberOfReachableTransitions(final HashMap<AutState, HashSet<AutEdge>> map)
 	{
 		int nbReachableTransitions = 0;
 
-		for (HashSet<String> values : map.values())
+		for (HashSet<AutEdge> values : map.values())
 		{
 			nbReachableTransitions += values.size();
 		}
 
 		return nbReachableTransitions;
+	}
+
+	private boolean canReachAcceptingCycle(final AutState currentNode,
+										   final HashMap<AutState, HashSet<AutEdge>> reachableTransitions)
+	{
+		final HashSet<AutEdge> currentNodeReachableTransitions = reachableTransitions.get(currentNode);
+
+		for (AutEdge autEdge : currentNodeReachableTransitions)
+		{
+			if (autEdge.label().contains("!ACC"))
+			{
+				final HashSet<AutEdge> targetNodeReachableTransitions = reachableTransitions.get(autEdge.targetNode());
+
+				if (targetNodeReachableTransitions.contains(autEdge))
+				{
+					//We found an accepting cycle
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 }

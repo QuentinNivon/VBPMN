@@ -101,7 +101,14 @@ public class AutParser
 
 			if (label.contains("DUMMY"))
 			{
-				targetState = this.correspondences.computeIfAbsent(-1, n -> new AutState(-1));
+				if (label.contains("!ACC"))
+				{
+					targetState = this.correspondences.computeIfAbsent(-1, n -> new AutState(-1));
+				}
+				else
+				{
+					targetState = this.correspondences.computeIfAbsent(-2, n -> new AutState(-2));
+				}
 			}
 			else
 			{
