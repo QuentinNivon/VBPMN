@@ -17,7 +17,7 @@ import java.net.URISyntaxException;
 
 public class Main
 {
-	public static final boolean LOCAL_SITE = true;
+	public static final boolean LOCAL_SITE = false;
 	public static final boolean LOCAL_TESTING = false;
 	private static final String AUTX_FULL_CLTS = "clts_full.autx";
 
@@ -119,27 +119,73 @@ public class Main
 				if (LOCAL_TESTING) System.out.println("Original BPMN process:\n\n" + bpmnProcess);
 				MyOwnLogger.append("CLTS converted to BPMN in " + Utils.nanoSecToReadable(cltsConversionTime) + ".\n");
 				System.out.println("CLTS converted to BPMN in " + Utils.nanoSecToReadable(cltsConversionTime) + ".\n");
+				Graph foldedProcess = null;
 
-				System.out.println("Folding BPMN process...");
-				MyOwnLogger.append("Folding BPMN process...");
-				final long bpmnFoldingStartTime = System.nanoTime();
-				final BPMNFolder bpmnFolder = new BPMNFolder(bpmnProcess);
-				finalProcess = bpmnFolder.fold();
-				final long bpmnFoldingEndTime = System.nanoTime();
-				final long bpmnFoldingTime = bpmnFoldingEndTime - bpmnFoldingStartTime;
-				if (LOCAL_TESTING) System.out.println("Folded BPMN process:\n\n" + finalProcess);
-				MyOwnLogger.append("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
-				System.out.println("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
+				if (LOCAL_SITE)
+				{
+					System.out.println("Folding BPMN process...");
+					MyOwnLogger.append("Folding BPMN process...");
+					final long bpmnFoldingStartTime = System.nanoTime();
+					final BPMNFolder bpmnFolder = new BPMNFolder(bpmnProcess);
+					finalProcess = bpmnFolder.fold();
+					final long bpmnFoldingEndTime = System.nanoTime();
+					final long bpmnFoldingTime = bpmnFoldingEndTime - bpmnFoldingStartTime;
+					if (LOCAL_TESTING) System.out.println("Folded BPMN process:\n\n" + finalProcess);
+					MyOwnLogger.append("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
+					System.out.println("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
 
-				System.out.println("Merging useless BPMN gateways...");
-				MyOwnLogger.append("Merging useless BPMN gateways...");
-				final long uselessGatewaysMergingStartTime = System.nanoTime();
-				final GatewaysMerger merger = new GatewaysMerger(finalProcess);
-				merger.mergeGateways();
-				final long uselessGatewaysMergingEndTime = System.nanoTime();
-				final long uselessGatewaysMergingTime = uselessGatewaysMergingEndTime - uselessGatewaysMergingStartTime;
-				MyOwnLogger.append("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
-				System.out.println("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
+					System.out.println("Merging useless BPMN gateways...");
+					MyOwnLogger.append("Merging useless BPMN gateways...");
+					final long uselessGatewaysMergingStartTime = System.nanoTime();
+					final GatewaysMerger merger = new GatewaysMerger(finalProcess);
+					merger.mergeGateways();
+					final long uselessGatewaysMergingEndTime = System.nanoTime();
+					final long uselessGatewaysMergingTime = uselessGatewaysMergingEndTime - uselessGatewaysMergingStartTime;
+					MyOwnLogger.append("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
+					System.out.println("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
+				}
+				else
+				{
+					try
+					{
+						System.out.println("Folding BPMN process...");
+						MyOwnLogger.append("Folding BPMN process...");
+						final long bpmnFoldingStartTime = System.nanoTime();
+						final BPMNFolder bpmnFolder = new BPMNFolder(bpmnProcess);
+						foldedProcess = bpmnFolder.fold();
+						final long bpmnFoldingEndTime = System.nanoTime();
+						final long bpmnFoldingTime = bpmnFoldingEndTime - bpmnFoldingStartTime;
+						if (LOCAL_TESTING) System.out.println("Folded BPMN process:\n\n" + foldedProcess);
+						MyOwnLogger.append("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
+						System.out.println("BPMN process folded in " + Utils.nanoSecToReadable(bpmnFoldingTime) + ".\n");
+
+						System.out.println("Merging useless BPMN gateways...");
+						MyOwnLogger.append("Merging useless BPMN gateways...");
+						final long uselessGatewaysMergingStartTime = System.nanoTime();
+						final GatewaysMerger merger = new GatewaysMerger(foldedProcess);
+						merger.mergeGateways();
+						final long uselessGatewaysMergingEndTime = System.nanoTime();
+						final long uselessGatewaysMergingTime = uselessGatewaysMergingEndTime - uselessGatewaysMergingStartTime;
+						MyOwnLogger.append("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
+						System.out.println("Useless BPMN gateways merged in " + Utils.nanoSecToReadable(uselessGatewaysMergingTime) + ".\n");
+					}
+					catch (Exception e)
+					{
+						foldedProcess = null;
+					}
+					finally
+					{
+						if (foldedProcess == null)
+						{
+							MyOwnLogger.append("The folding phase threw an exception!");
+							finalProcess = bpmnProcess;
+						}
+						else
+						{
+							finalProcess = foldedProcess;
+						}
+					}
+				}
 			}
 
 			System.out.println("Writing BPMN process to file...");

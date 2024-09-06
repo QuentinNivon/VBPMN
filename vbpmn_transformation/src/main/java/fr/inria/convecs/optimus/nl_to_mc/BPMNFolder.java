@@ -19,6 +19,7 @@ public class BPMNFolder
 	public BPMNFolder(final Graph originalGraph)
 	{
 		this.bpmnGraph = originalGraph.weakCopy();
+		MyOwnLogger.append("Graph before folding:\n\n" + this.bpmnGraph.toString());
 		this.brokenConnections = new HashMap<>();
 		this.finalBrokenConnections = new HashMap<>();
 	}
@@ -173,7 +174,7 @@ public class BPMNFolder
 			}
 
 			if (maxFoldability < 2) return;
-			System.out.println("Original max foldability: " + maxFoldability);
+			MyOwnLogger.append("Original max foldability: " + maxFoldability);
 
 			while (maxFoldability >= 2)
 			{
@@ -182,7 +183,7 @@ public class BPMNFolder
 					if (!graph.hasNodeOfId(gateway.bpmnObject().id()))
 					{
 						//The current gateway has already been folded in a bigger gateway
-						System.out.println("Gateway \"" + gateway.bpmnObject().id() + "\" has already been folded.");
+						MyOwnLogger.append("Gateway \"" + gateway.bpmnObject().id() + "\" has already been folded.");
 						continue;
 					}
 
@@ -471,7 +472,7 @@ public class BPMNFolder
 			return;
 		}
 
-		System.out.println("Gateway \"" + gateway.bpmnObject().id() + "\" has max degree " + foldability.getMaxDegree());
+		MyOwnLogger.append("Gateway \"" + gateway.bpmnObject().id() + "\" has max degree " + foldability.getMaxDegree());
 
 		if (foldability.getMaxDegree() == 2)
 		{
@@ -560,7 +561,7 @@ public class BPMNFolder
 				}
 			}
 
-			System.out.println("Eligible gateways: " + eligibleGateways);
+			MyOwnLogger.append("Eligible gateways: " + eligibleGateways);
 
 			final HashMap<HashSet<String>, Pair<HashSet<String>, ArrayList<Foldability>>> infos = new HashMap<>();
 
@@ -570,7 +571,7 @@ public class BPMNFolder
 				{
 					final Node firstTask = eligibleGateway.getFirst().childNodes().iterator().next();
 					final Foldability currentFoldability = gatewaysInformation.get(eligibleGateway.getSecond());
-					System.out.println("Current foldability: " + currentFoldability);
+					MyOwnLogger.append("Current foldability: " + currentFoldability);
 					final HashSet<String> foldableTasks = new HashSet<>();
 					foldableTasks.add(firstTask.bpmnObject().name());
 					foldableTasks.addAll(currentFoldability.getFoldableTasksNames());
@@ -652,12 +653,12 @@ public class BPMNFolder
 			for (HashSet<String> tasks : infos.keySet())
 			{
 				final Pair<HashSet<String>, ArrayList<Foldability>> currentInfos = infos.get(tasks);
-				System.out.println("Tasks: " + tasks);
-				System.out.println("Current infos first: " + currentInfos.getFirst());
+				MyOwnLogger.append("Tasks: " + tasks);
+				MyOwnLogger.append("Current infos first: " + currentInfos.getFirst());
 
 				if (currentInfos.getFirst().size() == tasks.size())
 				{
-					System.out.println("Good size");
+					MyOwnLogger.append("Good size");
 					boolean identicalOutOfScopePaths = true;
 					final Foldability firstFoldability = currentInfos.getSecond().remove(0);
 					final Graph firstOutOfScopeGraph = new Graph(firstFoldability.getOutOfScopeNodes().iterator().next());
@@ -684,7 +685,7 @@ public class BPMNFolder
 				}
 			}
 
-			System.out.println("Currently handled foldability: " + foldability);
+			MyOwnLogger.append("Currently handled foldability: " + foldability);
 		}
 	}
 
