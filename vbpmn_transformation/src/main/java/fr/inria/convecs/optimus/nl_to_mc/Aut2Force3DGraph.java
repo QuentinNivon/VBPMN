@@ -60,7 +60,7 @@ public class Aut2Force3DGraph
 			printWriter.print("\", \"");
 			printWriter.print(COLOR_KEYWORD);
 			printWriter.print("\": \"");
-			printWriter.print(autState.getStateType() == null ? (autState.incomingEdges().isEmpty() ? INITIAL_COLOR : DEFAULT_COLOR) : autState.getStateType().getClearColor());
+			printWriter.print(autState.incomingEdges().isEmpty() ? INITIAL_COLOR : (autState.getStateType() == null ? DEFAULT_COLOR : autState.getStateType().getClearColor()));
 			printWriter.print("\"}");
 
 			if (i != nodesAndEdges.getFirst().size() - 1)
