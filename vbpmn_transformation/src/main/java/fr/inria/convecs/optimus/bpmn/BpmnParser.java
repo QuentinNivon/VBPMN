@@ -564,7 +564,12 @@ public class BpmnParser
         final String id = element.getAttribute(Constants.ID);
         final BpmnProcessObject bpmnElement = this.bpmnProcess.getObjectFromName(element.getAttribute(Constants.BPMN_ELEMENT));
         final Edge edge = new Edge(id, bpmnElement);
-        final NodeList waypoints = element.getElementsByTagName(this.legacyFile ? Constants.LEGACY_WAYPOINT : Constants.CURRENT_WAYPOINT);
+        NodeList waypoints = element.getElementsByTagName(this.legacyFile ? Constants.LEGACY_WAYPOINT : Constants.CURRENT_WAYPOINT);
+
+        if (waypoints.item(0) == null)
+        {
+            waypoints = element.getElementsByTagName(Constants.LEGACY_WAYPOINT);
+        }
 
         for (int j = 0; j < waypoints.getLength(); j++)
         {

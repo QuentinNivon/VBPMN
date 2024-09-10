@@ -134,7 +134,8 @@ public class GraphicalGenerationWriter
 
     private void writeFinalBpmnFile()
     {
-        final File finalFile = new File((Paths.get(this.workingDirectory.getPath(), this.dumpValue.isEmpty() ? REFACTORED_BPMN_FILE : ("generated_process_" + this.dumpValue + ".bpmn")).toString()));
+        final String fileName = this.dumpValue.isEmpty() ? REFACTORED_BPMN_FILE : "generated_process_" + this.dumpValue + ".bpmn";
+        final File finalFile = new File((Paths.get(this.workingDirectory.getPath(), fileName).toString()));
         final PifContentTransformer pifContentTransformer = new PifContentTransformer(this.pifFile, finalFile);
         pifContentTransformer.transform();
         logger.info("BPMN file was generated.");
@@ -154,8 +155,9 @@ public class GraphicalGenerationWriter
 
     private void correctGeneratedFile()
     {
+        final String fileName = this.dumpValue.isEmpty() ? REFACTORED_BPMN_FILE : "generated_process_" + this.dumpValue + ".bpmn";
         final String sedCommand = "sed";
-        final String[] sedArgs = {"-i", "-e", "s/bpmn2/bpmn/g", "generated_process_" + this.dumpValue + ".bpmn"};
+        final String[] sedArgs = {"-i", "-e", "s/bpmn2/bpmn/g", fileName};
         final CommandManager commandManager = new CommandManager(sedCommand, this.workingDirectory, sedArgs);
 		try
 		{
@@ -175,7 +177,8 @@ public class GraphicalGenerationWriter
     private void correctFinalBpmnFile()
     {
         final ArrayList<BpmnProcessObject> oldObjects = this.process.objects();
-        final File generatedFile = new File((Paths.get(this.workingDirectory.getPath(), this.dumpValue.isEmpty() ? REFACTORED_BPMN_FILE : ("generated_process_" + this.dumpValue + ".bpmn")).toString()));
+        final String fileName = this.dumpValue.isEmpty() ? REFACTORED_BPMN_FILE : "generated_process_" + this.dumpValue + ".bpmn";
+        final File generatedFile = new File((Paths.get(this.workingDirectory.getPath(), fileName).toString()));
         final BpmnParser parser;
 
         try

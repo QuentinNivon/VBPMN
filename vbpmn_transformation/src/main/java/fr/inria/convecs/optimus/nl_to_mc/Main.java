@@ -17,7 +17,7 @@ import java.net.URISyntaxException;
 
 public class Main
 {
-	public static final boolean LOCAL_SITE = true;
+	public static final boolean LOCAL_SITE = false;
 	public static final boolean LOCAL_TESTING = false;
 	private static final String AUTX_FULL_CLTS = "clts_full.autx";
 
