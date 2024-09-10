@@ -12,8 +12,10 @@ import fr.inria.convecs.optimus.bpmn.types.process.events.Event;
 import fr.inria.convecs.optimus.bpmn.writing.direct.DirectWriter;
 import fr.inria.convecs.optimus.nl_to_mc.CommandLineOption;
 import fr.inria.convecs.optimus.nl_to_mc.CommandLineParser;
+import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
 import fr.inria.convecs.optimus.service.RuntimeValidationService;
 import fr.inria.convecs.optimus.transformer.PifContentTransformer;
+import fr.inria.convecs.optimus.util.CommandManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -28,15 +30,15 @@ import java.util.Locale;
 
 public class GraphicalGenerationWriter
 {
-    private static final Logger logger = LoggerFactory.getLogger(GraphicalGenerationWriter.class);
     public static final String TMP_BPMN_FILE = "tmp_diagram.bpmn";
+    private static final Logger logger = LoggerFactory.getLogger(GraphicalGenerationWriter.class);
     private static final String REFACTORED_BPMN_FILE = "generated_process.bpmn";
+    private final File workingDirectory;
     private final CommandLineParser commandLineParser;
     private final BpmnHeader header;
     private final BpmnProcess process;
     private final BpmnCategories categories;
     private final String documentation;
-
     private final String dumpValue;
     private File pifFile;
 
@@ -48,6 +50,7 @@ public class GraphicalGenerationWriter
     {
 
         this.commandLineParser = commandLineParser;
+        this.workingDirectory = (File) this.commandLineParser.get(CommandLineOption.WORKING_DIRECTORY);
         this.header = header;
         this.process = process;
         this.categories = categories;
@@ -64,6 +67,7 @@ public class GraphicalGenerationWriter
     {
 
         this.commandLineParser = commandLineParser;
+        this.workingDirectory = (File) this.commandLineParser.get(CommandLineOption.WORKING_DIRECTORY);
         this.header = header;
         this.process = process;
         this.categories = categories;
@@ -76,6 +80,7 @@ public class GraphicalGenerationWriter
                                      String dumpValue)
     {
         this.commandLineParser = commandLineParser;
+        this.workingDirectory = (File) this.commandLineParser.get(CommandLineOption.WORKING_DIRECTORY);
         this.header = new BpmnHeader();
         this.process = new BpmnProcess("Process_" + BpmnProcessFactory.generateLongID(), false);
         this.process.setObjects(objects);
@@ -91,6 +96,7 @@ public class GraphicalGenerationWriter
         this.generatePif();
         this.writeFinalBpmnFile();
         this.deleteTmpFiles();
+        this.correctGeneratedFile();
         this.correctFinalBpmnFile();
     }
 
@@ -99,7 +105,7 @@ public class GraphicalGenerationWriter
     private void writeTmpBpmnFile() throws IOException
     {
         DirectWriter directWriter = new DirectWriter(
-                Paths.get(((File) this.commandLineParser.get(CommandLineOption.WORKING_DIRECTORY)).getPath(), TMP_BPMN_FILE).toString(),
+                Paths.get(this.workingDirectory.getPath(), TMP_BPMN_FILE).toString(),
                 this.header,
                 this.process,
                 null,
@@ -113,7 +119,7 @@ public class GraphicalGenerationWriter
     private void generatePif()
     {
         final RuntimeValidationService runtimeValidationService = new RuntimeValidationService();
-        final File temporaryFile = new File(Paths.get(((File) this.commandLineParser.get(CommandLineOption.WORKING_DIRECTORY)).getPath(), TMP_BPMN_FILE).toString());
+        final File temporaryFile = new File(Paths.get(this.workingDirectory.getPath(), TMP_BPMN_FILE).toString());
         this.pifFile = runtimeValidationService.parseAndTransform(temporaryFile);
 
         if (pifFile.exists())
@@ -128,7 +134,7 @@ public class GraphicalGenerationWriter
 
     private void writeFinalBpmnFile()
     {
-        final File finalFile = new File((Paths.get(((File) this.commandLineParser.get(CommandLineOption.WORKING_DIRECTORY)).getPath(), this.dumpValue.isEmpty() ? REFACTORED_BPMN_FILE : ("generated_process_" + this.dumpValue + ".bpmn")).toString()));
+        final File finalFile = new File((Paths.get(this.workingDirectory.getPath(), this.dumpValue.isEmpty() ? REFACTORED_BPMN_FILE : ("generated_process_" + this.dumpValue + ".bpmn")).toString()));
         final PifContentTransformer pifContentTransformer = new PifContentTransformer(this.pifFile, finalFile);
         pifContentTransformer.transform();
         logger.info("BPMN file was generated.");
@@ -136,25 +142,45 @@ public class GraphicalGenerationWriter
 
     private void deleteTmpFiles()
     {
-        final boolean tmpBpmnDeleted = new File((Paths.get(((File) this.commandLineParser.get(CommandLineOption.WORKING_DIRECTORY)).getPath(), TMP_BPMN_FILE).toString())).delete();
+        final boolean tmpBpmnDeleted = new File((Paths.get(this.workingDirectory.getPath(), TMP_BPMN_FILE).toString())).delete();
         final boolean pifDeleted = this.pifFile.delete();
 
         if (!tmpBpmnDeleted
-                || !pifDeleted)
+            || !pifDeleted)
         {
             logger.error("Temporary files were not properly deleted.");
+        }
+    }
+
+    private void correctGeneratedFile()
+    {
+        final String sedCommand = "sed";
+        final String[] sedArgs = {"-i", "-e", "s/bpmn2/bpmn/g", "generated_process_" + this.dumpValue + ".bpmn"};
+        final CommandManager commandManager = new CommandManager(sedCommand, this.workingDirectory, sedArgs);
+		try
+		{
+			commandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		if (commandManager.returnValue() != ReturnCodes.TERMINATION_OK)
+        {
+            throw new RuntimeException("An error occurred during the correction of the generated BPMN process:\n\n" + commandManager.stdErr());
         }
     }
 
     private void correctFinalBpmnFile()
     {
         final ArrayList<BpmnProcessObject> oldObjects = this.process.objects();
-        final File generatedFile = new File((Paths.get(((File) this.commandLineParser.get(CommandLineOption.WORKING_DIRECTORY)).getPath(), this.dumpValue.isEmpty() ? REFACTORED_BPMN_FILE : ("generated_process_" + this.dumpValue + ".bpmn")).toString()));
+        final File generatedFile = new File((Paths.get(this.workingDirectory.getPath(), this.dumpValue.isEmpty() ? REFACTORED_BPMN_FILE : ("generated_process_" + this.dumpValue + ".bpmn")).toString()));
         final BpmnParser parser;
 
         try
         {
-            parser = new BpmnParser(generatedFile, false, false, false);
+            parser = new BpmnParser(generatedFile);
             parser.parse();
         }
         catch (ParserConfigurationException | IOException | SAXException e)
@@ -244,7 +270,7 @@ public class GraphicalGenerationWriter
         }
 
         if (newFlow.sourceRef().toLowerCase(Locale.ROOT).contains("event")
-                || newFlow.targetRef().toLowerCase(Locale.ROOT).contains("event"))
+            || newFlow.targetRef().toLowerCase(Locale.ROOT).contains("event"))
         {
             return null;
         }

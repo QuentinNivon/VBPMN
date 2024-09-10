@@ -48,7 +48,8 @@ public class CLTSFlattener
 			this.makeAcyclic(outgoingEdge, edgesToReplace, visitedNodes);
 		}
 
-		int nextStateLabel = this.clts.getMaxStateLabel() + 1;
+		long nextStateLabel = this.clts.getMaxStateLabel() + 1;
+		MyOwnLogger.append("CLTS max state label in CLTS flatterner: " + nextStateLabel);
 
 		for (AutEdge autEdge : edgesToReplace)
 		{
@@ -63,7 +64,7 @@ public class CLTSFlattener
 		}
 
 		//Debug
-		if (LOCAL_SITE)
+		if (LOCAL_SITE && false)
 		{
 			final String path = this.workingDirectory.getAbsolutePath() + File.separator + ACYCLIC_CLTS;
 			final AutWriter autWriter = new AutWriter(this.clts, new File(path), true);

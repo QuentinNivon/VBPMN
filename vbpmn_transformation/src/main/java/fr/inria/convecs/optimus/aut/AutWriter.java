@@ -32,7 +32,7 @@ public class AutWriter
 	public void write() throws FileNotFoundException
 	{
 		final PrintWriter printWriter = new PrintWriter(this.cltsFile);
-		final HashMap<Integer, Integer> correspondences = new HashMap<>();
+		final HashMap<Long, Integer> correspondences = new HashMap<>();
 		final HashSet<AutEdge> edges = new HashSet<>();
 		this.normalize(correspondences, edges, this.graph.startNode());
 		this.write(printWriter, correspondences, edges);
@@ -52,7 +52,7 @@ public class AutWriter
 	 * @param edges the edges of the graph
 	 * @param currentNode the node on which the computation should be performed
 	 */
-	private void normalize(final HashMap<Integer, Integer> correspondences,
+	private void normalize(final HashMap<Long, Integer> correspondences,
 						   final HashSet<AutEdge> edges,
 						   final AutState currentNode)
 	{
@@ -71,7 +71,7 @@ public class AutWriter
 	}
 
 	private void write(final PrintWriter printWriter,
-					   final HashMap<Integer, Integer> correspondences,
+					   final HashMap<Long, Integer> correspondences,
 					   final HashSet<AutEdge> edges)
 	{
 		//Header

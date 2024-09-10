@@ -1,5 +1,6 @@
 package fr.inria.convecs.optimus.aut;
 
+import fr.inria.convecs.optimus.nl_to_mc.MyOwnLogger;
 import fr.inria.convecs.optimus.util.Pair;
 
 import java.util.Collection;
@@ -29,7 +30,7 @@ public class AutGraph
 		this.autStates.addAll(nodes);
 	}
 
-	public int sourceStateLabel()
+	public long sourceStateLabel()
 	{
 		return this.startNode.label();
 	}
@@ -124,16 +125,24 @@ public class AutGraph
 		return new AutGraph(correspondences.get(this.startNode));
 	}
 
-	public AutGraph copyAndShift(final int shift,
+	public AutGraph copyAndShift(final long shift,
 								 final HashMap<AutState, AutState> correspondences)
 	{
+		if (shift < 0)
+		{
+			throw new IllegalStateException("Shift can not be lower than 0, got " + shift);
+		}
+
 		final HashSet<AutState> nodes = new HashSet<>();
 		final HashSet<AutEdge> edges = new HashSet<>();
 		this.retrieveNodesAndEdges(this.startNode, nodes, edges);
 
+		long localShift = shift;
+
 		for (AutState autState : nodes)
 		{
-			correspondences.put(autState, new AutState(autState.label() + shift));
+			MyOwnLogger.append("Label " + autState.label() + " will be shifted to " + localShift);
+			correspondences.put(autState, new AutState(localShift++));
 		}
 
 		for (AutEdge autEdge : edges)
@@ -148,13 +157,15 @@ public class AutGraph
 		return new AutGraph(correspondences.get(this.startNode));
 	}
 
-	public int getMaxStateLabel()
+	public long getMaxStateLabel()
 	{
-		final int maxLabel = this.getMaxStateLabel(this.startNode, new HashSet<>());
+		final long maxLabel = this.getMaxStateLabel(this.startNode, new HashSet<>());
 
 		if (maxLabel + 1 < this.nbNodes())
 		{
-			throw new IllegalStateException();
+			throw new IllegalStateException(
+				"The highest label found is " + maxLabel + " but there are " + this.nbNodes() + " nodes in the graph."
+			);
 		}
 
 		return maxLabel;
@@ -185,8 +196,8 @@ public class AutGraph
 		}
 	}
 
-	private int getMaxStateLabel(final AutState currentNode,
-								 final HashSet<AutState> visitedNodes)
+	private long getMaxStateLabel(final AutState currentNode,
+								  final HashSet<AutState> visitedNodes)
 	{
 		if (visitedNodes.contains(currentNode))
 		{
@@ -195,7 +206,7 @@ public class AutGraph
 
 		visitedNodes.add(currentNode);
 
-		int max = currentNode.label();
+		long max = currentNode.label();
 
 		for (AutEdge autEdge : currentNode.outgoingEdges())
 		{

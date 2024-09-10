@@ -1,5 +1,6 @@
 package fr.inria.convecs.optimus.util;
 
+import fr.inria.convecs.optimus.nl_to_mc.MyOwnLogger;
 import fr.inria.convecs.optimus.py_to_java.PyToJavaUtils;
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,8 +20,8 @@ public class CommandManager
 	 private int returnValue;
 
 	 public CommandManager(String command,
-												 File workingDirectory,
-												 String... args)
+						   File workingDirectory,
+						   String... args)
      {
 		 this.command = command;
 		 this.args = new ArrayList<>();
@@ -31,8 +32,8 @@ public class CommandManager
 	 }
 
 	 public CommandManager(String command,
-												 File workingDirectory,
-												 List<String> args)
+						   File workingDirectory,
+						   List<String> args)
 	 {
 		 this.command = command;
 		 this.args = new ArrayList<>(args);
@@ -48,6 +49,7 @@ public class CommandManager
 		 command.add(this.command);
 		 command.addAll(this.args);
 		 System.out.println("Command to execute: \"" + PyToJavaUtils.join(command, " ") + "\".");
+		 MyOwnLogger.append("Command to execute: \"" + PyToJavaUtils.join(command, " ") + "\".");
 
 		 //Create the process builder
 		 final ProcessBuilder processBuilder = new ProcessBuilder(command);

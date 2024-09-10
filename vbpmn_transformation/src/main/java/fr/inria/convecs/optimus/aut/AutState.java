@@ -4,23 +4,25 @@ import java.util.HashSet;
 
 public class AutState
 {
-	private final int label;
+	private final long label;
 	private final HashSet<AutEdge> incomingEdges;
 	private final HashSet<AutEdge> outgoingEdges;
 	private AutxStateType autxStateType;
 
-	public AutState(final int label)
+	public AutState(final long label)
 	{
 		this.label = label;
+		if (this.label < 0) throw new IllegalStateException("AUT state label can not be lower than 0, got " + this.label);
 		this.autxStateType = null;
 		this.incomingEdges = new HashSet<>();
 		this.outgoingEdges = new HashSet<>();
 	}
 
-	public AutState(final int label,
+	public AutState(final long label,
 					final AutxStateType autxStateType)
 	{
 		this.label = label;
+		if (this.label < 0) throw new IllegalStateException("AUT state label can not be lower than 0, got " + this.label);
 		this.autxStateType = autxStateType;
 		this.incomingEdges = new HashSet<>();
 		this.outgoingEdges = new HashSet<>();
@@ -36,7 +38,7 @@ public class AutState
 		return this.autxStateType;
 	}
 
-	public int label()
+	public long label()
 	{
 		return this.label;
 	}
@@ -101,7 +103,7 @@ public class AutState
 	@Override
 	public int hashCode()
 	{
-		return this.label;
+		return Long.hashCode(this.label);
 	}
 
 	@Override
