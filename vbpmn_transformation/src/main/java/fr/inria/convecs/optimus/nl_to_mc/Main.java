@@ -30,43 +30,6 @@ public class Main
 	public static final boolean LOCAL_SITE = true;
 	public static final boolean LOCAL_TESTING = false;
 	private static final int BCG_FILE_REDUCTION_THRESHOLD = 1000;
-	private static final String COUNTEREXAMPLE_FILE = "diag";
-	private static final String TEMPORARY_COUNTEREXAMPLE = COUNTEREXAMPLE_FILE + ".tmp";
-	private static final String VBPMN_COUNTEREXAMPLE_FILE = "evaluator.bcg";
-	private static final String BUCHI_AUTOMATA = "buchi.hoa";
-	private static final String SVL_SCRIPT_NAME = "task.svl";
-	private static final String TRUE_RESULT_FILE_NAME = "res_true.txt";
-	private static final String FALSE_RESULT_FILE_NAME = "res_false.txt";
-	private static final String WARNING_FILE_NAME = "warning.txt";
-	private static final String BCG_SPEC_FILE_NAME = "problem.bcg";
-	private static final String LTL_PROPERTY = "property.ltl";
-	private static final String ID_FILE = "id.lnt";
-	private static final String BPMN_TYPES_FILE = "bpmntypes.lnt";
-	private static final String PIF_SCHEMA = "pif.xsd";
-	private static final String REMOTE_PIF_FILE_LOCATION = "/home/quentin_nivon/nl_to_mc/public/";
-	private static final String LOCAL_PIF_FILE_LOCATION = "/home/quentin/Documents/VBPMN/vbpmn_transformation/src/main/resources/";
-	private static final int TRANSLATION_TO_PIF_FAILED = 12;
-	private static final int TRANSLATION_TO_LNT_FAILED = 13;
-	private static final int PROPERTY_GENERATION_FAILED = 14;
-	private static final int RETRIEVING_LABELS_FAILED = 17;
-	private static final int READING_PROPERTY_FILE_FAILED = 18;
-	private static final int WRITING_PROPERTY_NEGATION_FAILED = 19;
-	private static final int TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED = 20;
-	private static final int WRITING_BUCHI_AUTOMATA_FILE_FAILED = 21;
-	private static final int SVL_SCRIPT_GENERATION_FAILED = 22;
-	private static final int SVL_SCRIPT_EXECUTION_FAILED = 23;
-	private static final int WRITING_PROPERTY_EVALUATION_FILE_FAILED = 24;
-	private static final int COUNTEREXAMPLE_DETERMINATION_FAILED = 25;
-	private static final int COUNTEREXAMPLE_TO_AUT_FAILED = 26;
-	private static final int AUT_TO_VIS_CONVERSION_FAILED = 27;
-	private static final int WRITING_LTL_PROPERTY_FAILED = 28;
-	private static final int SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS = 31;
-	private static final int BUCHI_AUTOMATA_HAS_NO_LABELS = 32;
-	private static final int PROPERTY_LABELS_CONTAIN_RESERVED_LTL_KEYWORD = 33;
-	private static final int DIAGNOSTIC_FILE_MISSING = 34;
-	private static final int SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD = 35;
-	private static final int WARNING_FILE_WRITING_FAILED = 36;
-	private static final int BCG_GENERATION_FAILED = 37;
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
 	{
@@ -120,13 +83,13 @@ public class Main
 			System.out.println("Generating PIF file...");
 			MyOwnLogger.append("Generating PIF file...");
 			final long pifFileGenerationStartTime = System.nanoTime();
-			final File pifFile = Main.parseAndTransform(workingDirectory, bpmnFile);
+			final File pifFile = Main.parseAndTransform(bpmnFile);
 
 			if (pifFile == null)
 			{
 				MyOwnLogger.append("The BPMN process could not be translated to the PIF format.");
 				System.out.println("The BPMN process could not be translated to the PIF format.");
-				System.exit(TRANSLATION_TO_PIF_FAILED);
+				System.exit(ReturnCodes.TRANSLATION_TO_PIF_FAILED);
 			}
 
 			final long pifFileGenerationEndTime = System.nanoTime();
@@ -175,7 +138,7 @@ public class Main
 				System.out.println("Retrieving BCG file size...");
 				MyOwnLogger.append("Retrieving BCG file size...");
 				final long bcgFileSizeRetrievalStartTime = System.nanoTime();
-				final int bcgFileSize = Main.retrieveBCGFileSize(workingDirectory, BCG_SPEC_FILE_NAME);
+				final int bcgFileSize = Main.retrieveBCGFileSize(workingDirectory, Filename.BCG_SPEC_FILE_NAME);
 				final boolean performReduction = bcgFileSize > BCG_FILE_REDUCTION_THRESHOLD;
 				final long bcgFileSizeRetrievalEndTime = System.nanoTime();
 				final long bcgFileSizeRetrievalTime = bcgFileSizeRetrievalEndTime - bcgFileSizeRetrievalStartTime;
@@ -290,14 +253,14 @@ public class Main
 			final long convertingCounterExampleStartTime = System.nanoTime();
 			try
 			{
-				final Aut2Vis aut2Vis = new Aut2Vis(workingDirectory, counterExample.getLeft(), COUNTEREXAMPLE_FILE);
+				final Aut2Vis aut2Vis = new Aut2Vis(workingDirectory, counterExample.getLeft(), Filename.COUNTEREXAMPLE_FILE);
 				final File visFile = aut2Vis.generateVisFile();
 			}
 			catch (IOException e)
 			{
 				System.out.println("The translation of the counter-example to VIS failed.");
 				MyOwnLogger.append("The translation of the counter-example to VIS failed.");
-				System.exit(AUT_TO_VIS_CONVERSION_FAILED);
+				System.exit(ReturnCodes.AUT_TO_VIS_CONVERSION_FAILED);
 			}
 			final long convertingCounterExampleEndTime = System.nanoTime();
 			final long convertingCounterExampleTime = convertingCounterExampleEndTime - convertingCounterExampleStartTime;
@@ -357,7 +320,7 @@ public class Main
 			}
 			catch (IOException e)
 			{
-				return Triple.of(null, null, READING_PROPERTY_FILE_FAILED);
+				return Triple.of(null, null, ReturnCodes.READING_PROPERTY_FILE_FAILED);
 			}
 		}
 		else
@@ -380,7 +343,7 @@ public class Main
 			}
 			catch (Error e)
 			{
-				return Triple.of(null, null, TRANSLATION_TO_LNT_FAILED);
+				return Triple.of(null, null, ReturnCodes.TRANSLATION_TO_LNT_FAILED);
 			}
 
 			final File[] dirFiles = workingDir.listFiles();
@@ -393,8 +356,8 @@ public class Main
 			{
 				if (file.getName().endsWith(".mcl")
 						|| file.getName().endsWith(".pif")
-						|| file.getName().equals(TRUE_RESULT_FILE_NAME)
-						|| file.getName().equals(FALSE_RESULT_FILE_NAME)
+						|| file.getName().equals(Filename.TRUE_RESULT_FILE_NAME)
+						|| file.getName().equals(Filename.FALSE_RESULT_FILE_NAME)
 						|| file.getName().equals("time.txt")
 						|| file.getName().equals("evaluator4"))
 				{
@@ -402,8 +365,8 @@ public class Main
 				}
 				else if (file.getName().endsWith(".lnt"))
 				{
-					if (!file.getName().equals(BPMN_TYPES_FILE)
-							&& !file.getName().equals(ID_FILE))
+					if (!file.getName().equals(Filename.BPMN_TYPES_FILE)
+							&& !file.getName().equals(Filename.ID_FILE))
 					{
 						lntSpec = file;
 					}
@@ -431,11 +394,11 @@ public class Main
 			}
 			catch (Error e)
 			{
-				return Triple.of(null, null, SVL_SCRIPT_EXECUTION_FAILED);
+				return Triple.of(null, null, ReturnCodes.SVL_SCRIPT_EXECUTION_FAILED);
 			}
 
-			final File currentCounterExample = new File(workingDir.getAbsolutePath() + File.separator + VBPMN_COUNTEREXAMPLE_FILE);
-			final File tempCounterExample = new File(workingDir.getAbsolutePath() + File.separator + TEMPORARY_COUNTEREXAMPLE);
+			final File currentCounterExample = new File(workingDir.getAbsolutePath() + File.separator + Filename.VBPMN_COUNTEREXAMPLE_FILE);
+			final File tempCounterExample = new File(workingDir.getAbsolutePath() + File.separator + Filename.TEMPORARY_COUNTEREXAMPLE);
 
 			if (!result)
 			{
@@ -450,8 +413,8 @@ public class Main
 			for (File file : dirFiles)
 			{
 				if (file.getName().endsWith(".pif")
-					|| file.getName().equals(TRUE_RESULT_FILE_NAME)
-					|| file.getName().equals(FALSE_RESULT_FILE_NAME)
+					|| file.getName().equals(Filename.TRUE_RESULT_FILE_NAME)
+					|| file.getName().equals(Filename.FALSE_RESULT_FILE_NAME)
 					|| file.getName().equals("time.txt")
 					|| file.getName().equals("evaluator4"))
 				{
@@ -469,22 +432,22 @@ public class Main
 				if (result)
 				{
 					System.out.println("Property was evaluated to \"TRUE\"!");
-					printWriter = new PrintWriter(workingDir + File.separator + TRUE_RESULT_FILE_NAME);
+					printWriter = new PrintWriter(workingDir + File.separator + Filename.TRUE_RESULT_FILE_NAME);
 					printWriter.println("true");
 					counterExample = null;
 				}
 				else
 				{
 					System.out.println("Property was evaluated to \"FALSE\"!");
-					printWriter = new PrintWriter(workingDir + File.separator + FALSE_RESULT_FILE_NAME);
+					printWriter = new PrintWriter(workingDir + File.separator + Filename.FALSE_RESULT_FILE_NAME);
 					printWriter.println("false");
-					counterExample = new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + ".bcg");
+					counterExample = new File(workingDir.getAbsolutePath() + File.separator + Filename.COUNTEREXAMPLE_FILE + ".bcg");
 					final boolean renameWorked = tempCounterExample.renameTo(counterExample);
 				}
 			}
 			catch (FileNotFoundException e)
 			{
-				return Triple.of(null, null, WRITING_PROPERTY_EVALUATION_FILE_FAILED);
+				return Triple.of(null, null, ReturnCodes.WRITING_PROPERTY_EVALUATION_FILE_FAILED);
 			}
 
 			printWriter.flush();
@@ -526,7 +489,7 @@ public class Main
 			}
 			catch (IOException e)
 			{
-				return Pair.of(null, READING_PROPERTY_FILE_FAILED);
+				return Pair.of(null, ReturnCodes.READING_PROPERTY_FILE_FAILED);
 			}
 
 			((File) temporalLogicObject).delete();
@@ -540,14 +503,14 @@ public class Main
 			}
 			catch (Exception e)
 			{
-				return Pair.of(null, PROPERTY_GENERATION_FAILED);
+				return Pair.of(null, ReturnCodes.PROPERTY_GENERATION_FAILED);
 			}
 
 			System.out.println("Generated LTL property: " + property);
 			MyOwnLogger.append("Generated LTL property: " + property);
 		}
 
-		final File ltlPropertyFile = new File(workingDir.getAbsolutePath() + File.separator + LTL_PROPERTY);
+		final File ltlPropertyFile = new File(workingDir.getAbsolutePath() + File.separator + Filename.LTL_PROPERTY);
 
 		try
 		{
@@ -558,16 +521,17 @@ public class Main
 		}
 		catch (FileNotFoundException e)
 		{
-			return Pair.of(null, WRITING_LTL_PROPERTY_FAILED);
+			return Pair.of(null, ReturnCodes.WRITING_LTL_PROPERTY_FAILED);
 		}
 
 		return Pair.of(ltlPropertyFile, ReturnCodes.TERMINATION_OK);
 	}
 
-	private static File parseAndTransform(File workingDir,
-										  File input)
+	private static File parseAndTransform(File input)
 	{
-		final String pifSchema = LOCAL_SITE ? LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA : (LOCAL_TESTING ? LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA : REMOTE_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA);
+		final String pifSchema = LOCAL_SITE ?
+				Filename.LOCAL_PIF_FILE :
+				(LOCAL_TESTING ? Filename.LOCAL_PIF_FILE : Filename.REMOTE_PIF_FILE);
 		final ContentHandler baseHandler = new BaseContentHandler(input);
 		baseHandler.handle();
 		final Process processOutput = (Process) baseHandler.getOutput();
@@ -617,7 +581,7 @@ public class Main
 		}
 		catch (ParserConfigurationException | IOException | SAXException e)
 		{
-			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
+			return Pair.of(new ArrayList<>(), ReturnCodes.RETRIEVING_LABELS_FAILED);
 		}
 
 		final ArrayList<String> labels = new ArrayList<>();
@@ -629,13 +593,13 @@ public class Main
 				if (LTLKeywords.ALL_KEYWORDS.contains(object.id().toUpperCase()))
 				{
 					System.out.println("The specification contains tasks whose labels are reserved LTL keywords.");
-					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
+					return Pair.of(new ArrayList<>(), ReturnCodes.SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
 				}
 
 				if (LNTKeywords.ALL_KEYWORDS.contains(object.id().toUpperCase()))
 				{
 					System.out.println("The specification contains tasks whose labels are reserved LNT keywords.");
-					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD);
+					return Pair.of(new ArrayList<>(), ReturnCodes.SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD);
 				}
 
 				labels.add(object.id()); //Work on IDs instead of Names (so does VBPMN)
@@ -732,7 +696,7 @@ public class Main
 		}
 		catch (IOException e)
 		{
-			return Pair.of("", READING_PROPERTY_FILE_FAILED);
+			return Pair.of("", ReturnCodes.READING_PROPERTY_FILE_FAILED);
 		}
 
 		final String negProperty = ltlProperty.getName().replace(".ltl", "") + "_neg.ltl";
@@ -747,7 +711,7 @@ public class Main
 		}
 		catch (FileNotFoundException e)
 		{
-			return Pair.of("", WRITING_PROPERTY_NEGATION_FAILED);
+			return Pair.of("", ReturnCodes.WRITING_PROPERTY_NEGATION_FAILED);
 		}
 
 		final String ltl2tgbaCommand = "ltl2tgba";
@@ -760,26 +724,26 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return Pair.of("", TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED);
+			return Pair.of("", ReturnCodes.TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED);
 		}
 
 		if (ltl2tgbaCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
-			return Pair.of("", TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED);
+			return Pair.of("", ReturnCodes.TRANSLATING_PROPERTY_TO_BUCHI_AUTOMATA_FAILED);
 		}
 
 		System.out.println("Buchi automata:\n\n" + ltl2tgbaCommandManager.stdOut());
 
 		try
 		{
-			final PrintWriter buchiAutomataPrintWriter = new PrintWriter(workingDir.getAbsolutePath() + File.separator + BUCHI_AUTOMATA);
+			final PrintWriter buchiAutomataPrintWriter = new PrintWriter(workingDir.getAbsolutePath() + File.separator + Filename.BUCHI_AUTOMATA);
 			buchiAutomataPrintWriter.println(ltl2tgbaCommandManager.stdOut());
 			buchiAutomataPrintWriter.flush();
 			buchiAutomataPrintWriter.close();
 		}
 		catch (FileNotFoundException e)
 		{
-			return Pair.of("", WRITING_BUCHI_AUTOMATA_FILE_FAILED);
+			return Pair.of("", ReturnCodes.WRITING_BUCHI_AUTOMATA_FILE_FAILED);
 		}
 
 		(new File(workingDir + File.separator + negProperty)).delete();
@@ -794,7 +758,7 @@ public class Main
 	{
 		final String svlCommand = "hoa2svl";
 		final ArrayList<String> svlArgs = new ArrayList<>();
-		svlArgs.add(BUCHI_AUTOMATA);
+		svlArgs.add(Filename.BUCHI_AUTOMATA);
 		svlArgs.add(lntSpecification.getName());
 		if (performReduction) svlArgs.add("--reduction");
 
@@ -811,12 +775,12 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return SVL_SCRIPT_GENERATION_FAILED;
+			return ReturnCodes.SVL_SCRIPT_GENERATION_FAILED;
 		}
 
 		if (svlCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
-			return SVL_SCRIPT_GENERATION_FAILED;
+			return ReturnCodes.SVL_SCRIPT_GENERATION_FAILED;
 		}
 
 		return ReturnCodes.TERMINATION_OK;
@@ -825,7 +789,7 @@ public class Main
 	private static int executeSVLScript(File workingDir)
 	{
 		final String svlCommand = "svl";
-		final String[] svlArgs = new String[]{SVL_SCRIPT_NAME};
+		final String[] svlArgs = {Filename.SVL_SCRIPT_NAME};
 		final CommandManager svlCommandManager = new CommandManager(svlCommand, workingDir, svlArgs);
 
 		try
@@ -834,12 +798,12 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return SVL_SCRIPT_EXECUTION_FAILED;
+			return ReturnCodes.SVL_SCRIPT_EXECUTION_FAILED;
 		}
 
 		if (svlCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
-			return SVL_SCRIPT_EXECUTION_FAILED;
+			return ReturnCodes.SVL_SCRIPT_EXECUTION_FAILED;
 		}
 
 		final PrintWriter printWriter;
@@ -849,19 +813,19 @@ public class Main
 			if (svlCommandManager.stdOut().contains("TRUE"))
 			{
 				System.out.println("Property was evaluated to \"TRUE\"!");
-				printWriter = new PrintWriter(workingDir + File.separator + TRUE_RESULT_FILE_NAME);
+				printWriter = new PrintWriter(workingDir + File.separator + Filename.TRUE_RESULT_FILE_NAME);
 				printWriter.println(svlCommandManager.stdOut());
 			}
 			else
 			{
 				System.out.println("Property was evaluated to \"FALSE\"!");
-				printWriter = new PrintWriter(workingDir + File.separator + FALSE_RESULT_FILE_NAME);
+				printWriter = new PrintWriter(workingDir + File.separator + Filename.FALSE_RESULT_FILE_NAME);
 				printWriter.println(svlCommandManager.stdOut());
 			}
 		}
 		catch (FileNotFoundException e)
 		{
-			return WRITING_PROPERTY_EVALUATION_FILE_FAILED;
+			return ReturnCodes.WRITING_PROPERTY_EVALUATION_FILE_FAILED;
 		}
 
 		printWriter.flush();
@@ -872,18 +836,18 @@ public class Main
 
 	private static Pair<File, Integer> generateProperCounterexample(File workingDir)
 	{
-		if (!new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + ".bcg").exists())
+		if (!new File(workingDir.getAbsolutePath() + File.separator + Filename.COUNTEREXAMPLE_FILE + ".bcg").exists())
 		{
-			return Pair.of(null, DIAGNOSTIC_FILE_MISSING);
+			return Pair.of(null, ReturnCodes.DIAGNOSTIC_FILE_MISSING);
 		}
 
 		//Minimize counterexample with weaktrace to remove "i" transitions
 		final String bcgMinCommand = "bcg_open";
-		final String[] bcgMinArgs = new String[]{
-			COUNTEREXAMPLE_FILE + ".bcg",
+		final String[] bcgMinArgs = {
+			Filename.COUNTEREXAMPLE_FILE + ".bcg",
 			"reductor",
 			"-weaktrace",
-			COUNTEREXAMPLE_FILE + "_weak.bcg"
+			Filename.COUNTEREXAMPLE_FILE + "_weak.bcg"
 		};
 		final CommandManager bcgMinCommandManager = new CommandManager(bcgMinCommand, workingDir, bcgMinArgs);
 
@@ -893,19 +857,19 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return Pair.of(null, COUNTEREXAMPLE_DETERMINATION_FAILED);
+			return Pair.of(null, ReturnCodes.COUNTEREXAMPLE_DETERMINATION_FAILED);
 		}
 
 		if (bcgMinCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
-			return Pair.of(null, COUNTEREXAMPLE_DETERMINATION_FAILED);
+			return Pair.of(null, ReturnCodes.COUNTEREXAMPLE_DETERMINATION_FAILED);
 		}
 
 		//Convert example to AUT
 		final String bcgIOCommand = "bcg_io";
-		final String[] bcgIOArgs = new String[]{
-			COUNTEREXAMPLE_FILE + "_weak.bcg",
-			COUNTEREXAMPLE_FILE + "_weak.aut"
+		final String[] bcgIOArgs = {
+			Filename.COUNTEREXAMPLE_FILE + "_weak.bcg",
+			Filename.COUNTEREXAMPLE_FILE + "_weak.aut"
 		};
 		final CommandManager bcgIOCommandManager = new CommandManager(bcgIOCommand, workingDir, bcgIOArgs);
 
@@ -915,15 +879,15 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return Pair.of(null, COUNTEREXAMPLE_TO_AUT_FAILED);
+			return Pair.of(null, ReturnCodes.COUNTEREXAMPLE_TO_AUT_FAILED);
 		}
 
 		if (bcgIOCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
-			return Pair.of(null, COUNTEREXAMPLE_TO_AUT_FAILED);
+			return Pair.of(null, ReturnCodes.COUNTEREXAMPLE_TO_AUT_FAILED);
 		}
 
-		return Pair.of(new File(workingDir.getAbsolutePath() + File.separator + COUNTEREXAMPLE_FILE + "_weak.aut"), ReturnCodes.TERMINATION_OK);
+		return Pair.of(new File(workingDir.getAbsolutePath() + File.separator + Filename.COUNTEREXAMPLE_FILE + "_weak.aut"), ReturnCodes.TERMINATION_OK);
 	}
 
 	private static int retrieveAndVerifyPropertyLabels(final File workingDirectory,
@@ -945,7 +909,7 @@ public class Main
 
 		if (labelsLine == null)
 		{
-			return BUCHI_AUTOMATA_HAS_NO_LABELS;
+			return ReturnCodes.BUCHI_AUTOMATA_HAS_NO_LABELS;
 		}
 
 		//Retrieve Büchi automata labels
@@ -964,7 +928,7 @@ public class Main
 
 		if (buchiAutomataLabels.isEmpty())
 		{
-			return BUCHI_AUTOMATA_HAS_NO_LABELS;
+			return ReturnCodes.BUCHI_AUTOMATA_HAS_NO_LABELS;
 		}
 
 		//Verify that property does not contain reserved LTL keywords
@@ -972,7 +936,7 @@ public class Main
 		{
 			if (LTLKeywords.ALL_KEYWORDS.contains(buchiLabel.toUpperCase()))
 			{
-				return PROPERTY_LABELS_CONTAIN_RESERVED_LTL_KEYWORD;
+				return ReturnCodes.PROPERTY_LABELS_CONTAIN_RESERVED_LTL_KEYWORD;
 			}
 		}
 
@@ -989,14 +953,14 @@ public class Main
 
 			try
 			{
-				final PrintWriter printWriter = new PrintWriter(workingDirectory.getAbsolutePath() + File.separator + WARNING_FILE_NAME);
+				final PrintWriter printWriter = new PrintWriter(workingDirectory.getAbsolutePath() + File.separator + Filename.WARNING_FILE_NAME);
 				printWriter.println(buchiAutomataLabels);
 				printWriter.flush();
 				printWriter.close();
 			}
 			catch (FileNotFoundException e)
 			{
-				return WARNING_FILE_WRITING_FAILED;
+				return ReturnCodes.WARNING_FILE_WRITING_FAILED;
 			}
 		}
 
@@ -1016,12 +980,12 @@ public class Main
 		}
 		catch (IOException | InterruptedException e)
 		{
-			return BCG_GENERATION_FAILED;
+			return ReturnCodes.BCG_GENERATION_FAILED;
 		}
 
 		if (lntOpenCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 		{
-			return BCG_GENERATION_FAILED;
+			return ReturnCodes.BCG_GENERATION_FAILED;
 		}
 
 		return ReturnCodes.TERMINATION_OK;
@@ -1031,7 +995,7 @@ public class Main
 										   final String bcgFileName)
 	{
 		final String bcgInfoCommand = "bcg_info";
-		final String[] bcgInfoArgs = new String[]{
+		final String[] bcgInfoArgs = {
 			"-size",
 			bcgFileName
 		};
