@@ -10,7 +10,6 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.slf4j.Logger;
@@ -19,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -238,14 +236,14 @@ public class Vbpmn
 		this.executionTimes.add(Pair.of(secondProcessConversionTime, "The generation of the LNT code of the second process took " + Utils.nanoSecToReadable(secondProcessConversionTime)));
 
 		//If one of the models could not be loaded => ERROR
-		if (result1.getLeft() != ReturnCodes.TERMINATION_OK)
+		if (result1.getLeft() != ReturnCode.TERMINATION_OK)
 		{
 			final String errorMessage = this.getErrorMessage(pif1, result1);
 			System.out.println(errorMessage);
 			throw new IllegalStateException(errorMessage);
 		}
 
-		if (result2.getLeft() != ReturnCodes.TERMINATION_OK)
+		if (result2.getLeft() != ReturnCode.TERMINATION_OK)
 		{
 			final String errorMessage = this.getErrorMessage(pif2, result2);
 			System.out.println(errorMessage);
@@ -346,7 +344,7 @@ public class Vbpmn
 		printStream.print("The execution took " + Utils.nanoSecToReadable(totalTime));
 		printStream.close();
 
-		final int returnValue = result ? ReturnCodes.TERMINATION_OK : ReturnCodes.TERMINATION_ERROR;
+		final int returnValue = result ? ReturnCode.TERMINATION_OK : ReturnCode.TERMINATION_ERROR;
 		//System.out.println("Result: " + result);
 
 		return result;
@@ -363,7 +361,7 @@ public class Vbpmn
 	{
 		final String errorMessage;
 
-		if (triple.getLeft() != ReturnCodes.TERMINATION_UNBALANCED_INCLUSIVE_CYCLE)
+		if (triple.getLeft() != ReturnCode.TERMINATION_UNBALANCED_INCLUSIVE_CYCLE)
 		{
 			errorMessage = "Error while loading model \"" + pifProcess.getAbsolutePath() + "\". Please verify " +
 					"that your input model is correct (in particular, BPMN objects and flows should not contain the" +
@@ -766,7 +764,7 @@ public class Vbpmn
 				final CommandManager commandManager = new CommandManager(command, new File(outputFolder), args);
 				commandManager.execute();
 
-				if (commandManager.returnValue() != ReturnCodes.TERMINATION_OK)
+				if (commandManager.returnValue() != ReturnCode.TERMINATION_OK)
 				{
 					throw new RuntimeException("An error occurred during the execution of the SVL script:\n\n" + commandManager.stdErr());
 				}
@@ -891,7 +889,7 @@ public class Vbpmn
 				final CommandManager commandManager = new CommandManager(command, new File(outputFolder), args);
 				commandManager.execute();
 
-				if (commandManager.returnValue() != ReturnCodes.TERMINATION_OK)
+				if (commandManager.returnValue() != ReturnCode.TERMINATION_OK)
 				{
 					throw new RuntimeException("An error occurred during the execution of the SVL script:\n\n" + commandManager.stdErr());
 				}

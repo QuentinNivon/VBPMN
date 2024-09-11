@@ -7,7 +7,7 @@ import fr.inria.convecs.optimus.bpmn.BpmnParser;
 import fr.inria.convecs.optimus.bpmn.types.process.BpmnProcessObject;
 import fr.inria.convecs.optimus.bpmn.types.process.Task;
 import fr.inria.convecs.optimus.nl_to_mc.exceptions.ExpectedException;
-import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
+import fr.inria.convecs.optimus.py_to_java.ReturnCode;
 import fr.inria.convecs.optimus.util.CommandManager;
 import fr.inria.convecs.optimus.util.Utils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,30 +20,6 @@ import java.util.*;
 
 public class Main
 {
-	private static final int RETRIEVING_LABELS_FAILED = 17;
-	private static final int SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS = 31;
-	private static final int SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD = 35;
-	private static final int WEAKTRACE_FAILED = 38;
-	private static final int BCG_TO_AUT_FAILED = 39;
-	private static final int BCG_SPEC_TO_AUT_FAILED = 40;
-	private static final int WEAKTRACE_SPEC_FAILED = 41;
-	private static final int CLTS_AUT_TO_BCG_FAILED = 42;
-	private static final int CLTS_WEAKTRACE_FAILED = 43;
-	private static final int CLTS_BCG_TO_AUT_FAILED = 44;
-	private static final String BCG_SPECIFICATION = "problem.bcg";
-	private static final String BCG_SPECIFICATION_WEAK = "problem_weak.bcg";
-	private static final String AUT_SPECIFICATION = "problem.aut";
-	private static final String AUT_SPECIFICATION_WEAK = "problem_weak.aut";
-	private static final String BCG_PRODUCT = "product.bcg";
-	private static final String WEAK_BCG_PRODUCT = "product_weak.bcg";
-	private static final String WEAK_AUT_PRODUCT = "product_weak.aut";
-	private static final String GRAPH_3D_CLTS = "clts.graph3D";
-	private static final String AUT_CLTS = "clts.aut";
-	private static final String BCG_CLTS = "clts.bcg";
-	private static final String WEAK_BCG_CLTS = "clts_weak.bcg";
-	private static final String AUT_FULL_CLTS = "clts_full.aut";
-	private static final String AUTX_FULL_CLTS = "clts_full.autx";
-
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
 	{
 		CommandLineParser commandLineParser = null;
@@ -68,26 +44,11 @@ public class Main
 			System.out.println("Reducing BCG product (weaktrace)...");
 			MyOwnLogger.append("Reducing BCG product (weaktrace)...");
 			final long bcgReductionStartTime = System.nanoTime();
-			final String bcgOpenCommand = "bcg_open";
-			final String[] bcgOpenArgs = new String[]{BCG_PRODUCT, "reductor", "-weaktrace", WEAK_BCG_PRODUCT};
-			final CommandManager bcgOpenCommandManager = new CommandManager(bcgOpenCommand, workingDirectory, bcgOpenArgs);
+			final int bcgReductionResult = Main.reduceBcgProduct(workingDirectory);
 
-			try
+			if (bcgReductionResult != ReturnCode.TERMINATION_OK)
 			{
-				bcgOpenCommandManager.execute();
-			}
-			catch (IOException | InterruptedException e)
-			{
-				System.out.println("The weak reduction of the BCG product failed.");
-				MyOwnLogger.append("The weak reduction of the BCG product failed.");
-				System.exit(WEAKTRACE_FAILED);
-			}
-
-			if (bcgOpenCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
-			{
-				System.out.println("The weak reduction of the BCG product failed.");
-				MyOwnLogger.append("The weak reduction of the BCG product failed.");
-				System.exit(WEAKTRACE_FAILED);
+				System.exit(bcgReductionResult);
 			}
 
 			final long bcgReductionEndTime = System.nanoTime();
@@ -99,7 +60,7 @@ public class Main
 			MyOwnLogger.append("Converting BCG product to AUT...");
 			final long bcgConversionStartTime = System.nanoTime();
 			final String bcgIOCommand = "bcg_io";
-			final String[] bcgIOArgs = new String[]{WEAK_BCG_PRODUCT, WEAK_AUT_PRODUCT};
+			final String[] bcgIOArgs = {FileName.WEAK_BCG_PRODUCT, FileName.WEAK_AUT_PRODUCT};
 			final CommandManager bcgIOCommandManager = new CommandManager(bcgIOCommand, workingDirectory, bcgIOArgs);
 
 			try
@@ -110,14 +71,14 @@ public class Main
 			{
 				System.out.println("The translation of the BCG product to AUT failed.");
 				MyOwnLogger.append("The translation of the BCG product to AUT failed.");
-				System.exit(BCG_TO_AUT_FAILED);
+				System.exit(ReturnCode.BCG_TO_AUT_FAILED);
 			}
 
-			if (bcgIOCommandManager.returnValue() != ReturnCodes.TERMINATION_OK)
+			if (bcgIOCommandManager.returnValue() != ReturnCode.TERMINATION_OK)
 			{
 				System.out.println("The translation of the BCG product to AUT failed.");
 				MyOwnLogger.append("The translation of the BCG product to AUT failed.");
-				System.exit(BCG_TO_AUT_FAILED);
+				System.exit(ReturnCode.BCG_TO_AUT_FAILED);
 			}
 
 			final long bcgConversionEndTime = System.nanoTime();
@@ -128,7 +89,7 @@ public class Main
 			System.out.println("Parsing AUT file...");
 			MyOwnLogger.append("Parsing AUT file...");
 			final long autParsingStartTime = System.nanoTime();
-			final AutParser autParser = new AutParser(new File(workingDirectory + File.separator + WEAK_AUT_PRODUCT));
+			final AutParser autParser = new AutParser(new File(workingDirectory + File.separator + FileName.WEAK_AUT_PRODUCT));
 			final AutGraph autGraph = autParser.parse();
 			final long autParsingEndTime = System.nanoTime();
 			final long autParsingTime = autParsingEndTime - autParsingStartTime;
@@ -142,7 +103,7 @@ public class Main
 			final long labelsComputationStartTime = System.nanoTime();
 			final Pair<ArrayList<String>, Integer> labelsAndReturnCode = Main.computeSpecLabels(bpmnFile);
 
-			if (labelsAndReturnCode.getRight() != ReturnCodes.TERMINATION_OK)
+			if (labelsAndReturnCode.getRight() != ReturnCode.TERMINATION_OK)
 			{
 				System.out.println("The computation of the specification labels failed.");
 				MyOwnLogger.append("The computation of the specification labels failed.");
@@ -167,7 +128,7 @@ public class Main
 			System.out.println("Writing CLTS to file...");
 			MyOwnLogger.append("Writing CLTS to file...");
 			final long cltsDumpingStartTime = System.nanoTime();
-			final AutWriter autWriter = new AutWriter(clts, new File(workingDirectory + File.separator + AUT_CLTS));
+			final AutWriter autWriter = new AutWriter(clts, new File(workingDirectory + File.separator + FileName.AUT_CLTS));
 			autWriter.write();
 			final long cltsDumpingEndTime = System.nanoTime();
 			final long cltsDumpingTime = cltsDumpingEndTime - cltsDumpingStartTime;
@@ -178,7 +139,7 @@ public class Main
 			MyOwnLogger.append("Converting CLTS to BCG...");
 			final long cltsAutToBcgStartTime = System.nanoTime();
 			final String bcgIOCommand2 = "bcg_io";
-			final String[] bcgIOArgs2 = new String[]{AUT_CLTS, BCG_CLTS};
+			final String[] bcgIOArgs2 = {FileName.AUT_CLTS, FileName.BCG_CLTS};
 			final CommandManager bcgIOCommandManager2 = new CommandManager(bcgIOCommand2, workingDirectory, bcgIOArgs2);
 
 			try
@@ -189,14 +150,14 @@ public class Main
 			{
 				System.out.println("The conversion of the CLTS from AUT to BCG failed.");
 				MyOwnLogger.append("The conversion of the CLTS from AUT to BCG failed.");
-				System.exit(CLTS_AUT_TO_BCG_FAILED);
+				System.exit(ReturnCode.CLTS_AUT_TO_BCG_FAILED);
 			}
 
-			if (bcgIOCommandManager2.returnValue() != ReturnCodes.TERMINATION_OK)
+			if (bcgIOCommandManager2.returnValue() != ReturnCode.TERMINATION_OK)
 			{
 				System.out.println("The conversion of the CLTS from AUT to BCG failed.");
 				MyOwnLogger.append("The conversion of the CLTS from AUT to BCG failed.");
-				System.exit(CLTS_AUT_TO_BCG_FAILED);
+				System.exit(ReturnCode.CLTS_AUT_TO_BCG_FAILED);
 			}
 
 			final long cltsAutToBcgEndTime = System.nanoTime();
@@ -207,26 +168,11 @@ public class Main
 			System.out.println("Reducing CLTS (weaktrace)...");
 			MyOwnLogger.append("Reducing CLTS (weaktrace)...");
 			final long cltsReductionStartTime = System.nanoTime();
-			final String bcgOpenCommand2 = "bcg_open";
-			final String[] bcgOpenArgs2 = new String[]{BCG_CLTS, "reductor", "-weaktrace", WEAK_BCG_CLTS};
-			final CommandManager bcgOpenCommandManager2 = new CommandManager(bcgOpenCommand2, workingDirectory, bcgOpenArgs2);
+			final int cltsReductionResult = Main.reduceClts(workingDirectory);
 
-			try
+			if (cltsReductionResult != ReturnCode.TERMINATION_OK)
 			{
-				bcgOpenCommandManager2.execute();
-			}
-			catch (IOException | InterruptedException e)
-			{
-				System.out.println("The weak reduction of the CLTS failed.");
-				MyOwnLogger.append("The weak reduction of the CLTS failed.");
-				System.exit(CLTS_WEAKTRACE_FAILED);
-			}
-
-			if (bcgOpenCommandManager2.returnValue() != ReturnCodes.TERMINATION_OK)
-			{
-				System.out.println("The weak reduction of the CLTS failed.");
-				MyOwnLogger.append("The weak reduction of the CLTS failed.");
-				System.exit(CLTS_WEAKTRACE_FAILED);
+				System.exit(cltsReductionResult);
 			}
 
 			final long cltsReductionEndTime = System.nanoTime();
@@ -238,7 +184,7 @@ public class Main
 			MyOwnLogger.append("Converting CLTS to AUT...");
 			final long cltsBcgToAutStartTime = System.nanoTime();
 			final String bcgIOCommand3 = "bcg_io";
-			final String[] bcgIOArgs3 = new String[]{WEAK_BCG_CLTS, AUT_CLTS};
+			final String[] bcgIOArgs3 = new String[]{FileName.WEAK_BCG_CLTS, FileName.AUT_CLTS};
 			final CommandManager bcgIOCommandManager3 = new CommandManager(bcgIOCommand3, workingDirectory, bcgIOArgs3);
 
 			try
@@ -249,14 +195,14 @@ public class Main
 			{
 				System.out.println("The conversion of the CLTS from BCG to AUT failed.");
 				MyOwnLogger.append("The conversion of the CLTS from BCG to AUT failed.");
-				System.exit(CLTS_BCG_TO_AUT_FAILED);
+				System.exit(ReturnCode.CLTS_BCG_TO_AUT_FAILED);
 			}
 
-			if (bcgIOCommandManager3.returnValue() != ReturnCodes.TERMINATION_OK)
+			if (bcgIOCommandManager3.returnValue() != ReturnCode.TERMINATION_OK)
 			{
 				System.out.println("The conversion of the CLTS from BCG to AUT failed.");
 				MyOwnLogger.append("The conversion of the CLTS from BCG to AUT failed.");
-				System.exit(CLTS_BCG_TO_AUT_FAILED);
+				System.exit(ReturnCode.CLTS_BCG_TO_AUT_FAILED);
 			}
 
 			final long cltsBcgToAutEndTime = System.nanoTime();
@@ -267,7 +213,7 @@ public class Main
 			System.out.println("Parsing AUT file...");
 			MyOwnLogger.append("Parsing AUT file...");
 			final long cltsParsingStartTime = System.nanoTime();
-			final AutParser cltsParser = new AutParser(new File(workingDirectory + File.separator + AUT_CLTS));
+			final AutParser cltsParser = new AutParser(new File(workingDirectory + File.separator + FileName.AUT_CLTS));
 			final AutGraph cltsGraph = cltsParser.parse();
 			final long cltsParsingEndTime = System.nanoTime();
 			final long cltsParsingTime = cltsParsingEndTime - cltsParsingStartTime;
@@ -278,26 +224,11 @@ public class Main
 			System.out.println("Reducing BCG specification (weaktrace)...");
 			MyOwnLogger.append("Reducing BCG specification (weaktrace)...");
 			final long bcgSpecificationReductionStartTime = System.nanoTime();
-			final String bcgOpenCommand3 = "bcg_open";
-			final String[] bcgOpenArgs3 = new String[]{BCG_SPECIFICATION, "reductor", "-weaktrace", BCG_SPECIFICATION_WEAK};
-			final CommandManager bcgOpenCommandManager3 = new CommandManager(bcgOpenCommand3, workingDirectory, bcgOpenArgs3);
+			final int bcgSpecificationReductionResult = Main.reduceBcgSpec(workingDirectory);
 
-			try
+			if (bcgSpecificationReductionResult != ReturnCode.TERMINATION_OK)
 			{
-				bcgOpenCommandManager3.execute();
-			}
-			catch (IOException | InterruptedException e)
-			{
-				System.out.println("The weak reduction of the BCG specification failed.");
-				MyOwnLogger.append("The weak reduction of the BCG specification failed.");
-				System.exit(WEAKTRACE_SPEC_FAILED);
-			}
-
-			if (bcgOpenCommandManager3.returnValue() != ReturnCodes.TERMINATION_OK)
-			{
-				System.out.println("The weak reduction of the BCG specification failed.");
-				MyOwnLogger.append("The weak reduction of the BCG specification failed.");
-				System.exit(WEAKTRACE_SPEC_FAILED);
+				System.exit(bcgSpecificationReductionResult);
 			}
 
 			final long bcgSpecificationReductionEndTime = System.nanoTime();
@@ -309,7 +240,7 @@ public class Main
 			MyOwnLogger.append("Converting BCG specification to AUT...");
 			final long bcgSpecificationConversionStartTime = System.nanoTime();
 			final String bcgIOCommand4 = "bcg_io";
-			final String[] bcgIOArgs4 = new String[]{BCG_SPECIFICATION_WEAK, AUT_SPECIFICATION_WEAK};
+			final String[] bcgIOArgs4 = {FileName.BCG_SPECIFICATION_WEAK, FileName.AUT_SPECIFICATION_WEAK};
 			final CommandManager bcgIOCommandManager4 = new CommandManager(bcgIOCommand4, workingDirectory, bcgIOArgs4);
 
 			try
@@ -320,14 +251,14 @@ public class Main
 			{
 				System.out.println("The translation of the BCG specification to AUT failed.");
 				MyOwnLogger.append("The translation of the BCG specification to AUT failed.");
-				System.exit(BCG_SPEC_TO_AUT_FAILED);
+				System.exit(ReturnCode.BCG_SPEC_TO_AUT_FAILED);
 			}
 
-			if (bcgIOCommandManager4.returnValue() != ReturnCodes.TERMINATION_OK)
+			if (bcgIOCommandManager4.returnValue() != ReturnCode.TERMINATION_OK)
 			{
 				System.out.println("The translation of the BCG specification to AUT failed.");
 				MyOwnLogger.append("The translation of the BCG specification to AUT failed.");
-				System.exit(BCG_SPEC_TO_AUT_FAILED);
+				System.exit(ReturnCode.BCG_SPEC_TO_AUT_FAILED);
 			}
 
 			final long bcgSpecificationConversionEndTime = System.nanoTime();
@@ -338,7 +269,7 @@ public class Main
 			System.out.println("Parsing AUT specification...");
 			MyOwnLogger.append("Parsing AUT specification...");
 			final long autSpecParsingStartTime = System.nanoTime();
-			final AutParser autSpecParser = new AutParser(new File(workingDirectory + File.separator + AUT_SPECIFICATION_WEAK), false);
+			final AutParser autSpecParser = new AutParser(new File(workingDirectory + File.separator + FileName.AUT_SPECIFICATION_WEAK), false);
 			final AutGraph specGraph = autSpecParser.parse();
 			final long autSpecParsingEndTime = System.nanoTime();
 			final long autSpecParsingTime = autSpecParsingEndTime - autSpecParsingStartTime;
@@ -368,9 +299,9 @@ public class Main
 			System.out.println("Writing full CLTS to file...");
 			MyOwnLogger.append("Writing full CLTS to file...");
 			final long fullCltsDumpingStartTime = System.nanoTime();
-			final AutWriter autWriter2 = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + AUT_FULL_CLTS));
+			final AutWriter autWriter2 = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + FileName.AUT_FULL_CLTS));
 			autWriter2.write();
-			final AutWriter autxWriter = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + AUTX_FULL_CLTS), true);
+			final AutWriter autxWriter = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + FileName.AUTX_FULL_CLTS), true);
 			autxWriter.write();
 			final long fullCltsDumpingEndTime = System.nanoTime();
 			final long fullCltsDumpingTime = fullCltsDumpingEndTime - fullCltsDumpingStartTime;
@@ -392,7 +323,7 @@ public class Main
 			System.out.println("Converting CLTS to 3DForceGraph...");
 			MyOwnLogger.append("Converting CLTS to 3DForceGraph...");
 			final long cltsConversionStartTime = System.nanoTime();
-			final Aut2Force3DGraph aut2Force3DGraph = new Aut2Force3DGraph(new File(workingDirectory + File.separator + GRAPH_3D_CLTS), fullCLTS);
+			final Aut2Force3DGraph aut2Force3DGraph = new Aut2Force3DGraph(new File(workingDirectory + File.separator + FileName.GRAPH_3D_CLTS), fullCLTS);
 			aut2Force3DGraph.generateForce3DGraphFile();
 			final long cltsConversionEndTime = System.nanoTime();
 			final long cltsConversionTime = cltsConversionEndTime - cltsConversionStartTime;
@@ -417,6 +348,270 @@ public class Main
 		MyOwnLogger.writeStdOut((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY));
 	}
 
+	/**
+	 * New version of the weaktrace now uses first bcg_min -branching, then weaktrace, and finally bcg_min strong
+	 */
+	private static int reduceBcgProduct(final File workingDirectory)
+	{
+		//Branching reduction
+		final String bcgMinBranchingCommand = "bcg_min";
+		final String[] bcgMinBranchingArgs = {
+			"-branching",
+			FileName.BCG_PRODUCT,
+			FileName.BRANCHED_BCG_PRODUCT
+		};
+		final CommandManager bcgMinBranchingCommandManager = new CommandManager(bcgMinBranchingCommand, workingDirectory, bcgMinBranchingArgs);
+
+		try
+		{
+			bcgMinBranchingCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			System.out.println("The branching reduction of the BCG product failed.");
+			MyOwnLogger.append("The branching reduction of the BCG product failed.");
+			return ReturnCode.PRODUCT_BRANCHING_REDUCTION_FAILED;
+		}
+
+		if (bcgMinBranchingCommandManager.returnValue() != ReturnCode.TERMINATION_OK)
+		{
+			System.out.println("The branching reduction of the BCG product failed.");
+			MyOwnLogger.append("The branching reduction of the BCG product failed.");
+			return ReturnCode.PRODUCT_BRANCHING_REDUCTION_FAILED;
+		}
+
+		//Weaktrace
+		final String bcgOpenCommand = "bcg_open";
+		final String[] bcgOpenArgs = new String[]{
+			FileName.BRANCHED_BCG_PRODUCT,
+			"reductor",
+			"-weaktrace",
+			FileName.WEAK_BCG_PRODUCT
+		};
+		final CommandManager bcgOpenCommandManager = new CommandManager(bcgOpenCommand, workingDirectory, bcgOpenArgs);
+
+		try
+		{
+			bcgOpenCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			System.out.println("The weak reduction of the BCG product failed.");
+			MyOwnLogger.append("The weak reduction of the BCG product failed.");
+			return ReturnCode.PRODUCT_WEAKTRACE_FAILED;
+		}
+
+		if (bcgOpenCommandManager.returnValue() != ReturnCode.TERMINATION_OK)
+		{
+			System.out.println("The weak reduction of the BCG product failed.");
+			MyOwnLogger.append("The weak reduction of the BCG product failed.");
+			return ReturnCode.PRODUCT_WEAKTRACE_FAILED;
+		}
+
+		//Strong reduction
+		final String bcgMinStrongCommand = "bcg_min";
+		final String[] bcgMinStrongArgs = {
+			"-strong",
+			FileName.WEAK_BCG_PRODUCT,
+			FileName.WEAK_BCG_PRODUCT
+		};
+		final CommandManager bcgMinStrongCommandManager = new CommandManager(bcgMinStrongCommand, workingDirectory, bcgMinStrongArgs);
+
+		try
+		{
+			bcgMinStrongCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			System.out.println("The strong reduction of the BCG product failed.");
+			MyOwnLogger.append("The strong reduction of the BCG product failed.");
+			return ReturnCode.PRODUCT_STRONG_REDUCTION_FAILED;
+		}
+
+		if (bcgMinStrongCommandManager.returnValue() != ReturnCode.TERMINATION_OK)
+		{
+			System.out.println("The strong reduction of the BCG product failed.");
+			MyOwnLogger.append("The strong reduction of the BCG product failed.");
+			return ReturnCode.PRODUCT_STRONG_REDUCTION_FAILED;
+		}
+
+		return ReturnCode.TERMINATION_OK;
+	}
+
+	private static int reduceClts(final File workingDirectory)
+	{
+		//Branching reduction
+		final String bcgMinBranchingCommand = "bcg_min";
+		final String[] bcgMinBranchingArgs = {
+			"-branching",
+			FileName.BCG_CLTS,
+			FileName.BRANCHED_BCG_CLTS
+		};
+		final CommandManager bcgMinBranchingCommandManager = new CommandManager(bcgMinBranchingCommand, workingDirectory, bcgMinBranchingArgs);
+
+		try
+		{
+			bcgMinBranchingCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			System.out.println("The branching reduction of the CLTS failed.");
+			MyOwnLogger.append("The branching reduction of the CLTS failed.");
+			return ReturnCode.CLTS_BRANCHING_REDUCTION_FAILED;
+		}
+
+		if (bcgMinBranchingCommandManager.returnValue() != ReturnCode.TERMINATION_OK)
+		{
+			System.out.println("The branching reduction of the CLTS failed.");
+			MyOwnLogger.append("The branching reduction of the CLTS failed.");
+			return ReturnCode.CLTS_BRANCHING_REDUCTION_FAILED;
+		}
+
+		//Weaktrace
+		final String bcgOpenCommand = "bcg_open";
+		final String[] bcgOpenArgs = new String[]{
+			FileName.BRANCHED_BCG_CLTS,
+			"reductor",
+			"-weaktrace",
+			FileName.WEAK_BCG_CLTS
+		};
+		final CommandManager bcgOpenCommandManager = new CommandManager(bcgOpenCommand, workingDirectory, bcgOpenArgs);
+
+		try
+		{
+			bcgOpenCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			System.out.println("The weak reduction of the CLTS failed.");
+			MyOwnLogger.append("The weak reduction of the CLTS failed.");
+			return ReturnCode.CLTS_WEAKTRACE_FAILED;
+		}
+
+		if (bcgOpenCommandManager.returnValue() != ReturnCode.TERMINATION_OK)
+		{
+			System.out.println("The weak reduction of the CLTS failed.");
+			MyOwnLogger.append("The weak reduction of the CLTS failed.");
+			return ReturnCode.CLTS_WEAKTRACE_FAILED;
+		}
+
+		//Strong reduction
+		final String bcgMinStrongCommand = "bcg_min";
+		final String[] bcgMinStrongArgs = {
+			"-strong",
+			FileName.WEAK_BCG_CLTS,
+			FileName.WEAK_BCG_CLTS
+		};
+		final CommandManager bcgMinStrongCommandManager = new CommandManager(bcgMinStrongCommand, workingDirectory, bcgMinStrongArgs);
+
+		try
+		{
+			bcgMinStrongCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			System.out.println("The strong reduction of the CLTS failed.");
+			MyOwnLogger.append("The strong reduction of the CLTS failed.");
+			return ReturnCode.CLTS_STRONG_REDUCTION_FAILED;
+		}
+
+		if (bcgMinStrongCommandManager.returnValue() != ReturnCode.TERMINATION_OK)
+		{
+			System.out.println("The strong reduction of the CLTS failed.");
+			MyOwnLogger.append("The strong reduction of the CLTS failed.");
+			return ReturnCode.CLTS_STRONG_REDUCTION_FAILED;
+		}
+
+		return ReturnCode.TERMINATION_OK;
+	}
+
+	private static int reduceBcgSpec(final File workingDirectory)
+	{
+		//Branching reduction
+		final String bcgMinBranchingCommand = "bcg_min";
+		final String[] bcgMinBranchingArgs = {
+			"-branching",
+			FileName.BCG_SPECIFICATION,
+			FileName.BRANCHED_BCG_SPECIFICATION
+		};
+		final CommandManager bcgMinBranchingCommandManager = new CommandManager(bcgMinBranchingCommand, workingDirectory, bcgMinBranchingArgs);
+
+		try
+		{
+			bcgMinBranchingCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			System.out.println("The branching reduction of the BCG specification failed.");
+			MyOwnLogger.append("The branching reduction of the BCG specification failed.");
+			return ReturnCode.SPEC_BRANCHING_REDUCTION_FAILED;
+		}
+
+		if (bcgMinBranchingCommandManager.returnValue() != ReturnCode.TERMINATION_OK)
+		{
+			System.out.println("The branching reduction of the BCG specification failed.");
+			MyOwnLogger.append("The branching reduction of the BCG specification failed.");
+			return ReturnCode.SPEC_BRANCHING_REDUCTION_FAILED;
+		}
+
+		//Weaktrace
+		final String bcgOpenCommand = "bcg_open";
+		final String[] bcgOpenArgs = new String[]{
+			FileName.BRANCHED_BCG_SPECIFICATION,
+			"reductor",
+			"-weaktrace",
+			FileName.BCG_SPECIFICATION_WEAK
+		};
+		final CommandManager bcgOpenCommandManager = new CommandManager(bcgOpenCommand, workingDirectory, bcgOpenArgs);
+
+		try
+		{
+			bcgOpenCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			System.out.println("The weak reduction of the BCG specification failed.");
+			MyOwnLogger.append("The weak reduction of the BCG specification failed.");
+			return ReturnCode.WEAKTRACE_SPEC_FAILED;
+		}
+
+		if (bcgOpenCommandManager.returnValue() != ReturnCode.TERMINATION_OK)
+		{
+			System.out.println("The weak reduction of the BCG specification failed.");
+			MyOwnLogger.append("The weak reduction of the BCG specification failed.");
+			return ReturnCode.WEAKTRACE_SPEC_FAILED;
+		}
+
+		//Strong reduction
+		final String bcgMinStrongCommand = "bcg_min";
+		final String[] bcgMinStrongArgs = {
+			"-strong",
+			FileName.BCG_SPECIFICATION_WEAK,
+			FileName.BCG_SPECIFICATION_WEAK
+		};
+		final CommandManager bcgMinStrongCommandManager = new CommandManager(bcgMinStrongCommand, workingDirectory, bcgMinStrongArgs);
+
+		try
+		{
+			bcgMinStrongCommandManager.execute();
+		}
+		catch (IOException | InterruptedException e)
+		{
+			System.out.println("The strong reduction of the BCG specification failed.");
+			MyOwnLogger.append("The strong reduction of the BCG specification failed.");
+			return ReturnCode.SPEC_STRONG_REDUCTION_FAILED;
+		}
+
+		if (bcgMinStrongCommandManager.returnValue() != ReturnCode.TERMINATION_OK)
+		{
+			System.out.println("The strong reduction of the BCG specification failed.");
+			MyOwnLogger.append("The strong reduction of the BCG specification failed.");
+			return ReturnCode.SPEC_STRONG_REDUCTION_FAILED;
+		}
+
+		return ReturnCode.TERMINATION_OK;
+	}
+
 	private static Pair<ArrayList<String>, Integer> computeSpecLabels(final File bpmnFile)
 	{
 		final BpmnParser bpmnParser;
@@ -428,7 +623,7 @@ public class Main
 		}
 		catch (ParserConfigurationException | IOException | SAXException e)
 		{
-			return Pair.of(new ArrayList<>(), RETRIEVING_LABELS_FAILED);
+			return Pair.of(new ArrayList<>(), ReturnCode.RETRIEVING_SPEC_LABELS_FAILED);
 		}
 
 		final ArrayList<String> labels = new ArrayList<>();
@@ -440,19 +635,19 @@ public class Main
 				if (LTLKeywords.ALL_KEYWORDS.contains(object.name().toUpperCase()))
 				{
 					System.out.println("The specification contains tasks whose labels are reserved LTL keywords.");
-					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
+					return Pair.of(new ArrayList<>(), ReturnCode.SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
 				}
 
 				if (LNTKeywords.ALL_KEYWORDS.contains(object.name().toUpperCase()))
 				{
 					System.out.println("The specification contains tasks whose labels are reserved LNT keywords.");
-					return Pair.of(new ArrayList<>(), SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD);
+					return Pair.of(new ArrayList<>(), ReturnCode.SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD);
 				}
 
 				labels.add(object.name().toUpperCase());
 			}
 		}
 
-		return Pair.of(labels, ReturnCodes.TERMINATION_OK);
+		return Pair.of(labels, ReturnCode.TERMINATION_OK);
 	}
 }

@@ -6,12 +6,9 @@ package fr.inria.convecs.optimus.validator;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
 import fr.inria.convecs.optimus.py_to_java.Vbpmn;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
