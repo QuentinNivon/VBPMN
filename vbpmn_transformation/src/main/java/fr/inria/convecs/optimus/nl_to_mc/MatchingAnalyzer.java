@@ -82,7 +82,7 @@ public class MatchingAnalyzer
 
 		//Try to match each faulty state to a BPMN node
 		final HashSet<AutState> faultyStates = this.getFaultyStates();
-		MyOwnLogger.append(faultyStates.size() + " faulty states found in the CLTS.");
+		//MyOwnLogger.append(faultyStates.size() + " faulty states found in the CLTS.");
 		final HashMap<AutState, Pair<HashSet<String>, HashSet<String>>> inOutFaultyTransitions = this.getFaultyTransitions(faultyStates);
 		final HashSet<Node> graphNodes = new HashSet<>();
 		this.getGraphNodes(this.originalProcess.initialNode(), graphNodes);
@@ -91,20 +91,20 @@ public class MatchingAnalyzer
 		{
 			final HashSet<String> incomingTransitionLabels = inOutFaultyTransitions.get(autState).getFirst();
 			final HashSet<String> outgoingTransitionLabels = inOutFaultyTransitions.get(autState).getSecond();
-			MyOwnLogger.append("Faulty state " + autState.label() + " has incoming transitions " +
-					incomingTransitionLabels + " and outgoing transitions " + outgoingTransitionLabels);
+			//MyOwnLogger.append("Faulty state " + autState.label() + " has incoming transitions " +
+			//		incomingTransitionLabels + " and outgoing transitions " + outgoingTransitionLabels);
 
 			for (Node graphNode : graphNodes)
 			{
 				final HashSet<String> incomingTaskLabels = newAncestorReachableTasks.get(graphNode);
 				final HashSet<String> outgoingTaskLabels = newSuccessorReachableTasks.get(graphNode);
-				MyOwnLogger.append("BPMN node " + graphNode.bpmnObject().id() + " has ancestor tasks " +
-						incomingTaskLabels + " and successors tasks " + outgoingTaskLabels);
+				//MyOwnLogger.append("BPMN node " + graphNode.bpmnObject().id() + " has ancestor tasks " +
+				//		incomingTaskLabels + " and successors tasks " + outgoingTaskLabels);
 
 				if (incomingTaskLabels.equals(incomingTransitionLabels)
 					&& outgoingTaskLabels.equals(outgoingTransitionLabels))
 				{
-					MyOwnLogger.append("AUT state " + autState.label() + " was matched with node " + graphNode.bpmnObject().id());
+					//MyOwnLogger.append("AUT state " + autState.label() + " was matched with node " + graphNode.bpmnObject().id());
 
 					//We found a matching
 					if (this.matching.containsKey(autState))
@@ -138,10 +138,10 @@ public class MatchingAnalyzer
 		for (AutState autState : this.matching.keySet())
 		{
 			final Node bpmnNode = this.matching.get(autState);
-			MyOwnLogger.append("CLTS state " + autState.label() + " was matched with BPMN node \"" + bpmnNode.bpmnObject().id() + "\".");
+			//MyOwnLogger.append("CLTS state " + autState.label() + " was matched with BPMN node \"" + bpmnNode.bpmnObject().id() + "\".");
 			final HashSet<Node> firstReachableTasks = new HashSet<>();
 			this.getFirstReachableTasks(bpmnNode, firstReachableTasks, new HashSet<>());
-			MyOwnLogger.append("First reachable tasks of node \"" + bpmnNode.bpmnObject().id() + "\" are " + firstReachableTasks);
+			//MyOwnLogger.append("First reachable tasks of node \"" + bpmnNode.bpmnObject().id() + "\" are " + firstReachableTasks);
 
 			for (AutEdge outgoingEdge : autState.outgoingEdges())
 			{
@@ -151,8 +151,8 @@ public class MatchingAnalyzer
 					{
 						if (firstTaskToColor.bpmnObject().name().toUpperCase().equals(outgoingEdge.label()))
 						{
-							MyOwnLogger.append("Task " + firstTaskToColor.bpmnObject().name() + " and its successors" +
-									" will be colored in " + (outgoingEdge.getColor() == AutColor.GREEN ? "green" : "red"));
+							//MyOwnLogger.append("Task " + firstTaskToColor.bpmnObject().name() + " and its successors" +
+							//		" will be colored in " + (outgoingEdge.getColor() == AutColor.GREEN ? "green" : "red"));
 							this.colorTaskAndSuccessors(firstTaskToColor, outgoingEdge.getColor(), new HashSet<>());
 						}
 					}
@@ -380,7 +380,7 @@ public class MatchingAnalyzer
 
 		if (currentState.getStateType() != null)
 		{
-			MyOwnLogger.append("State " + currentState.label() + " is a faulty state");
+			//MyOwnLogger.append("State " + currentState.label() + " is a faulty state");
 			faultyStates.add(currentState);
 		}
 

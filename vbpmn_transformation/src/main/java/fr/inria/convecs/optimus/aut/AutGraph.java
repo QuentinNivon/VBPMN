@@ -141,7 +141,7 @@ public class AutGraph
 
 		for (AutState autState : nodes)
 		{
-			MyOwnLogger.append("Label " + autState.label() + " will be shifted to " + localShift);
+			//MyOwnLogger.append("Label " + autState.label() + " will be shifted to " + localShift);
 			correspondences.put(autState, new AutState(localShift++));
 		}
 

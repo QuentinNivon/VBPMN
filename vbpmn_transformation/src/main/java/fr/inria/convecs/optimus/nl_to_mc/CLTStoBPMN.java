@@ -45,7 +45,7 @@ public class CLTStoBPMN
 		final HashSet<Node> lastFlows = new HashSet<>();
 		this.getLastFlows(graph.initialNode(), lastFlows, new HashSet<>());
 
-		MyOwnLogger.append("CURRENT PROCESS:\n\n" + graph.toString());
+		//MyOwnLogger.append("CURRENT PROCESS:\n\n" + graph.toString());
 
 		if (lastFlows.isEmpty())
 		{

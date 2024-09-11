@@ -2,6 +2,7 @@ package fr.inria.convecs.optimus.nl_to_mc;
 
 import fr.inria.convecs.optimus.aut.AutGraph;
 import fr.inria.convecs.optimus.aut.AutParser;
+import fr.inria.convecs.optimus.aut.AutWriter;
 import fr.inria.convecs.optimus.bpmn.BpmnParser;
 import fr.inria.convecs.optimus.bpmn.graph.Graph;
 import fr.inria.convecs.optimus.bpmn.graph.GraphToList;
@@ -108,6 +109,16 @@ public class Main
 				final long cltsFlatteningTime = cltsFlatteningEndTime - cltsFlatteningStartTime;
 				MyOwnLogger.append("CLTS flattened in " + Utils.nanoSecToReadable(cltsFlatteningTime) + ".\n");
 				System.out.println("CLTS flattened in " + Utils.nanoSecToReadable(cltsFlatteningTime) + ".\n");
+
+				System.out.println("Writing flattened CLTS to file...");
+				MyOwnLogger.append("Writing flattened CLTS to file...");
+				final long flattenedCltsWritingStartTime = System.nanoTime();
+				final AutWriter autWriter = new AutWriter(fullCLTS, new File(workingDirectory + File.separator + "clts_flattened.autx"), true);
+				autWriter.write();
+				final long flattenedCltsWritingEndTime = System.nanoTime();
+				final long flattenedCltsWritingTime = flattenedCltsWritingEndTime - flattenedCltsWritingStartTime;
+				MyOwnLogger.append("Flattened CLTS written in " + Utils.nanoSecToReadable(flattenedCltsWritingTime) + ".\n");
+				System.out.println("Flattened CLTS written in " + Utils.nanoSecToReadable(flattenedCltsWritingTime) + ".\n");
 
 				System.out.println("Converting CLTS to BPMN...");
 				MyOwnLogger.append("Converting CLTS to BPMN...");

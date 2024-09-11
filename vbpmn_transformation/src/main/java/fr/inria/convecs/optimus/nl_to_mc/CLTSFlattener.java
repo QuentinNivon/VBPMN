@@ -49,7 +49,7 @@ public class CLTSFlattener
 		}
 
 		long nextStateLabel = this.clts.getMaxStateLabel() + 1;
-		MyOwnLogger.append("CLTS max state label in CLTS flatterner: " + nextStateLabel);
+		//MyOwnLogger.append("CLTS max state label in CLTS flatterner: " + nextStateLabel);
 
 		for (AutEdge autEdge : edgesToReplace)
 		{
@@ -64,7 +64,7 @@ public class CLTSFlattener
 		}
 
 		//Debug
-		if (LOCAL_SITE && false)
+		if (LOCAL_SITE)
 		{
 			final String path = this.workingDirectory.getAbsolutePath() + File.separator + ACYCLIC_CLTS;
 			final AutWriter autWriter = new AutWriter(this.clts, new File(path), true);
@@ -83,14 +83,14 @@ public class CLTSFlattener
 
 		while (changed)
 		{
-			MyOwnLogger.append("Entering while");
+			//MyOwnLogger.append("Entering while");
 			changed = false;
 
 			for (AutState autState : this.clts.nodesAndEdges().getFirst())
 			{
 				if (autState.incomingEdges().size() > 1)
 				{
-					MyOwnLogger.append("State " + autState.label() + " has " + autState.incomingEdges().size() + " incoming edges.");
+					//MyOwnLogger.append("State " + autState.label() + " has " + autState.incomingEdges().size() + " incoming edges.");
 					final HashSet<AutEdge> incomingTransitions = new HashSet<>();
 					boolean started = false;
 
