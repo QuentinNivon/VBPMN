@@ -632,19 +632,19 @@ public class Main
 		{
 			if (object instanceof Task)
 			{
-				if (LTLKeywords.ALL_KEYWORDS.contains(object.name().toUpperCase()))
+				if (LTLKeywords.ALL_KEYWORDS.contains(object.id().toUpperCase()))
 				{
 					System.out.println("The specification contains tasks whose labels are reserved LTL keywords.");
 					return Pair.of(new ArrayList<>(), ReturnCode.SPEC_LABELS_CONTAIN_RESERVED_LTL_KEYWORDS);
 				}
 
-				if (LNTKeywords.ALL_KEYWORDS.contains(object.name().toUpperCase()))
+				if (LNTKeywords.ALL_KEYWORDS.contains(object.id().toUpperCase()))
 				{
 					System.out.println("The specification contains tasks whose labels are reserved LNT keywords.");
 					return Pair.of(new ArrayList<>(), ReturnCode.SPEC_LABELS_CONTAIN_RESERVED_LNT_KEYWORD);
 				}
 
-				labels.add(object.name().toUpperCase());
+				labels.add(object.id().toUpperCase());
 			}
 		}
 
