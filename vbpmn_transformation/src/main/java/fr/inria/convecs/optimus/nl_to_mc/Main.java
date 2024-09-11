@@ -20,7 +20,6 @@ public class Main
 {
 	public static final boolean LOCAL_SITE = true;
 	public static final boolean LOCAL_TESTING = false;
-	private static final String AUTX_FULL_CLTS = "clts_full.autx";
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException
 	{
@@ -71,7 +70,7 @@ public class Main
 			System.out.println("Parsing full CLTS...");
 			MyOwnLogger.append("Parsing full CLTS...");
 			final long fullCltsParsingStartTime = System.nanoTime();
-			final AutParser fullCltsParser = new AutParser(new File(workingDirectory + File.separator + AUTX_FULL_CLTS), true);
+			final AutParser fullCltsParser = new AutParser(new File(workingDirectory + File.separator + Filename.AUTX_FULL_CLTS), true);
 			final AutGraph fullCLTS = fullCltsParser.parse();
 			final long fullCltsParsingEndTime = System.nanoTime();
 			final long fullCltsParsingTime = fullCltsParsingEndTime - fullCltsParsingStartTime;
