@@ -238,7 +238,12 @@ public class CLTSBuilderV3
 
 		for (AutEdge outgoingTransition : currentNode.outgoingEdges())
 		{
-			currentSet.addAll(reachableTransitionLabels.get(outgoingTransition.targetNode()));
+			final HashSet<AutEdge> nextSet = reachableTransitionLabels.get(outgoingTransition.targetNode());
+
+			if (nextSet != null)
+			{
+				currentSet.addAll(reachableTransitionLabels.get(outgoingTransition.targetNode()));
+			}
 		}
 	}
 
