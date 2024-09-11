@@ -251,7 +251,7 @@ public class CLTStoBPMN
 	{
 		for (Task t : this.originalTasks)
 		{
-			if (t.name().toUpperCase().equals(upperCaseName))
+			if (t.id().toUpperCase().equals(upperCaseName))
 			{
 				return t.name();
 			}

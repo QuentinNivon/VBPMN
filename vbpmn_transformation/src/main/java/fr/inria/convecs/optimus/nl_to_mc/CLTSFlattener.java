@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_SITE;
 
@@ -115,8 +116,9 @@ public class CLTSFlattener
 						final AutEdge newEdge = new AutEdge(incomingTransition.sourceNode(), incomingTransition.label(), copy.startNode(), incomingTransition.getColor());
 						incomingTransition.sourceNode().addOutgoingEdge(newEdge);
 						copy.startNode().addIncomingEdge(newEdge);
+						final Set<AutState> keySet = new HashSet<>(stateCorrespondences.keySet());
 
-						for (AutState loopState : stateCorrespondences.keySet())
+						for (AutState loopState : keySet)
 						{
 							final AutState copiedLoopState = correspondences.get(loopState);
 
