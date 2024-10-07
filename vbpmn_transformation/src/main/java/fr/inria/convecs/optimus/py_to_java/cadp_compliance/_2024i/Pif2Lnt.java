@@ -33,7 +33,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 	private static final String MERGE_STORE = "mergestore";
 	private static final String PAR_STORE = "parstore";
 	private static final int MAX_CHAR_PER_LINE = 79;
-	private static final int PROCESS_INDENT = 8;
+	private static final String PROCESS_INDENT = "        ";
 	private static final String SEPARATOR = "-------------------------------------------------------------------------------\n\n";
 
 	public Pif2Lnt(boolean isBalanced)
@@ -868,7 +868,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					{
 						stringBuilder.append("\n")
 								.append(PROCESS_INDENT);
-						nbCharPerLine = PROCESS_INDENT + flowId.length() + 2;
+						nbCharPerLine = PROCESS_INDENT.length() + flowId.length() + 2;
 					}
 					else
 					{
@@ -885,7 +885,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			{
 				stringBuilder.append("\n")
 						.append(PROCESS_INDENT);
-				nbCharPerLine = PROCESS_INDENT + 6;
+				nbCharPerLine = PROCESS_INDENT.length() + 6;
 			}
 			else
 			{
@@ -916,7 +916,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					{
 						stringBuilder.append("\n")
 								.append(PROCESS_INDENT);
-						nbCharPerLine = PROCESS_INDENT + flowId.length() + 2;
+						nbCharPerLine = PROCESS_INDENT.length() + flowId.length() + 2;
 					}
 					else
 					{
