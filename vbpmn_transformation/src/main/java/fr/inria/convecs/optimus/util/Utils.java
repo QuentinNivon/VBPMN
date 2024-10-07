@@ -21,11 +21,23 @@ public class Utils
 
 	}
 
-	public static String indent(int indentSize)
+	public static String indent(int size)
 	{
 		final StringBuilder indentBuilder = new StringBuilder();
 
-		for (int i = 0; i < indentSize; i++)
+		for (int i = 0; i < size; i++)
+		{
+			indentBuilder.append(" ");
+		}
+
+		return indentBuilder.toString();
+	}
+
+	public static String indentLNT(int nbIndent)
+	{
+		final StringBuilder indentBuilder = new StringBuilder();
+
+		for (int i = 0; i < nbIndent; i++)
 		{
 			indentBuilder.append(LNT_SINGLE_INDENT);
 		}

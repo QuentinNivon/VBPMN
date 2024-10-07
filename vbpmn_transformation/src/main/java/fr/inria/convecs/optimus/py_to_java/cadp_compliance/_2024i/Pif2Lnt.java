@@ -33,8 +33,10 @@ public class Pif2Lnt extends Pif2LntGeneric
 	private static final String MERGE_STORE = "mergestore";
 	private static final String PAR_STORE = "parstore";
 	private static final int MAX_CHAR_PER_LINE = 79;
-	private static final String PROCESS_INDENT = "        ";
-	private static final String SEPARATOR = "-------------------------------------------------------------------------------\n\n";
+	private static final int PROCESS_INDENT_LENGTH = 8;
+	//80 dashes correspond to the standard line size in LNT.
+	//Added 5 more dashes to manage small deviations from the 80 chars limitation
+	private static final String SEPARATOR = "------------------------------------------------------------------------------------\n\n";
 
 	public Pif2Lnt(boolean isBalanced)
 	{
@@ -298,11 +300,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 		void writeLnt(final StringBuilder stringBuilder)
 		{
 			stringBuilder.append("process flow [begin, finish: any] (ident:ID) is\n");
-			stringBuilder.append(Utils.indent(1));
+			stringBuilder.append(Utils.indentLNT(1));
 			stringBuilder.append("loop\n");
-			stringBuilder.append(Utils.indent(2));
-			stringBuilder.append("begin (ident); finish (ident)\n");
-			stringBuilder.append(Utils.indent(1));
+			stringBuilder.append(Utils.indentLNT(2));
+			stringBuilder.append("begin (ident);\n");
+			stringBuilder.append(Utils.indentLNT(2));
+			stringBuilder.append("finish (ident)\n");
+			stringBuilder.append(Utils.indentLNT(1));
 			stringBuilder.append("end loop\n");
 			stringBuilder.append("end process\n\n");
 			stringBuilder.append(SEPARATOR);
@@ -400,11 +404,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 		void writeLnt(final StringBuilder stringBuilder)
 		{
 			stringBuilder.append("process init [begin, outf: any] is\n")
-					.append(Utils.indent(1))
+					.append(Utils.indentLNT(1))
 					.append("var ident: ID in\n")
-					.append(Utils.indent(2))
-					.append("begin; outf (?ident of ID)\n")
-					.append(Utils.indent(1))
+					.append(Utils.indentLNT(2))
+					.append("begin;\n")
+					.append(Utils.indentLNT(2))
+					.append("outf (?ident of ID)\n")
+					.append(Utils.indentLNT(1))
 					.append("end var\n")
 					.append("end process\n\n")
 					.append(SEPARATOR);
@@ -476,26 +482,28 @@ public class Pif2Lnt extends Pif2LntGeneric
 		void writeLnt(StringBuilder stringBuilder)
 		{
 			stringBuilder.append("process final [incf, finish: any] is\n")
-					.append(Utils.indent(1));
+					.append(Utils.indentLNT(1));
 
 			if (isBalanced)
 			{
 				stringBuilder.append("var ident: ID in\n");
-				stringBuilder.append(Utils.indent(2));
-				stringBuilder.append("incf (?ident of ID); finish\n");
-				stringBuilder.append(Utils.indent(1));
+				stringBuilder.append(Utils.indentLNT(2));
+				stringBuilder.append("incf (?ident of ID);\n");
+				stringBuilder.append(Utils.indentLNT(2));
+				stringBuilder.append("finish\n");
+				stringBuilder.append(Utils.indentLNT(1));
 				stringBuilder.append("end var\n");
 			}
 			else
 			{
 				stringBuilder.append("var ident: ID in\n")
-						.append(Utils.indent(2))
+						.append(Utils.indentLNT(2))
 						.append("loop\n")
-						.append(Utils.indent(3))
+						.append(Utils.indentLNT(3))
 						.append("incf (?ident of ID); finish\n")
-						.append(Utils.indent(2))
+						.append(Utils.indentLNT(2))
 						.append("end loop\n")
-						.append(Utils.indent(1))
+						.append(Utils.indentLNT(1))
 						.append("end var\n");
 			}
 
@@ -862,8 +870,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					if (nbCharCurrentLine + flowId.length() + 1 > MAX_CHAR_PER_LINE)
 					{
-						stringBuilder.append("\n").append(PROCESS_INDENT);
-						nbCharCurrentLine = PROCESS_INDENT.length() + flowId.length() + 2;
+						stringBuilder.append("\n").append(Utils.indent(PROCESS_INDENT_LENGTH));
+						nbCharCurrentLine = PROCESS_INDENT_LENGTH + flowId.length() + 2;
 					}
 					else
 					{
@@ -878,8 +886,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (nbCharCurrentLine + 6 > MAX_CHAR_PER_LINE)
 			{
-				stringBuilder.append("\n").append(PROCESS_INDENT);
-				nbCharCurrentLine = PROCESS_INDENT.length() + 6;
+				stringBuilder.append("\n").append(Utils.indent(PROCESS_INDENT_LENGTH));
+				nbCharCurrentLine = PROCESS_INDENT_LENGTH + 6;
 			}
 			else
 			{
@@ -892,8 +900,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			{
 				if (nbCharCurrentLine + 9 > MAX_CHAR_PER_LINE)
 				{
-					stringBuilder.append("\n")
-							.append(PROCESS_INDENT);
+					stringBuilder.append("\n").append(Utils.indent(PROCESS_INDENT_LENGTH));
 				}
 
 				stringBuilder.append("outf");
@@ -908,9 +915,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					if (nbCharCurrentLine + flowId.length() + 1 > MAX_CHAR_PER_LINE)
 					{
-						stringBuilder.append("\n")
-								.append(PROCESS_INDENT);
-						nbCharCurrentLine = PROCESS_INDENT.length() + flowId.length() + 2;
+						stringBuilder.append("\n").append(Utils.indent(PROCESS_INDENT_LENGTH));
+						nbCharCurrentLine = PROCESS_INDENT_LENGTH + flowId.length() + 2;
 					}
 					else
 					{
@@ -928,11 +934,11 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 
 			stringBuilder.append(": any] is\n");
-			stringBuilder.append(Utils.indent(1));
+			stringBuilder.append(Utils.indentLNT(1));
 			stringBuilder.append("var ident: ID in\n");
-			stringBuilder.append(Utils.indent(2));
+			stringBuilder.append(Utils.indentLNT(2));
 			stringBuilder.append("loop\n");
-			stringBuilder.append(Utils.indent(3));
+			stringBuilder.append(Utils.indentLNT(3));
 
 			if (nbInc == 1)
 			{
@@ -943,9 +949,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 			else
 			{
 				int incCounter = 0;
-				stringBuilder.append(Utils.indent(3));
+				stringBuilder.append(Utils.indentLNT(3));
 				stringBuilder.append("alt\n");
-				stringBuilder.append(Utils.indent(4));
+				stringBuilder.append(Utils.indentLNT(4));
 
 				while (incCounter < nbInc)
 				{
@@ -957,9 +963,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 					if (incCounter < nbInc)
 					{
 						stringBuilder.append("\n")
-								.append(Utils.indent(3))
+								.append(Utils.indentLNT(3))
 								.append("[]\n")
-								.append(Utils.indent(4));
+								.append(Utils.indentLNT(4));
 					}
 				}
 
@@ -967,9 +973,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 
 			stringBuilder.append("\n");
-			stringBuilder.append(Utils.indent(3));
+			stringBuilder.append(Utils.indentLNT(3));
 			stringBuilder.append("task;\n");
-			stringBuilder.append(Utils.indent(3));
+			stringBuilder.append(Utils.indentLNT(3));
 
 			if (nbOut == 1)
 			{
@@ -979,12 +985,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 			{
 				int outCounter = 0;
 				stringBuilder.append("\n");
-				stringBuilder.append(Utils.indent(3));
+				stringBuilder.append(Utils.indentLNT(3));
 				stringBuilder.append("alt\n");
 
 				while (outCounter < nbOut)
 				{
-					stringBuilder.append(Utils.indent(4));
+					stringBuilder.append(Utils.indentLNT(4));
 					stringBuilder.append("outf");
 					stringBuilder.append(outCounter);
 					stringBuilder.append(" (?ident of ID)");
@@ -993,22 +999,23 @@ public class Pif2Lnt extends Pif2LntGeneric
 					if (outCounter < nbOut)
 					{
 						stringBuilder.append("\n")
-								.append(Utils.indent(3))
+								.append(Utils.indentLNT(3))
 								.append("[]\n")
-								.append(Utils.indent(4));
+								.append(Utils.indentLNT(4));
 					}
 				}
 
 				stringBuilder.append("\n");
-				stringBuilder.append(Utils.indent(3));
+				stringBuilder.append(Utils.indentLNT(3));
 				stringBuilder.append("end alt\n");
 			}
 
-			stringBuilder.append(Utils.indent(2));
+			stringBuilder.append(Utils.indentLNT(2));
 			stringBuilder.append("end loop\n");
-			stringBuilder.append(Utils.indent(1));
+			stringBuilder.append(Utils.indentLNT(1));
 			stringBuilder.append("end var\n");
 			stringBuilder.append("end process\n\n");
+			stringBuilder.append(SEPARATOR);
 		}
 
 		@Override
@@ -2481,42 +2488,81 @@ public class Pif2Lnt extends Pif2LntGeneric
 		void writeLnt(StringBuilder stringBuilder)
 		{
 			final int nbInc = this.incomingFlows.size();
-			stringBuilder.append("process andjoin_");
-			stringBuilder.append(this.identifier);
-			stringBuilder.append(" [");
+			final String toWrite = "process andjoin_" + this.identifier + " [";
+			stringBuilder.append(toWrite);
 			int nb = 1;
+
+			int nbCharCurrentLine = toWrite.length();
 
 			while (nb <= nbInc)
 			{
-				stringBuilder.append("incf_");
-				stringBuilder.append(nb);
-				stringBuilder.append(":any,");
+				final String flowName = "incf_" + nb + ", ";
+
+				if (nbCharCurrentLine + flowName.length() > MAX_CHAR_PER_LINE)
+				{
+					stringBuilder.append("\n").append(Utils.indent(PROCESS_INDENT_LENGTH));
+					nbCharCurrentLine = PROCESS_INDENT_LENGTH;
+				}
+				else
+				{
+					nbCharCurrentLine += flowName.length();
+				}
+
+				stringBuilder.append(flowName);
 				nb++;
 			}
 
-			stringBuilder.append("outf:any] is \n");
+			final String outFlowName = "outf: any] is\n";
+
+			if (nbCharCurrentLine + outFlowName.length() > MAX_CHAR_PER_LINE)
+			{
+				stringBuilder.append("\n").append(Utils.indent(PROCESS_INDENT_LENGTH));
+			}
+
+			stringBuilder.append(outFlowName);
 			int variablesCounter = nbInc;
-			stringBuilder.append(" var ");
+			stringBuilder.append(Utils.indentLNT(1));
+			stringBuilder.append("var ");
 
 			while (variablesCounter > 0)
 			{
-				stringBuilder.append("ident");
-				stringBuilder.append(variablesCounter);
-				stringBuilder.append(":ID");
+				final String identifier = "ident" + variablesCounter;
+
+				if (variablesCounter != nbInc)
+				{
+					if (identifier.length() + 9 > MAX_CHAR_PER_LINE)
+					{
+						stringBuilder.append("\n").append(Utils.indent(7));
+						nbCharCurrentLine = 7;
+					}
+					else
+					{
+						nbCharCurrentLine += 7;
+					}
+				}
+
+				stringBuilder.append(identifier);
 				variablesCounter--;
 
 				if (variablesCounter > 0)
 				{
-					stringBuilder.append(",");
+					stringBuilder.append(", ");
 				}
 			}
 
-			stringBuilder.append(" in  var ident:ID in loop par ");
+			stringBuilder.append(":ID in\n");
+			stringBuilder.append(Utils.indentLNT(2));
+			stringBuilder.append("var ident:ID in\n");
+			stringBuilder.append(Utils.indentLNT(3));
+			stringBuilder.append("loop\n");
+			stringBuilder.append(Utils.indentLNT(4));
+			stringBuilder.append("par\n");
 			nb = 1;
 			variablesCounter = nbInc;
 
 			while (nb <= nbInc)
 			{
+				stringBuilder.append(Utils.indentLNT(5));
 				stringBuilder.append("incf_");
 				stringBuilder.append(nb);
 				stringBuilder.append(" (?ident");
@@ -2527,12 +2573,26 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				if (nb <= nbInc)
 				{
-					stringBuilder.append("||");
+					stringBuilder.append("\n");
+					stringBuilder.append(Utils.indentLNT(4));
+					stringBuilder.append("||\n");
+					//stringBuilder.append(Utils.indentLNT(4));
 				}
 			}
 
-			stringBuilder.append(" end par ; outf (?ident of ID) end loop end var end var \n");
+			stringBuilder.append("\n");
+			stringBuilder.append(Utils.indentLNT(4));
+			stringBuilder.append("end par;\n");
+			stringBuilder.append(Utils.indentLNT(3));
+			stringBuilder.append("outf (?ident of ID)\n");
+			stringBuilder.append(Utils.indentLNT(3));
+			stringBuilder.append("end loop\n");
+			stringBuilder.append(Utils.indentLNT(2));
+			stringBuilder.append("end var\n");
+			stringBuilder.append(Utils.indentLNT(1));
+			stringBuilder.append("end var\n");
 			stringBuilder.append("end process\n\n");
+			stringBuilder.append(SEPARATOR);
 		}
 
 		void writeMainLnt(final StringBuilder stringBuilder)
@@ -3563,7 +3623,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				//Generates an ID type for all flow identifiers
 				lntBuilder.append("(* Data type for flow identifiers, useful for scheduling purposes *)\n")
 						.append("type ID is\n")
-						.append(Utils.indent(1));
+						.append(Utils.indentLNT(1));
 
 				int counter = this.flows.size();
 
@@ -3575,12 +3635,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 					if (counter > 0)
 					{
 						lntBuilder.append(",\n");
-						lntBuilder.append(Utils.indent(1));
+						lntBuilder.append(Utils.indentLNT(1));
 					}
 				}
 
 				lntBuilder.append("\n")
-						.append(Utils.indent(1))
+						.append(Utils.indentLNT(1))
 						.append("with ==, !=\n")
 						.append("end type\n\n")
 						.append(SEPARATOR);
