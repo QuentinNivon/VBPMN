@@ -842,19 +842,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			final int nbInc = this.incomingFlows.size();
 			final int nbOut = this.outgoingFlows.size();
+			final String toWrite = "process task_" + nbInc + "_" + nbOut + " [";
+			stringBuilder.append(toWrite);
 
-			stringBuilder.append("process task_");
-			stringBuilder.append(nbInc);
-			stringBuilder.append("_");
-			stringBuilder.append(nbOut);
-			stringBuilder.append(" [");
-
-			int nbCharPerLine = stringBuilder.length();
+			int nbCharCurrentLine = toWrite.length();
 
 			if (nbInc == 1)
 			{
 				stringBuilder.append("incf, ");
-				nbCharPerLine = stringBuilder.length();
+				nbCharCurrentLine = toWrite.length() + 6;
 			}
 			else
 			{
@@ -864,15 +860,14 @@ public class Pif2Lnt extends Pif2LntGeneric
 				{
 					final String flowId = "incf" + incCounter;
 
-					if (nbCharPerLine + flowId.length() + 1 > MAX_CHAR_PER_LINE)
+					if (nbCharCurrentLine + flowId.length() + 1 > MAX_CHAR_PER_LINE)
 					{
-						stringBuilder.append("\n")
-								.append(PROCESS_INDENT);
-						nbCharPerLine = PROCESS_INDENT.length() + flowId.length() + 2;
+						stringBuilder.append("\n").append(PROCESS_INDENT);
+						nbCharCurrentLine = PROCESS_INDENT.length() + flowId.length() + 2;
 					}
 					else
 					{
-						nbCharPerLine += flowId.length() + 2;
+						nbCharCurrentLine += flowId.length() + 2;
 					}
 
 					stringBuilder.append(flowId)
@@ -881,22 +876,21 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 			}
 
-			if (nbCharPerLine + 6 > MAX_CHAR_PER_LINE)
+			if (nbCharCurrentLine + 6 > MAX_CHAR_PER_LINE)
 			{
-				stringBuilder.append("\n")
-						.append(PROCESS_INDENT);
-				nbCharPerLine = PROCESS_INDENT.length() + 6;
+				stringBuilder.append("\n").append(PROCESS_INDENT);
+				nbCharCurrentLine = PROCESS_INDENT.length() + 6;
 			}
 			else
 			{
-				nbCharPerLine += 6;
+				nbCharCurrentLine += 6;
 			}
 
 			stringBuilder.append("task, ");
 
 			if (nbOut == 1)
 			{
-				if (nbCharPerLine + 9 > MAX_CHAR_PER_LINE)
+				if (nbCharCurrentLine + 9 > MAX_CHAR_PER_LINE)
 				{
 					stringBuilder.append("\n")
 							.append(PROCESS_INDENT);
@@ -912,15 +906,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 				{
 					final String flowId = "outf" + outCounter;
 
-					if (nbCharPerLine + flowId.length() + 1 > MAX_CHAR_PER_LINE)
+					if (nbCharCurrentLine + flowId.length() + 1 > MAX_CHAR_PER_LINE)
 					{
 						stringBuilder.append("\n")
 								.append(PROCESS_INDENT);
-						nbCharPerLine = PROCESS_INDENT.length() + flowId.length() + 2;
+						nbCharCurrentLine = PROCESS_INDENT.length() + flowId.length() + 2;
 					}
 					else
 					{
-						nbCharPerLine += flowId.length() + 2;
+						nbCharCurrentLine += flowId.length() + 2;
 					}
 
 					stringBuilder.append(flowId);
@@ -938,12 +932,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 			stringBuilder.append("var ident: ID in\n");
 			stringBuilder.append(Utils.indent(2));
 			stringBuilder.append("loop\n");
+			stringBuilder.append(Utils.indent(3));
 
 			if (nbInc == 1)
 			{
 				final String flowId = "incf (?ident of ID); ";
 				stringBuilder.append("incf (?ident of ID); ");
-				nbCharPerLine = flowId.length() + 9;
+				nbCharCurrentLine = flowId.length() + 9;
 			}
 			else
 			{
@@ -969,14 +964,14 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 
 				stringBuilder.append("\nend alt;\n");
+				stringBuilder.append(Utils.indent(3));
 			}
 
-			stringBuilder.append(Utils.indent(3));
 			stringBuilder.append("task; ");
 
 			if (nbOut == 1)
 			{
-				stringBuilder.append(" outf (?ident of ID)");
+				stringBuilder.append("outf (?ident of ID)\n");
 			}
 			else
 			{
@@ -3578,6 +3573,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					if (counter > 0)
 					{
 						lntBuilder.append(",\n");
+						lntBuilder.append(Utils.indent(1));
 					}
 				}
 
