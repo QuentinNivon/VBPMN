@@ -14,10 +14,23 @@ public class Utils
 	private static final long MINUTES_THRESHOLD = 60000000000L;
 	private static final long HOURS_THRESHOLD = 3600000000000L;
 	private static final long DAYS_THRESHOLD = 86400000000000L;
+	private static final String LNT_SINGLE_INDENT = "   ";
 
 	private Utils()
 	{
 
+	}
+
+	public static String indent(int indentSize)
+	{
+		final StringBuilder indentBuilder = new StringBuilder();
+
+		for (int i = 0; i < indentSize; i++)
+		{
+			indentBuilder.append(LNT_SINGLE_INDENT);
+		}
+
+		return indentBuilder.toString();
 	}
 
 	public static boolean isAnInt(final char s)

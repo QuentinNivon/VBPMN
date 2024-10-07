@@ -7,6 +7,7 @@ import fr.inria.convecs.optimus.py_to_java.PyToJavaUtils;
 import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
 import fr.inria.convecs.optimus.py_to_java.cadp_compliance.generics.Pif2LntGeneric;
 import fr.inria.convecs.optimus.util.CommandManager;
+import fr.inria.convecs.optimus.util.Utils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -31,6 +32,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 	private static final String SYNC_STORE = "syncstore";
 	private static final String MERGE_STORE = "mergestore";
 	private static final String PAR_STORE = "parstore";
+	private static final int MAX_CHAR_PER_LINE = 79;
+	private static final int PROCESS_INDENT = 8;
+	private static final String SEPARATOR = "-------------------------------------------------------------------------------\n\n";
 
 	public Pif2Lnt(boolean isBalanced)
 	{
@@ -293,9 +297,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 		//Generates the (generic) process for flows, only once
 		void writeLnt(final StringBuilder stringBuilder)
 		{
-			stringBuilder.append("process flow [begin:any, finish:any] (ident:ID) is\n");
-			stringBuilder.append(" loop begin (ident) ; finish (ident) end loop\n");
+			stringBuilder.append("process flow [begin, finish: any] (ident:ID) is\n");
+			stringBuilder.append(Utils.indent(1));
+			stringBuilder.append("loop\n");
+			stringBuilder.append(Utils.indent(2));
+			stringBuilder.append("begin (ident); finish (ident)\n");
+			stringBuilder.append(Utils.indent(1));
+			stringBuilder.append("end loop\n");
 			stringBuilder.append("end process\n\n");
+			stringBuilder.append(SEPARATOR);
 		}
 
 		//A normal flow cannot be a default flow
@@ -389,9 +399,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 		@Override
 		void writeLnt(final StringBuilder stringBuilder)
 		{
-			stringBuilder.append("process init [begin:any, outf:any] is\n")
-					.append(" var ident: ID in begin ; outf (?ident of ID) end var \n")
-					.append("end process\n\n");
+			stringBuilder.append("process init [begin, outf: any] is\n")
+					.append(Utils.indent(1))
+					.append("var ident: ID in\n")
+					.append(Utils.indent(2))
+					.append("begin; outf (?ident of ID)\n")
+					.append(Utils.indent(1))
+					.append("end var\n")
+					.append("end process\n\n")
+					.append(SEPARATOR);
 		}
 
 		/**
@@ -459,22 +475,32 @@ public class Pif2Lnt extends Pif2LntGeneric
 		@Override
 		void writeLnt(StringBuilder stringBuilder)
 		{
-			stringBuilder.append("process final [incf:any, finish:any] is\n");
+			stringBuilder.append("process final [incf, finish: any] is\n")
+					.append(Utils.indent(1));
 
 			if (isBalanced)
 			{
-				stringBuilder.append(" var ident: ID in incf (?ident of ID); finish end var\n");
+				stringBuilder.append("var ident: ID in\n");
+				stringBuilder.append(Utils.indent(2));
+				stringBuilder.append("incf (?ident of ID); finish\n");
+				stringBuilder.append(Utils.indent(1));
+				stringBuilder.append("end var\n");
 			}
 			else
 			{
-				stringBuilder.append("var ident: ID in \n")
-						.append("loop \n")
-						.append("incf (?ident of ID); finish \n")
+				stringBuilder.append("var ident: ID in\n")
+						.append(Utils.indent(2))
+						.append("loop\n")
+						.append(Utils.indent(3))
+						.append("incf (?ident of ID); finish\n")
+						.append(Utils.indent(2))
 						.append("end loop\n")
+						.append(Utils.indent(1))
 						.append("end var\n");
 			}
 
-			stringBuilder.append("end process\n\n");
+			stringBuilder.append("end process\n\n")
+					.append(SEPARATOR);
 		}
 
 		/**
@@ -823,9 +849,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 			stringBuilder.append(nbOut);
 			stringBuilder.append(" [");
 
+			int nbCharPerLine = stringBuilder.length();
+
 			if (nbInc == 1)
 			{
-				stringBuilder.append("incf:any,");
+				stringBuilder.append("incf, ");
+				nbCharPerLine = stringBuilder.length();
 			}
 			else
 			{
@@ -833,18 +862,47 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				while (incCounter < nbInc)
 				{
-					stringBuilder.append("incf");
-					stringBuilder.append(incCounter);
-					stringBuilder.append(":any,");
+					final String flowId = "incf" + incCounter;
+
+					if (nbCharPerLine + flowId.length() + 1 > MAX_CHAR_PER_LINE)
+					{
+						stringBuilder.append("\n")
+								.append(PROCESS_INDENT);
+						nbCharPerLine = PROCESS_INDENT + flowId.length() + 2;
+					}
+					else
+					{
+						nbCharPerLine += flowId.length() + 2;
+					}
+
+					stringBuilder.append(flowId)
+									.append(", ");
 					incCounter++;
 				}
 			}
 
-			stringBuilder.append("task:any,");
+			if (nbCharPerLine + 6 > MAX_CHAR_PER_LINE)
+			{
+				stringBuilder.append("\n")
+						.append(PROCESS_INDENT);
+				nbCharPerLine = PROCESS_INDENT + 6;
+			}
+			else
+			{
+				nbCharPerLine += 6;
+			}
+
+			stringBuilder.append("task, ");
 
 			if (nbOut == 1)
 			{
-				stringBuilder.append("outf:any");
+				if (nbCharPerLine + 9 > MAX_CHAR_PER_LINE)
+				{
+					stringBuilder.append("\n")
+							.append(PROCESS_INDENT);
+				}
+
+				stringBuilder.append("outf");
 			}
 			else
 			{
@@ -852,29 +910,47 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				while (outCounter < nbOut)
 				{
-					stringBuilder.append("outf");
-					stringBuilder.append(outCounter);
-					stringBuilder.append(":any");
+					final String flowId = "outf" + outCounter;
+
+					if (nbCharPerLine + flowId.length() + 1 > MAX_CHAR_PER_LINE)
+					{
+						stringBuilder.append("\n")
+								.append(PROCESS_INDENT);
+						nbCharPerLine = PROCESS_INDENT + flowId.length() + 2;
+					}
+					else
+					{
+						nbCharPerLine += flowId.length() + 2;
+					}
+
+					stringBuilder.append(flowId);
 					outCounter++;
 
 					if (outCounter < nbOut)
 					{
-						stringBuilder.append(",");
+						stringBuilder.append(", ");
 					}
 				}
 			}
 
-			stringBuilder.append("] is\n");
-			stringBuilder.append(" var ident: ID in loop ");
+			stringBuilder.append(": any] is\n");
+			stringBuilder.append(Utils.indent(1));
+			stringBuilder.append("var ident: ID in\n");
+			stringBuilder.append(Utils.indent(2));
+			stringBuilder.append("loop\n");
 
 			if (nbInc == 1)
 			{
-				stringBuilder.append(" incf (?ident of ID); ");
+				final String flowId = "incf (?ident of ID); ";
+				stringBuilder.append("incf (?ident of ID); ");
+				nbCharPerLine = flowId.length() + 9;
 			}
 			else
 			{
 				int incCounter = 0;
-				stringBuilder.append(" alt ");
+				stringBuilder.append(Utils.indent(3));
+				stringBuilder.append("alt\n");
+				stringBuilder.append(Utils.indent(4));
 
 				while (incCounter < nbInc)
 				{
@@ -885,14 +961,18 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					if (incCounter < nbInc)
 					{
-						stringBuilder.append(" [] ");
+						stringBuilder.append("\n")
+								.append(Utils.indent(3))
+								.append("[]\n")
+								.append(Utils.indent(4));
 					}
 				}
 
-				stringBuilder.append(" end alt ; \n");
+				stringBuilder.append("\nend alt;\n");
 			}
 
-			stringBuilder.append("task ; ");
+			stringBuilder.append(Utils.indent(3));
+			stringBuilder.append("task; ");
 
 			if (nbOut == 1)
 			{
@@ -901,10 +981,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 			else
 			{
 				int outCounter = 0;
-				stringBuilder.append(" alt ");
+				stringBuilder.append("\n");
+				stringBuilder.append(Utils.indent(3));
+				stringBuilder.append("alt\n");
 
 				while (outCounter < nbOut)
 				{
+					stringBuilder.append(Utils.indent(4));
 					stringBuilder.append("outf");
 					stringBuilder.append(outCounter);
 					stringBuilder.append(" (?ident of ID)");
@@ -912,14 +995,22 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					if (outCounter < nbOut)
 					{
-						stringBuilder.append(" [] ");
+						stringBuilder.append("\n")
+								.append(Utils.indent(3))
+								.append("[]\n")
+								.append(Utils.indent(4));
 					}
 				}
 
-				stringBuilder.append(" end alt \n");
+				stringBuilder.append("\n");
+				stringBuilder.append(Utils.indent(3));
+				stringBuilder.append("end alt\n");
 			}
 
-			stringBuilder.append(" end loop end var\n");
+			stringBuilder.append(Utils.indent(2));
+			stringBuilder.append("end loop\n");
+			stringBuilder.append(Utils.indent(1));
+			stringBuilder.append("end var\n");
 			stringBuilder.append("end process\n\n");
 		}
 
@@ -3467,13 +3558,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 			lntBuilder.append("module ")
 					.append(this.name)
 					.append(isBalanced ? "" : "(bpmntypes)")
-					.append(" with get, <, == is\n\n");
+					.append(" with get, <, == is\n\n")
+					.append(SEPARATOR);
 
 			if (isBalanced)
 			{
 				//Generates an ID type for all flow identifiers
 				lntBuilder.append("(* Data type for flow identifiers, useful for scheduling purposes *)\n")
-						.append("type ID is\n");
+						.append("type ID is\n")
+						.append(Utils.indent(1));
 
 				int counter = this.flows.size();
 
@@ -3484,12 +3577,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					if (counter > 0)
 					{
-						lntBuilder.append(",");
+						lntBuilder.append(",\n");
 					}
 				}
 
-				lntBuilder.append("\nwith ==, !=\n")
-						.append("end type\n\n");
+				lntBuilder.append("\n")
+						.append(Utils.indent(1))
+						.append("with ==, !=\n")
+						.append("end type\n\n")
+						.append(SEPARATOR);
 			}
 
 			if (this.initial != null)
