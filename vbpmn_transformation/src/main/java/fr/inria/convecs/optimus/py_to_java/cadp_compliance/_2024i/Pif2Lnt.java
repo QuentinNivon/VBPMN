@@ -80,15 +80,28 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			stringBuilder.append("[");
 			int counter = 1;
+			int nbCharCurrentLine = 14;
 
 			for (String element : alphabet)
 			{
-				stringBuilder.append(element);
-
-				if (addAny)
+				if (counter != 1)
 				{
-					stringBuilder.append(":any");
+					if (nbCharCurrentLine + element.length() + 1 > MAX_CHAR_PER_LINE)
+					{
+						stringBuilder.append("\n").append(Utils.indent(PROCESS_INDENT_LENGTH));
+						nbCharCurrentLine = PROCESS_INDENT_LENGTH + element.length();
+					}
+					else
+					{
+						nbCharCurrentLine += element.length();
+					}
 				}
+				else
+				{
+					nbCharCurrentLine += element.length();
+				}
+
+				stringBuilder.append(element);
 
 				counter++;
 
@@ -100,7 +113,21 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (addLtlDummyLoopyLabel)
 			{
-				stringBuilder.append(", DUMMY_LOOPY_LABEL:any");
+				final String dummyLabel = "DUMMY_LOOPY_LABEL";
+
+				if (nbCharCurrentLine + dummyLabel.length() + 2 > MAX_CHAR_PER_LINE)
+				{
+					stringBuilder.append(",\n").append(Utils.indent(PROCESS_INDENT_LENGTH)).append(dummyLabel);
+				}
+				else
+				{
+					stringBuilder.append(", ").append(dummyLabel);
+				}
+			}
+
+			if (addAny)
+			{
+				stringBuilder.append(": any");
 			}
 
 			stringBuilder.append("]");
@@ -3789,15 +3816,16 @@ public class Pif2Lnt extends Pif2LntGeneric
 				this.processDump(lntBuilder);
 			}
 
-			lntBuilder.append("\nprocess MAIN ");
+			lntBuilder.append("process MAIN ");
 			final ArrayList<String> alpha = this.alpha();
 			dumpAlphabet(alpha, lntBuilder, true, ADD_LTL_DUMMY_LABELS);
-			lntBuilder.append(" is\n\n");
+			lntBuilder.append(" is\n");
 
 			//Computes additional synchros for or splits/joins
 			final ArrayList<String> synchroPoints = isBalanced ? this.computeAddSynchroPoints() : this.computeAddSynchroPoints(false);
 			final int nbSync = synchroPoints.size();
-			lntBuilder.append(" hide begin:any, finish:any");
+			lntBuilder.append(Utils.indentLNT(1));
+			lntBuilder.append("hide begin, finish:any");
 			final int nbFlows = this.flows.size();
 
 			if (isBalanced)
