@@ -936,8 +936,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (nbInc == 1)
 			{
-				final String flowId = "incf (?ident of ID); ";
-				stringBuilder.append("incf (?ident of ID); ");
+				final String flowId = "incf (?ident of ID);";
+				stringBuilder.append(flowId);
 				nbCharCurrentLine = flowId.length() + 9;
 			}
 			else
@@ -963,11 +963,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 					}
 				}
 
-				stringBuilder.append("\nend alt;\n");
-				stringBuilder.append(Utils.indent(3));
+				stringBuilder.append("\nend alt;");
 			}
 
-			stringBuilder.append("task; ");
+			stringBuilder.append("\n");
+			stringBuilder.append(Utils.indent(3));
+			stringBuilder.append("task;\n");
+			stringBuilder.append(Utils.indent(3));
 
 			if (nbOut == 1)
 			{
