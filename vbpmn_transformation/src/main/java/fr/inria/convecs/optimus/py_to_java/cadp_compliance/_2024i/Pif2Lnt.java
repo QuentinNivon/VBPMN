@@ -1958,6 +1958,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 			}
 
+			stringBuilder.append("\n");
 			stringBuilder.append(Utils.indentLNT(4));
 			stringBuilder.append("end par\n");
 			stringBuilder.append(Utils.indentLNT(3));
@@ -3752,9 +3753,25 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (ADD_LTL_DUMMY_LABELS)
 			{
-				lntBuilder.append("process dummy_node [incf:any, name:any] is\n")
-						.append(" var ident: ID in loop incf (?ident of ID); while true loop name end loop end loop end var\n")
-						.append("end process\n");
+				lntBuilder.append("process dummy_node [incf, name: any] is\n");
+				lntBuilder.append(Utils.indentLNT(1));
+				lntBuilder.append("var ident: ID in\n");
+				lntBuilder.append(Utils.indentLNT(2));
+				lntBuilder.append("loop\n");
+				lntBuilder.append(Utils.indentLNT(3));
+				lntBuilder.append("incf (?ident of ID);\n");
+				lntBuilder.append(Utils.indentLNT(3));
+				lntBuilder.append("while true loop\n");
+				lntBuilder.append(Utils.indentLNT(4));
+				lntBuilder.append("name\n");
+				lntBuilder.append(Utils.indentLNT(3));
+				lntBuilder.append("end loop\n");
+				lntBuilder.append(Utils.indentLNT(2));
+				lntBuilder.append("end loop\n");
+				lntBuilder.append(Utils.indentLNT(1));
+				lntBuilder.append("end var\n");
+				lntBuilder.append("end process\n\n");
+				lntBuilder.append(SEPARATOR);
 			}
 
 			/*
