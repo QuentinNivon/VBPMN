@@ -1862,51 +1862,89 @@ public class Pif2Lnt extends Pif2LntGeneric
 		void writeLnt(StringBuilder stringBuilder)
 		{
 			final int nbOut = this.outgoingFlows.size();
-			stringBuilder.append("process andsplit_");
-			stringBuilder.append(this.identifier);
-			stringBuilder.append(" [incf:any,");
+			final String processIdentifier = "process andsplit_" + this.identifier + " [incf, ";
+			stringBuilder.append(processIdentifier);
 			int nb = 1;
+
+			int nbCharCurrentLine = processIdentifier.length();
 
 			while (nb <= nbOut)
 			{
-				stringBuilder.append("outf_");
-				stringBuilder.append(nb);
-				stringBuilder.append(":any");
+				final String flowIdentifier = "outf_" + nb;
+
+				if (nbCharCurrentLine + flowIdentifier.length() + 1 > MAX_CHAR_PER_LINE)
+				{
+					stringBuilder.append("\n").append(Utils.indent(PROCESS_INDENT_LENGTH));
+					nbCharCurrentLine = PROCESS_INDENT_LENGTH + flowIdentifier.length();
+				}
+				else
+				{
+					nbCharCurrentLine += flowIdentifier.length();
+				}
+
+				stringBuilder.append(flowIdentifier);
 				nb++;
 
 				if (nb <= nbOut)
 				{
-					stringBuilder.append(",");
+					stringBuilder.append(", ");
 				}
 			}
 
-			stringBuilder.append(" ] is \n");
+			stringBuilder.append(": any] is\n");
 			int variablesCounter = nbOut;
-			stringBuilder.append(" var ");
+			stringBuilder.append(Utils.indentLNT(1));
+			stringBuilder.append("var ");
+			nbCharCurrentLine = 7;
 
 			while (variablesCounter > 0)
 			{
-				stringBuilder.append("ident");
-				stringBuilder.append(variablesCounter);
-				stringBuilder.append(":ID");
+				final String flowIdentifier = "ident" + variablesCounter;
+
+				if (variablesCounter != nbOut)
+				{
+					if (nbCharCurrentLine + flowIdentifier.length() + 1 > MAX_CHAR_PER_LINE)
+					{
+						stringBuilder.append("\n").append(Utils.indent(7));
+						nbCharCurrentLine = flowIdentifier.length() + 8;
+					}
+					else
+					{
+						nbCharCurrentLine += flowIdentifier.length() + 8;
+					}
+				}
+				else
+				{
+					nbCharCurrentLine += flowIdentifier.length() + 1;
+				}
+
+				stringBuilder.append(flowIdentifier);
 				variablesCounter--;
 
 				if (variablesCounter > 0)
 				{
-					stringBuilder.append(",");
+					stringBuilder.append(", ");
 				}
 			}
 
-			stringBuilder.append(" in  var ident: ID in loop incf (?ident of ID); \n");
-			stringBuilder.append(" par ");
+			stringBuilder.append(": ID in\n");
+			stringBuilder.append(Utils.indentLNT(2));
+			stringBuilder.append("var ident: ID in\n");
+			stringBuilder.append(Utils.indentLNT(3));
+			stringBuilder.append("loop\n");
+			stringBuilder.append(Utils.indentLNT(4));
+			stringBuilder.append("incf (?ident of ID);\n");
+			stringBuilder.append(Utils.indentLNT(4));
+			stringBuilder.append("par\n");
 			nb = 1;
 			variablesCounter = nbOut;
 
 			while (nb <= nbOut)
 			{
+				stringBuilder.append(Utils.indentLNT(5));
 				stringBuilder.append("outf_");
 				stringBuilder.append(nb);
-				stringBuilder.append("(?ident");
+				stringBuilder.append(" (?ident");
 				stringBuilder.append(variablesCounter);
 				stringBuilder.append(" of ID)");
 				variablesCounter--;
@@ -1914,12 +1952,22 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				if (nb <= nbOut)
 				{
-					stringBuilder.append("||");
+					stringBuilder.append("\n");
+					stringBuilder.append(Utils.indentLNT(4));
+					stringBuilder.append("||\n");
 				}
 			}
 
-			stringBuilder.append(" end par end loop end var end var\n");
+			stringBuilder.append(Utils.indentLNT(4));
+			stringBuilder.append("end par\n");
+			stringBuilder.append(Utils.indentLNT(3));
+			stringBuilder.append("end loop\n");
+			stringBuilder.append(Utils.indentLNT(2));
+			stringBuilder.append("end var\n");
+			stringBuilder.append(Utils.indentLNT(1));
+			stringBuilder.append("end var\n");
 			stringBuilder.append("end process\n\n");
+			stringBuilder.append(SEPARATOR);
 		}
 
 		void writeMainLnt(final StringBuilder stringBuilder)
@@ -2583,7 +2631,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			stringBuilder.append("\n");
 			stringBuilder.append(Utils.indentLNT(4));
 			stringBuilder.append("end par;\n");
-			stringBuilder.append(Utils.indentLNT(3));
+			stringBuilder.append(Utils.indentLNT(4));
 			stringBuilder.append("outf (?ident of ID)\n");
 			stringBuilder.append(Utils.indentLNT(3));
 			stringBuilder.append("end loop\n");
