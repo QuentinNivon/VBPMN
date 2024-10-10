@@ -3541,8 +3541,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 		}
 
-		Pair<String, Integer> getFlowMsgs(final boolean withAny,
-										  final int baseIndent)
+		Pair<String, Integer> getFlowMsgsAndLineLength(final boolean withAny,
+													   final int baseIndent)
 		{
 			final StringBuilder flowBuilder = new StringBuilder();
 			final int nbFlows = this.flows.size();
@@ -3754,7 +3754,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			final String processIdentifier = "process scheduler [";
 			stringBuilder.append(processIdentifier);
-			final Pair<String, Integer> flowMsgsAndPosition = this.getFlowMsgs(false, processIdentifier.length());
+			final Pair<String, Integer> flowMsgsAndPosition = this.getFlowMsgsAndLineLength(false, processIdentifier.length());
 			stringBuilder.append(flowMsgsAndPosition.getLeft());
 			//Add split synchro params
 			final ArrayList<String> synchroParams = this.computeAddSynchroPoints(false);
@@ -3793,13 +3793,14 @@ public class Pif2Lnt extends Pif2LntGeneric
 			stringBuilder.append("MoveOn:any]\n");
 			stringBuilder.append(Utils.indent(processIdentifier.length() - 1));
 			stringBuilder.append("(activeflows: IDS, bpmn: BPROCESS, syncstore: IDS,\n");
-			stringBuilder.append(Utils.indent(processIdentifier.length() - 1));
+			stringBuilder.append(Utils.indent(processIdentifier.length()));
 			stringBuilder.append("mergestore:IDS, parstore:IDS)\n");
 			stringBuilder.append("is\n");
 
 			final ArrayList<String> identSet = new ArrayList<>();
 			final ArrayList<String> flowAltStrings = new ArrayList<>();
 			final ArrayList<String> incJoinBeginList = new ArrayList<>();
+			final StringBuilder incJoinBeginBuilder = new StringBuilder();
 			final ArrayList<String> parJoinBeginList = new ArrayList<>();
 			final int nodeMinIndent = 9;
 			final String ident = "ident";
@@ -3809,7 +3810,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 			for (Node node : this.nodes)
 			{
 				final StringBuilder nodeBuilder = new StringBuilder();
-				final ArrayList<String> flowString = new ArrayList<>();
 
 				if (node instanceof Task)
 				{
@@ -3839,18 +3839,30 @@ public class Pif2Lnt extends Pif2LntGeneric
 						nodeMinIndent
 					));
 
-					flowString.add(nodeBuilder.toString());
 					identSet.add(ident1);
 					identSet.add(ident2);
 				}
 				else if (node instanceof XOrSplitGateway)
 				{
-					flowString.add("\n(*----  XOrSplitGateway with ID: " + node.identifier() + "------*)\n");
-					flowString.add(node.firstIncomingFlow().identifier() + "_finish (?" + ident1 + " of ID); ");
+					nodeBuilder.append(Utils.indent(nodeMinIndent));
+					nodeBuilder.append("(*")
+							.append(COMMENTS_DASHES)
+							.append(" XOrSplitGateway of ID \"")
+							.append(node.identifier())
+							.append("\" ")
+							.append(COMMENTS_DASHES)
+							.append("*)\n");
+					nodeBuilder.append(Utils.indent(nodeMinIndent));
+					nodeBuilder.append(node.firstIncomingFlow().identifier())
+							.append("_finish (?")
+							.append(ident1)
+							.append(" of ID);\n")
+							.append(Utils.indent(nodeMinIndent));
+
 					identSet.add(ident1);
 					boolean first = true;
 					int counter = 2;
-					flowString.add(" alt\n");
+					nodeBuilder.append("alt\n");
 
 					for (Flow flow : node.outgoingFlows())
 					{
@@ -3862,29 +3874,51 @@ public class Pif2Lnt extends Pif2LntGeneric
 						}
 						else
 						{
-							flowString.add("[]\n");
+							nodeBuilder.append("\n")
+									.append(Utils.indent(nodeMinIndent))
+									.append("[]\n")
+							;
 						}
 
-						flowString.add(flow.identifier() + "_begin (?" + currentIdent + " of ID); ");
+						nodeBuilder.append(Utils.indent(nodeMinIndent))
+								.append(Utils.indentLNT(1))
+								.append(flow.identifier())
+								.append("_begin (?")
+								.append(currentIdent)
+								.append(" of ID);\n")
+						;
+
 						identSet.add(currentIdent);
-						flowString.add(this.getSchedulerString(
-								Collections.singletonList(ident1),
-								Collections.singletonList(currentIdent),
-								SYNC_STORE,
-								MERGE_STORE,
-								PAR_STORE,
-								0
+						nodeBuilder.append(this.getSchedulerString(
+							Collections.singletonList(ident1),
+							Collections.singletonList(currentIdent),
+							SYNC_STORE,
+							MERGE_STORE,
+							PAR_STORE,
+							nodeMinIndent + 3
 						));
 						counter++;
 					}
 
-					flowString.add("\nend alt ");
+					nodeBuilder.append("\n")
+							.append(Utils.indent(nodeMinIndent))
+							.append("end alt\n")
+					;
 				}
 				else if (node instanceof XOrJoinGateway)
 				{
-					flowString.add("\n(*----  XOrJoinGateway with ID: " + node.identifier() + "------*)\n");
+					nodeBuilder.append(Utils.indent(nodeMinIndent));
+					nodeBuilder.append("(*")
+							.append(COMMENTS_DASHES)
+							.append(" XOrJoinGateway of ID \"")
+							.append(node.identifier())
+							.append("\" ")
+							.append(COMMENTS_DASHES)
+							.append("*)\n");
+					nodeBuilder.append(Utils.indent(nodeMinIndent));
+					nodeBuilder.append("alt\n");
+
 					boolean first = true;
-					flowString.add(" alt\n");
 
 					for (Flow flow : node.incomingFlows())
 					{
@@ -3894,33 +3928,64 @@ public class Pif2Lnt extends Pif2LntGeneric
 						}
 						else
 						{
-							flowString.add("\n[]\n");
+							nodeBuilder.append("\n")
+									.append(Utils.indent(nodeMinIndent))
+									.append("[]\n")
+							;
 						}
 
-						flowString.add(flow.identifier() + "_finish (?" + ident2 + " of ID) ");
+						nodeBuilder.append(Utils.indent(nodeMinIndent))
+								.append(Utils.indentLNT(1))
+								.append(flow.identifier())
+								.append("_finish (?")
+								.append(ident2)
+								.append(" of ID)")
+						;
 					}
 
-					flowString.add("\nend alt; ");
-					flowString.add(node.firstOutgoingFlow().identifier() + "_begin (?" + ident1 + " of ID); ");
+					nodeBuilder.append("\n")
+							.append(Utils.indent(nodeMinIndent))
+							.append("end alt;\n")
+							.append(Utils.indent(nodeMinIndent))
+							.append(node.firstOutgoingFlow().identifier())
+							.append("_begin (?")
+							.append(ident1)
+							.append(" of ID);\n")
+					;
+
 					identSet.add(ident1);
 					identSet.add(ident2);
-					flowString.add(this.getSchedulerString(
+					nodeBuilder.append(this.getSchedulerString(
 							Collections.singletonList(ident2),
 							Collections.singletonList(ident1),
 							SYNC_STORE,
 							MERGE_STORE,
 							PAR_STORE,
-							0
+							nodeMinIndent
 					));
 				}
 				else if (node instanceof AndSplitGateway)
 				{
-					flowString.add("\n(*----  AndSplitGateway with ID: " + node.identifier() + "------*)\n");
-					flowString.add(node.firstIncomingFlow().identifier() + "_finish (?" + ident1 + " of ID);");
+					nodeBuilder.append(Utils.indent(nodeMinIndent))
+							.append("(*")
+							.append(COMMENTS_DASHES)
+							.append(" AndSplitGateway of ID \"")
+							.append(node.identifier())
+							.append("\" ")
+							.append(COMMENTS_DASHES)
+							.append("*)\n");
+					nodeBuilder.append(Utils.indent(nodeMinIndent))
+							.append(node.firstIncomingFlow().identifier())
+							.append("_finish (?")
+							.append(ident1)
+							.append(" of ID);\n")
+							.append(Utils.indent(nodeMinIndent))
+							.append("par\n")
+					;
+
 					boolean first = true;
 					int counter = 2;
 					final ArrayList<String> outIds = new ArrayList<>();
-					flowString.add("par\n");
 
 					for (Flow flow : node.outgoingFlows())
 					{
@@ -3932,28 +3997,50 @@ public class Pif2Lnt extends Pif2LntGeneric
 						}
 						else
 						{
-							flowString.add("\n||");
+							nodeBuilder.append("\n")
+									.append(Utils.indent(nodeMinIndent))
+									.append("||\n")
+							;
 						}
 
-						flowString.add(flow.identifier() + "_begin (?" + currentIdent + " of ID) ");
+						nodeBuilder.append(Utils.indent(nodeMinIndent))
+								.append(Utils.indentLNT(1))
+								.append(flow.identifier())
+								.append("_begin (?")
+								.append(currentIdent)
+								.append(" of ID)")
+						;
 						identSet.add(currentIdent);
 						outIds.add(currentIdent);
 						counter++;
 					}
 
-					flowString.add("\nend par;");
-					flowString.add(this.getSchedulerString(
-							Collections.singletonList(ident1),
-							outIds,
-							SYNC_STORE,
-							MERGE_STORE,
-							PAR_STORE,
-							0
-					));
+					nodeBuilder.append("\n")
+							.append(Utils.indent(nodeMinIndent))
+							.append("end par;\n")
+							.append(this.getSchedulerString(
+									Collections.singletonList(ident1),
+									outIds,
+									SYNC_STORE,
+									MERGE_STORE,
+									PAR_STORE,
+									nodeMinIndent
+							))
+					;
 				}
 				else if (node instanceof AndJoinGateway)
 				{
-					flowString.add("\n(*----  AndJoinGateway with ID: " + node.identifier() + "------*)\n");
+					nodeBuilder.append(Utils.indent(nodeMinIndent))
+							.append("(*")
+							.append(COMMENTS_DASHES)
+							.append(" AndJoinGateway of ID \"")
+							.append(node.identifier())
+							.append("\" ")
+							.append(COMMENTS_DASHES)
+							.append("*)\n");
+					nodeBuilder.append(Utils.indent(nodeMinIndent))
+							.append("alt\n");
+
 					boolean first = true;
 
 					for (Flow flow : node.incomingFlows())
@@ -3965,26 +4052,38 @@ public class Pif2Lnt extends Pif2LntGeneric
 						}
 						else
 						{
-							flowString.add("\n[]\n");
+							nodeBuilder.append("\n")
+									.append(Utils.indent(nodeMinIndent))
+									.append("[]\n")
+							;
 						}
 
-						flowString.add(flow.identifier() + "_finish (?ident of ID); ");
-						flowString.add(this.getSchedulerString(
-								new ArrayList<>(),
-								new ArrayList<>(),
-								"insert(ident, syncstore)",
-								MERGE_STORE,
-								"insert(" + node.identifier() + ", parstore)",
-								0
-						));
+						nodeBuilder.append(Utils.indent(nodeMinIndent))
+								.append(Utils.indentLNT(1))
+								.append(flow.identifier())
+								.append("_finish (?" + ident + " of ID);\n")
+								.append(this.getSchedulerString(
+										new ArrayList<>(),
+										new ArrayList<>(),
+										"insert (" + ident + ", syncstore)",
+										MERGE_STORE,
+										"insert (" + node.identifier() + ", parstore)",
+										nodeMinIndent + 3
+								))
+						;
 					}
+
+					nodeBuilder.append("\n")
+							.append(Utils.indent(nodeMinIndent))
+							.append("end alt\n")
+					;
 
 					identSet.add("ident1");
 					//Parallel merge join TODO: Clean up
 					final ArrayList<String> parJoinString = new ArrayList<>();
 					parJoinString.add(node.firstOutgoingFlow().identifier() + "_begin (?ident1 of ID);");
 					parJoinString.add("scheduler [");
-					parJoinString.add(this.getFlowMsgs(false, 0).getLeft());
+					parJoinString.add(this.getFlowMsgsAndLineLength(false, 0).getLeft());
 					final ArrayList<String> res = this.computeAddSynchroPoints(false);
 
 					if (!res.isEmpty())
@@ -4000,8 +4099,23 @@ public class Pif2Lnt extends Pif2LntGeneric
 				}
 				else if (node instanceof OrSplitGateway)
 				{
-					flowString.add("\n(*----  OrSplitGateway with ID: " + node.identifier() + "------*)\n");
-					flowString.add(node.firstIncomingFlow().identifier() + "_finish (?" + ident1 + " of ID); \n");
+					nodeBuilder.append(Utils.indent(nodeMinIndent))
+							.append("(*")
+							.append(COMMENTS_DASHES)
+							.append(" OrSplitGateway of ID \"")
+							.append(node.identifier())
+							.append("\" ")
+							.append(COMMENTS_DASHES)
+							.append("*)\n");
+					nodeBuilder.append(Utils.indent(nodeMinIndent))
+							.append(node.firstIncomingFlow().identifier())
+							.append("_finish (?")
+							.append(ident1)
+							.append(" of ID);\n")
+							.append(Utils.indent(nodeMinIndent))
+							.append("alt\n")
+					;
+
 					identSet.add(ident1);
 
 					final int nbOut = node.outgoingFlows().size();
@@ -4019,7 +4133,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 					final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(flowAlpha);
 					final int nbCombinations = allCombinations.size();
 					final ArrayList<String> outIds = new ArrayList<>();
-					flowString.add("alt ");
 					int nb = 1;
 					int cter = 1;
 
@@ -4027,18 +4140,34 @@ public class Pif2Lnt extends Pif2LntGeneric
 					{
 						final int nbElemCombi = combination.size();
 						int nb2 = 1;
-						flowString.add(" \n " + node.identifier() + "_" + cter + "; ");
+
+						nodeBuilder.append(Utils.indent(nodeMinIndent))
+								.append(Utils.indentLNT(1))
+								.append(node.identifier())
+								.append("_")
+								.append(cter)
+								.append(";\n")
+								.append(Utils.indent(nodeMinIndent))
+								.append(Utils.indentLNT(1))
+						;
+
 						cter++;
 
 						if (nbElemCombi > 1)
 						{
 							int combiCounter = nbCombinations;
-							flowString.add("\npar\n");
+							nodeBuilder.append("par\n");
 
 							for (String element : combination)
 							{
 								final String currentIdent = "ident" + combiCounter;
-								flowString.add(element + "(?" + currentIdent + " of ID)");
+								nodeBuilder.append(Utils.indent(nodeMinIndent))
+										.append(Utils.indentLNT(2))
+										.append(element)
+										.append(" (?")
+										.append(currentIdent)
+										.append(" of ID)")
+								;
 								outIds.add(currentIdent);
 								identSet.add(currentIdent);
 								combiCounter--;
@@ -4046,31 +4175,43 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 								if (nb2 <= nbElemCombi)
 								{
-									flowString.add("\n||\n");
+									nodeBuilder.append("\n")
+											.append(Utils.indent(nodeMinIndent))
+											.append(Utils.indentLNT(1))
+											.append("||\n")
+									;
 								}
 							}
 
-							flowString.add("\nend par");
-							flowString.add(";" + this.getSchedulerString(
-									Collections.singletonList(ident1),
-									outIds,
-									SYNC_STORE,
-									MERGE_STORE,
-									PAR_STORE,
-									0
-							));
+							nodeBuilder.append("\n")
+									.append(Utils.indent(nodeMinIndent))
+									.append(Utils.indentLNT(1))
+									.append("end par;\n")
+									.append(this.getSchedulerString(
+											Collections.singletonList(ident1),
+											outIds,
+											SYNC_STORE,
+											MERGE_STORE,
+											PAR_STORE,
+											nodeMinIndent + 3
+									))
+							;
 						}
 						else
 						{
-							flowString.add(combination.iterator().next() + " (?" + ident + " of ID)");
-							flowString.add(";" + this.getSchedulerString(
-									Collections.singletonList(ident1),
-									Collections.singletonList(ident),
-									SYNC_STORE,
-									MERGE_STORE,
-									PAR_STORE,
-									0
-							));
+							nodeBuilder.append(combination.iterator().next())
+									.append(" (?")
+									.append(ident)
+									.append(" of ID);\n")
+									.append(this.getSchedulerString(
+											Collections.singletonList(ident1),
+											Collections.singletonList(ident),
+											SYNC_STORE,
+											MERGE_STORE,
+											PAR_STORE,
+											nodeMinIndent + 3
+									))
+							;
 							identSet.add(ident);
 						}
 
@@ -4078,15 +4219,30 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 						if (nb <= nbCombinations)
 						{
-							flowString.add("\n[] ");
+							nodeBuilder.append("\n")
+									.append(Utils.indent(nodeMinIndent))
+									.append("[]\n")
+							;
 						}
 					}
 
-					flowString.add("\nend alt\n");
+					nodeBuilder.append("\n")
+							.append(Utils.indent(nodeMinIndent))
+							.append("end alt\n")
+					;
 				}
 				else if (node instanceof OrJoinGateway)
 				{
-					flowString.add("\n(*----  OrJoinGateway with ID: " + node.identifier() + "------*)\n");
+					nodeBuilder.append(Utils.indent(nodeMinIndent))
+							.append("(*")
+							.append(COMMENTS_DASHES)
+							.append(" OrJoinGateway of ID \"")
+							.append(node.identifier())
+							.append("\" ")
+							.append(COMMENTS_DASHES)
+							.append("*)\n");
+					nodeBuilder.append(Utils.indent(nodeMinIndent))
+							.append("alt\n");
 					boolean first = true;
 
 					for (Flow flow : node.incomingFlows())
@@ -4098,127 +4254,244 @@ public class Pif2Lnt extends Pif2LntGeneric
 						}
 						else
 						{
-							flowString.add("\n[]\n");
+							nodeBuilder.append("\n")
+									.append(Utils.indent(nodeMinIndent))
+									.append("[]\n")
+							;
 						}
 
-						flowString.add(flow.identifier() + "_finish (?ident of ID); ");
-						flowString.add(this.getSchedulerString(
-								new ArrayList<>(),
-								new ArrayList<>(),
-								"insert(ident, syncstore)",
-								"insert(" + node.identifier() + ", mergestore)",
-								PAR_STORE,
-								0
-						));
+						nodeBuilder.append(Utils.indent(nodeMinIndent))
+								.append(Utils.indentLNT(1))
+								.append(flow.identifier())
+								.append("_finish (?")
+								.append(ident)
+								.append(" of ID);\n")
+								.append(this.getSchedulerString(
+										new ArrayList<>(),
+										new ArrayList<>(),
+										"insert (" + ident + ", syncstore)",
+										"insert (" + node.identifier() + ", mergestore)",
+										PAR_STORE,
+										nodeMinIndent + 3
+								))
+						;
 					}
+
+					nodeBuilder.append("\n")
+							.append(Utils.indent(nodeMinIndent))
+							.append("end alt\n")
+					;
 
 					identSet.add("ident1");
 					//Inclusive merge join TODO: Clean up
-					final ArrayList<String> incJoinString = new ArrayList<>();
-					incJoinString.add(node.firstOutgoingFlow().identifier() + "_begin (?ident1 of ID);");
-					incJoinString.add("scheduler [");
-					incJoinString.add(this.getFlowMsgs(false, 0).getLeft());
-					final ArrayList<String> res = this.computeAddSynchroPoints(false);
+					incJoinBeginBuilder.append(Utils.indentLNT(5))
+							.append(node.firstOutgoingFlow().identifier())
+							.append("_begin (?")
+							.append(ident1)
+							.append(" of ID);\n")
+							.append(Utils.indentLNT(5))
+							.append("scheduler [");
 
-					if (!res.isEmpty())
+					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(false, 26);
+					incJoinBeginBuilder.append(flowMsgsAndLineLength.getLeft());
+
+					nbCharCurrentLine = 26 + flowMsgsAndLineLength.getRight();
+
+					final ArrayList<String> synchroPoints = this.computeAddSynchroPoints(false);
+
+					incJoinBeginBuilder.append(", ");
+					nbCharCurrentLine += 2;
+
+					for (String synchroPoint : synchroPoints)
 					{
-						incJoinString.add(",");
-						incJoinString.add(PyToJavaUtils.join(res, ","));
+						final String synchroPointWithComa = synchroPoint + ", ";
+
+						if (nbCharCurrentLine + synchroPointWithComa.length() > MAX_CHAR_PER_LINE)
+						{
+							incJoinBeginBuilder.append("\n").append(Utils.indent(26));
+							nbCharCurrentLine = 26 + synchroPointWithComa.length();
+						}
+						else
+						{
+							nbCharCurrentLine += synchroPointWithComa.length();
+						}
+
+						incJoinBeginBuilder.append(synchroPointWithComa);
 					}
 
-					incJoinString.add(", MoveOn]");
-					incJoinString.add("(union({ident1}, remove_incf(bpmn, activeflows, mergeid)), bpmn, " +
-							"remove_sync(bpmn, syncstore, mergeid), remove(mergeid, mergestore), parstore)\n");
-					incJoinBeginList.add(PyToJavaUtils.join(incJoinString, ""));
+					if (nbCharCurrentLine + 7 > MAX_CHAR_PER_LINE)
+					{
+						incJoinBeginBuilder.append("\n").append(Utils.indent(26));
+					}
+
+					incJoinBeginBuilder.append("MoveOn]\n")
+							.append(Utils.indent(25))
+							.append("(union ({")
+							.append(ident1)
+							.append("},\n")
+							.append(Utils.indent(33))
+							.append("remove_incf (bpmn, activeflows, mergeid)),\n")
+							.append(Utils.indent(26))
+							.append("bpmn, remove_sync (bpmn, syncstore, mergeid),\n")
+							.append(Utils.indent(26))
+							.append("remove (mergeid, mergestore), parstore)\n");
 				}
 				else
 				{
 					//TODO Intéret ????
-					flowString.add("\n(*----  ERROR - Unable to select ID: " + node.identifier() + "------*)\n");
-					flowString.clear();
-					flowString.add("");
+					nodeBuilder.append(Utils.indent(nodeMinIndent))
+							.append("(*")
+							.append(COMMENTS_DASHES)
+							.append(" ERROR: Unable to select element of ID \"")
+							.append(node.identifier())
+							.append("\" ")
+							.append(COMMENTS_DASHES)
+							.append("*)\n");
 				}
 
-				final String separator = "";
-				flowAltStrings.add(PyToJavaUtils.join(flowString, separator));
+				flowAltStrings.add(nodeBuilder.toString());
 			}
 
 			//Generate var
 			identSet.add("ident1"); //For initial/final
-			stringBuilder.append("var ");
+			stringBuilder.append(Utils.indentLNT(1))
+					.append("var");
 			boolean first = true;
+			final int minIndent;
+			final boolean newLineRequiredForVars = identSet.size() > MAX_VARS_PER_LINE - 1; //-1 because we add ``mergeid'' at the end
+
+			if (newLineRequiredForVars)
+			{
+				stringBuilder.append("\n").append(Utils.indentLNT(2));
+				nbCharCurrentLine = minIndent = 6;
+			}
+			else
+			{
+				stringBuilder.append(" ");
+				nbCharCurrentLine = minIndent = 7;
+			}
 
 			for (String currentIdent : new HashSet<>(identSet)) //TODO Intéret ? Randomiser ?
 			{
-				if (first)
+				final String identAndComa = currentIdent + ", ";
+
+				if (identAndComa.length() + nbCharCurrentLine > MAX_CHAR_PER_LINE)
 				{
-					first = false;
+					stringBuilder.append("\n").append(Utils.indent(minIndent));
+					nbCharCurrentLine = minIndent + identAndComa.length();
 				}
 				else
 				{
-					stringBuilder.append(",");
+					nbCharCurrentLine += identAndComa.length();
 				}
 
-				stringBuilder.append(currentIdent);
-				stringBuilder.append(": ID");
+				stringBuilder.append(identAndComa);
 			}
 
-			stringBuilder.append(", mergeid: ID in \n");
-			stringBuilder.append("alt \n");
+			final int nbCharToConsider = newLineRequiredForVars ? 11 : 14;
 
-			//Handle initial and final
-			stringBuilder.append("(*---------- Initial node ---------------------*)\n");
-			stringBuilder.append(this.initial.firstOutgoingFlow().identifier());
-			stringBuilder.append("_begin (?ident1 of ID);");
+			if (nbCharCurrentLine + nbCharToConsider > MAX_CHAR_PER_LINE)
+			{
+				stringBuilder.append("\n").append(Utils.indent(minIndent));
+			}
+
+			stringBuilder.append("mergeid: ID");
+
+			if (newLineRequiredForVars)
+			{
+				stringBuilder.append("\n").append(Utils.indentLNT(1));
+			}
+			else
+			{
+				stringBuilder.append(" ");
+			}
+
+			stringBuilder.append("in\n");
+			stringBuilder.append(Utils.indentLNT(2));
+			stringBuilder.append("alt\n");
+
+			//Handle initial node
+			stringBuilder.append(Utils.indent(nodeMinIndent))
+					.append("(*")
+					.append(COMMENTS_DASHES)
+					.append(" Initial node ")
+					.append(COMMENTS_DASHES)
+					.append("*)\n");
+			stringBuilder.append(Utils.indent(nodeMinIndent))
+					.append(this.initial.firstOutgoingFlow().identifier())
+					.append("_begin (?")
+					.append(ident1)
+					.append(" of ID);\n")
+			;
 			stringBuilder.append(this.getSchedulerString(
 					new ArrayList<>(),
 					Collections.singletonList(ident1),
 					SYNC_STORE,
 					MERGE_STORE,
 					PAR_STORE,
-					0
+			9
 			));
-			stringBuilder.append("\n[]\n");
-
-			first = true;
 
 			for (String flow : flowAltStrings)
 			{
-				if (first)
-				{
-					first = false;
-				}
-				else
-				{
-					stringBuilder.append("\n[]");
-				}
-
-				stringBuilder.append(flow);
+				stringBuilder.append("\n")
+						.append(Utils.indentLNT(2))
+						.append("[]\n")
+						.append(flow);
 			}
 
-			stringBuilder.append("\n[]\n\n");
-			stringBuilder.append("(*----------------- Final node ----------------------*)\n");
-			stringBuilder.append(this.finals.get(0).firstIncomingFlow().identifier());
-			stringBuilder.append("_finish (?ident1 of ID);");
+			stringBuilder.append("\n")
+					.append(Utils.indentLNT(2))
+					.append("[]\n")
+			;
+
+			//Handle final node
+			stringBuilder.append(Utils.indent(nodeMinIndent))
+					.append("(*")
+					.append(COMMENTS_DASHES)
+					.append(" Final node ")
+					.append(COMMENTS_DASHES)
+					.append("*)\n");
+
+			stringBuilder.append(Utils.indent(nodeMinIndent))
+					.append(this.initial.firstOutgoingFlow().identifier())
+					.append("_finish (?")
+					.append(ident1)
+					.append(" of ID);\n");
+
 			stringBuilder.append(this.getSchedulerString(
 					Collections.singletonList(ident1),
 					new ArrayList<>(),
 					SYNC_STORE,
 					MERGE_STORE,
 					PAR_STORE,
-					0
+					9
 			));
-			stringBuilder.append("\n[]\n");
-			stringBuilder.append(" mergeid := any ID where member(mergeid, mergestore);\n");
-			stringBuilder.append("if (is_merge_possible_v2(bpmn,activeflows,mergeid) and is_sync_done(bpmn, " +
-					"activeflows, syncstore, mergeid)) then\n");
-			stringBuilder.append("MoveOn(mergeid);");
 
-			if (!incJoinBeginList.isEmpty())
+			stringBuilder.append("\n")
+					.append(Utils.indentLNT(2))
+					.append("[]\n")
+					.append(Utils.indentLNT(3))
+					.append("mergeid := any ID where member (mergeid, mergestore);\n")
+					.append(Utils.indentLNT(3))
+					.append("if (is_merge_possible_v2 (bpmn, activeflows, mergeid)\n")
+					.append(Utils.indentLNT(3))
+					.append(Utils.indent(4))
+					.append("and is_sync_done (bpmn, activeflows, syncstore, mergeid))\n")
+					.append(Utils.indentLNT(3))
+					.append("then\n")
+					.append(Utils.indentLNT(4))
+					.append("MoveOn (mergeid);\n")
+			;
+
+			if (incJoinBeginBuilder.length() != 0)
 			{
-				stringBuilder.append("alt \n");
-				stringBuilder.append(PyToJavaUtils.join(incJoinBeginList, "[]\n"));
-				stringBuilder.append("end alt \n");
+				stringBuilder.append(Utils.indentLNT(4));
+				//TODO VOIR AVEC FRED SI COMPORTEMENT DIFFERENT SI ON ENLEVE LE ALT
+				stringBuilder.append("alt\n");
+				stringBuilder.append(incJoinBeginBuilder);
+				stringBuilder.append(Utils.indentLNT(4));
+				stringBuilder.append("end alt");
 			}
 			else
 			{
@@ -4228,31 +4501,61 @@ public class Pif2Lnt extends Pif2LntGeneric
 						SYNC_STORE,
 						MERGE_STORE,
 						PAR_STORE,
-						0
+						12
 				));
 			}
 
-			stringBuilder.append("else \n\n");
+			stringBuilder.append("\n");
+			stringBuilder.append(Utils.indentLNT(3));
+			stringBuilder.append("else\n");
+			stringBuilder.append(Utils.indentLNT(4));
 			stringBuilder.append("scheduler [");
-			stringBuilder.append(this.getFlowMsgs(false, 0).getLeft());
-			ArrayList<String> res = this.computeAddSynchroPoints(false);
 
-			if (!res.isEmpty())
+			final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(false, 23);
+
+			stringBuilder.append(flowMsgsAndLineLength.getLeft());
+			ArrayList<String> synchroPoints = this.computeAddSynchroPoints(false);
+			nbCharCurrentLine = flowMsgsAndLineLength.getRight() + 2;
+			stringBuilder.append(", ");
+
+			for (String synchroPoint : synchroPoints)
 			{
-				stringBuilder.append(",");
-				stringBuilder.append(PyToJavaUtils.join(res, ","));
+				final String synchroPointWithComa = synchroPoint + ", ";
+
+				if (synchroPointWithComa.length() + nbCharCurrentLine > MAX_CHAR_PER_LINE)
+				{
+					stringBuilder.append("\n").append(Utils.indent(23));
+					nbCharCurrentLine = 23 + synchroPointWithComa.length();
+				}
+				else
+				{
+					nbCharCurrentLine += synchroPointWithComa.length();
+				}
+
+				stringBuilder.append(synchroPointWithComa);
 			}
 
-			stringBuilder.append(", MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)\n");
-			stringBuilder.append("end if\n");
+			if (nbCharCurrentLine + 7 > MAX_CHAR_PER_LINE)
+			{
+				stringBuilder.append("\n").append(Utils.indent(23));
+			}
 
-			//Outflow of parallel merge
-			stringBuilder.append("\n[]\n");
-			stringBuilder.append(" mergeid := any ID where member(mergeid, parstore);\n");
-			stringBuilder.append(("if (is_merge_possible_par(bpmn,syncstore,mergeid)) then \n"));
+			stringBuilder.append("MoveOn]\n")
+					.append(Utils.indent(22))
+					.append("(activeflows, bpmn, syncstore, mergestore, parstore)\n")
+					.append(Utils.indentLNT(3))
+					.append("end if\n")
+					.append(Utils.indentLNT(2))
+					.append("[]\n")
+					.append(Utils.indentLNT(3))
+					.append("mergeid := any ID where member (mergeid, parstore);\n")
+					.append(Utils.indentLNT(3))
+					.append("if (is_merge_possible_par (bpmn, syncstore, mergeid)) then\n")
+			;
 
 			if (!parJoinBeginList.isEmpty())
 			{
+				stringBuilder.append(Utils.indentLNT(4));
 				stringBuilder.append("alt \n");
 				stringBuilder.append(PyToJavaUtils.join(parJoinBeginList, "[]\n"));
 				stringBuilder.append("end alt ");
@@ -4265,19 +4568,19 @@ public class Pif2Lnt extends Pif2LntGeneric
 						SYNC_STORE,
 						MERGE_STORE,
 						PAR_STORE,
-						0
+						12
 				));
 			}
 
 			stringBuilder.append("else \n\n");
 			stringBuilder.append("scheduler [");
-			stringBuilder.append(this.getFlowMsgs(false, 0).getLeft());
-			res = this.computeAddSynchroPoints(false);
+			stringBuilder.append(this.getFlowMsgsAndLineLength(false, 0).getLeft());
+			synchroPoints = this.computeAddSynchroPoints(false);
 
-			if (!res.isEmpty())
+			if (!synchroPoints.isEmpty())
 			{
 				stringBuilder.append(",");
-				stringBuilder.append(PyToJavaUtils.join(res, ","));
+				stringBuilder.append(PyToJavaUtils.join(synchroPoints, ","));
 			}
 
 			stringBuilder.append(", MoveOn] (activeflows, bpmn, syncstore, mergestore, parstore)\n");
@@ -4285,6 +4588,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			stringBuilder.append("end alt\n");
 			stringBuilder.append("end var\n");
 			stringBuilder.append("end process\n\n");
+			stringBuilder.append(STANDARD_LNT_SEPARATOR);
 		}
 
 		String getSchedulerString(final List<String> incIds,
@@ -4315,9 +4619,10 @@ public class Pif2Lnt extends Pif2LntGeneric
 				{
 					if (nbCharCurrentLine + outId.length() > MAX_CHAR_PER_LINE)
 					{
+						final int indentation = schedulerString.length() + unionString.length() + minIndent + 1;
 						schedulerStringBuilder.append("\n")
-								.append(Utils.indent(schedulerString.length() + unionString.length() + 1));
-						nbCharCurrentLine = minIndent + schedulerString.length() + unionString.length() + outId.length() + 1;
+								.append(Utils.indent(indentation));
+						nbCharCurrentLine = indentation + outId.length();
 					}
 					else
 					{
@@ -4344,9 +4649,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (nbCharCurrentLine + removeIdsString.length() > MAX_CHAR_PER_LINE)
 			{
-				schedulerStringBuilder.append("\n")
-						.append(Utils.indent(minIndent + schedulerString.length() + unionString.length()));
-				nbCharCurrentLine = minIndent + schedulerString.length() + unionString.length() + removeIdsString.length();
+				final int indentation = minIndent + schedulerString.length() + unionString.length();
+				schedulerStringBuilder.append("\n").append(Utils.indent(indentation));
+				nbCharCurrentLine = indentation + removeIdsString.length();
 			}
 			else
 			{
@@ -4354,7 +4659,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 
 			schedulerStringBuilder.append(removeIdsString);
-			final int removeIdsParamsMinIndent = schedulerStringBuilder.length() - firstIncId.length();
+			final int removeIdsParamsMinIndent = nbCharCurrentLine - firstIncId.length();
 
 			for (int j = 1; j < incIds.size(); j++)
 			{
@@ -4364,8 +4669,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				if (nbCharCurrentLine + incId.length() > MAX_CHAR_PER_LINE)
 				{
-					schedulerStringBuilder.append("\n")
-							.append(Utils.indent(removeIdsParamsMinIndent));
+					schedulerStringBuilder.append("\n").append(Utils.indent(removeIdsParamsMinIndent));
 					nbCharCurrentLine = removeIdsParamsMinIndent + incId.length();
 				}
 				else
@@ -4383,8 +4687,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (nbCharCurrentLine + activeFlows.length() > MAX_CHAR_PER_LINE)
 			{
-				schedulerStringBuilder.append("\n")
-						.append(Utils.indent(removeIdsParamsMinIndent));
+				schedulerStringBuilder.append("\n").append(Utils.indent(removeIdsParamsMinIndent));
 				nbCharCurrentLine = removeIdsParamsMinIndent + activeFlows.length();
 			}
 			else
@@ -4396,8 +4699,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (nbCharCurrentLine + 6 > MAX_CHAR_PER_LINE)
 			{
-				schedulerStringBuilder.append("\n")
-						.append(Utils.indent(minIndent + schedulerString.length()));
+				schedulerStringBuilder.append("\n").append(Utils.indent(minIndent + schedulerString.length()));
 				nbCharCurrentLine = minIndent + schedulerString.length() + 6;
 			}
 			else
@@ -4409,8 +4711,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (nbCharCurrentLine + syncString.length() + 2 > MAX_CHAR_PER_LINE)
 			{
-				schedulerStringBuilder.append("\n")
-						.append(Utils.indent(minIndent + schedulerString.length()));
+				schedulerStringBuilder.append("\n").append(Utils.indent(minIndent + schedulerString.length()));
 				nbCharCurrentLine = minIndent + schedulerString.length() + syncString.length() + 2;
 			}
 			else
@@ -4423,8 +4724,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (nbCharCurrentLine + mergeStoreString.length() + 2 > MAX_CHAR_PER_LINE)
 			{
-				schedulerStringBuilder.append("\n")
-						.append(Utils.indent(minIndent + schedulerString.length()));
+				schedulerStringBuilder.append("\n").append(Utils.indent(minIndent + schedulerString.length()));
 				nbCharCurrentLine = minIndent + schedulerString.length() + mergeStoreString.length() + 2;
 			}
 			else
@@ -4437,8 +4737,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (nbCharCurrentLine + parStoreString.length() + 1 > MAX_CHAR_PER_LINE)
 			{
-				schedulerStringBuilder.append("\n")
-						.append(Utils.indent(minIndent + schedulerString.length()));
+				schedulerStringBuilder.append("\n").append(Utils.indent(minIndent + schedulerString.length()));
 			}
 
 			schedulerStringBuilder.append(parStoreString)
@@ -4809,7 +5108,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				if (nbFlows > 0)
 				{
 					lntBuilder.append(", ")
-							.append(this.getFlowMsgs(true, 0).getLeft());
+							.append(this.getFlowMsgsAndLineLength(true, 0).getLeft());
 					//We hide additional synchros for or splits/joins as well
 					int nb = 0;
 
@@ -4840,7 +5139,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				if (nbFlows > 0)
 				{
-					lntBuilder.append(this.getFlowMsgs(false, 0).getLeft());
+					lntBuilder.append(this.getFlowMsgsAndLineLength(false, 0).getLeft());
 				}
 
 				if (!synchroPoints.isEmpty())
@@ -4859,7 +5158,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				//Synchronizations on all begin/finish flows
 				if (nbFlows > 0)
 				{
-					lntBuilder.append(this.getFlowMsgs(false, 0).getLeft());
+					lntBuilder.append(this.getFlowMsgsAndLineLength(false, 0).getLeft());
 				}
 			}
 
