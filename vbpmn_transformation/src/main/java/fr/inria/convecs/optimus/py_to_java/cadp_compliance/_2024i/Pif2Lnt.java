@@ -1006,7 +1006,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 			{
 				final String flowId = "incf (?ident of ID);";
 				stringBuilder.append(flowId);
-				nbCharCurrentLine = flowId.length() + 9;
 			}
 			else
 			{
@@ -2645,11 +2644,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 				{
 					lineJumped = true;
 					stringBuilder.append("\n").append(Utils.indent(PROCESS_INDENT_LENGTH));
-					nbCharCurrentLine = PROCESS_INDENT_LENGTH + nbCharToConsider;
-				}
-				else
-				{
-					nbCharCurrentLine += nbCharToConsider;
 				}
 
 				stringBuilder.append("(mergeid: ID)");
