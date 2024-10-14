@@ -73,8 +73,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 	 */
 	public boolean dumpAlphabet(final ArrayList<String> alphabet,
 								final StringBuilder stringBuilder,
-							 	final boolean addAny,
-							 	final boolean addLtlDummyLoopyLabel)
+								final boolean addAny,
+								final boolean addLtlDummyLoopyLabel)
 	{
 		final int nbElem = alphabet.size();
 		boolean lineJumped = false;
@@ -141,13 +141,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		return lineJumped;
-	}
-
-	public void dumpAlphabet(final ArrayList<String> alphabet,
-							 final StringBuilder stringBuilder,
-							 final boolean addAny)
-	{
-		this.dumpAlphabet(alphabet, stringBuilder, addAny, false);
 	}
 
 	/**
@@ -306,8 +299,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		abstract void writeMainLnt(final StringBuilder stringBuilder,
 								   final int baseIndent);
 
-		abstract void processLnt(final StringBuilder stringBuilder,
-								 final int baseIndent);
+		abstract void processLnt(final StringBuilder stringBuilder);
 
 		abstract void writeLnt(final StringBuilder stringBuilder,
 							   final int baseIndent);
@@ -335,7 +327,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		//Generates the (generic) process for flows, only once
-		void writeLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void writeLnt(final StringBuilder stringBuilder)
 		{
 			stringBuilder.append("process flow [begin, finish: any] (ident:ID) is\n");
 			stringBuilder.append(Utils.indentLNT(1));
@@ -348,12 +340,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 			stringBuilder.append("end loop\n");
 			stringBuilder.append("end process\n\n");
 			stringBuilder.append(STANDARD_LNT_SEPARATOR);
-		}
-
-		//A normal flow cannot be a default flow
-		boolean isDefault()
-		{
-			return false;
 		}
 
 		//Returns the source node
@@ -373,9 +359,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return this.identifier;
 		}
 
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			final int argsMinIndent = baseIndent + 6;
+			final int argsMinIndent = 21 + 2;
 			int nbCharCurrentLine = argsMinIndent + this.identifier.length() + 2;
 
 			stringBuilder.append("flow (");
@@ -407,40 +393,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			stringBuilder.append(this.target.identifier());
 			stringBuilder.append(")");
-		}
-	}
-
-	/**
-	 * Class for ConditionalFlows
-	 */
-	class ConditionalFlow extends Flow
-	{
-		private final String condition;
-
-		ConditionalFlow(String identifier,
-						Node source,
-						Node target,
-						String condition)
-		{
-			super(identifier, source, target);
-			this.condition = condition;
-		}
-
-		// Generates the process for conditional flows
-		@Override
-		void writeLnt(final StringBuilder stringBuilder, final int baseIndent)
-		{
-			//TODO: Translate the condition too
-			stringBuilder.append("process conditionalflow [begin:any, finish:any] (ident: ID) is\n");
-			stringBuilder.append(" loop begin (ident) ; finish (ident) end loop\n");
-			stringBuilder.append("end process\n");
-		}
-
-		//A conditional flow is default iff the condition attribute contains "default"
-		@Override
-		boolean isDefault()
-		{
-			return this.condition.equals("default");
 		}
 	}
 
@@ -498,7 +450,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
 			final String initial = "initial (";
 
@@ -507,27 +459,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 					.append(", ")
 			;
 
-			if (baseIndent + this.identifier.length() + initial.length() + 2 > MAX_CHAR_PER_LINE)
+			if (21 + this.identifier.length() + initial.length() + 3 +
+					this.outgoingFlows.get(0).identifier().length() > MAX_CHAR_PER_LINE)
 			{
-				stringBuilder.append("\n").append(baseIndent + initial.length());
+				stringBuilder.append("\n").append(Utils.indent(21 + initial.length()));
 			}
 
-			stringBuilder.append(this.outgoingFlows.get(0).identifier())
-							.append(")");
-		}
-
-		HashMap<String, String> schedulerLnt()
-		{
-			final String flowString = this.outgoingFlows.get(0).identifier() + "_begin (?ident of ID)";
-			final String incIds = "{ident}";
-			final String outIds = "{}";
-
-			return new HashMap<String, String>()
-			{{
-				put("flowString", flowString);
-				put("incIds", incIds);
-				put("outIds", outIds);
-			}};
+			stringBuilder.append(this.outgoingFlows.get(0).identifier()).append(")");
 		}
 	}
 
@@ -586,18 +524,19 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * Seeks an or join, for an initial event, just a recursive call on the target node of the outgoing flow
 		 *
-		 * @param visited
-		 * @param depth
-		 * @return
+		 * @param visited the list of visited nodes
+		 * @param depth   the current depth
+		 * @return the list of reachable or joins if any
 		 */
 		@Override
-		ArrayList<Pair<String, Integer>> reachableOrJoin(ArrayList<Pair<String, Integer>> visited, int depth)
+		ArrayList<Pair<String, Integer>> reachableOrJoin(ArrayList<Pair<String, Integer>> visited,
+														 int depth)
 		{
 			return new ArrayList<>();
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
 			final String finalStr = "final (";
 			final int argsIndent = finalStr.length();
@@ -613,15 +552,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			final Flow firstFlow = this.incomingFlows.remove(0);
 
-			if (firstFlow.identifier().length() + baseIndent + argsIndent + this.identifier.length() + 2 > MAX_CHAR_PER_LINE)
+			if (firstFlow.identifier().length() + 21 + argsIndent + this.identifier.length() + 4 > MAX_CHAR_PER_LINE)
 			{
-				stringBuilder.append("\n").append(Utils.indent(baseIndent + argsIndent));
-				nbCharCurrentLine = baseIndent + argsIndent;
+				stringBuilder.append("\n").append(Utils.indent(21 + argsIndent));
+				nbCharCurrentLine = 21 + argsIndent;
 			}
 			else
 			{
 				stringBuilder.append(" ");
-				nbCharCurrentLine = baseIndent + argsIndent + this.identifier.length() + 1;
+				nbCharCurrentLine = 21 + argsIndent + this.identifier.length() + 2;
 			}
 
 			flowMinIndent = nbCharCurrentLine + 1;
@@ -650,20 +589,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			this.incomingFlows.add(0, firstFlow);
 		}
-
-		HashMap<String, String> schedulerLnt()
-		{
-			final String flowString = this.incomingFlows.get(0).identifier() + "_finish (?ident of ID)";
-			final String incIds = "{}";
-			final String outIds = "{ident}";
-
-			return new HashMap<String, String>()
-			{{
-				put("flowString", flowString);
-				put("incIds", incIds);
-				put("OutIds", outIds);
-			}};
-		}
 	}
 
 	/**
@@ -680,11 +605,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			super(identifier, incomingFlows, outgoingFlows);
 			this.message = message;
-		}
-
-		String getMessage()
-		{
-			return this.message;
 		}
 
 		@Override
@@ -734,10 +654,10 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
 			//TODO Vérifier
-			this.writeLnt(stringBuilder, baseIndent);
+			this.writeLnt(stringBuilder, 21);
 		}
 
 		/**
@@ -824,9 +744,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(stringBuilder, baseIndent); //TODO vérifier
+			this.writeLnt(stringBuilder, 21); //TODO vérifier
 		}
 
 		ArrayList<String> alpha()
@@ -870,9 +790,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(stringBuilder, baseIndent); //TODO Vérifier
+			this.writeLnt(stringBuilder, 21); //TODO Vérifier
 		}
 
 		ArrayList<String> alpha()
@@ -907,16 +827,15 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			final int argsMinIndent = baseIndent + 6;
+			final int argsMinIndent = 21 + 6;
 			final int incFlowsMinIndent;
 			final int outFlowMinIndent;
 
 			stringBuilder.append("task (");
 			stringBuilder.append(this.identifier);
 			stringBuilder.append(",");
-			boolean first = true;
 			int nbCharCurrentLine = argsMinIndent + this.identifier.length() + 1;
 
 			if (this.incomingFlows.isEmpty())
@@ -1032,7 +951,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					}
 
 					stringBuilder.append(flowId)
-									.append(", ");
+							.append(", ");
 					incCounter++;
 				}
 			}
@@ -1103,7 +1022,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 			{
 				final String flowId = "incf (?ident of ID);";
 				stringBuilder.append(flowId);
-				nbCharCurrentLine = flowId.length() + 9;
 			}
 			else
 			{
@@ -1294,23 +1212,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			stringBuilder.append("]");
 		}
-
-		void dumpMaude(final StringBuilder stringBuilder)
-		{
-			final Random random = new Random();
-			final int randomInt = random.nextInt(51);
-			stringBuilder.append("        task(");
-			stringBuilder.append(this.identifier);
-			stringBuilder.append(",\"");
-			stringBuilder.append(this.identifier);
-			stringBuilder.append("\",");
-			stringBuilder.append(this.incomingFlows.get(0).identifier());
-			stringBuilder.append(",");
-			stringBuilder.append(this.outgoingFlows.get(0).identifier());
-			stringBuilder.append(",");
-			stringBuilder.append(randomInt);
-			stringBuilder.append(")");
-		}
 	}
 
 	/**
@@ -1332,10 +1233,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 		void processLnt(final StringBuilder stringBuilder,
 						final String pattern,
-						final String type,
-						final int baseIndent)
+						final String type)
 		{
-			final int argsMinIndent = baseIndent + 9;
+			final int argsMinIndent = 21 + 9;
 			final int incFlowMinIndent;
 			final int outFlowMinIndent;
 			int nbCharCurrentLine = argsMinIndent + this.identifier.length() + 2;
@@ -1474,7 +1374,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * Generates process instantiation for all split gateways
 		 *
-		 * @param stringBuilder
+		 * @param stringBuilder the builder to which the gateway should be dumped
 		 */
 		void writeMainLnt(final StringBuilder stringBuilder,
 						  final int baseIndent)
@@ -1537,13 +1437,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return res;
 		}
 
-		void dumpMaude(final StringBuilder stringBuilder,
-					   final String nameOp)
+		void dumpMaude(final StringBuilder stringBuilder)
 		{
 			stringBuilder.append("        split(");
 			stringBuilder.append(this.identifier);
 			stringBuilder.append(",");
-			stringBuilder.append(nameOp);
+			stringBuilder.append("inclusive");
 			stringBuilder.append(",");
 			stringBuilder.append(this.incomingFlows.get(0).identifier());
 			stringBuilder.append(",(");
@@ -1585,35 +1484,17 @@ public class Pif2Lnt extends Pif2LntGeneric
 			this.correspOrJoin = correspOrJoin;
 		}
 
-		/**
-		 * Checks whether the set of outgoing flows contains a default flow
-		 *
-		 * @return
-		 */
-		boolean existDefaultFlow()
+		@Override
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			for (Flow f : this.outgoingFlows)
-			{
-				if (f.isDefault())
-				{
-					return true;
-				}
-			}
-
-			return false;
+			this.writeLnt(stringBuilder, 21); //TODO Vérifier
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
-		{
-			this.writeLnt(stringBuilder, baseIndent); //TODO Vérifier
-		}
-
-		@Override
-		void writeLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void writeLnt(final StringBuilder stringBuilder,
+					  final int baseIndent)
 		{
 			final int nbOut = this.outgoingFlows.size();
-			final boolean existsDefault = this.existDefaultFlow();
 			//TODO: update the translation to consider properly the default semantics (if there is such a branch)
 
 			//We translate the inclusive split by enumerating all combinations in a alt / par
@@ -1628,19 +1509,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			final ArrayList<ArrayList<String>> allCombi = computeAllCombinations(alphaOut);
 			final int nbt = allCombi.size();
-
-			final StringBuilder builder = new StringBuilder();
-			for (ArrayList<String> collection : allCombi)
-			{
-				builder.append("Collection: [");
-
-				for (String s : collection)
-				{
-					builder.append(s).append(",");
-				}
-
-				builder.append("]\n");
-			}
 
 			final String processIdentifier = "process orsplit_" + this.identifier + " [incf, ";
 			stringBuilder.append(processIdentifier);
@@ -1676,13 +1544,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 
 			if (nbt > 0
-				&& (!isBalanced || !this.correspOrJoin.isEmpty()))
+					&& (!isBalanced || !this.correspOrJoin.isEmpty()))
 			{
 				stringBuilder.append(", ");
 				nbCharCurrentLine += 2;
 				int counter = 1;
 
-				for (Collection<String> combi : allCombi) //TODO Bizarre ....
+				for (Collection<String> ignored : allCombi) //TODO Bizarre ....
 				{
 					final String identifier = (isBalanced ? this.correspOrJoin : this.identifier) + "_" + counter;
 
@@ -1871,13 +1739,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * Generates process instantiation for main LNT process.
 		 *
-		 * @param stringBuilder
+		 * @param stringBuilder the builder to which the gateway should be dumped
 		 */
 		void writeMainLnt(final StringBuilder stringBuilder,
 						  final int baseIndent)
 		{
 			if (!this.correspOrJoin.isEmpty()
-				|| !isBalanced)
+					|| !isBalanced)
 			{
 				final int nbOut = this.outgoingFlows.size();
 				final ArrayList<String> alphaOut = new ArrayList<>();
@@ -1900,7 +1768,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					{
 						int counter = 1;
 
-						for (ArrayList<String> combination : allCombinations) //TODO Bizarre...
+						for (ArrayList<String> ignored : allCombinations) //TODO Bizarre...
 						{
 							final String identifier = this.correspOrJoin + "_" + counter;
 
@@ -1971,7 +1839,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					nbCharCurrentLine += 2;
 					int counter = 1;
 
-					for (ArrayList<String> combination : allCombinations)
+					for (ArrayList<String> ignored : allCombinations)
 					{
 						final String identifier = (isBalanced ? this.correspOrJoin : this.identifier) + "_" + counter;
 
@@ -2010,8 +1878,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 		 * For an or split, if not visited yet, recursive call on the target nodes of all outgoing flows.
 		 * We increase the depth, to distinguish it from the split or being analyzed.
 		 *
-		 * @param visited
-		 * @param depth
+		 * @param visited the list of visited nodes
+		 * @param depth   the depth
 		 * @return the list of reachable or joins.
 		 */
 		@Override
@@ -2039,7 +1907,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			if (isBalanced)
 			{
-				super.dumpMaude(stringBuilder, "inclusive");
+				super.dumpMaude(stringBuilder);
 			}
 			else
 			{
@@ -2067,14 +1935,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 				stringBuilder.append("))");
 			}
 		}
-
-		void schedulerLnt()
-		{
-			final String lnt = this.incomingFlows.get(0).identifier() + "_finish (?ident1 of ID);";
-			final HashMap<String, String> idMap = new HashMap<>();
-			int idCounter = 1;
-			//TODO A revoir, le code Python semble très étrange....
-		}
 	}
 
 	/**
@@ -2090,16 +1950,16 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(stringBuilder, baseIndent); //TODO Vérifier
+			this.writeLnt(stringBuilder, 21); //TODO Vérifier
 		}
 
 		/**
 		 * Generates the process for exclusive split gateway.
 		 * Takes as input the number of outgoing flows.
 		 *
-		 * @param stringBuilder
+		 * @param stringBuilder the builder to which the gateway should be dumped
 		 */
 		@Override
 		void writeLnt(final StringBuilder stringBuilder, final int baseIndent)
@@ -2188,41 +2048,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			return super.reachableOrJoin(visited, depth);
 		}
-
-		void dumpMaude(final StringBuilder stringBuilder)
-		{
-			if (isBalanced)
-			{
-				super.dumpMaude(stringBuilder, "exclusive");
-			}
-			else
-			{
-				stringBuilder.append("        split(");
-				stringBuilder.append(this.identifier);
-				stringBuilder.append(",exclusive,");
-				stringBuilder.append(this.incomingFlows.get(0).identifier());
-				stringBuilder.append(",(");
-				int counter = this.outgoingFlows.size();
-				double proba = ((1d / (double) counter) * 1000.0) / 1000.0;
-
-				for (Flow outFlow : this.outgoingFlows)
-				{
-					counter--;
-					stringBuilder.append("(");
-					stringBuilder.append(outFlow.identifier());
-					stringBuilder.append(",");
-					stringBuilder.append(proba);
-					stringBuilder.append(")");
-
-					if (counter > 0)
-					{
-						stringBuilder.append(" ");
-					}
-				}
-
-				stringBuilder.append("))");
-			}
-		}
 	}
 
 	/**
@@ -2238,19 +2063,20 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(stringBuilder, baseIndent); //TODO Vérifier
+			this.writeLnt(stringBuilder, 21); //TODO Vérifier
 		}
 
 		/**
 		 * Generates the process for parallel split gateway.
 		 * Takes as input the number of outgoing flows.
 		 *
-		 * @param stringBuilder
+		 * @param stringBuilder the builder to which the gateway should be dumped
 		 */
 		@Override
-		void writeLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void writeLnt(final StringBuilder stringBuilder,
+					  final int baseIndent)
 		{
 			final int nbOut = this.outgoingFlows.size();
 			boolean lineJumped = false;
@@ -2407,11 +2233,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			return super.reachableOrJoin(visited, depth);
 		}
-
-		void dumpMaude(final StringBuilder stringBuilder)
-		{
-			super.dumpMaude(stringBuilder, "parallel");
-		}
 	}
 
 	/**
@@ -2429,7 +2250,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * Generates process instantiation for all join gateways.
 		 *
-		 * @param stringBuilder
+		 * @param stringBuilder the builder to which the gateway should be dumped
 		 */
 		void writeMainLnt(final StringBuilder stringBuilder,
 						  final int baseIndent)
@@ -2478,8 +2299,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * For a join (generic), if not visited yet, recursive call on the target node of the outgoing flow.
 		 *
-		 * @param visited
-		 * @param depth
+		 * @param visited the list of visited nodes
+		 * @param depth   the depth
 		 * @return the list of reachable or joins
 		 */
 		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
@@ -2493,37 +2314,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final ArrayList<Pair<String, Integer>> copy = new ArrayList<>(visited);
 			copy.add(Pair.of(this.identifier, depth));
 			return this.outgoingFlows.get(0).getTarget().reachableOrJoin(copy, depth);
-		}
-
-		/**
-		 * Dumps a Maude line of code into the given file.
-		 *
-		 * @param stringBuilder
-		 */
-		void dumpMaude(final StringBuilder stringBuilder,
-					   final String nameOp)
-		{
-			stringBuilder.append("        merge(");
-			stringBuilder.append(this.identifier);
-			stringBuilder.append(",");
-			stringBuilder.append(nameOp);
-			stringBuilder.append(",(");
-			int nbInc = this.incomingFlows.size();
-
-			for (Flow ofl : this.incomingFlows) //TODO : Bizarre "ofl" VS "incomingFlows"
-			{
-				nbInc--;
-				stringBuilder.append(ofl.identifier());
-
-				if (nbInc > 0)
-				{
-					stringBuilder.append(",");
-				}
-			}
-
-			stringBuilder.append("),");
-			stringBuilder.append(this.outgoingFlows.get(0).identifier());
-			stringBuilder.append(")");
 		}
 	}
 
@@ -2548,16 +2338,16 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(stringBuilder, baseIndent); //TODO Vérifier
+			this.writeLnt(stringBuilder, 21); //TODO Vérifier
 		}
 
 		/**
 		 * Generates the process for inclusive join gateway.
 		 * Takes as input the number of incoming flows.
 		 *
-		 * @param stringBuilder
+		 * @param stringBuilder the builder to which the gateway should be dumped
 		 */
 		@Override
 		void writeLnt(final StringBuilder stringBuilder, final int baseIndent)
@@ -2626,13 +2416,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				//we add to the alphabet potential additional synchronization points
 				if (nbCombi > 0
-					&& !this.correspondingOrSplit.isEmpty())
+						&& !this.correspondingOrSplit.isEmpty())
 				{
 					int counter = 1;
 					stringBuilder.append(", ");
 					nbCharCurrentLine += 2;
 
-					for (ArrayList<String> combination : allCombinations)
+					for (ArrayList<String> ignored : allCombinations)
 					{
 						final String identifier = this.identifier + "_" + counter;
 
@@ -2774,8 +2564,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 						}
 
 						stringBuilder.append("\n")
-									.append(Utils.indentLNT(5))
-									.append("end par");
+								.append(Utils.indentLNT(5))
+								.append("end par");
 					}
 					else
 					{
@@ -2870,11 +2660,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 				{
 					lineJumped = true;
 					stringBuilder.append("\n").append(Utils.indent(PROCESS_INDENT_LENGTH));
-					nbCharCurrentLine = PROCESS_INDENT_LENGTH + nbCharToConsider;
-				}
-				else
-				{
-					nbCharCurrentLine += nbCharToConsider;
 				}
 
 				stringBuilder.append("(mergeid: ID)");
@@ -2959,7 +2744,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					{
 						int counter = 1;
 
-						for (ArrayList<String> combination : allCombinations)
+						for (ArrayList<String> ignored : allCombinations)
 						{
 							final String identifier = this.identifier + "_" + counter;
 
@@ -3040,7 +2825,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 						stringBuilder.append(", ");
 						nbCharCurrentLine += 2;
 
-						for (ArrayList<String> combination : allCombinations)
+						for (ArrayList<String> ignored : allCombinations)
 						{
 							final String identifier = this.identifier + "_" + counter;
 
@@ -3151,8 +2936,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 		 * For an or join, if not visited yet, recursive call on the target node of the outgoing flow.
 		 * We store the result and we decrease the depth.
 		 *
-		 * @param visited
-		 * @param depth
+		 * @param visited the list of visited nodes
+		 * @param depth   the depth
 		 * @return the list of reachable or joins
 		 */
 		ArrayList<Pair<String, Integer>> reachableOrJoin(final ArrayList<Pair<String, Integer>> visited,
@@ -3172,11 +2957,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			return result;
 		}
-
-		void dumpMaude(final StringBuilder stringBuilder)
-		{
-			super.dumpMaude(stringBuilder, "inclusive");
-		}
 	}
 
 	/**
@@ -3192,16 +2972,16 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(stringBuilder, baseIndent); //TODO Vérifier
+			this.writeLnt(stringBuilder, 21); //TODO Vérifier
 		}
 
 		/**
 		 * Generates the process for exclusive join gateway.
 		 * Takes as input the number of incoming flows.
 		 *
-		 * @param stringBuilder
+		 * @param stringBuilder the builder to which the gateway should be dumped
 		 */
 		@Override
 		void writeLnt(final StringBuilder stringBuilder, final int baseIndent)
@@ -3299,11 +3079,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			return super.reachableOrJoin(visited, depth);
 		}
-
-		void dumpMaude(final StringBuilder stringBuilder)
-		{
-			super.dumpMaude(stringBuilder, "exclusive");
-		}
 	}
 
 	/**
@@ -3319,16 +3094,16 @@ public class Pif2Lnt extends Pif2LntGeneric
 		}
 
 		@Override
-		void processLnt(final StringBuilder stringBuilder, final int baseIndent)
+		void processLnt(final StringBuilder stringBuilder)
 		{
-			this.writeLnt(stringBuilder, baseIndent); //TODO Vérifier
+			this.writeLnt(stringBuilder, 21); //TODO Vérifier
 		}
 
 		/**
 		 * Generates the process for parallel join gateway.
 		 * Takes as input the number of incoming flows.
 		 *
-		 * @param stringBuilder
+		 * @param stringBuilder the builder to which the gateway should be dumped
 		 */
 		@Override
 		void writeLnt(final StringBuilder stringBuilder, final int baseIndent)
@@ -3491,11 +3266,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			return super.reachableOrJoin(visited, depth);
 		}
-
-		void dumpMaude(final StringBuilder stringBuilder)
-		{
-			super.dumpMaude(stringBuilder, "parallel");
-		}
 	}
 
 	/**
@@ -3522,11 +3292,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 		String name()
 		{
 			return this.name;
-		}
-
-		Node initialNode()
-		{
-			return this.initial;
 		}
 
 		Node getNode(final String identifier)
@@ -3586,7 +3351,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * Computes the process alphabet
 		 *
-		 * @return
+		 * @return the process alphabet
 		 */
 		ArrayList<String> alpha()
 		{
@@ -3627,9 +3392,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * Computes the list with the additional synchronization points for corresponding or splits/joins.
 		 *
-		 * @return
+		 * @return the list of synchronisation points
 		 */
-		ArrayList<String> computeAddSynchroPoints()
+		ArrayList<String> computeAddSynchroPoints(final boolean needCorrespondingJoin)
 		{
 			final ArrayList<String> res = new ArrayList<>();
 
@@ -3637,46 +3402,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 			{
 				if (n instanceof OrSplitGateway)
 				{
-					if (!((OrSplitGateway) n).getCorrespOrJoin().isEmpty())
+					if (needCorrespondingJoin
+							&& ((OrSplitGateway) n).getCorrespOrJoin().isEmpty())
 					{
-						final ArrayList<String> alphaOut = new ArrayList<>();
-						int nb = 1;
-
-						while (nb <= n.outgoingFlows().size())
-						{
-							alphaOut.add("outf_" + nb);
-							nb++;
-						}
-
-						final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(alphaOut);
-						final int nbCombi = allCombinations.size();
-						int counter = 1;
-
-						for (ArrayList<String> combination : allCombinations)
-						{
-							res.add(((OrSplitGateway) n).getCorrespOrJoin() + "_" + counter);
-							counter++;
-						}
+						continue;
 					}
-				}
-			}
 
-			return res;
-		}
-
-		/**
-		 * Computes the list with the additional synchronization points for corresponding or splits/joins.
-		 *
-		 * @return
-		 */
-		ArrayList<String> computeAddSynchroPoints(final boolean any)
-		{
-			final ArrayList<String> res = new ArrayList<>();
-
-			for (Node n : this.nodes)
-			{
-				if (n instanceof OrSplitGateway)
-				{
 					final ArrayList<String> alphaOut = new ArrayList<>();
 					int nb = 1;
 
@@ -3687,12 +3418,11 @@ public class Pif2Lnt extends Pif2LntGeneric
 					}
 
 					final ArrayList<ArrayList<String>> allCombinations = computeAllCombinations(alphaOut);
-					final int nbCombi = allCombinations.size();
 					int counter = 1;
 
-					for (ArrayList<String> combination : allCombinations)
+					for (ArrayList<String> ignored : allCombinations)
 					{
-						res.add(n.identifier() + "_" + counter + (any ? ":any" : ""));
+						res.add(n.identifier() + "_" + counter);
 						counter++;
 					}
 				}
@@ -3701,43 +3431,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return res;
 		}
 
-		//Dumps the alphabet for the scheduler process
-		void dumpFlowsMsgs(final StringBuilder stringBuilder,
-						   final boolean withAny)
-		{
-			final int nbFlows = this.flows.size();
-			int counter = 1;
-
-			for (Flow fl : this.flows)
-			{
-				stringBuilder.append(fl.identifier());
-				stringBuilder.append("_begin");
-
-				if (withAny)
-				{
-					stringBuilder.append(":any");
-				}
-
-				stringBuilder.append(", ");
-				stringBuilder.append(fl.identifier());
-				stringBuilder.append("_finish");
-
-				if (withAny)
-				{
-					stringBuilder.append(":any");
-				}
-
-				counter++;
-
-				if (counter <= nbFlows)
-				{
-					stringBuilder.append(", ");
-				}
-			}
-		}
-
-		Pair<String, Integer> getFlowMsgsAndLineLength(final boolean withAny,
-													   final int minIndent,
+		Pair<String, Integer> getFlowMsgsAndLineLength(final int minIndent,
 													   final int nbCharsAlreadyWritten)
 		{
 			final StringBuilder flowBuilder = new StringBuilder();
@@ -3793,13 +3487,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 			return Pair.of(flowBuilder.toString(), nbCharCurrentLine);
 		}
 
-		void processDump(final StringBuilder stringBuilder,
-						 final int baseIndent)
+		void processDump(final StringBuilder stringBuilder)
 		{
 			final String returnProc = "return proc (";
 			final int argsIndent = returnProc.length() + 3;
 
-			stringBuilder.append("function p1(): BPROCESS is\n")
+			stringBuilder.append("function p1 (): BPROCESS is\n")
 					.append(Utils.indentLNT(1))
 					.append("return proc (")
 					.append(this.name)
@@ -3808,7 +3501,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					.append("{i (")
 			;
 
-			this.initial.processLnt(stringBuilder, baseIndent);
+			this.initial.processLnt(stringBuilder);
 			stringBuilder.append("),\n")
 					.append(Utils.indent(argsIndent + 1))
 			;
@@ -3828,7 +3521,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					stringBuilder.append(",\n").append(Utils.indent(argsIndent + 5));
 				}
 
-				fnode.processLnt(stringBuilder, baseIndent);
+				fnode.processLnt(stringBuilder);
 			}
 
 			stringBuilder.append("}),\n");
@@ -3836,7 +3529,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			//TODO: eliminate iterating twice / Separate printer class?
 			//handle tasks
 			stringBuilder.append(Utils.indent(argsIndent + 1))
-						.append("t ({");
+					.append("t ({");
 			first = true;
 
 			for (Node pNode : this.nodes)
@@ -3852,7 +3545,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 						stringBuilder.append(",\n").append(Utils.indent(argsIndent + 5));
 					}
 
-					pNode.processLnt(stringBuilder, baseIndent);
+					pNode.processLnt(stringBuilder);
 				}
 			}
 
@@ -3878,27 +3571,27 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					if (pNode instanceof XOrJoinGateway)
 					{
-						((XOrJoinGateway) pNode).processLnt(stringBuilder, "merge", "xor", baseIndent);
+						((XOrJoinGateway) pNode).processLnt(stringBuilder, "merge", "xor");
 					}
 					if (pNode instanceof XOrSplitGateway)
 					{
-						((XOrSplitGateway) pNode).processLnt(stringBuilder, "split", "xor", baseIndent);
+						((XOrSplitGateway) pNode).processLnt(stringBuilder, "split", "xor");
 					}
 					if (pNode instanceof OrJoinGateway)
 					{
-						((OrJoinGateway) pNode).processLnt(stringBuilder, "merge", "or", baseIndent);
+						((OrJoinGateway) pNode).processLnt(stringBuilder, "merge", "or");
 					}
 					if (pNode instanceof OrSplitGateway)
 					{
-						((OrSplitGateway) pNode).processLnt(stringBuilder, "split", "or", baseIndent);
+						((OrSplitGateway) pNode).processLnt(stringBuilder, "split", "or");
 					}
 					if (pNode instanceof AndJoinGateway)
 					{
-						((AndJoinGateway) pNode).processLnt(stringBuilder, "merge", "and", baseIndent);
+						((AndJoinGateway) pNode).processLnt(stringBuilder, "merge", "and");
 					}
 					if (pNode instanceof AndSplitGateway)
 					{
-						((AndSplitGateway) pNode).processLnt(stringBuilder, "split", "and", baseIndent);
+						((AndSplitGateway) pNode).processLnt(stringBuilder, "split", "and");
 					}
 				}
 			}
@@ -3920,7 +3613,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					stringBuilder.append(",\n").append(Utils.indent(argsIndent + 1));
 				}
 
-				flow.processLnt(stringBuilder, baseIndent);
+				flow.processLnt(stringBuilder);
 			}
 
 			stringBuilder.append("})\n");
@@ -3960,7 +3653,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			final String processIdentifier = "process scheduler [";
 			stringBuilder.append(processIdentifier);
-			final Pair<String, Integer> flowMsgsAndPosition = this.getFlowMsgsAndLineLength(false, processIdentifier.length(), 0);
+			final Pair<String, Integer> flowMsgsAndPosition = this.getFlowMsgsAndLineLength(processIdentifier.length(), processIdentifier.length());
 			stringBuilder.append(flowMsgsAndPosition.getLeft());
 			//Add split synchro params
 			final ArrayList<String> synchroParams = this.computeAddSynchroPoints(false);
@@ -4000,7 +3693,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			stringBuilder.append(Utils.indent(processIdentifier.length() - 1));
 			stringBuilder.append("(activeflows: IDS, bpmn: BPROCESS, syncstore: IDS,\n");
 			stringBuilder.append(Utils.indent(processIdentifier.length()));
-			stringBuilder.append("mergestore:IDS, parstore:IDS)\n");
+			stringBuilder.append("mergestore: IDS, parstore: IDS)\n");
 			stringBuilder.append("is\n");
 
 			final ArrayList<String> identSet = new ArrayList<>();
@@ -4036,12 +3729,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 					nodeBuilder.append(outFlowIdentifier);
 					//nodeBuilder.append(Utils.indent(nodeMinIndent));
 					nodeBuilder.append(this.getSchedulerString(
-						Collections.singletonList(ident1),
-						Collections.singletonList(ident2),
-						SYNC_STORE,
-						MERGE_STORE,
-						PAR_STORE,
-						nodeMinIndent
+							Collections.singletonList(ident1),
+							Collections.singletonList(ident2),
+							SYNC_STORE,
+							MERGE_STORE,
+							PAR_STORE,
+							nodeMinIndent
 					));
 
 					identSet.add(ident1);
@@ -4095,12 +3788,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 						identSet.add(currentIdent);
 						nodeBuilder.append(this.getSchedulerString(
-							Collections.singletonList(ident1),
-							Collections.singletonList(currentIdent),
-							SYNC_STORE,
-							MERGE_STORE,
-							PAR_STORE,
-							nodeMinIndent + 3
+								Collections.singletonList(ident1),
+								Collections.singletonList(currentIdent),
+								SYNC_STORE,
+								MERGE_STORE,
+								PAR_STORE,
+								nodeMinIndent + 3
 						));
 						counter++;
 					}
@@ -4286,7 +3979,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 					identSet.add(ident1);
 
 					//Parallel merge join TODO: Clean up
-					final ArrayList<String> parJoinString = new ArrayList<>();
 					parJoinBeginBuilder.append(Utils.indentLNT(4))
 							.append(node.firstOutgoingFlow().identifier())
 							.append("_begin (?")
@@ -4297,7 +3989,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					;
 
 					final int minIndent = 23;
-					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(false, minIndent, 0);
+					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(minIndent, minIndent);
 					parJoinBeginBuilder.append(flowMsgsAndLineLength.getLeft())
 							.append(", ");
 					final ArrayList<String> synchroPoints = this.computeAddSynchroPoints(false);
@@ -4330,7 +4022,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 							.append("(union ({")
 							.append(ident1)
 							.append("},\n")
-							.append(Utils.indent(minIndent + 6))
+							.append(Utils.indent(minIndent + 7))
 							.append("remove_incf (bpmn, activeflows, mergeid)),\n")
 							.append(Utils.indent(minIndent))
 							.append("bpmn, remove_sync (bpmn, syncstore, mergeid),\n")
@@ -4359,7 +4051,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					identSet.add(ident1);
 
-					final int nbOut = node.outgoingFlows().size();
 					//We translate the inclusive split by enumerating all combinations in a alt/par
 					final ArrayList<String> flowAlpha = new ArrayList<>();
 					int counter = 2;
@@ -4534,7 +4225,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 							.append("scheduler [");
 
 					final int minIndent = 23;
-					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(false, minIndent, 0);
+					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(minIndent, minIndent);
 					incJoinBeginBuilder.append(flowMsgsAndLineLength.getLeft());
 
 					nbCharCurrentLine = minIndent + flowMsgsAndLineLength.getRight();
@@ -4597,7 +4288,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 			identSet.add(ident1); //For initial/final
 			stringBuilder.append(Utils.indentLNT(1))
 					.append("var");
-			boolean first = true;
 			final int minIndent;
 			final boolean newLineRequiredForVars = identSet.size() > MAX_VARS_PER_LINE - 1; //-1 because we add ``mergeid'' at the end
 
@@ -4670,7 +4360,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					SYNC_STORE,
 					MERGE_STORE,
 					PAR_STORE,
-			9
+					9
 			));
 
 			for (String flow : flowAltStrings)
@@ -4715,12 +4405,10 @@ public class Pif2Lnt extends Pif2LntGeneric
 					.append(Utils.indentLNT(3))
 					.append("mergeid := any ID where member (mergeid, mergestore);\n")
 					.append(Utils.indentLNT(3))
-					.append("if (is_merge_possible_v2 (bpmn, activeflows, mergeid)\n")
+					.append("if is_merge_possible_v2 (bpmn, activeflows, mergeid) and\n")
 					.append(Utils.indentLNT(3))
 					.append(Utils.indent(4))
-					.append("and is_sync_done (bpmn, activeflows, syncstore, mergeid))\n")
-					.append(Utils.indentLNT(3))
-					.append("then\n")
+					.append("is_sync_done (bpmn, activeflows, syncstore, mergeid) then\n")
 					.append(Utils.indentLNT(4))
 					.append("MoveOn (mergeid);\n")
 			;
@@ -4747,7 +4435,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			stringBuilder.append(Utils.indentLNT(4));
 			stringBuilder.append("scheduler [");
 
-			final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(false, 23, 0);
+			final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(23, 23);
 
 			stringBuilder.append(flowMsgsAndLineLength.getLeft());
 			ArrayList<String> synchroPoints = this.computeAddSynchroPoints(false);
@@ -4786,7 +4474,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					.append(Utils.indentLNT(3))
 					.append("mergeid := any ID where member (mergeid, parstore);\n")
 					.append(Utils.indentLNT(3))
-					.append("if (is_merge_possible_par (bpmn, syncstore, mergeid)) then\n")
+					.append("if is_merge_possible_par (bpmn, syncstore, mergeid) then\n")
 			;
 
 			if (parJoinBeginBuilder.length() != 0)
@@ -4812,7 +4500,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			stringBuilder.append("scheduler [");
 
 			final int minIndent2 = 23;
-			final Pair<String, Integer> flowMsgsAndLineLength2 = this.getFlowMsgsAndLineLength(false, minIndent2, 0);
+			final Pair<String, Integer> flowMsgsAndLineLength2 = this.getFlowMsgsAndLineLength(minIndent2, minIndent2);
 			stringBuilder.append(flowMsgsAndLineLength2.getLeft())
 					.append(", ");
 			final ArrayList<String> synchroPoints2 = this.computeAddSynchroPoints(false);
@@ -4922,7 +4610,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			}
 
 			schedulerStringBuilder.append(removeIdsString);
-			final int removeIdsParamsMinIndent = nbCharCurrentLine - firstIncId.length();
+			final int removeIdsParamsMinIndent = nbCharCurrentLine - firstIncId.length() - 1;
 
 			for (int j = 1; j < incIds.size(); j++)
 			{
@@ -5068,28 +4756,12 @@ public class Pif2Lnt extends Pif2LntGeneric
 		//Generates an LNT module and process for a BPMN 2.0 process
 		void genLNT()
 		{
-			this.genLNT("");
-		}
-
-		//Generates an LNT module and process for a BPMN 2.0 process
-		void genLNT(final String name)
-		{
 			if (!isBalanced)
 			{
 				this.generateIdFile();
 			}
 
-			final String fileName;
-
-			if (name.isEmpty())
-			{
-				fileName = this.name + LNT_SUFFIX;
-			}
-			else
-			{
-				fileName = name + LNT_SUFFIX;
-			}
-
+			final String fileName = this.name + LNT_SUFFIX;
 			final File file = new File(outputFolder + File.separator + fileName);
 			final StringBuilder lntBuilder = new StringBuilder();
 
@@ -5140,7 +4812,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			if (!this.flows.isEmpty())
 			{
-				this.flows.get(0).writeLnt(lntBuilder, 0); //TODO: ConditionalFlow?
+				this.flows.get(0).writeLnt(lntBuilder); //TODO: ConditionalFlow?
 			}
 
 			//Generates LNT processes for all other nodes
@@ -5149,9 +4821,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 			for (Node n : this.nodes)
 			{
 				if (n instanceof Interaction
-					|| n instanceof MessageSending
-					|| n instanceof MessageReception
-					|| n instanceof Task)
+						|| n instanceof MessageSending
+						|| n instanceof MessageReception
+						|| n instanceof Task)
 				{
 					if (!specialNodes.contains(n.getClass().getName()))
 					{
@@ -5218,7 +4890,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				this.generateScheduler(lntBuilder);
 
 				//Generate process
-				this.processDump(lntBuilder, 21);
+				this.processDump(lntBuilder);
 			}
 
 			lntBuilder.append("process MAIN ");
@@ -5228,7 +4900,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			lntBuilder.append("is\n");
 
 			//Computes additional synchros for or splits/joins
-			final ArrayList<String> synchroPoints = isBalanced ? this.computeAddSynchroPoints() : this.computeAddSynchroPoints(false);
+			final ArrayList<String> synchroPoints = isBalanced ? this.computeAddSynchroPoints(true) : this.computeAddSynchroPoints(false);
 			final int nbSync = synchroPoints.size();
 			lntBuilder.append(Utils.indentLNT(1));
 			lntBuilder.append("hide\n");
@@ -5376,7 +5048,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				if (nbFlows > 0)
 				{
 					lntBuilder.append(", ");
-					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(false, 6, 15);
+					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(6, 15);
 					lntBuilder.append(flowMsgsAndLineLength.getLeft());
 					lntBuilder.append(", ");
 					nbCharCurrentLine = flowMsgsAndLineLength.getRight();
@@ -5419,7 +5091,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 				if (nbFlows > 0)
 				{
-					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(false, 9, 17);
+					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(9, 17);
 					lntBuilder.append(flowMsgsAndLineLength.getLeft());
 					nbCharCurrentLine = flowMsgsAndLineLength.getRight();
 				}
@@ -5450,7 +5122,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 						.append(Utils.indentLNT(3))
 						.append("track of tokens, and triggering inclusive merge gateways *)\n\n")
 						.append(Utils.indentLNT(3))
-						.append("scheduler [...] (nil, p1(), nil, nil, nil)\n")
+						.append("scheduler [...] (nil, p1 (), nil, nil, nil)\n")
 						.append(Utils.indentLNT(2))
 						.append("||\n")
 						.append(Utils.indentLNT(3))
@@ -5460,7 +5132,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 				if (nbFlows > 0)
 				{
 					lntBuilder.append(Utils.indentLNT(4));
-					lntBuilder.append(this.getFlowMsgsAndLineLength(false, 12, 12).getLeft());
+					lntBuilder.append(this.getFlowMsgsAndLineLength(12, 12).getLeft());
 				}
 			}
 
@@ -5552,7 +5224,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 			lntBuilder.append(Utils.indent(indentBase));
 			lntBuilder.append("||\n");
 
-			final int nbFinals = this.finals.size();
 			cter = 1;
 
 			//Processes instantiations for final nodes
@@ -5658,14 +5329,6 @@ public class Pif2Lnt extends Pif2LntGeneric
 		 */
 		void genSVL()
 		{
-			this.genSVL(true);
-		}
-
-		/**
-		 * Generates an SVL file
-		 */
-		void genSVL(final boolean smartReduction)
-		{
 			final String fileName = this.name + ".svl";
 			final StringBuilder svlCommandBuilder = new StringBuilder();
 
@@ -5679,7 +5342,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					.append("_raw.bcg\" = generation of \"MAIN");
 
 			final ArrayList<String> alpha = this.alpha();
-			dumpAlphabet(alpha, svlCommandBuilder, false);
+			dumpAlphabet(alpha, svlCommandBuilder, false, false);
 
 			svlCommandBuilder.append("\";\n\n")
 					.append("\"")
@@ -5717,21 +5380,9 @@ public class Pif2Lnt extends Pif2LntGeneric
 		/**
 		 * This method takes as input a file.pif and generates a PIF Python object
 		 *
-		 * @param filename
+		 * @param filename the pif filename
 		 */
 		void buildProcessFromFile(final String filename)
-		{
-			this.buildProcessFromFile(filename, false);
-		}
-
-		/**
-		 * This method takes as input a file.pif and generates a PIF Python object
-		 *
-		 * @param filename
-		 * @param debug
-		 */
-		void buildProcessFromFile(final String filename,
-								  final boolean debug)
 		{
 			//Open XML document specified in the filename
 			final File file = new File(filename);
@@ -5956,7 +5607,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		if (generateLTS)
 		{
 			//Compute the LTS from the LNT code using SVL, possibly with a smart reduction
-			process.genSVL(smartReduction);
+			process.genSVL();
 
 			final CommandManager commandManager = new CommandManager("svl", new File(outputFolder), pifModelName);
 
