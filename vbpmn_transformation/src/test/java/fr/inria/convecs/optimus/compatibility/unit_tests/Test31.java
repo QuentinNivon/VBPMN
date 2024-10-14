@@ -13,18 +13,18 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class Test30 extends GenericTest
+public class Test31 extends GenericTest
 {
 	//Names of the PIF files to use (in ``vbpmn_transformation/src/main/resources/pif_examples'').
 	//Files should be identical in the case of formula verification.
-	private static final String PIF_FILE_1 = "Process_8F.pif";			//File 1: Unbalanced inclusive gateway inside a loop => should not work
-	private static final String PIF_FILE_2 = "Process_8F.pif";			//File 2: Unbalanced inclusive gateway inside a loop => should not work
+	private static final String PIF_FILE_1 = "Process_9a.pif";            //File 1: Balanced inclusive gateway inside a loop => should work
+	private static final String PIF_FILE_2 = "Process_9a.pif";            //File 2: Balanced inclusive gateway inside a loop => should work
 	//Processes comparison properties (null if formula checking mode)
-	private static final String COMPARISON_MODE = null;					//Comparison mode
+	private static final String COMPARISON_MODE = null;                    //Comparison mode
 	//Process formula checking properties (null if comparison mode)
-	private static final String PROPERTY_MODE = "property-implied";		//Mode of property verification
-	private static final String FORMULA_ARG = "--formula";				//--formula
-	private static final String FORMULA = "true";						//MCL formula to verify
+	private static final String PROPERTY_MODE = "property-implied";        //Mode of property verification
+	private static final String FORMULA_ARG = "--formula";                //--formula
+	private static final String FORMULA = "true";                        //MCL formula to verify
 	//Expected result of the test
 	private static final boolean EXPECTED_RESULT = true;
 
@@ -47,23 +47,13 @@ public class Test30 extends GenericTest
 				FORMULA_ARG,
 				FORMULA
 		);
+		final boolean result = vbpmn.execute();
 
-		try
+		if (result != EXPECTED_RESULT)
 		{
-			final boolean result = vbpmn.execute();
+			final String errorMessage = "The result of this test should be \"" + EXPECTED_RESULT + "\" but is \"" + result + "\".";
+			System.out.println(ShellColor.ANSI_RED + errorMessage + ShellColor.ANSI_RESET);
+			throw new RuntimeException(errorMessage);
 		}
-		catch (IllegalStateException e)
-		{
-			if (e.getMessage().toLowerCase().contains("unbalanced inclusive gateways"))
-			{
-				//We properly detected the unbalanced inclusive gateway
-				return;
-			}
-		}
-
-		final String errorMessage = "Process \"" + filePaths.getLeft() + "\" contains an unbalanced inclusive gateway" +
-				" inside a loop but it was not detected!";
-		System.out.println(ShellColor.ANSI_RED + errorMessage + ShellColor.ANSI_RESET);
-		throw new RuntimeException(errorMessage);
 	}
 }

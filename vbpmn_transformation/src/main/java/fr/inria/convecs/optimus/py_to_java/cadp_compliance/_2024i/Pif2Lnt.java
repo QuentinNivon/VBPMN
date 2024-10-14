@@ -3682,8 +3682,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 			final ArrayList<String> identSet = new ArrayList<>();
 			final ArrayList<String> flowAltStrings = new ArrayList<>();
-			final StringBuilder incJoinBeginBuilder = new StringBuilder();
-			final StringBuilder parJoinBeginBuilder = new StringBuilder();
+			final ArrayList<String> incJoinBegin = new ArrayList<>();
+			final ArrayList<String> parJoinBegin = new ArrayList<>();
 			final int nodeMinIndent = 9;
 			final String ident = "ident";
 			final String ident1 = ident + "1";
@@ -3962,17 +3962,19 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					identSet.add(ident1);
 
+					final StringBuilder parJoinBeginBuilder = new StringBuilder();
+
 					//Parallel merge join TODO: Clean up
-					parJoinBeginBuilder.append(Utils.indentLNT(4))
+					parJoinBeginBuilder.append(Utils.indentLNT(5))
 							.append(node.firstOutgoingFlow().identifier())
 							.append("_begin (?")
 							.append(ident1)
 							.append(" of ID);\n")
-							.append(Utils.indentLNT(4))
+							.append(Utils.indentLNT(5))
 							.append("scheduler [")
 					;
 
-					final int minIndent = 23;
+					final int minIndent = 26;
 					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(minIndent, minIndent);
 					parJoinBeginBuilder.append(flowMsgsAndLineLength.getLeft())
 							.append(", ");
@@ -4013,6 +4015,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 							.append(Utils.indent(minIndent))
 							.append("mergestore, remove (mergeid, parstore))\n")
 					;
+
+					parJoinBegin.add(parJoinBeginBuilder.toString());
 				}
 				else if (node instanceof OrSplitGateway)
 				{
@@ -4199,16 +4203,19 @@ public class Pif2Lnt extends Pif2LntGeneric
 					;
 
 					identSet.add(ident1);
+
 					//Inclusive merge join TODO: Clean up
-					incJoinBeginBuilder.append(Utils.indentLNT(4))
+					final StringBuilder incJoinBeginBuilder = new StringBuilder();
+
+					incJoinBeginBuilder.append(Utils.indentLNT(5))
 							.append(node.firstOutgoingFlow().identifier())
 							.append("_begin (?")
 							.append(ident1)
 							.append(" of ID);\n")
-							.append(Utils.indentLNT(4))
+							.append(Utils.indentLNT(5))
 							.append("scheduler [");
 
-					final int minIndent = 23;
+					final int minIndent = 26;
 					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(minIndent, minIndent);
 					incJoinBeginBuilder.append(flowMsgsAndLineLength.getLeft());
 
@@ -4252,6 +4259,8 @@ public class Pif2Lnt extends Pif2LntGeneric
 							.append("bpmn, remove_sync (bpmn, syncstore, mergeid),\n")
 							.append(Utils.indent(minIndent))
 							.append("remove (mergeid, mergestore), parstore)\n");
+
+					incJoinBegin.add(incJoinBeginBuilder.toString());
 				}
 				else
 				{
@@ -4391,26 +4400,46 @@ public class Pif2Lnt extends Pif2LntGeneric
 					.append(Utils.indentLNT(3))
 					.append("if is_merge_possible_v2 (bpmn, activeflows, mergeid) and\n")
 					.append(Utils.indentLNT(3))
-					.append(Utils.indent(4))
+					.append(Utils.indent(3))
 					.append("is_sync_done (bpmn, activeflows, syncstore, mergeid) then\n")
 					.append(Utils.indentLNT(4))
 					.append("MoveOn (mergeid);\n")
 			;
 
-			if (incJoinBeginBuilder.length() != 0)
+			if (incJoinBegin.isEmpty())
 			{
-				stringBuilder.append(incJoinBeginBuilder);
+				stringBuilder.append(this.getSchedulerString(
+					new ArrayList<>(),
+					new ArrayList<>(),
+					SYNC_STORE,
+					MERGE_STORE,
+					PAR_STORE,
+					12
+				));
 			}
 			else
 			{
-				stringBuilder.append(this.getSchedulerString(
-						new ArrayList<>(),
-						new ArrayList<>(),
-						SYNC_STORE,
-						MERGE_STORE,
-						PAR_STORE,
-						12
-				));
+				int i = 1;
+				stringBuilder.append(Utils.indentLNT(4));
+				stringBuilder.append("alt\n");
+
+				for (String incJoin : incJoinBegin)
+				{
+					stringBuilder.append(incJoin);
+
+					if (i < incJoinBegin.size())
+					{
+						stringBuilder.append("\n");
+						stringBuilder.append(Utils.indentLNT(4));
+						stringBuilder.append("[]\n");
+					}
+
+					i++;
+				}
+
+				stringBuilder.append("\n");
+				stringBuilder.append(Utils.indentLNT(4));
+				stringBuilder.append("end alt");
 			}
 
 			stringBuilder.append("\n");
@@ -4461,11 +4490,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					.append("if is_merge_possible_par (bpmn, syncstore, mergeid) then\n")
 			;
 
-			if (parJoinBeginBuilder.length() != 0)
-			{
-				stringBuilder.append(parJoinBeginBuilder);
-			}
-			else
+			if (parJoinBegin.isEmpty())
 			{
 				stringBuilder.append(this.getSchedulerString(
 						new ArrayList<>(),
@@ -4475,6 +4500,30 @@ public class Pif2Lnt extends Pif2LntGeneric
 						PAR_STORE,
 						12
 				));
+			}
+			else
+			{
+				int i = 1;
+				stringBuilder.append(Utils.indentLNT(4));
+				stringBuilder.append("alt\n");
+
+				for (String parJoin : parJoinBegin)
+				{
+					stringBuilder.append(parJoin);
+
+					if (i < parJoinBegin.size())
+					{
+						stringBuilder.append("\n");
+						stringBuilder.append(Utils.indentLNT(4));
+						stringBuilder.append("[]\n");
+					}
+
+					i++;
+				}
+
+				stringBuilder.append("\n");
+				stringBuilder.append(Utils.indentLNT(4));
+				stringBuilder.append("end alt");
 			}
 
 			stringBuilder.append("\n");
@@ -4861,7 +4910,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			lntBuilder.append("is\n");
 
 			//Computes additional synchros for or splits/joins
-			final ArrayList<String> synchroPoints = isBalanced ? this.computeAddSynchroPoints(true) : this.computeAddSynchroPoints(false);
+			final ArrayList<String> synchroPoints = this.computeAddSynchroPoints(isBalanced);
 			final int nbSync = synchroPoints.size();
 			lntBuilder.append(Utils.indentLNT(1));
 			lntBuilder.append("hide\n");

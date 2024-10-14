@@ -35,7 +35,7 @@ public class PifUtil {
 
 	public static Boolean isPifBalanced(File pifFile)
 	{
-		Boolean result = false;
+		Boolean result;
 		try {
 			JAXBContext jaxbContext = JAXBContext.newInstance(Process.class);
 
