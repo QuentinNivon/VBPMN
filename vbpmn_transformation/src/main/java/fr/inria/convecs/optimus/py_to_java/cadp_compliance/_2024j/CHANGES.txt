@@ -1,0 +1,58 @@
+The following changes of CADP may have impacted the generated LNT code: #3043, #3044.
+Each CADP change is referenced below, with the modifications performed (DONE, UNKNOWN, NOTHING TO DO).
+By convention, CADP items are represented with ``----'', while sub-items (such as TRAIAN ones) are
+represented with ``####''.
+
+-------------------#3043: DONE-------------------
+
+IMPROVEMENT
+Number:		3043
+Date:		Mon Sep 23 10:32:33 CEST 2024
+Authors:	Frederic Lang and Hubert Garavel (INRIA/CONVECS)
+Files:		bin.*/lnt2lotos, com/upc,
+		doc/*/Champelovier-Clerc-Garavel-et-al-10.*
+
+Nature:		For the "set" and "sorted list" types, the former versions of
+		LNT2LOTOS supported a predefined function "diff" that computed
+		the asymmetric difference of sets or sorted lists.
+
+		From now on, LNT2LOTOS has been aligned on TRAIAN: it supports
+		two predefined functions "diff" and "minus" that compute,
+		respectively, the symmetric and asymmetric difference:
+		   diff (S1, S2) = { x | (x in S1) xor (x in S2) }
+		   minus (S1, S2) = { x | (x in S1) and not (x in S2) }
+
+		Clearly, this change is not upward compatible, as the "diff"
+		function now has a different semantics than in former versions
+		of LNT2LOTOS. For instance, diff ({}, {1, 2}) returned {} and
+		now returns {1, 2}.
+
+		To ease the migration, the UPC shell script has been extended
+		with a new key 2024-LNT-MINUS. Running UPC with this key
+		should be done cautiously: it should only be done on LNT
+		programs designed for LNT2LOTOS; moreover, UPC will propose
+		to replace all occurrences of "diff" (in lower or upper case),
+		including for user-defined diff functions: careful attention
+		and manual updates are necessary.
+
+-------------------#3044: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3044
+Date:		Sun Sep 29 10:24:14 CEST 2024
+Authors:	Hubert Garavel, Frederic Lang, and Wendelin Serwe (INRIA/
+		CONVECS)
+Files:		bin.*/traian
+
+Nature:		The TRAIAN compiler included in the CADP release has been
+		upgraded from version 3.15 beta 5 to 3.15. Among the many
+		changes brought by this new version, listed on the web page
+		   http://vasy.inria.fr/traian/traian_3_15.html
+		and not already documented above, 14 directly concerns the
+		users of CADP and LNT2LOTOS, i.e.:
+		 - better messages for write-write and read-write conflicts;
+		 - bug fix for insufficient detection of write-write conflicts;
+		 - more concise error messages when a function, process, or
+		   event is invoked with incorrect/mistyped parameters;
+		 - warnings for superfluous "access" constructs;
+		 - cleaner semantics and analysis of "ensure" clauses.
