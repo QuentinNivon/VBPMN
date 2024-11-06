@@ -8,8 +8,8 @@
 	<name>transformation</name>
 	<url>http://convecs.inria.fr</url>
 	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.9</maven.compiler.source>
+		<maven.compiler.target>1.9</maven.compiler.target>
 		<version.msv>2022.7</version.msv>
 		<jersey.version>4.0.0-M1</jersey.version>
 		<skipTests>true</skipTests>
@@ -22,7 +22,6 @@
 			<artifactId>jgrapht-core</artifactId>
 			<version>1.5.2</version>
 		</dependency>
-
 
 		<!-- argparse4j -->
 		<dependency>
@@ -40,9 +39,9 @@
 
 		<!-- servlet -->
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>4.0.1</version>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.1.0</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -139,7 +138,6 @@
 			<artifactId>activiti-bpmn-layout</artifactId>
 			<version>7.1.0.M6</version>
 		</dependency>
-
 
 		<!-- Test jars -->
 		<dependency>

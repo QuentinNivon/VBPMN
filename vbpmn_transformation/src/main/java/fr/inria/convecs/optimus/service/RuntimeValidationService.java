@@ -12,6 +12,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.servlet.ServletContext;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -36,7 +37,6 @@ import fr.inria.convecs.optimus.util.XmlUtil;
 import fr.inria.convecs.optimus.validator.ModelValidator;
 import fr.inria.convecs.optimus.validator.RuntimeValidator;
 
-import javax.servlet.ServletContext;
 
 /**
  * @author silverquick TODO: dirty implementation - add a resource interface to invoke service,
