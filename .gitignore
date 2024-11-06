@@ -86,3 +86,6 @@ $ misc
 
 # compatibility checks
 update_tests/tmp
+
+# idea files
+.idea/workspace.xml
