@@ -12,16 +12,13 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.ServletContext;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -39,6 +36,8 @@ import fr.inria.convecs.optimus.util.XmlUtil;
 import fr.inria.convecs.optimus.validator.ModelValidator;
 import fr.inria.convecs.optimus.validator.RuntimeValidator;
 
+import javax.servlet.ServletContext;
+
 /**
  * @author silverquick TODO: dirty implementation - add a resource interface to invoke service,
  *         implement JSON data.
@@ -55,7 +54,8 @@ public class RuntimeValidationService {
 
 	private static final String PIF_SCHEMA = "/pif.xsd";
 
-	@Context ServletContext servletContext;
+	@Context
+	ServletContext servletContext;
 
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -98,7 +98,7 @@ public class RuntimeValidationService {
 		Response httpResponse;
 		try {
 			if (fileList.size() > 2 || fileList.size() <= 0) {
-				httpResponse = Response.status(Status.BAD_REQUEST)
+				httpResponse = Response.status(Response.Status.BAD_REQUEST)
 						.entity("You can only specify 1 or 2 files").build();
 			} else {
 				ModelValidator validator = new RuntimeValidator(scriptsPath, outputDir);
@@ -151,7 +151,7 @@ public class RuntimeValidationService {
 					validator.validateV2(input1, operationMode);
 				}
 				result = validator.getResult();
-				httpResponse = Response.status(Status.OK)
+				httpResponse = Response.status(Response.Status.OK)
 						   .header("Access-Control-Allow-Origin", "*")
 				            .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				            .entity(result).build();

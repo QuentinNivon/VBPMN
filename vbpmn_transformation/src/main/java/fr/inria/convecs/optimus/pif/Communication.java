@@ -8,8 +8,8 @@
 
 package fr.inria.convecs.optimus.pif;
 
-import javax.xml.bind.annotation.*;
 
+import jakarta.xml.bind.annotation.*;
 
 /**
  * <p>Java class for Communication complex type.

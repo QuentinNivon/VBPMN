@@ -8,11 +8,12 @@
 
 package fr.inria.convecs.optimus.pif;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.*;
+
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.*;
+
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * <p>Java class for Interaction complex type.
@@ -96,9 +97,10 @@ public class Interaction
      * 
      * 
      */
-    public List<JAXBElement<Object>> getReceivingPeers() {
+    public List<JAXBElement<Object>> getReceivingPeers()
+    {
         if (receivingPeers == null) {
-            receivingPeers = new ArrayList<JAXBElement<Object>>();
+            receivingPeers = new ArrayList<>();
         }
         return this.receivingPeers;
     }

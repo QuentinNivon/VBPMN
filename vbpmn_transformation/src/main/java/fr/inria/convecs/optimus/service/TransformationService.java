@@ -12,15 +12,14 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import javax.servlet.ServletContext;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -49,14 +48,15 @@ public class TransformationService {
 
 	private static final String PIF_SCHEMA = "/pif.xsd";
 
-	@Context ServletContext servletContext;
+	@Context
+	ServletContext servletContext;
 
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces("text/plain")
 	@Path("/pif2bpmn")
 	public Response validateVbpmn(@FormDataParam("file1") InputStream fileStream1,
-			@FormDataParam("file1") FormDataContentDisposition fileInfo1, FormDataMultiPart formData) {
+								  @FormDataParam("file1") FormDataContentDisposition fileInfo1, FormDataMultiPart formData) {
 
 		Response httpResponse = null;
 		try {      
@@ -74,7 +74,7 @@ public class TransformationService {
 			
 			String bpmnResult = IOUtils.toString(new FileInputStream(bpmnOutput), StandardCharsets.UTF_8);
 			
-			httpResponse = Response.status(Status.OK).entity(bpmnResult).build();
+			httpResponse = Response.status(Response.Status.OK).entity(bpmnResult).build();
 			
 			return httpResponse;
 
@@ -97,7 +97,7 @@ public class TransformationService {
 			BpmnContentTransformer transformer = new BpmnContentTransformer(inputBpmn);
 			transformer.transform();
 			String bpmnResult = transformer.getBpmnLayout();
-			httpResponse = Response.status(Status.OK).entity(bpmnResult).build();
+			httpResponse = Response.status(Response.Status.OK).entity(bpmnResult).build();
 			
 			return httpResponse;
 

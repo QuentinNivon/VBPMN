@@ -3,7 +3,6 @@
  */
 package fr.inria.convecs.optimus.transformer;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -47,7 +46,7 @@ public class BpmnContentTransformer implements ContentTransformer {
 			new BpmnAutoLayout(model).execute();
 			byte[] bpmnXml = new BpmnXMLConverter().convertToXML(model);
 			output = new String(bpmnXml);
-		} catch (XMLStreamException | IOException ioe) {
+		} catch (XMLStreamException ioe) {
 			logger.error("Error transforming the input", ioe);
 			throw new RuntimeException(ioe);
 		}

@@ -32,10 +32,10 @@ public class BaseContentTransformer implements ContentTransformer {
 
   static final Logger logger = LoggerFactory.getLogger(BaseContentTransformer.class);
 
-  private static String PIF_URI = "http://www.example.org/PIF";
-  private static String XSI_URI = "http://www.w3.org/2001/XMLSchema-instance";
-  private Process process;
-  private File output;
+  private static final String PIF_URI = "http://www.example.org/PIF";
+  private static final String XSI_URI = "http://www.w3.org/2001/XMLSchema-instance";
+  private final Process process;
+  private final File output;
 
   public BaseContentTransformer(Process process, File output) {
     this.process = process;

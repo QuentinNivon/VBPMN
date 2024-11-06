@@ -4,8 +4,6 @@
 
 package fr.inria.convecs.optimus.model;
 
-import java.io.PrintWriter;
-
 /**
  * @author ajayk
  *

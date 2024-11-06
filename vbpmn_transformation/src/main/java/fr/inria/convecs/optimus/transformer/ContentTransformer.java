@@ -13,11 +13,10 @@ public interface ContentTransformer {
   /**
    * Transforms the object representation into PIF xml.
    */
-  public void transform();
+  void transform();
 
   /**
    * Generates the PIF xml in specified format.
    */
-  public void generateOutput();
-
+  void generateOutput();
 }

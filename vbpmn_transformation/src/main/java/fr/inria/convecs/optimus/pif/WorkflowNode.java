@@ -8,13 +8,13 @@
 
 package fr.inria.convecs.optimus.pif;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * <p>Java class for WorkflowNode complex type.
@@ -85,7 +85,7 @@ public abstract class WorkflowNode {
      */
     public List<JAXBElement<Object>> getIncomingFlows() {
         if (incomingFlows == null) {
-            incomingFlows = new ArrayList<JAXBElement<Object>>();
+            incomingFlows = new ArrayList<>();
         }
         return this.incomingFlows;
     }
@@ -114,7 +114,7 @@ public abstract class WorkflowNode {
      */
     public List<JAXBElement<Object>> getOutgoingFlows() {
         if (outgoingFlows == null) {
-            outgoingFlows = new ArrayList<JAXBElement<Object>>();
+            outgoingFlows = new ArrayList<>();
         }
         return this.outgoingFlows;
     }
