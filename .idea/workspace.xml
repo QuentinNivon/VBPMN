@@ -4,62 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="travail">
+    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="VBPMN is now compliant with Tomcat 10+ and Java 9+">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/dependency-reduced-pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/dependency-reduced-pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/model/Sequence.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/model/Sequence.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/AndJoinGateway.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/AndJoinGateway.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/AndSplitGateway.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/AndSplitGateway.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Communication.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Communication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Condition.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Condition.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/ConditionalSequenceFlow.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/ConditionalSequenceFlow.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/EndEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/EndEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Gateway.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Gateway.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/InitialEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/InitialEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Interaction.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Interaction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/JoinGateway.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/JoinGateway.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Message.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Message.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/MessageCommunication.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/MessageCommunication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/MessageReception.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/MessageReception.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/MessageSending.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/MessageSending.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/ObjectFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/ObjectFactory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/OrJoinGateway.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/OrJoinGateway.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/OrSplitGateway.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/OrSplitGateway.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Peer.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Peer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Process.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Process.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/SequenceFlow.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/SequenceFlow.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/SplitGateway.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/SplitGateway.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Task.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Workflow.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/Workflow.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/WorkflowNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/WorkflowNode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/XOrJoinGateway.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/XOrJoinGateway.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/XOrSplitGateway.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/XOrSplitGateway.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/package-info.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/pif/package-info.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/Vbpmn.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/Vbpmn.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023k/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023k/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023l/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023l/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024a/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024a/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024b/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024b/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024c/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024c/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024d/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024d/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024e/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024e/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024f/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024f/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024g/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024g/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024h/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024h/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024i/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024i/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024j/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024j/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/service/RuntimeValidationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/service/RuntimeValidationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/service/TransformationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/service/TransformationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/service/ValidationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/service/ValidationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/transformer/BaseContentTransformer.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/transformer/BaseContentTransformer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/transformer/BpmnContentTransformer.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/transformer/BpmnContentTransformer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/transformer/ContentTransformer.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/transformer/ContentTransformer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/transformer/PifContentTransformer.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/transformer/PifContentTransformer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/util/PifUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/util/PifUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/util/VbpmnExceptionMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/util/VbpmnExceptionMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/PifUnmarshallTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/PifUnmarshallTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/RestClientTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/RestClientTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_dist/transformation.war" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -77,7 +25,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="py_to_java" />
+        <entry key="$PROJECT_DIR$" value="master_up_to_tomcat_9" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -275,7 +223,15 @@
       <option name="project" value="LOCAL" />
       <updated>1712325462763</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="VBPMN is now compliant with Tomcat 10+ and Java 9+">
+      <option name="closed" value="true" />
+      <created>1730896051152</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1730896051152</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -295,6 +251,7 @@
     <MESSAGE value="fin traduction pif2lntv1" />
     <MESSAGE value="fin traduction pif2lntv1.py et pif2lntv7.py + merge des deux dans la classe Pif2Lnt.java" />
     <MESSAGE value="travail" />
-    <option name="LAST_COMMIT_MESSAGE" value="travail" />
+    <MESSAGE value="VBPMN is now compliant with Tomcat 10+ and Java 9+" />
+    <option name="LAST_COMMIT_MESSAGE" value="VBPMN is now compliant with Tomcat 10+ and Java 9+" />
   </component>
 </project>
