@@ -11,8 +11,9 @@ helps users correct and refine their models.
 
 Usage
 ===============================
-VBPMN web app is available for download as a web archive (WAR).
+VBPMN web app is available for download as a web archive (WAR) [**here**](https://quentinnivon.github.io/vbpmn/latest/transformation.war).
 Hosting of the web app requires [Apache Tomcat](https://tomcat.apache.org).
+<!--
 Depending on the Tomcat/Java version running on your machine, a different WAR
 file may be necessary.
 
@@ -22,16 +23,17 @@ file may be necessary.
 However, we strongly recommend you to upgrade your installation(s) to the most
 recent versions and to use the latest version of VBPMN (and not the legacy one)
 as many security issues and/or bugs have been patched in the newest versions.
+-->
 Once you have the web app running, you can access the application
 using the following web page (assuming tomcat is running locally on port 8080)
 
-http://localhost:8080/transformation/home.html
+http://localhost:8080/transformation/index.html
 
 Required Softwares
 =======================================
 
-* [JDK >= 8.0](https://www.oracle.com/fr/java/technologies/downloads/)
-* [Apache Tomcat >= 8.0](https://tomcat.apache.org/download-11.cgi)
+* [JDK >= 9.0.0](https://www.oracle.com/fr/java/technologies/downloads/)
+* [Apache Tomcat >= 10.0.0](https://tomcat.apache.org/download-11.cgi)
 * [Apache Ant >= 1.9.16](https://ant.apache.org/)
 * [CADP >= 2023-k](https://cadp.inria.fr/)
 
@@ -40,9 +42,7 @@ Important information
 The VBPMN tool relies on the CADP toolbox that is updated once per month.
 If you upgrade CADP on your machine, VBPMN must also be upgraded to a newer version, compliant with the most recent
 version of CADP.
-This can be done by downloading again the VBPMN WAR
-file ([legacy](https://quentinnivon.github.io/vbpmn/legacy/transformation.war)
-or [latest](https://quentinnivon.github.io/vbpmn/latest/transformation.war), depending on your installation)
+This can be done by [**downloading again the VBPMN WAR file**](https://quentinnivon.github.io/vbpmn/latest/transformation.war)
 and replacing the old WAR file of the Tomcat by the new one.
 If you have any issue with a subsequent version of VBPMN, please send an email to quentin.nivon@inria.fr.
 

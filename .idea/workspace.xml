@@ -4,13 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="suppression des warnings et du code mort de Pif2Lnt.java">
-      <change afterPath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/unit_tests/Test31.java" afterDir="false" />
+    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="readme update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_dist/transformation.war" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_dist/transformation.war" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024i/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024i/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/util/PifUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/util/PifUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/unit_tests/Test30.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/unit_tests/Test30.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,37 +39,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "JUnit.Test31.executor": "Run",
-    "Maven.transformation [clean].executor": "Run",
-    "Maven.transformation [compile].executor": "Run",
-    "Maven.transformation [deploy].executor": "Run",
-    "Maven.transformation [install].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-compiler-plugin:3.11.0:help].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-deploy-plugin:3.1.1:help].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-install-plugin:3.1.1:help].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-resources-plugin:3.3.1:help].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-resources-plugin:3.3.1:resources].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-site-plugin:3.12.1:help].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-surefire-plugin:3.1.2:help].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:exploded].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:help].executor": "Run",
-    "Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:war].executor": "Run",
-    "Maven.transformation [package].executor": "Run",
-    "Maven.transformation [site].executor": "Run",
-    "Maven.transformation [test].executor": "Run",
-    "Maven.transformation [validate].executor": "Run",
-    "Maven.transformation [verify].executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/quentin/Documents/vbpmn/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c",
-    "settings.editor.selected.configurable": "preferences.fileTypes"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;JUnit.Test31.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [compile].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [deploy].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [install].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-compiler-plugin:3.11.0:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-deploy-plugin:3.1.1:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-install-plugin:3.1.1:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-resources-plugin:3.3.1:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-resources-plugin:3.3.1:resources].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-site-plugin:3.12.1:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-surefire-plugin:3.1.2:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:exploded].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:help].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:war].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [package].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [site].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [test].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [validate].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.transformation [verify].executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/quentin/Documents/vbpmn/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c" />
