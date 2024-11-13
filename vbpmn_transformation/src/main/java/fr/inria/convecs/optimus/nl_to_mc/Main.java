@@ -18,7 +18,8 @@ import java.net.URISyntaxException;
 
 public class Main
 {
-	public static final boolean LOCAL_SITE = true;
+	public static final boolean OLD_WEBSITE = false;
+	public static final boolean LOCAL_SITE = false;
 	public static final boolean LOCAL_TESTING = false;
 
 	public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException, ExpectedException

@@ -4,12 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="travail">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vbpmn.iml" beforeDir="false" />
+    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="VBPMN is now compliant with Tomcat 10+ and Java 9+">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/aut/AutGraph.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/aut/AutGraph.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/nl_to_mc/Aut2Force3DGraph.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/nl_to_mc/Aut2Force3DGraph.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/dependency-reduced-pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/dependency-reduced-pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/nl_to_mc/Filename.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/nl_to_mc/Filename.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/nl_to_mc/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/nl_to_mc/Main.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,7 +26,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="py_to_java" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -43,36 +42,37 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Maven.transformation [clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [compile].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [deploy].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [install].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-compiler-plugin:3.11.0:help].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-deploy-plugin:3.1.1:help].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-install-plugin:3.1.1:help].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-resources-plugin:3.3.1:help].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-resources-plugin:3.3.1:resources].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-site-plugin:3.12.1:help].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-surefire-plugin:3.1.2:help].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:exploded].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:help].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:war].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [package].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [site].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [test].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [validate].executor&quot;: &quot;Run&quot;,
-    &quot;Maven.transformation [verify].executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/quentin/Documents/vbpmn/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Maven.transformation [clean].executor": "Run",
+    "Maven.transformation [compile].executor": "Run",
+    "Maven.transformation [deploy].executor": "Run",
+    "Maven.transformation [install].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-compiler-plugin:3.11.0:help].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-deploy-plugin:3.1.1:help].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-install-plugin:3.1.1:help].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-resources-plugin:3.3.1:help].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-resources-plugin:3.3.1:resources].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-site-plugin:3.12.1:help].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-surefire-plugin:3.1.2:help].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:exploded].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:help].executor": "Run",
+    "Maven.transformation [org.apache.maven.plugins:maven-war-plugin:3.4.0:war].executor": "Run",
+    "Maven.transformation [package].executor": "Run",
+    "Maven.transformation [site].executor": "Run",
+    "Maven.transformation [test].executor": "Run",
+    "Maven.transformation [validate].executor": "Run",
+    "Maven.transformation [verify].executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "nl__to__mc",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/quentin/Documents/vbpmn/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c",
+    "settings.editor.selected.configurable": "preferences.fileTypes"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c" />
@@ -82,84 +82,56 @@
       <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java" />
     </key>
   </component>
-  <component name="RunManager">
-    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+  <component name="RunManager" selected="Maven.transformation [site]">
+    <configuration name="All in transformation" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="transformation" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="Tox" factoryName="Tox">
-      <module name="transformation" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Autodetect">
-      <module name="transformation" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;&quot;" />
-      <option name="_new_targetType" value="&quot;PATH&quot;" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="tests" factoryName="Doctests">
-      <module name="transformation" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="" />
-      <option name="CLASS_NAME" value="" />
-      <option name="METHOD_NAME" value="" />
-      <option name="FOLDER_NAME" value="" />
-      <option name="TEST_TYPE" value="TEST_SCRIPT" />
-      <option name="PATTERN" value="" />
-      <option name="USE_PATTERN" value="false" />
-      <method v="2" />
-    </configuration>
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="transformation" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="TEST_OBJECT" value="package" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+    <configuration name="FullTests" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="transformation" />
-      <option name="filePath" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility" />
+      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.FullTests" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test30" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="transformation" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.unit_tests.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests" />
+      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.Test30" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test31" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="transformation" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.unit_tests.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests" />
+      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.Test31" />
+      <option name="TEST_OBJECT" value="class" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -179,6 +151,7 @@
                 <option value="site" />
               </list>
             </option>
+            <option name="multimoduleDir" />
             <option name="pomFileName" value="pom.xml" />
             <option name="profilesMap">
               <map />
@@ -197,15 +170,11 @@
       <list>
         <item itemvalue="Maven.transformation [site]" />
         <item itemvalue="Maven.transformation [site]" />
+        <item itemvalue="JUnit.Test30" />
+        <item itemvalue="JUnit.All in transformation" />
+        <item itemvalue="Maven.transformation [site]" />
       </list>
     </recent_temporary>
-  </component>
-  <component name="SharedIndexes">
-    <attachedChunks>
-      <set>
-        <option value="jdk-11.0.16-jbr_dcevm-11.0.16-4caba194b151-a86c5f01" />
-      </set>
-    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -264,7 +233,15 @@
       <option name="project" value="LOCAL" />
       <updated>1712325462763</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="VBPMN is now compliant with Tomcat 10+ and Java 9+">
+      <option name="closed" value="true" />
+      <created>1730896051152</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1730896051152</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -284,6 +261,7 @@
     <MESSAGE value="fin traduction pif2lntv1" />
     <MESSAGE value="fin traduction pif2lntv1.py et pif2lntv7.py + merge des deux dans la classe Pif2Lnt.java" />
     <MESSAGE value="travail" />
-    <option name="LAST_COMMIT_MESSAGE" value="travail" />
+    <MESSAGE value="VBPMN is now compliant with Tomcat 10+ and Java 9+" />
+    <option name="LAST_COMMIT_MESSAGE" value="VBPMN is now compliant with Tomcat 10+ and Java 9+" />
   </component>
 </project>

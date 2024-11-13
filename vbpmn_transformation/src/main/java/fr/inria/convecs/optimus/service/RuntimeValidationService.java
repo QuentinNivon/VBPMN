@@ -39,8 +39,7 @@ import fr.inria.convecs.optimus.util.XmlUtil;
 import fr.inria.convecs.optimus.validator.ModelValidator;
 import fr.inria.convecs.optimus.validator.RuntimeValidator;
 
-import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_SITE;
-import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_TESTING;
+import static fr.inria.convecs.optimus.nl_to_mc.Main.*;
 
 /**
  * @author silverquick TODO: dirty implementation - add a resource interface to invoke service,
@@ -50,14 +49,11 @@ import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_TESTING;
 @Path("/runtime")
 public class RuntimeValidationService {
 
-	private static final String REMOTE_PIF_FILE_LOCATION = "/home/quentin_nivon/nl_to_mc/public/";
-	private static final String LOCAL_PIF_FILE_LOCATION = "/home/quentin/Documents/VBPMN/vbpmn_transformation/src/main/resources/";
 	private static final Logger logger = LoggerFactory.getLogger(RuntimeValidationService.class);
-
+	private static final String REMOTE_PIF_FILE_LOCATION = OLD_WEBSITE ? "/home/quentin_nivon/nl_to_mc/public" : "/home/convecs/nivonq/nl_to_mc/public";
+	private static final String LOCAL_PIF_FILE_LOCATION = "/home/quentin/Documents/VBPMN/vbpmn_transformation/src/main/resources";
 	private static final String OUTPUT_PATH = AppProperty.getInstance().getFolder("OUTPUT_PATH");
-
 	private static final String SCRIPTS_PATH = "/WEB-INF/classes";
-
 	private static final String PIF_SCHEMA = "pif.xsd";
 
 	@Context ServletContext servletContext;
