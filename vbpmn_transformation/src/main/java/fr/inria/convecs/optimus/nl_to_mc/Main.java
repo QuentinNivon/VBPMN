@@ -27,7 +27,8 @@ import java.util.*;
 
 public class Main
 {
-	public static final boolean LOCAL_SITE = true;
+	public static final boolean OLD_WEBSITE = false;
+	public static final boolean LOCAL_SITE = false;
 	public static final boolean LOCAL_TESTING = false;
 	private static final int BCG_FILE_REDUCTION_THRESHOLD = 1000;
 
@@ -1038,5 +1039,19 @@ public class Main
 				file.delete();
 			}
 		}
+	}
+
+	private static void cleanExit(final CommandLineParser commandLineParser,
+								  final int exitCode,
+								  final Exception e)
+	{
+		MyOwnLogger.writeStdOut((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY));
+
+		if (exitCode != ReturnCodes.TERMINATION_OK)
+		{
+			MyOwnLogger.writeStdErr((File) commandLineParser.get(CommandLineOption.WORKING_DIRECTORY), Utils.getStackTrace(e));
+		}
+
+		System.exit(exitCode);
 	}
 }
