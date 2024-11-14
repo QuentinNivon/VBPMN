@@ -32,7 +32,7 @@ http://localhost:8080/transformation/index.html
 Required Softwares
 =======================================
 
-* [JDK >= 9.0.0](https://www.oracle.com/fr/java/technologies/downloads/)
+* [JDK >= 11.0.0](https://www.oracle.com/fr/java/technologies/downloads/)
 * [Apache Tomcat >= 10.0.0](https://tomcat.apache.org/download-11.cgi)
 * [Apache Ant >= 1.9.16](https://ant.apache.org/)
 * [CADP >= 2023-k](https://cadp.inria.fr/)
