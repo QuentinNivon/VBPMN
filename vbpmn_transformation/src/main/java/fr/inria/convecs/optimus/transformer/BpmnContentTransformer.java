@@ -47,7 +47,7 @@ public class BpmnContentTransformer implements ContentTransformer {
 			new BpmnAutoLayout(model).execute();
 			byte[] bpmnXml = new BpmnXMLConverter().convertToXML(model);
 			output = new String(bpmnXml);
-		} catch (XMLStreamException | IOException ioe) {
+		} catch (XMLStreamException ioe) {
 			logger.error("Error transforming the input", ioe);
 			throw new RuntimeException(ioe);
 		}

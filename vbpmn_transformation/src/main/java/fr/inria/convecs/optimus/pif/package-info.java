@@ -5,5 +5,5 @@
 // Generated on: 2016.03.10 at 04:11:44 PM CET 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://www.example.org/PIF", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://www.example.org/PIF", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package fr.inria.convecs.optimus.pif;
