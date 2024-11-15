@@ -5,9 +5,8 @@ package fr.inria.convecs.optimus;
 
 import java.io.File;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
-
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
 import org.junit.Test;
 
 import fr.inria.convecs.optimus.pif.Process;

@@ -1,4 +1,4 @@
-package fr.inria.convecs.optimus.py_to_java.cadp_compliance._2024j;
+package fr.inria.convecs.optimus.py_to_java.cadp_compliance._2024k;
 
 import fr.inria.convecs.optimus.pif.Peer;
 import fr.inria.convecs.optimus.pif.SequenceFlow;
@@ -14,7 +14,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;;
+import org.apache.commons.lang3.tuple.Triple;
 import org.jgrapht.alg.cycle.CycleDetector;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
