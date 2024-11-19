@@ -11,10 +11,12 @@ import java.util.Map;
 import java.util.Objects;
 
 import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_TESTING;
+import static fr.inria.convecs.optimus.nl_to_mc.Main.OLD_WEBSITE;
 
 public class CommandLineParser
 {
     private final Map<CommandLineOption, Object> commands;
+    private static final File LIG_SERVER_WORKING_DIRECTORY = new File("/home/convecs/nivonq/nl_to_mc");
 
     public CommandLineParser(final String[] args) throws FileNotFoundException
     {
@@ -197,7 +199,7 @@ public class CommandLineParser
                                    final String leafDirectoryName)
     {
         //Parent file is the working directory
-        final File parent = jarFile.getParentFile();
+        final File parent = OLD_WEBSITE ? LIG_SERVER_WORKING_DIRECTORY : jarFile.getParentFile();
 
         //Generate and/or verify the "generated" directory
         final File generatedDirectory = this.buildAndVerifyDir(parent, "generated");
@@ -213,12 +215,12 @@ public class CommandLineParser
         final File currentMonthDirectory = this.buildAndVerifyDir(currentYearDirectory, currentMonth);
         if (currentMonthDirectory == null) throw new IllegalStateException("An error occurred during the generation of the \"" + currentMonth + "\" directory.");
 
-        //Generate and/or verify the "current_month" directory
+        //Generate and/or verify the "current_day" directory
         final String currentDay = String.valueOf(Calendar.getInstance().get(Calendar.DATE));
         final File currentDayDirectory = this.buildAndVerifyDir(currentMonthDirectory, currentDay);
         if (currentDayDirectory == null) throw new IllegalStateException("An error occurred during the generation of the \"" + currentDay + "\" directory.");
 
-        //Generate and/or verify the "current_month" directory
+        //Generate and/or verify the "extension" directory
         final File currentTimeDirectory = this.buildAndVerifyDir(currentDayDirectory, leafDirectoryName);
         if (currentTimeDirectory == null) throw new IllegalStateException("An error occurred during the generation of the \"" + leafDirectoryName + "\" directory.");
 
