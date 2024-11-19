@@ -199,7 +199,7 @@ public class CommandLineParser
                                    final String leafDirectoryName)
     {
         //Parent file is the working directory
-        final File parent = OLD_WEBSITE ? LIG_SERVER_WORKING_DIRECTORY : jarFile.getParentFile();
+        final File parent = OLD_WEBSITE ? jarFile.getParentFile() : LIG_SERVER_WORKING_DIRECTORY;
 
         //Generate and/or verify the "generated" directory
         final File generatedDirectory = this.buildAndVerifyDir(parent, "generated");
