@@ -48,7 +48,7 @@ import static fr.inria.convecs.optimus.nl_to_mc.Main.*;
 public class RuntimeValidationService {
 
 	private static final Logger logger = LoggerFactory.getLogger(RuntimeValidationService.class);
-	private static final String REMOTE_PIF_FILE_LOCATION = OLD_WEBSITE ? "/home/quentin_nivon/nl_to_mc/public" : "/home/convecs/nivonq/nl_to_mc/public";
+	private static final String REMOTE_PIF_FILE_LOCATION = OLD_WEBSITE ? "/home/quentin_nivon/nl_to_mc/public" : "/var/www/givup/public";
 	private static final String LOCAL_PIF_FILE_LOCATION = "/home/quentin/Documents/VBPMN/vbpmn_transformation/src/main/resources";
 	private static final String OUTPUT_PATH = AppProperty.getInstance().getFolder("OUTPUT_PATH");
 	private static final String SCRIPTS_PATH = "/WEB-INF/classes";
