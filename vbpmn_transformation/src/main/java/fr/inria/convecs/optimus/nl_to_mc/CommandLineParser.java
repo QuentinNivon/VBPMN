@@ -10,8 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_TESTING;
-import static fr.inria.convecs.optimus.nl_to_mc.Main.OLD_WEBSITE;
+import static fr.inria.convecs.optimus.nl_to_mc.Main.*;
 
 public class CommandLineParser
 {
@@ -199,7 +198,7 @@ public class CommandLineParser
                                    final String leafDirectoryName)
     {
         //Parent file is the working directory
-        final File parent = OLD_WEBSITE ? jarFile.getParentFile() : LIG_SERVER_WORKING_DIRECTORY;
+        final File parent = jarFile.getParentFile();
 
         //Generate and/or verify the "generated" directory
         final File generatedDirectory = this.buildAndVerifyDir(parent, "generated");

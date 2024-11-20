@@ -2,6 +2,7 @@ package fr.inria.convecs.optimus.nl_to_mc;
 
 import java.io.File;
 
+import static fr.inria.convecs.optimus.nl_to_mc.Main.LOCAL_SITE;
 import static fr.inria.convecs.optimus.nl_to_mc.Main.OLD_WEBSITE;
 
 public class Filename
@@ -19,7 +20,7 @@ public class Filename
 	public static final String ID_FILE = "id.lnt";
 	public static final String BPMN_TYPES_FILE = "bpmntypes.lnt";
 	public static final String PIF_SCHEMA = "pif.xsd";
-	public static final String REMOTE_PIF_FILE_LOCATION = OLD_WEBSITE ? "/home/quentin_nivon/nl_to_mc/public" : "/var/www/givup/public";
+	public static final String REMOTE_PIF_FILE_LOCATION = (LOCAL_SITE || OLD_WEBSITE) ? "/home/quentin_nivon/nl_to_mc/public" : "/var/www/givup/public";
 	public static final String LOCAL_PIF_FILE_LOCATION = "/home/quentin/Documents/VBPMN/vbpmn_transformation/src/main/resources";
 	public static final String REMOTE_PIF_FILE = REMOTE_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA;
 	public static final String LOCAL_PIF_FILE = LOCAL_PIF_FILE_LOCATION + File.separator + PIF_SCHEMA;
