@@ -450,10 +450,27 @@ public class Vbpmn
 
 		try
 		{
+			final Map<String, String> environment = System.getenv();
+
+			logger.info("Environment variables found:\n");
+
+			for (String key : environment.keySet())
+			{
+				logger.info("- {} : {}", key, environment.get(key));
+			}
+
 			if (System.getenv("CADP") == null)
 			{
 				throw new RuntimeException("Environment variable $CADP is not set! Please fix this error and retry.");
 			}
+
+			if (System.getenv("PATH") != null && !System.getenv("PATH").contains("cadp"))
+			{
+				throw new RuntimeException("Environment variable $PATH exists but does not contain \"cadp\" (" +
+						System.getenv("PATH") + ")");
+			}
+
+			logger.info("CADP dir: \"" + System.getenv("CADP") + "\".");
 
 			final CommandManager commandManager = new CommandManager("cadp_lib", new File(outputFolder), "-1");
 			commandManager.execute();
