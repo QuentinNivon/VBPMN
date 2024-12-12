@@ -236,6 +236,7 @@ public class Vbpmn
 		{
 			final String errorMessage = this.getErrorMessage(pif1, result1);
 			System.out.println(errorMessage);
+			logger.error(errorMessage);
 			throw new IllegalStateException(errorMessage);
 		}
 
@@ -243,6 +244,7 @@ public class Vbpmn
 		{
 			final String errorMessage = this.getErrorMessage(pif2, result2);
 			System.out.println(errorMessage);
+			logger.error(errorMessage);
 			throw new IllegalStateException(errorMessage);
 		}
 
@@ -334,6 +336,7 @@ public class Vbpmn
 		}
 		catch (FileNotFoundException e)
 		{
+			logger.error("Could not write \"time.txt\" file: {}", String.valueOf(e));
 			throw new RuntimeException(e);
 		}
 
@@ -427,17 +430,20 @@ public class Vbpmn
 					&& args.get("formula") == null)
 			{
 				System.out.println("missing formula in presence of property based comparison.");
+				logger.error("missing formula in presence of property based comparison.");
 				throw new RuntimeException("missing formula in presence of property based comparison.");
 			}
 			if (!OPERATIONS_PROPERTY.contains(args.getString("operation"))
 					&& args.get("formula") != null)
 			{
+				logger.warn("formula in presence of equivalence based comparison will not be used.");
 				System.out.println("formula in presence of equivalence based comparison will not be used.");
 			}
 		}
 		catch (ArgumentParserException e)
 		{
 			parser.printHelp();
+			logger.error(String.valueOf(e));
 			throw new IllegalStateException();
 		}
 
@@ -452,25 +458,28 @@ public class Vbpmn
 		{
 			final Map<String, String> environment = System.getenv();
 
-			logger.info("Environment variables found:\n");
+			/*logger.debug("Environment variables found:\n");
 
 			for (String key : environment.keySet())
 			{
-				logger.info("- {} : {}", key, environment.get(key));
-			}
+				logger.debug("- {} : {}", key, environment.get(key));
+			}*/
 
 			if (System.getenv("CADP") == null)
 			{
+				logger.error("Environment variable $CADP is not set! Please fix this error and retry.");
 				throw new RuntimeException("Environment variable $CADP is not set! Please fix this error and retry.");
 			}
 
-			if (System.getenv("PATH") != null && !System.getenv("PATH").contains("cadp"))
+			if (System.getenv("PATH") != null
+				&& !System.getenv("PATH").contains("cadp"))
 			{
+				logger.error("Environment variable $PATH exists but does not contain \"cadp\" ({})", System.getenv("PATH"));
 				throw new RuntimeException("Environment variable $PATH exists but does not contain \"cadp\" (" +
 						System.getenv("PATH") + ")");
 			}
 
-			logger.info("CADP dir: \"" + System.getenv("CADP") + "\".");
+			//logger.debug("CADP dir: \"{}\".", System.getenv("CADP"));
 
 			final CommandManager commandManager = new CommandManager("cadp_lib", new File(outputFolder), "-1");
 			commandManager.execute();
@@ -496,18 +505,22 @@ public class Vbpmn
 
 		try
 		{
-			//Load the Pif2Lnt class located in the package corresponding to the good version
-			final Class<? extends Pif2LntGeneric> pif2LntClass = (Class<? extends Pif2LntGeneric>)
-					Class.forName("fr.inria.convecs.optimus.py_to_java.cadp_compliance." + cadpVersionDir + ".Pif2Lnt");
+			//Load the Pif2Lnt class located in the package corresponding to the good CADP version
+			final String classPath = "fr.inria.convecs.optimus.py_to_java.cadp_compliance." + cadpVersionDir + ".Pif2Lnt";
+			final Class<? extends Pif2LntGeneric> pif2LntClass = (Class<? extends Pif2LntGeneric>) Class.forName(classPath);
 			final Constructor<? extends Pif2LntGeneric> pif2LntConstructor = pif2LntClass.getDeclaredConstructor();
 			pif2lnt = pif2LntConstructor.newInstance();
 		}
-		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
-			   IllegalAccessException e)
+		catch (ClassNotFoundException
+			   | NoSuchMethodException
+			   | InvocationTargetException
+			   | InstantiationException
+			   | IllegalAccessException e)
 		{
 			final String errorMessage = "Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
 					+ cadpVersionDir + "\" exists and contains \"Pif2Lnt.java\"). If yes, please send an email to the staff.";
 			System.out.println(errorMessage);
+			logger.error(errorMessage);
 			throw new RuntimeException(errorMessage, e);
 		}
 
@@ -522,17 +535,21 @@ public class Vbpmn
 		try
 		{
 			//Load the BpmnTypesBuilder class located in the package corresponding to the good version
-			final Class<? extends BpmnTypesBuilderGeneric> bpmnTypesBuilderClass = (Class<? extends BpmnTypesBuilderGeneric>)
-					Class.forName("fr.inria.convecs.optimus.py_to_java.cadp_compliance." + cadpVersionDir + ".BpmnTypesBuilder");
+			final String classPath = "fr.inria.convecs.optimus.py_to_java.cadp_compliance." + cadpVersionDir + ".BpmnTypesBuilder";
+			final Class<? extends BpmnTypesBuilderGeneric> bpmnTypesBuilderClass = (Class<? extends BpmnTypesBuilderGeneric>) Class.forName(classPath);
 			final Constructor<? extends BpmnTypesBuilderGeneric> bpmnTypesBuilderConstructor = bpmnTypesBuilderClass.getDeclaredConstructor();
 			bpmnTypesBuilder = bpmnTypesBuilderConstructor.newInstance();
 		}
-		catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException |
-			   IllegalAccessException e)
+		catch (ClassNotFoundException
+			   | NoSuchMethodException
+			   | InvocationTargetException
+			   | InstantiationException
+			   | IllegalAccessException e)
 		{
 			final String errorMessage = "Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
 					+ cadpVersionDir + "\" exists and contains \"BpmnTypesBuilder.java\"). If yes, please send an email to the staff.";
 			System.out.println(errorMessage);
+			logger.error(errorMessage);
 			throw new RuntimeException(errorMessage, e);
 		}
 
@@ -613,14 +630,16 @@ public class Vbpmn
 			super(model1, model2);
 
 			if (!OPERATIONS.contains(operation)
-					|| operation.equals(HIDING_OPERATION))
+				|| operation.equals(HIDING_OPERATION))
 			{
+				logger.error("Operation should be in {} and \"_\" is only for hiding. Received \"{}\".", OPERATIONS, operation);
 				throw new RuntimeException("Operation should be in " + OPERATIONS + " and \"_\" is only for hiding. " +
 						"Received \"" + operation + "\".");
 			}
 
 			if (!SELECTIONS.contains(renamed))
 			{
+				logger.error("Selection should be in {}. Received \"{}\".", SELECTIONS, renamed);
 				throw new RuntimeException("Selection should be in " + SELECTIONS + ". Received \"" + renamed + "\".");
 			}
 
@@ -633,7 +652,7 @@ public class Vbpmn
 		}
 
 		/**
-		 * Generates SVL script to check the property on both models.
+		 * Generates an SVL script to check the property on both models.
 		 *
 		 * @param filename is the filename of the SVL script to create.
 		 */
@@ -722,6 +741,7 @@ public class Vbpmn
 						break;
 					default:
 						//Should never happen
+						logger.error("The list of elements to rename is not empty but the selectionis \"{}\"!", this.renamed);
 						throw new IllegalStateException("The list of elements to rename is not empty but the selection" +
 								"is \"" + this.renamed + "\"!");
 				}
@@ -780,6 +800,13 @@ public class Vbpmn
 				if (commandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 				{
 					throw new RuntimeException("An error occurred during the execution of the SVL script:\n\n" + commandManager.stdErr());
+				}
+
+				if (!commandManager.stdOut().contains("TRUE")
+						&& !commandManager.stdOut().contains("FALSE"))
+				{
+					throw new RuntimeException("An error occurred during the execution of the SVL script. See the" +
+							".log file for more information.");
 				}
 
 				final File resFile = new File(outputFolder + File.separator + DIAGNOSTIC_FILE);
@@ -907,6 +934,13 @@ public class Vbpmn
 					throw new RuntimeException("An error occurred during the execution of the SVL script:\n\n" + commandManager.stdErr());
 				}
 
+				if (!commandManager.stdOut().contains("TRUE")
+					&& !commandManager.stdOut().contains("FALSE"))
+				{
+					throw new RuntimeException("An error occurred during the execution of the SVL script. See the .log" +
+							" file for more information.");
+				}
+
 				final File resFile = new File(outputFolder + File.separator + DIAGNOSTIC_FILE);
 				final PrintWriter printWriter;
 
@@ -923,7 +957,7 @@ public class Vbpmn
 				printWriter.flush();
 				printWriter.close();
 
-				return !commandManager.stdOut().contains("FALSE");
+				return commandManager.stdOut().contains("TRUE");
 			}
 			catch (IOException | InterruptedException e)
 			{
