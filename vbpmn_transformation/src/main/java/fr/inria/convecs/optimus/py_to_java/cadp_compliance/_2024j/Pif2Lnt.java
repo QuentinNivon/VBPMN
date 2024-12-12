@@ -3394,7 +3394,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 		 *
 		 * @return the list of synchronisation points
 		 */
-		ArrayList<String> computeAddSynchroPoints(final boolean needCorrespondingJoin)
+		ArrayList<String> computeAddSynchroPoints()
 		{
 			final ArrayList<String> res = new ArrayList<>();
 
@@ -3402,10 +3402,20 @@ public class Pif2Lnt extends Pif2LntGeneric
 			{
 				if (n instanceof OrSplitGateway)
 				{
-					if (needCorrespondingJoin
-							&& ((OrSplitGateway) n).getCorrespOrJoin().isEmpty())
+					final String identifierToUse;
+
+					if (isBalanced)
 					{
-						continue;
+						if (((OrSplitGateway) n).getCorrespOrJoin().isEmpty())
+						{
+							continue;
+						}
+
+						identifierToUse = ((OrSplitGateway) n).getCorrespOrJoin();
+					}
+					else
+					{
+						identifierToUse = n.identifier();
 					}
 
 					final ArrayList<String> alphaOut = new ArrayList<>();
@@ -3422,7 +3432,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					for (ArrayList<String> ignored : allCombinations)
 					{
-						res.add(n.identifier() + "_" + counter);
+						res.add(identifierToUse + "_" + counter);
 						counter++;
 					}
 				}
@@ -3656,7 +3666,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final Pair<String, Integer> flowMsgsAndPosition = this.getFlowMsgsAndLineLength(processIdentifier.length(), processIdentifier.length());
 			stringBuilder.append(flowMsgsAndPosition.getLeft());
 			//Add split synchro params
-			final ArrayList<String> synchroParams = this.computeAddSynchroPoints(false);
+			final ArrayList<String> synchroParams = this.computeAddSynchroPoints();
 			int nbCharCurrentLine = flowMsgsAndPosition.getRight();
 
 			if (!synchroParams.isEmpty())
@@ -3994,7 +4004,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(minIndent, minIndent);
 					parJoinBeginBuilder.append(flowMsgsAndLineLength.getLeft())
 							.append(", ");
-					final ArrayList<String> synchroPoints = this.computeAddSynchroPoints(false);
+					final ArrayList<String> synchroPoints = this.computeAddSynchroPoints();
 					nbCharCurrentLine = flowMsgsAndLineLength.getRight() + 2;
 
 					for (String synchroPoint : synchroPoints)
@@ -4237,7 +4247,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 
 					nbCharCurrentLine = minIndent + flowMsgsAndLineLength.getRight();
 
-					final ArrayList<String> synchroPoints = this.computeAddSynchroPoints(false);
+					final ArrayList<String> synchroPoints = this.computeAddSynchroPoints();
 
 					incJoinBeginBuilder.append(", ");
 					nbCharCurrentLine += 2;
@@ -4467,7 +4477,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final Pair<String, Integer> flowMsgsAndLineLength = this.getFlowMsgsAndLineLength(23, 23);
 
 			stringBuilder.append(flowMsgsAndLineLength.getLeft());
-			ArrayList<String> synchroPoints = this.computeAddSynchroPoints(false);
+			ArrayList<String> synchroPoints = this.computeAddSynchroPoints();
 			nbCharCurrentLine = flowMsgsAndLineLength.getRight() + 2;
 			stringBuilder.append(", ");
 
@@ -4552,7 +4562,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final Pair<String, Integer> flowMsgsAndLineLength2 = this.getFlowMsgsAndLineLength(minIndent2, minIndent2);
 			stringBuilder.append(flowMsgsAndLineLength2.getLeft())
 					.append(", ");
-			final ArrayList<String> synchroPoints2 = this.computeAddSynchroPoints(false);
+			final ArrayList<String> synchroPoints2 = this.computeAddSynchroPoints();
 			nbCharCurrentLine = flowMsgsAndLineLength2.getRight() + 2;
 
 			for (String synchroPoint : synchroPoints2)
@@ -4949,7 +4959,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 			lntBuilder.append("is\n");
 
 			//Computes additional synchros for or splits/joins
-			final ArrayList<String> synchroPoints = isBalanced ? this.computeAddSynchroPoints(true) : this.computeAddSynchroPoints(false);
+			final ArrayList<String> synchroPoints = this.computeAddSynchroPoints();
 			final int nbSync = synchroPoints.size();
 			lntBuilder.append(Utils.indentLNT(1));
 			lntBuilder.append("hide\n");
