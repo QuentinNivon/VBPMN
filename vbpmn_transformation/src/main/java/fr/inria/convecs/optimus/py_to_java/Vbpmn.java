@@ -8,6 +8,7 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,28 +134,41 @@ public class Vbpmn
 	private final String[] sysArgs;
 	private final String outputFolder;
 	private final boolean compareOrVerify;
+	private final boolean forceBcgUsageModel1;
+	private final boolean forceBcgUsageModel2;
+	private final Collection<String> alphabetModel1;
+	private final Collection<String> alphabetModel2;
 	private final ArrayList<Pair<Long, String>> executionTimes;
 
 
 	public Vbpmn(final String[] sysArgs,
 				 final String outputFolder)
 	{
-		this.sysArgs = sysArgs;
-		//if (true) throw new IllegalStateException(Arrays.toString(sysArgs));
-		this.outputFolder = outputFolder;
-		this.compareOrVerify = true;
-		this.executionTimes = new ArrayList<>();
+		this(sysArgs, outputFolder, true, null, null);
 	}
 
 	public Vbpmn(final String[] sysArgs,
 				 final String outputFolder,
 				 final boolean compareOrVerify)
 	{
+		this(sysArgs, outputFolder, compareOrVerify, null, null);
+	}
+
+	public Vbpmn(final String[] sysArgs,
+				 final String outputFolder,
+				 final boolean compareOrVerify,
+				 final Collection<String> alphabetModel1,
+				 final Collection<String> alphabetModel2)
+	{
 		this.sysArgs = sysArgs;
 		//if (true) throw new IllegalStateException(Arrays.toString(sysArgs));
 		this.outputFolder = outputFolder;
 		this.compareOrVerify = compareOrVerify;
+		this.forceBcgUsageModel1 = alphabetModel1 != null;
+		this.forceBcgUsageModel2 = alphabetModel2 != null;
 		this.executionTimes = new ArrayList<>();
+		this.alphabetModel1 = alphabetModel1 == null ? new ArrayList<>() : alphabetModel1;
+		this.alphabetModel2 = alphabetModel2 == null ? new ArrayList<>() : alphabetModel2;
 	}
 
 	@SuppressWarnings("unchecked") //Prevents Java from outputting warnings concerning the cast of Class<capture of ?>
@@ -165,12 +179,13 @@ public class Vbpmn
 
 		//Initialise parser
 		final Namespace args = this.parseArgs();
-
-		//Check if process is balanced or not
 		final File pif1 = new File((String) args.getList("models").get(0));
 		final File pif2 = new File((String) args.getList("models").get(1));
+
+		//Check if process is balanced or not
 		final long checkProcessBalanceStartTime = System.nanoTime();
-		final boolean processIsBalanced = PifUtil.isPifBalanced(pif1) && PifUtil.isPifBalanced(pif2);
+		final boolean processIsBalanced = (this.forceBcgUsageModel1 || PifUtil.isPifBalanced(pif1))
+										&& (this.forceBcgUsageModel2 || PifUtil.isPifBalanced(pif2));
 		final long checkProcessBalanceEndTime = System.nanoTime();
 		final long checkProcessBalanceTime = checkProcessBalanceEndTime - checkProcessBalanceStartTime;
 		this.executionTimes.add(Pair.of(checkProcessBalanceTime, "Checking if the process is balanced took " + Utils.nanoSecToReadable(checkProcessBalanceTime)));
@@ -206,8 +221,14 @@ public class Vbpmn
 
 		//(Re)build the first model
 		final long firstProcessConversionStartTime = System.nanoTime();
-		final String pifModel1 = (String) args.getList("models").get(0);
-		final Triple<Integer, String, Collection<String>> result1 = lazy ? pif2lnt.load(pifModel1, this.compareOrVerify) : pif2lnt.generate(pifModel1, this.compareOrVerify);
+		final Triple<Integer, String, Collection<String>> result1 =
+			this.forceBcgUsageModel1 ?
+			new Triple<>(ReturnCodes.TERMINATION_OK, FilenameUtils.getBaseName(pif1.getName()), this.alphabetModel1) :
+			(
+				lazy ?
+				pif2lnt.load(pif1, this.compareOrVerify) :
+				pif2lnt.generate(pif1, this.compareOrVerify)
+			);
 		final long firstProcessConversionEndTime = System.nanoTime();
 		final long firstProcessConversionTime = firstProcessConversionEndTime - firstProcessConversionStartTime;
 		this.executionTimes.add(Pair.of(firstProcessConversionTime, "The generation of the LNT code of the first process took " + Utils.nanoSecToReadable(firstProcessConversionTime)));
@@ -219,8 +240,14 @@ public class Vbpmn
 		if (OPERATIONS_COMPARISON.contains(args.getString("operation")))
 		{
 			//We are comparing processes, thus we need to build the two processes
-			final String pifModel2 = (String) args.getList("models").get(1);
-			result2 = lazy ? pif2lnt.load(pifModel2, this.compareOrVerify) : pif2lnt.generate(pifModel2, this.compareOrVerify);
+			result2 =
+				this.forceBcgUsageModel2 ?
+				new Triple<>(ReturnCodes.TERMINATION_OK, FilenameUtils.getBaseName(pif2.getName()), this.alphabetModel2) :
+				(
+					lazy ?
+					pif2lnt.load(pif2, this.compareOrVerify) :
+					pif2lnt.generate(pif2, this.compareOrVerify)
+				);
 		}
 		else
 		{
@@ -262,7 +289,7 @@ public class Vbpmn
 		{
 			final String pifContextModel = args.getString("context");
 			System.out.println("Converting \"" + pifContextModel + "\" to LTS...");
-			Triple<Integer, String, Collection<String>> result = lazy ? pif2lnt.load(pifContextModel) : pif2lnt.generate(pifContextModel);
+			Triple<Integer, String, Collection<String>> result = lazy ? pif2lnt.load(new File(pifContextModel)) : pif2lnt.generate(new File(pifContextModel));
 
 			for (String symbol : result.getRight())
 			{

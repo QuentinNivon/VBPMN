@@ -4,15 +4,25 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="logging">
-      <change afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/resources/pif_examples/Process_10a.pif" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/unit_tests/Test32.java" afterDir="false" />
+    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="correction of a bug resulting in missing identifiers in main due to the merge of the multiple functions computeAddSynchroPoints() in Pif2Lnt.java in version 2024i">
+      <change afterPath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/unit_tests/Test33.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_dist/transformation.war" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_dist/transformation.war" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/Vbpmn.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/Vbpmn.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023k/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023k/Pif2Lnt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023l/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023l/Pif2Lnt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024a/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024a/Pif2Lnt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024b/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024b/Pif2Lnt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024c/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024c/Pif2Lnt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024d/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024d/Pif2Lnt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024e/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024e/Pif2Lnt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024f/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024f/Pif2Lnt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024g/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024g/Pif2Lnt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024h/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024h/Pif2Lnt.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024i/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024i/Pif2Lnt.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024j/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024j/Pif2Lnt.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024k/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024k/Pif2Lnt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/generics/Pif2LntGeneric.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/generics/Pif2LntGeneric.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/GenericTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/GenericTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,11 +58,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "JUnit.FullTests.executor": "Run",
-    "JUnit.Test22.executor": "Run",
-    "JUnit.Test27.executor": "Run",
-    "JUnit.Test31.executor": "Run",
-    "JUnit.Test32.executor": "Run",
+    "JUnit.Test33.executor": "Run",
     "Maven.transformation [clean].executor": "Run",
     "Maven.transformation [compile].executor": "Run",
     "Maven.transformation [deploy].executor": "Run",
@@ -95,37 +101,7 @@
       <recent name="fr.inria.convecs.optimus.compatibility.unit_tests" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.Test32">
-    <configuration name="FullTests" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="transformation" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility" />
-      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.FullTests" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test22" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="transformation" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.unit_tests.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests" />
-      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.Test22" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
+  <component name="RunManager" selected="JUnit.Test7">
     <configuration name="Test27" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="transformation" />
       <extension name="coverage">
@@ -171,13 +147,50 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Test33" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="transformation" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.unit_tests.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests" />
+      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.Test33" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test7" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="transformation" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.unit_tests.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests" />
+      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.Test7" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="transformation" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.Test7" />
+        <item itemvalue="JUnit.Test33" />
         <item itemvalue="JUnit.Test32" />
-        <item itemvalue="JUnit.FullTests" />
-        <item itemvalue="JUnit.Test27" />
-        <item itemvalue="JUnit.Test22" />
         <item itemvalue="JUnit.Test31" />
+        <item itemvalue="JUnit.Test27" />
       </list>
     </recent_temporary>
   </component>
@@ -238,23 +251,15 @@
       <option name="project" value="LOCAL" />
       <updated>1712325462763</updated>
     </task>
-    <task id="LOCAL-00007" summary="logging">
+    <task id="LOCAL-00007" summary="correction of a bug resulting in missing identifiers in main due to the merge of the multiple functions computeAddSynchroPoints() in Pif2Lnt.java in version 2024i">
       <option name="closed" value="true" />
-      <created>1733840148447</created>
+      <created>1734012810427</created>
       <option name="number" value="00007" />
       <option name="presentableId" value="LOCAL-00007" />
       <option name="project" value="LOCAL" />
-      <updated>1733840148447</updated>
+      <updated>1734012810427</updated>
     </task>
-    <task id="LOCAL-00008" summary="logging">
-      <option name="closed" value="true" />
-      <created>1733840161409</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1733840161409</updated>
-    </task>
-    <option name="localTasksCounter" value="9" />
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -274,7 +279,7 @@
     <MESSAGE value="fin traduction pif2lntv1" />
     <MESSAGE value="fin traduction pif2lntv1.py et pif2lntv7.py + merge des deux dans la classe Pif2Lnt.java" />
     <MESSAGE value="travail" />
-    <MESSAGE value="logging" />
-    <option name="LAST_COMMIT_MESSAGE" value="logging" />
+    <MESSAGE value="correction of a bug resulting in missing identifiers in main due to the merge of the multiple functions computeAddSynchroPoints() in Pif2Lnt.java in version 2024i" />
+    <option name="LAST_COMMIT_MESSAGE" value="correction of a bug resulting in missing identifiers in main due to the merge of the multiple functions computeAddSynchroPoints() in Pif2Lnt.java in version 2024i" />
   </component>
 </project>
