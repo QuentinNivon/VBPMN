@@ -77,7 +77,6 @@ vbpmn_transformation/.vs
 $ misc
 *.DS_Store
 *.o
-*.bcg
 
 # compatibility checks
 update_tests/tmp
