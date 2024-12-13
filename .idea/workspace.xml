@@ -4,25 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="correction of a bug resulting in missing identifiers in main due to the merge of the multiple functions computeAddSynchroPoints() in Pif2Lnt.java in version 2024i">
-      <change afterPath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/unit_tests/Test33.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/Vbpmn.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/Vbpmn.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023k/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023k/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023l/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2023l/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024a/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024a/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024b/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024b/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024c/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024c/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024d/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024d/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024e/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024e/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024f/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024f/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024g/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024g/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024h/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024h/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024i/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024i/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024j/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024j/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024k/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024k/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/generics/Pif2LntGeneric.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/generics/Pif2LntGeneric.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/GenericTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/GenericTest.java" afterDir="false" />
+    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="introducing BCG support in tests in order to compare the behaviour of the generated LTS with the one of a reference LTS built by hand.">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/resources/pif_examples/inclusive_A_B_C.pif" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,6 +43,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "JUnit.Test33.executor": "Run",
+    "JUnit.Test7.executor": "Run",
     "Maven.transformation [clean].executor": "Run",
     "Maven.transformation [compile].executor": "Run",
     "Maven.transformation [deploy].executor": "Run",
@@ -259,7 +244,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734012810427</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="introducing BCG support in tests in order to compare the behaviour of the generated LTS with the one of a reference LTS built by hand.">
+      <option name="closed" value="true" />
+      <created>1734106739258</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1734106739258</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -280,6 +273,7 @@
     <MESSAGE value="fin traduction pif2lntv1.py et pif2lntv7.py + merge des deux dans la classe Pif2Lnt.java" />
     <MESSAGE value="travail" />
     <MESSAGE value="correction of a bug resulting in missing identifiers in main due to the merge of the multiple functions computeAddSynchroPoints() in Pif2Lnt.java in version 2024i" />
-    <option name="LAST_COMMIT_MESSAGE" value="correction of a bug resulting in missing identifiers in main due to the merge of the multiple functions computeAddSynchroPoints() in Pif2Lnt.java in version 2024i" />
+    <MESSAGE value="introducing BCG support in tests in order to compare the behaviour of the generated LTS with the one of a reference LTS built by hand." />
+    <option name="LAST_COMMIT_MESSAGE" value="introducing BCG support in tests in order to compare the behaviour of the generated LTS with the one of a reference LTS built by hand." />
   </component>
 </project>
