@@ -97,7 +97,7 @@ public class CommandManager
 				stdErrInputStreamReader.close();
 				stdErrBufferedReader.close();
 
-				 this.returnValue = process.waitFor();
+				this.returnValue = process.waitFor();
 			}
 	 }
 

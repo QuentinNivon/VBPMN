@@ -1,0 +1,11 @@
+The tests located in this directory are separated into two parts:
+
+1) The first part consists in the files named "Test<n>".
+   These files correspond to the tests used to verify that the modifications applied to the LNT language have been
+   handled correctly, i.e., that the translation from BPMN to LNT still works on the new version of CADP.
+
+2) The second part consists in the files named "TestBehaviour<n>".
+   These files correspond to the tests used to verify that the modifications applied to the VBPMN code generator
+   still meet the expected behaviour of the translated BPMN processes.
+   For now, only the main constructs of BPMN are handled by these tests, i.e., inclusive gateways (balanced or not),
+   exclusive gateways (balanced or not), parallel gateways (balanced or not), and loops.

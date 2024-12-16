@@ -136,6 +136,7 @@ public class Vbpmn
 	private final boolean compareOrVerify;
 	private final boolean forceBcgUsageModel1;
 	private final boolean forceBcgUsageModel2;
+	private final Balancement balancement;
 	private final Collection<String> alphabetModel1;
 	private final Collection<String> alphabetModel2;
 	private final ArrayList<Pair<Long, String>> executionTimes;
@@ -144,14 +145,29 @@ public class Vbpmn
 	public Vbpmn(final String[] sysArgs,
 				 final String outputFolder)
 	{
-		this(sysArgs, outputFolder, true, null, null);
+		this(sysArgs, outputFolder, true, null, null, Balancement.COMPUTE_BALANCEMENT);
+	}
+
+	public Vbpmn(final String[] sysArgs,
+				 final String outputFolder,
+				 final Balancement balancement)
+	{
+		this(sysArgs, outputFolder, true, null, null, balancement);
 	}
 
 	public Vbpmn(final String[] sysArgs,
 				 final String outputFolder,
 				 final boolean compareOrVerify)
 	{
-		this(sysArgs, outputFolder, compareOrVerify, null, null);
+		this(sysArgs, outputFolder, compareOrVerify, null, null, Balancement.COMPUTE_BALANCEMENT);
+	}
+
+	public Vbpmn(final String[] sysArgs,
+				 final String outputFolder,
+				 final boolean compareOrVerify,
+				 final Balancement balancement)
+	{
+		this(sysArgs, outputFolder, compareOrVerify, null, null, balancement);
 	}
 
 	public Vbpmn(final String[] sysArgs,
@@ -159,6 +175,16 @@ public class Vbpmn
 				 final boolean compareOrVerify,
 				 final Collection<String> alphabetModel1,
 				 final Collection<String> alphabetModel2)
+	{
+		this(sysArgs, outputFolder, compareOrVerify, alphabetModel1, alphabetModel2, Balancement.COMPUTE_BALANCEMENT);
+	}
+
+	public Vbpmn(final String[] sysArgs,
+				 final String outputFolder,
+				 final boolean compareOrVerify,
+				 final Collection<String> alphabetModel1,
+				 final Collection<String> alphabetModel2,
+				 final Balancement balancement)
 	{
 		this.sysArgs = sysArgs;
 		//if (true) throw new IllegalStateException(Arrays.toString(sysArgs));
@@ -169,6 +195,7 @@ public class Vbpmn
 		this.executionTimes = new ArrayList<>();
 		this.alphabetModel1 = alphabetModel1 == null ? new ArrayList<>() : alphabetModel1;
 		this.alphabetModel2 = alphabetModel2 == null ? new ArrayList<>() : alphabetModel2;
+		this.balancement = balancement;
 	}
 
 	@SuppressWarnings("unchecked") //Prevents Java from outputting warnings concerning the cast of Class<capture of ?>
@@ -184,8 +211,10 @@ public class Vbpmn
 
 		//Check if process is balanced or not
 		final long checkProcessBalanceStartTime = System.nanoTime();
-		final boolean processIsBalanced = (this.forceBcgUsageModel1 || PifUtil.isPifBalanced(pif1))
-										&& (this.forceBcgUsageModel2 || PifUtil.isPifBalanced(pif2));
+		final boolean processIsBalanced = this.balancement == Balancement.COMPUTE_BALANCEMENT ?
+										((this.forceBcgUsageModel1 || PifUtil.isPifBalanced(pif1))
+										&& (this.forceBcgUsageModel2 || PifUtil.isPifBalanced(pif2))) :
+										this.balancement == Balancement.FORCE_BALANCEMENT;
 		final long checkProcessBalanceEndTime = System.nanoTime();
 		final long checkProcessBalanceTime = checkProcessBalanceEndTime - checkProcessBalanceStartTime;
 		this.executionTimes.add(Pair.of(checkProcessBalanceTime, "Checking if the process is balanced took " + Utils.nanoSecToReadable(checkProcessBalanceTime)));

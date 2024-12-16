@@ -86,7 +86,7 @@ public class FullTests
 		}
 
 		//Load the Test class located in the compatibility package
-		final String path = Paths.get("").toAbsolutePath().toString() + File.separator + "src" + File.separator
+		final String path = Paths.get("").toAbsolutePath() + File.separator + "src" + File.separator
 				+ "test" + File.separator + "java" + File.separator + "fr" + File.separator + "inria" + File.separator
 				+ "convecs" + File.separator + "optimus" + File.separator + "compatibility" + File.separator
 				+ "unit_tests";
@@ -97,6 +97,9 @@ public class FullTests
 
 		for (File file : Objects.requireNonNull(new File(path).listFiles()))
 		{
+			if (file.isDirectory()
+				|| file.getName().equals("README")) continue;
+
 			//Load the Pif2Lnt class located in the package corresponding to the good version
 			final Class<? extends GenericTest> testClass = (Class<? extends GenericTest>)
 					Class.forName("fr.inria.convecs.optimus.compatibility.unit_tests." + file.getName().replace(".java", ""));
