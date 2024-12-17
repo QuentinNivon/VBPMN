@@ -3,6 +3,7 @@ package fr.inria.convecs.optimus.compatibility.unit_tests;
 import fr.inria.convecs.optimus.compatibility.GenericTest;
 import fr.inria.convecs.optimus.py_to_java.ShellColor;
 import fr.inria.convecs.optimus.py_to_java.Vbpmn;
+import fr.inria.convecs.optimus.util.Balancement;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
@@ -38,6 +39,7 @@ public class TestBehaviour1 extends GenericTest
 				tmpDir,
 				null,
 				Arrays.asList("A", "B", "C"),		//Alphabet of the LTS, necessary when passing a BCG file directly
+				Balancement.FORCE_BALANCEMENT,
 				filePaths.getLeft(),
 				filePaths.getRight(),
 				COMPARISON_MODE,

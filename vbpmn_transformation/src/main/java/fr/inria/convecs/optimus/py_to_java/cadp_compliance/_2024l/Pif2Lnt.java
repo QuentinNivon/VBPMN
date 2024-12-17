@@ -4386,7 +4386,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					.append("*)\n");
 
 			stringBuilder.append(Utils.indent(nodeMinIndent))
-					.append(this.initial.firstOutgoingFlow().identifier())
+					.append(this.finals.get(0).firstIncomingFlow().identifier())
 					.append("_finish (?")
 					.append(ident1)
 					.append(" of ID);\n");
@@ -4411,7 +4411,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					.append(Utils.indent(3))
 					.append("is_sync_done (bpmn, activeflows, syncstore, mergeid) then\n")
 					.append(Utils.indentLNT(4))
-					.append("MoveOn (mergeid);\n")
+					.append("MoveOn (mergeid);\n") //mergeid no longer requires "!" (see HISTORY v2022-k)
 			;
 
 			if (incJoinBegin.isEmpty())

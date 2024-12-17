@@ -4384,7 +4384,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 					.append("*)\n");
 
 			stringBuilder.append(Utils.indent(nodeMinIndent))
-					.append(this.initial.firstOutgoingFlow().identifier())
+					.append(this.finals.get(0).firstIncomingFlow().identifier())
 					.append("_finish (?")
 					.append(ident1)
 					.append(" of ID);\n");
