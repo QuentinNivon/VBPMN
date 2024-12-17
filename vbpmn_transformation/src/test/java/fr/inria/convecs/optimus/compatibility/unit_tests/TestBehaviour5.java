@@ -37,7 +37,7 @@ public class TestBehaviour5 extends GenericTest
 		final Vbpmn vbpmn = this.getVbpmnInstance(
 				tmpDir,
 				null,
-				Arrays.asList("A", "B", "C"),		//Alphabet of the LTS, necessary when passing a BCG file directly
+				Arrays.asList("A", "B", "C", "D"),		//Alphabet of the LTS, necessary when passing a BCG file directly
 				filePaths.getLeft(),
 				filePaths.getRight(),
 				COMPARISON_MODE,

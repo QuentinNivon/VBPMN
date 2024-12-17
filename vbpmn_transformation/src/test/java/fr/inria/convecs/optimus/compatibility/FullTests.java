@@ -1,6 +1,8 @@
 package fr.inria.convecs.optimus.compatibility;
 
+import fr.inria.convecs.optimus.py_to_java.ReturnCodes;
 import fr.inria.convecs.optimus.py_to_java.ShellColor;
+import fr.inria.convecs.optimus.util.CommandManager;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -51,42 +53,46 @@ public class FullTests
 		{
 			throw new RuntimeException("Environment variable $CADP is not set! Please fix this error and retry.");
 		}
+		else if (System.getenv("PATH") != null
+				&& !System.getenv("PATH").contains("cadp"))
+		{
+			throw new RuntimeException("Environment variable $CADP is set but $PATH does not contain the path to CADP!");
+		}
 		else
 		{
 			System.out.println("Environment variable $CADP is set. Tests start.");
 		}
 
+		final File workingDirectory = new File(Paths.get("").toAbsolutePath().toString());
 		final String cadpVersion;
 
 		//Compute CADP version in use
 		try
 		{
-			final Process cadpLibCommand = Runtime.getRuntime().exec("cadp_lib -1");
-			final BufferedReader stdInput = new BufferedReader(new InputStreamReader(cadpLibCommand.getInputStream()));
-			String line;
+			final String command = "cadp_lib";
+			final String[] args = {"-1"};
+			final CommandManager commandManager = new CommandManager(command, workingDirectory, args);
+			commandManager.execute();
 
-			// Read the output from the command
-			final StringBuilder stdOutBuilder = new StringBuilder();
-			while ((line = stdInput.readLine()) != null)
+			if (commandManager.returnValue() != ReturnCodes.TERMINATION_OK)
 			{
-				stdOutBuilder.append(line);
+				throw new RuntimeException("An error occurred during the execution of the \"cadp_lib -1\" command: " +
+						commandManager.stdErr());
 			}
 
-			cadpLibCommand.destroy();
-
 			//Split answer by spaces
-			String[] splitAnswer = stdOutBuilder.toString().split("\\s+");
+			final String[] splitAnswer = commandManager.stdOut().split("\\s+");
 			//The 2nd element is the version code, i.e. "2023k"
 			cadpVersion = splitAnswer[1].replace(" ", "");
 			System.out.println("----------TESTS ARE PERFORMED FOR THE CADP VERSION \"" + cadpVersion + "\"----------");
 		}
-		catch (IOException e)
+		catch (IOException | InterruptedException e)
 		{
 			throw new RuntimeException(e);
 		}
 
 		//Load the Test class located in the compatibility package
-		final String path = Paths.get("").toAbsolutePath() + File.separator + "src" + File.separator
+		final String path = workingDirectory.getAbsolutePath() + File.separator + "src" + File.separator
 				+ "test" + File.separator + "java" + File.separator + "fr" + File.separator + "inria" + File.separator
 				+ "convecs" + File.separator + "optimus" + File.separator + "compatibility" + File.separator
 				+ "unit_tests";
