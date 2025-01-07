@@ -4,13 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="ajout d'un &quot;!nat_bits &lt;n&gt;&quot; dans le cas où le nombre d'identifiants est supérieur à la limite par défaut de CADP (256)">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024i/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024i/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024j/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024j/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024k/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024k/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024l/Pif2Lnt.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024l/Pif2Lnt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/unit_tests/TestBehaviour1.java" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_transformation/src/test/java/fr/inria/convecs/optimus/compatibility/unit_tests/TestBehaviour1.java" afterDir="false" />
+    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="correction d'un bug générant une transition tau non désirée entre l'état de départ et l'état final">
+      <change beforePath="$PROJECT_DIR$/vbpmn_dist/transformation.war" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_dist/transformation.war" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -298,7 +293,15 @@
       <option name="project" value="LOCAL" />
       <updated>1734431408718</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="correction d'un bug générant une transition tau non désirée entre l'état de départ et l'état final">
+      <option name="closed" value="true" />
+      <created>1734450919233</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1734450919233</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -324,6 +327,7 @@
     <MESSAGE value="adding bcg files" />
     <MESSAGE value="update gitignore to not ignore .bcg files anymore" />
     <MESSAGE value="ajout d'un &quot;!nat_bits &lt;n&gt;&quot; dans le cas où le nombre d'identifiants est supérieur à la limite par défaut de CADP (256)" />
-    <option name="LAST_COMMIT_MESSAGE" value="ajout d'un &quot;!nat_bits &lt;n&gt;&quot; dans le cas où le nombre d'identifiants est supérieur à la limite par défaut de CADP (256)" />
+    <MESSAGE value="correction d'un bug générant une transition tau non désirée entre l'état de départ et l'état final" />
+    <option name="LAST_COMMIT_MESSAGE" value="correction d'un bug générant une transition tau non désirée entre l'état de départ et l'état final" />
   </component>
 </project>
