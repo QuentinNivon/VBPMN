@@ -1,4 +1,4 @@
-package fr.inria.convecs.optimus.py_to_java.cadp_compliance._2024i;
+package fr.inria.convecs.optimus.py_to_java.cadp_compliance._2024l;
 
 import fr.inria.convecs.optimus.pif.Peer;
 import fr.inria.convecs.optimus.pif.SequenceFlow;
@@ -32,6 +32,7 @@ public class Pif2Lnt extends Pif2LntGeneric
 	private static final String SYNC_STORE = "syncstore";
 	private static final String MERGE_STORE = "mergestore";
 	private static final String PAR_STORE = "parstore";
+	private static final int DEFAULT_NAT_BITS = 8;
 	private static final int MAX_CHAR_PER_LINE = 79;
 	private static final int MAX_VARS_PER_LINE = 8; //After 8 variables, the line size necessarily exceeds 79 chars thus multiple lines are required
 	private static final int PROCESS_INDENT_LENGTH = 8;
@@ -4763,9 +4764,13 @@ public class Pif2Lnt extends Pif2LntGeneric
 		{
 			final String fileName = "id.lnt";
 			final StringBuilder idFileBuilder = new StringBuilder();
+			final int nbIdentifiers = this.nodes.size() + this.finals.size() + this.flows.size() + 2;
+			final String natBits = computeRequiredNatBits(nbIdentifiers);
 
 			//Generates an ID type for all identifiers
-			idFileBuilder.append("module id with get, <, == is\n\n")
+			idFileBuilder.append("module id with get, <, == is")
+					.append(natBits)
+					.append("\n\n")
 					.append("(* Data type for identifiers, useful for scheduling purposes *)\n")
 					.append("type ID is\n")
 					.append(this.name);
@@ -4823,11 +4828,14 @@ public class Pif2Lnt extends Pif2LntGeneric
 			final String fileName = this.name + LNT_SUFFIX;
 			final File file = new File(outputFolder + File.separator + fileName);
 			final StringBuilder lntBuilder = new StringBuilder();
+			final String natBits = isBalanced ? computeRequiredNatBits(this.flows.size()) : "";
 
 			lntBuilder.append("module ")
 					.append(this.name)
 					.append(isBalanced ? "" : "(bpmntypes)")
-					.append(" with get, <, == is\n\n")
+					.append(" with get, <, == is")
+					.append(natBits)
+					.append("\n\n")
 					.append(STANDARD_LNT_SEPARATOR);
 
 			if (isBalanced)
@@ -5598,6 +5606,23 @@ public class Pif2Lnt extends Pif2LntGeneric
 				this.addFlow(flow);
 			}
 		}
+	}
+
+	private String computeRequiredNatBits(final int nbIdentifiers)
+	{
+		if (nbIdentifiers <= (1 << DEFAULT_NAT_BITS))
+		{
+			return "";
+		}
+
+		int nbIncrement = 1;
+
+		while (nbIdentifiers > (1 << (DEFAULT_NAT_BITS + nbIncrement)))
+		{
+			nbIncrement++;
+		}
+
+		return " !nat_bits " + (DEFAULT_NAT_BITS + nbIncrement);
 	}
 
 	/**
