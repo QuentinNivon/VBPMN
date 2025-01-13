@@ -138,7 +138,7 @@ public class ValidationService {
 			} else {
 				ModelValidator validator = new VbpmnValidator(scriptsPath, outputDir);
 				String result;
-				List<String> operationMode = new ArrayList<String>();
+				List<String> operationMode = new ArrayList<>();
 				if (fileList.size() == 2) {
 					String mode = formData.getField("mode").getValue();
 					String option = formData.getField("option").getValue();

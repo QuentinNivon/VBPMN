@@ -88,15 +88,23 @@ public class VbpmnValidator implements ModelValidator {
 
 			if (!result)
 			{
-				String bcgFileName = "bisimulator.bcg";
+				final String bcgFileName;
+				final String dotFileName;
+
 				if (options.contains("property-implied")
 					|| options.contains("property-and"))
 				{
 					bcgFileName = "evaluator.bcg";
+					dotFileName = "counterexample.dot";
+				}
+				else
+				{
+					bcgFileName = "bisimulator.bcg";
+					dotFileName = "bisimulator.dot";
 				}
 
 				final File bcgFile = new File(this.outputFolder + File.separator + bcgFileName);
-				final String dotBcg = generateDotFile(bcgFile.getAbsolutePath());
+				final String dotBcg = generateDotFile(bcgFile.getAbsolutePath(), dotFileName);
 				builder.append("|").append(dotBcg);
 			}
 		}
@@ -238,7 +246,7 @@ public class VbpmnValidator implements ModelValidator {
 	private String generateDotFile(String absolutePath) throws IOException, InterruptedException {
 		String dotFile = absolutePath.replace(".bcg", ".dot");
 		logger.debug("dot file: {}", dotFile);
-		List<String> command = new ArrayList<String>();
+		List<String> command = new ArrayList<>();
 		command.add("bcg_io");
 		command.add(absolutePath);
 		command.add(dotFile);
@@ -249,13 +257,55 @@ public class VbpmnValidator implements ModelValidator {
 		logger.debug("The exec result of command [ {} ] is {}", command, execResult);
 
 		if (execResult != 0) {
-			throw new RuntimeException("Erorr executing BCG draw - " + commandExecutor.getErrors());
+			throw new RuntimeException("Error executing BCG draw - " + commandExecutor.getErrors());
 		}
 
 		File outputFile = new File(dotFile);
 
 		String dotOutput = FileUtils.readFileToString(outputFile, "UTF-8");
 		dotOutput = dotOutput.replaceAll("\\R", " "); // Java 8 carriage return replace
+		//outputFile.renameTo(new File(outputFile + File.separator + "counterexample.dot"));
+		/*if (!outputFile.renameTo(new File(outputFolder + File.separator + "counterexample.dot")))
+		{
+			throw new IllegalStateException("Error renaming DOT file.");
+		}*/
+
+		return dotOutput.trim();
+	}
+
+	private String generateDotFile(String absolutePath,
+								   final String newName) throws IOException, InterruptedException
+	{
+		String dotFile = absolutePath.replace(".bcg", ".dot");
+		logger.debug("dot file: {}", dotFile);
+		List<String> command = new ArrayList<>();
+		command.add("bcg_io");
+		command.add(absolutePath);
+		command.add(dotFile);
+
+		CommandExecutor commandExecutor = new CommandExecutor(command, new File(outputFolder));
+		int execResult = commandExecutor.executeCommand();
+
+		logger.debug("The exec result of command [ {} ] is {}", command, execResult);
+
+		if (execResult != 0)
+		{
+			throw new RuntimeException("Error executing BCG draw - " + commandExecutor.getErrors());
+		}
+
+		File outputFile = new File(dotFile);
+
+		String dotOutput = FileUtils.readFileToString(outputFile, "UTF-8");
+		dotOutput = dotOutput.replaceAll("\\R", " "); // Java 8 carriage return replace
+		//outputFile.renameTo(new File(outputFile + File.separator + "counterexample.dot"));
+		final File newDotFile = new File(outputFolder + File.separator + newName);
+
+		if (!outputFile.renameTo(newDotFile))
+		{
+			throw new IllegalStateException(
+				"Error renaming DOT file \"" + outputFile.getAbsolutePath() + "\" to \"" + newDotFile.getAbsolutePath() + "\"."
+			);
+		}
 
 		return dotOutput.trim();
 	}
