@@ -28,7 +28,7 @@ import java.util.*;
 public class Main
 {
 	public static final boolean OLD_WEBSITE = false;
-	public static final boolean LOCAL_SITE = false;
+	public static final boolean LOCAL_SITE = true;
 	public static final boolean LOCAL_TESTING = false;
 	private static final int BCG_FILE_REDUCTION_THRESHOLD = 1000;
 
