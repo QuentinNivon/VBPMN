@@ -578,8 +578,8 @@ public class Vbpmn
 					File.separator + "transformation" + File.separator + "WEB-INF" + File.separator + "classes" +
 					File.separator + "fr" + File.separator + "inria" + File.separator + "convecs" + File.separator +
 					"optimus" + File.separator + "py_to_java" + File.separator + "cadp_compliance" + File.separator +
-					cadpVersionDir + "\" exists and contains the files \"Pif2Lnt.class\" and \"BpmnTypesBuilder.class\"." +
-					" \nIf yes, please send an email to the staff.";
+					cadpVersionDir + "\" exists and contains the file \"Pif2Lnt.class\". \nIf yes, please send an" +
+					" email to the staff.";
 			System.out.println(errorMessage);
 			logger.error(errorMessage);
 			throw new RuntimeException(errorMessage, e);
@@ -607,8 +607,13 @@ public class Vbpmn
 			   | InstantiationException
 			   | IllegalAccessException e)
 		{
-			final String errorMessage = "Please make sure that the path \"fr.inria.convecs.optimus.py_to_java.cadp_compliance."
-					+ cadpVersionDir + "\" exists and contains \"BpmnTypesBuilder.java\"). If yes, please send an email to the staff.";
+			final String errorMessage = "Please make sure that you downloaded the latest version of VBPMN. \nIf yes," +
+					" please check that the path \"<your_tomcat_installation_path>" + File.separator + "webapps" +
+					File.separator + "transformation" + File.separator + "WEB-INF" + File.separator + "classes" +
+					File.separator + "fr" + File.separator + "inria" + File.separator + "convecs" + File.separator +
+					"optimus" + File.separator + "py_to_java" + File.separator + "cadp_compliance" + File.separator +
+					cadpVersionDir + "\" exists and contains the file \"BpmnTypesBuilder.class\". \nIf yes, please" +
+					" send an email to the staff.";
 			System.out.println(errorMessage);
 			logger.error(errorMessage);
 			throw new RuntimeException(errorMessage, e);
