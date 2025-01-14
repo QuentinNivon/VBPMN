@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="correction d'un bug générant une transition tau non désirée entre l'état de départ et l'état final">
+    <list default="true" id="b5c4ef94-86dc-4d7c-9e18-2bedfcdf108b" name="Changes" comment="better &quot;not latest VBPMN version installed&quot; error">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vbpmn_dist/transformation.war" beforeDir="false" afterPath="$PROJECT_DIR$/vbpmn_dist/transformation.war" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -41,17 +42,6 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;JUnit.FullTests.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.Test1.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.Test33.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.Test7.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TestBehaviour1.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TestBehaviour2.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TestBehaviour4.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TestBehaviour5.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TestBehaviour6.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TestBehaviour7.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TestBehaviour8.executor&quot;: &quot;Run&quot;,
     &quot;Maven.transformation [clean].executor&quot;: &quot;Run&quot;,
     &quot;Maven.transformation [compile].executor&quot;: &quot;Run&quot;,
     &quot;Maven.transformation [deploy].executor&quot;: &quot;Run&quot;,
@@ -75,27 +65,22 @@
     &quot;Maven.transformation [verify].executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/quentin/Documents/VBPMN/vbpmn_transformation/src/main/resources/pif_examples&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/quentin/Documents/vbpmn/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/resources/pif_examples" />
-      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/cadp_compliance/_2024l" />
       <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024c" />
       <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024b" />
       <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2024a" />
-    </key>
-    <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="fr.inria.convecs.optimus.compatibility.unit_tests" />
-      <recent name="fr.inria.convecs.optimus.compatibility.unit_tests.buggy_atm" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java/_2023l" />
+      <recent name="$PROJECT_DIR$/vbpmn_transformation/src/main/java/fr/inria/convecs/optimus/py_to_java" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.TestBehaviour1">
+  <component name="RunManager" selected="JUnit.FullTests">
     <configuration name="FullTests" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="transformation" />
       <extension name="coverage">
@@ -111,66 +96,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test1" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="transformation" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.unit_tests.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests" />
-      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.Test1" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestBehaviour1" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="transformation" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.unit_tests.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests" />
-      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.TestBehaviour1" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestBehaviour7" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="transformation" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.unit_tests.buggy_atm.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests" />
-      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.TestBehaviour7" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="TestBehaviourZ" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="transformation" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="fr.inria.convecs.optimus.compatibility.unit_tests.buggy_atm.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.buggy_atm" />
-      <option name="MAIN_CLASS_NAME" value="fr.inria.convecs.optimus.compatibility.unit_tests.buggy_atm.TestBehaviourZ" />
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
       <module name="transformation" />
       <option name="filePath" />
@@ -178,15 +103,51 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="transformation [site]" type="MavenRunConfiguration" factoryName="Maven" temporary="true">
+      <MavenSettings>
+        <option name="myGeneralSettings" />
+        <option name="myRunnerSettings" />
+        <option name="myRunnerParameters">
+          <MavenRunnerParameters>
+            <option name="cmdOptions" />
+            <option name="profiles">
+              <set />
+            </option>
+            <option name="goals">
+              <list>
+                <option value="site" />
+              </list>
+            </option>
+            <option name="multimoduleDir" />
+            <option name="pomFileName" value="pom.xml" />
+            <option name="profilesMap">
+              <map />
+            </option>
+            <option name="projectsCmdOptionValues">
+              <list />
+            </option>
+            <option name="resolveToWorkspace" value="false" />
+            <option name="workingDirPath" value="$PROJECT_DIR$/vbpmn_transformation" />
+          </MavenRunnerParameters>
+        </option>
+      </MavenSettings>
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.TestBehaviour1" />
-        <item itemvalue="JUnit.Test1" />
+        <item itemvalue="Maven.transformation [site]" />
         <item itemvalue="JUnit.FullTests" />
-        <item itemvalue="JUnit.TestBehaviourZ" />
-        <item itemvalue="JUnit.TestBehaviour7" />
+        <item itemvalue="Maven.transformation [site]" />
+        <item itemvalue="Maven.transformation [site]" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="jdk-11.0.16-jbr_dcevm-11.0.16-4caba194b151-a86c5f01" />
+      </set>
+    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -245,63 +206,23 @@
       <option name="project" value="LOCAL" />
       <updated>1712325462763</updated>
     </task>
-    <task id="LOCAL-00007" summary="correction of a bug resulting in missing identifiers in main due to the merge of the multiple functions computeAddSynchroPoints() in Pif2Lnt.java in version 2024i">
+    <task id="LOCAL-00007" summary="better &quot;not latest VBPMN version installed&quot; error">
       <option name="closed" value="true" />
-      <created>1734012810427</created>
+      <created>1736847331399</created>
       <option name="number" value="00007" />
       <option name="presentableId" value="LOCAL-00007" />
       <option name="project" value="LOCAL" />
-      <updated>1734012810427</updated>
+      <updated>1736847331399</updated>
     </task>
-    <task id="LOCAL-00008" summary="introducing BCG support in tests in order to compare the behaviour of the generated LTS with the one of a reference LTS built by hand.">
+    <task id="LOCAL-00008" summary="better &quot;not latest VBPMN version installed&quot; error">
       <option name="closed" value="true" />
-      <created>1734106739258</created>
+      <created>1736847449827</created>
       <option name="number" value="00008" />
       <option name="presentableId" value="LOCAL-00008" />
       <option name="project" value="LOCAL" />
-      <updated>1734106739258</updated>
+      <updated>1736847449827</updated>
     </task>
-    <task id="LOCAL-00009" summary="test case">
-      <option name="closed" value="true" />
-      <created>1734106788687</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1734106788687</updated>
-    </task>
-    <task id="LOCAL-00010" summary="adding bcg files">
-      <option name="closed" value="true" />
-      <created>1734106896702</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1734106896702</updated>
-    </task>
-    <task id="LOCAL-00011" summary="update gitignore to not ignore .bcg files anymore">
-      <option name="closed" value="true" />
-      <created>1734106939986</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1734106939986</updated>
-    </task>
-    <task id="LOCAL-00012" summary="ajout d'un &quot;!nat_bits &lt;n&gt;&quot; dans le cas où le nombre d'identifiants est supérieur à la limite par défaut de CADP (256)">
-      <option name="closed" value="true" />
-      <created>1734431408718</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1734431408718</updated>
-    </task>
-    <task id="LOCAL-00013" summary="correction d'un bug générant une transition tau non désirée entre l'état de départ et l'état final">
-      <option name="closed" value="true" />
-      <created>1734450919233</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1734450919233</updated>
-    </task>
-    <option name="localTasksCounter" value="14" />
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -321,13 +242,7 @@
     <MESSAGE value="fin traduction pif2lntv1" />
     <MESSAGE value="fin traduction pif2lntv1.py et pif2lntv7.py + merge des deux dans la classe Pif2Lnt.java" />
     <MESSAGE value="travail" />
-    <MESSAGE value="correction of a bug resulting in missing identifiers in main due to the merge of the multiple functions computeAddSynchroPoints() in Pif2Lnt.java in version 2024i" />
-    <MESSAGE value="introducing BCG support in tests in order to compare the behaviour of the generated LTS with the one of a reference LTS built by hand." />
-    <MESSAGE value="test case" />
-    <MESSAGE value="adding bcg files" />
-    <MESSAGE value="update gitignore to not ignore .bcg files anymore" />
-    <MESSAGE value="ajout d'un &quot;!nat_bits &lt;n&gt;&quot; dans le cas où le nombre d'identifiants est supérieur à la limite par défaut de CADP (256)" />
-    <MESSAGE value="correction d'un bug générant une transition tau non désirée entre l'état de départ et l'état final" />
-    <option name="LAST_COMMIT_MESSAGE" value="correction d'un bug générant une transition tau non désirée entre l'état de départ et l'état final" />
+    <MESSAGE value="better &quot;not latest VBPMN version installed&quot; error" />
+    <option name="LAST_COMMIT_MESSAGE" value="better &quot;not latest VBPMN version installed&quot; error" />
   </component>
 </project>
