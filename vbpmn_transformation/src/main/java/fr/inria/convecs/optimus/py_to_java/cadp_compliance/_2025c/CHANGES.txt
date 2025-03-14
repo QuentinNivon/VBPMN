@@ -1,0 +1,6 @@
+The following changes of CADP may have impacted the generated LNT code: TODO.
+Each CADP change is referenced below, with the modifications performed (DONE, UNKNOWN, NOTHING TO DO).
+By convention, CADP items are represented with ``----'', while sub-items (such as TRAIAN ones) are
+represented with ``####''.
+
+-------------------#<number>: TODO-------------------
