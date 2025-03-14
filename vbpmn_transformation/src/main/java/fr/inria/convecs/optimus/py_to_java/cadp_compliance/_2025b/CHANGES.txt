@@ -1,0 +1,126 @@
+The following changes of CADP may have impacted the generated LNT code: #3095, #3096, #3101.
+Each CADP change is referenced below, with the modifications performed (DONE, UNKNOWN, NOTHING TO DO).
+By convention, CADP items are represented with ``----'', while sub-items (such as TRAIAN ones) are
+represented with ``####''.
+
+-------------------#3095: NOTHING TO DO ????-------------------
+
+IMPROVEMENT
+Number:		3095
+Date:		Wed Jan 22 17:14:32 CET 2025
+Report:		Hubert Garavel (INRIA/CONVECS)
+Author:		Frederic Lang (INRIA/CONVECS)
+Files:		bin.*/lnt2lotos
+
+Nature:		Since June 30, 2024, TRAIAN no longer accepts that an
+		expression F [E] can be interpreted as a call to a function F
+		that has no argument and returns a result of type array, from
+		which the element having index E is selected. For such an
+		interpretation, the expression should now be written either
+		(F) [E] or F () [E].
+
+		LNT2LOTOS was recently modified to get aligned with TRAIAN in
+		this respect. As a consequence, LNT2LOTOS no longer generates
+		incorrect LOTOS code (later rejected by CAESAR and CAESAR.ADT)
+		for LNT programs such as:
+
+		   function F [E : exit] : bool is
+		      raise E
+		   end function
+
+		   process MAIN [G: any, E : exit] is
+		      G (F [E])
+		   end process
+
+		This change may also modify the semantics of some LNT program:
+
+		   type T is array [0 .. 1] of nat end type
+
+		   function F : T is
+		      return T (0)
+		   end function
+
+		   function F [E : exit] : nat is
+		      access E;
+		      return 1
+		   end function
+
+		   process MAIN [PRINT : any, E : exit] is
+		      var E, X : nat in
+		         E := 0;
+		         X := F [E]
+		         -- note: there is no variable F of array type here
+		         -- at this point: formerly, X == 0 but now, X == 1
+		      end var
+		   end process
+
+-------------------#3096: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3096
+Date:		Tue Jan 28 15:32:40 CET 2025
+Authors:	Frederic Lang and Hubert Garavel (INRIA/CONVECS)
+Files:		bin.*/traian, com/lnt.open, man/*/traian.*
+
+Nature:		Formerly, when an LNT program had a single (non-virtual)
+		process, TRAIAN considered it as the entry point, even if
+		this process was not called "MAIN". It is no longer the case:
+		to have a simpler semantics, this process must be called
+		"MAIN", otherwise TRAIAN (unless given the "-analysis" option)
+		emits the following error message:
+
+		   no main process found (define one or use "-main" option)
+
+		Consequently, TRAIAN has been equipped with a "-main" option
+		that is similar to the "-root" option of LNT2LOTOS. Syntactic
+		and semantic checks have been added, which verify that the
+		argument of this option is correct (binding, type checking,
+		parameter checking, etc.).
+
+		The manual page of TRAIAN and the LNT.OPEN shell script have
+		been updated accordingly. It is now clearly stated that the
+		options "-analysis", "-c", and "-lotos" of TRAIAN are mutally
+		exclusive.
+
+-------------------#3101: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3101
+Date:		Wed Feb 12 18:23:19 CET 2025
+Authors:	Radu Mateescu and Hubert Garavel (INRIA/CONVECS)
+Files:		bin.*/xtl_expand,
+		demos/demo_14/demo.svl, demos/demo_21/demo.svl,
+		demos/demo_22/demo.svl, demos/demo_23/demo.svl,
+		demos/demo_27/demo.svl, demos/demo_31/demo.svl,
+		demos/demo_33/demo.svl, demos/demo_34/demo.svl,
+		demos/demo_39/demo.svl, demos/demo_40/demo.svl,
+		ext/a2ps/mcl.ssh, ext/a2ps/xtl.ssh, ext/emacs/mcl-mode.el,
+		ext/emacs/xtl-mode.el, ext/gtk/mcl.lang, ext/gtk/xtl.lang,
+		ext/jedit/mcl.xml, ext/jedit/xtl.xml,
+		ext/latex-listings/cadp-mcl.sty, ext/nano/mcl.nanorc,
+		ext/latex-listings/cadp-xtl.sty, ext/nano/xtl.nanorc,
+		ext/npp/mcl.xml, ext/sublime/mcl.sublime-syntax,
+		ext/npp/xtl.xml, ext/sublime/xtl.sublime-syntax,
+		ext/vim/mcl.vim, ext/vim/xtl.vim, ext/vscode/cadp-1.1.0.vsix,
+		ext/vscode/mcl-configuration.json
+		ext/vscode/mcl.tmLanguage.json, ext/vscode/package.json
+		ext/vscode/xtl-configuration.json,
+		ext/vscode/xtl.tmLanguage.json, incl/xtl_nb_labels.h,
+		incl/xtl_number.h, incl/xtl_state_label_edge.h,
+		man/*/mcl3.*, man/*/mcl4.*, man/*/xtl-lang.*
+
+Nature:		The XTL_EXPAND preprocessor, which is used by XTL and the
+		EVALUATOR model checkers, was enhanced to support single-line
+		comments beginning with "--", in addition to the existing
+		multi-line comments delimited by "(*" and "*)". Thus, one
+		may now use single-line comments in XTL programs and MCL
+		formulas.
+
+		The manual pages and the editor style files for the MCL and
+		XTL languages have been updated accordingly. The SVL files
+		of various CADP demos have also been simplified by replacing,
+		where appropriate, multi-line comments "(*" ... "*)" by
+		single-line comments "--"  in the MCL and XTL code fragments.
+
+		Finally, three include files for the XTL compiler have been
+		updated to introduce C24-compliant function prototypes.
