@@ -1,0 +1,131 @@
+The following changes of CADP may have impacted the generated LNT code: #3115, #3117, #3119, and #3124.
+Each CADP change is referenced below, with the modifications performed (DONE, UNKNOWN, NOTHING TO DO).
+By convention, CADP items are represented with ``----'', while sub-items (such as TRAIAN ones) are
+represented with ``####''.
+
+-------------------#3115: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3115
+Date:		Mon Mar 17 18:55:21 CET 2025
+Authors:	Frederic Lang and Hubert Garavel (INRIA/CONVECS)
+Files:		bin.*/lnt2lotos, com/lnt.open,
+		doc/*/Champelovier-Clerc-Garavel-et-al-10.pdf,
+		demos/demo_10/demo.svl, demos/demo_12/Makefile,
+		man/*/lnt2lotos.*, man/*/lnt.open.*,
+		src/eucalyptus/eucalyptus.tcl, src/svl/standard
+
+Nature:		Following the introduction of a "-main" option in TRAIAN
+		(see item #3096 above), LNT2LOTOS has been aligned with TRAIAN
+		by renaming its "-root" option to "-main". The former "-root"
+		option of LNT2LOTOS has been kept temporarily, but it is now
+		deprecated and will be removed in the future.
+
+		Similarly, the "-root" option of the LNT.OPEN script has
+		been renamed to "-main". Again, the former "-root" option of
+		LNT2LOTOS has been kept, but is deprecated, and a warning is
+		now displayed when "-root" is used.
+
+		The LNT2LOTOS and LNT.OPEN manual pages have been updated
+		accordingly. The LNT2LOTOS Reference Manual has also been
+		modified, the notion of "root process" being replaced by "main
+		process" (which makes a clearer difference with the concept
+		of "root module"). SVL and the EUCALYPTUS graphical user-
+		interface have been updated too.
+
+-------------------#3117: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3117
+Date:		Wed Mar 19 11:22:35 CET 2025
+Authors:	Hubert Garavel and Frederic Lang(INRIA/CONVECS)
+Files:		bin.*/caesar, com/lotos.open, com/lnt.open,
+		man/*/caesar.*, man/*/lotos.*,
+		src/eucalyptus/eucalyptus.tcl, src/svl/standard
+
+Nature:		By symmetry with LNT2LOTOS (see item #3115 above), the
+		"-root" option of CAESAR has been renamed to "-main" (the
+		former "-root" option no longer exists in CAESAR). The
+		LOTOS.OPEN and LNT.OPEN scripts, the CAESAR manual page,
+		the EUCALYPTUS graphical user-interface, and SVL have been
+		updated accordingly.
+
+-------------------#3119: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3119
+Date:		Fri Mar 21 17:51:44 CET 2025
+Authors:	Frederic Lang and Hubert Garavel (INRIA/CONVECS)
+Files:		bin.*/lnt2lotos, bin.*/traian;
+		doc/*/Champelovier-Clerc-Garavel-et-al-10.pdf
+
+Nature:		The LNT language was enriched with a "!virtual" pragma for
+		(non-constructor) functions, which is similar to the "!virtual"
+		pragma for processes (see item #3075 above).
+
+		TRAIAN and LNT2LOTOS have been extended to accept and take
+		into account this pragma. Doing so, many error and warning
+		messages have been introduced or enhanced, e.g.:
+
+		- error: virtual function F is already declared at...
+		- error: virtual function F has different parameter names at...
+		- error: virtual function F has different parameter types at...
+		- error: virtual declaration without actual function F
+		- error: forbidden constructor for virtual function F at...
+		- warning: useless virtual declaration for actual function F
+		  present at...
+		- warning: "in var" parameter X of virtual function F should
+		  be an "in" parameter
+		etc.
+
+		The LNT2LOTOS Reference Manual has been updated to document
+		"!virtual" pragmas for functions.
+
+-------------------#3124: NOTHING TO DO????-------------------
+
+IMPROVEMENT
+Number:		3124
+Date:		Wed Apr  2 19:15:41 CEST 2025
+Report:		Hubert Garavel (INRIA/CONVECS)
+Authors:	Frederic Lang, Wendelin Serwe, and Hubert Garavel (INRIA/
+		CONVECS)
+Files:		bin.*/traian
+
+Nature:		Various warning and error messages emitted by TRAIAN have been
+		enhanced as follows:
+
+		1) When an imported module or library cannot be found, TRAIAN
+		   now displays a more detailed message, e.g.:
+
+		     error: module file "F.lnt" is readable neither in "."
+		        nor "/opt/CADP/lib"
+		     error: library file "F.lnt" is readable neither in "."
+		        nor "/opt/CADP/lib"
+
+		   whereas, formerly, it would only report that "F.lnt" was
+		   not readable.
+
+		2) When a "with" function is defined with pragmas "!external"
+		   or "!virtual", e.g.:
+
+		      type T is
+		         set of NAT
+		         with == !external !implementedby "EQ"
+		      end type
+
+		   TRAIAN now emits a specific error message:
+
+		      forbidden pragma !external for "with" function ==
+
+		   which is clearer than the formerly emitted message:
+
+		      non-empty, non-null definition for external function ==
+
+		3) TRAIAN now emits a warning when the deprecated keyword
+		   "select" is used (see item #2982 above):
+
+		      "select" is deprecated and should be replaced by "alt"
+		      (12 occurrences found)
+
+		   The replacement of "select" by "alt" can be performed
+		   automatically by calling UPC with its "2024-LNT-SELECT" key.
