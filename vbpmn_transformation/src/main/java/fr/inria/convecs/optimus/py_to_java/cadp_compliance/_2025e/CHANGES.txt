@@ -1,0 +1,42 @@
+The following changes of CADP may have impacted the generated LNT code: #3133.
+Each CADP change is referenced below, with the modifications performed (DONE, UNKNOWN, NOTHING TO DO).
+By convention, CADP items are represented with ``----'', while sub-items (such as TRAIAN ones) are
+represented with ``####''.
+
+-------------------#3133: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3133
+Date:		Fri Apr 25 12:02:07 CEST 2025
+Report:		Hubert Garavel (INRIA/CONVECS)
+Authors:	Frederic Lang and Hubert Garavel (INRIA/CONVECS)
+Files:		bin.*/lnt2otos, bin.*/traian, com/upc,
+		demos/demo_08/DATA.lnt, demos/demo_11/demo_11/TYPES.lnt,
+		demos/demo_10/Architectures/TYPES_*.lnt,
+		demos/demo_11/Scenarios/SIZE_*.lnt, demos/demo_16/TYPES.lnt,
+		demos/demo_18/TYPES.lnt, demos/demo_24/CO4_DATATYPES.lnt,
+		demos/demo_25/cfs.lnt, demos/demo_26/DATAP.lnt,
+		demos/demo_31/TYPES.lnt, demos/demo_35/TYPES.lnt,
+		demos/demo_38/S_BOX_FUNCTIONS.lnt, demos/demo_38/TYPES.lnt,
+		demos/demo_40/COMMERCE_TYPES.lnt,
+		doc/*/Champelovier-Clerc-Garavel-et-al-10.pdf
+
+Nature:		The LNT language was simplified by merging the two symbols
+		".." (used in the definition of range and array types) and
+		"..." (used in lists and sets). From now on, the ".." symbol
+		(inherited from Pascal and Ada) is replaced by "...".
+
+		The LNT2LOTOS Reference Manual and the CADP demos have been
+		updated accordingly.
+
+		The ".." is marked as deprecated and will be removed in the
+		future. At the moment, both LNT2LOTOS and TRAIAN still accept
+		it, but TRAIAN emits the following warning:
+		   ".." is deprecated and should be replaced by "..."
+
+		Users are thus advised to update their LNT programs. This can
+		be done automatically by typing the following command:
+		   upc 2025-LNT-DOT-DOT <directory>
+		which will recursively explore the contents of the specified
+		<directory>, look for ".lnt" files, and automatically replace
+		".." with "...".
