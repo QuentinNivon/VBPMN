@@ -1,0 +1,60 @@
+The following changes of CADP may have impacted the generated LNT code: #3148.
+Each CADP change is referenced below, with the modifications performed (DONE, UNKNOWN, NOTHING TO DO).
+By convention, CADP items are represented with ``----'', while sub-items (such as TRAIAN ones) are
+represented with ``####''.
+
+-------------------#3148: DONE-------------------
+
+IMPROVEMENT
+Number:		3148
+Date:		Fri May 30 17:39:45 CEST 2025
+Report:		Amandine Heuls (INRIA/CONVECS)
+Authors:	Frederic Lang and Hubert Garavel (INRIA/CONVECS)
+Files:		bin.*/traian, bin.*/lnt2lotos, com/upc,
+		demos/demo_06/handshake.lnt, demos/demo_06/test_purpose_*.lnt,
+		demos/demo_10/Architectures/ARCH_*.lnt,
+		demos/demo_10/Components/MESI_CACHE.lnt,
+		demos/demo_10/Protocols/clh.lnt, demos/demo_11/DTD.lnt,
+		demos/demo_11/PROCESSOR.lnt, demos/demo_12/maa.lnt,
+		demos/demo_11/Scenarios/APPLICATION_*.lnt
+		doc/*/Champelovier-Clerc-Garavel-et-al-10.*,
+		lib/scheme_list.lnt, lib/scheme_set.lnt,
+		lib/scheme_sorted_list.lnt
+
+Nature:		The LNT syntax for "in out" parameters of functions and
+		processes has been simplified. Until now, these parameters
+		were noted "!?X". From now on, they are noted "X?" (notice
+		the query character occurs after the identifier).
+
+		The following table recalls the evolution of the LNT syntax
+		since the origin of LNT2LOTOS (2005), after the revision
+		of 2022 (see item #2826 above), and at present (2025).
+
+		   ------------------------------------------------------
+		                        Ada     LNT       LNT       LNT
+                                               (2005)    (2022)    (2025)
+                   ------------------------------------------------------
+		   input offer           -       !X        X         X
+		   output offer          -       ?X        ?X        ?X
+		   ------------------------------------------------------
+		   "in" parameter        X       X         X         X
+		   "out" parameter       X       ?X        ?X        ?X
+		   "in out" parameter    X       !?X       !?X       X?
+                   ------------------------------------------------------
+
+		Consequently, the "!" character is now reserved for LNT
+		pragmas. The former syntax "!?X" is still accepted for some
+		tile, but now deprecated and triggers the following warning:
+
+		   "!?X" for in-out parameters is deprecated and should be
+		   replaced by "X?" (79 occurrences)
+
+		Users are thus advised to update their LNT programs. This can
+		be done automatically by typing the following command:
+		   upc 2025-LNT-EXCLAIM-QUERY <directory>
+		which will recursively explore the contents of the specified
+		<directory>, look for ".lnt" files, and replace "!?X" by "X?"
+		automatically.
+
+		The LNT2LOTOS Reference Manual was updated accordingly. Also,
+		a few typos reported by Amandine Heuls have been corrected.
