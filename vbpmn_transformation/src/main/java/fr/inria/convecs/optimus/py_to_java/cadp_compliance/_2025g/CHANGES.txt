@@ -1,0 +1,59 @@
+The following changes of CADP may have impacted the generated LNT code: #3168, #3171.
+Each CADP change is referenced below, with the modifications performed (DONE, UNKNOWN, NOTHING TO DO).
+By convention, CADP items are represented with ``----'', while sub-items (such as TRAIAN ones) are
+represented with ``####''.
+
+-------------------#3168: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3168
+Date:		Wed Jul  9 17:41:19 CEST 2025
+Authors:	Frederic Lang and Hubert Garavel (INRIA/CONVECS)
+Files:		bin.*/traian, doc/pdf/Champelovier-Clerc-Garavel-et-al-10.pdf,
+		lib/LNT_V1.lib, lib/lnt_predefined.lnt,
+		incl/LNT_V1.h, incl/lnt_predefined.h
+
+Nature:		The library of predefined functions for the LNT language has
+		been enriched with eight nullary functions:
+
+		   FIRST : -> BOOL
+		   LAST : -> BOOL
+		   FIRST : -> NAT
+		   LAST : -> NAT
+		   FIRST : -> INT
+		   LAST : -> INT
+		   FIRST : -> CHAR
+		   LAST : -> CHAR
+
+		This change completes a former change undertaken in December
+		2023 (see item #2948 above). The "LNT_V1" library of LNT2LOTOS,
+		the "lnt_predefined" library of TRAIAN, TRAIAN itself, and
+		the LNT2LOTOS Reference Manual have been updated accordingly.
+
+		In a few cases, this change is not backward compatible. For
+		instance, if E is an event declared with channel "any" and
+		if FIRST denoted a nullary function of some user-defined
+		type T, then the following behaviour:
+		   E (FIRST)
+		is no longer accepted, since FIRST is now overloaded, and
+		should be replaced with:
+		   E (FIRST of T)
+
+-------------------#3148: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3171
+Date:		Fri Jul 11 11:58:48 CEST 2025
+Report:		Hubert Garavel (INRIA/CONVECS)
+Author:		Wendelin Serwe (INRIA/CONVECS)
+Files:		bin.*/tgv.a, man/*/tgv.*, src/eucalyptus/eucalyptus.tcl,
+		demos/demo_02/demo.svl, demos/demo_09/demo.svl
+
+Nature:		The "-csg" option of TGV (an acronym of "Complete Sub-Graph",
+		meant to generate the Complete Test Graph) has been renamed
+		to "-all" in order to simplify TGV for end-users. The former
+		option name "-csg" is now deprecated, but retained for
+		backward compatibility.
+
+		The TGV manual page, the EUCALYPTUS user interface, and demos
+		02 and 09 have been updated accordingly.
