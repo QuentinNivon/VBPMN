@@ -1,0 +1,90 @@
+The following changes of CADP may have impacted the generated LNT code: #3185, #3187, #3190.
+Each CADP change is referenced below, with the modifications performed (DONE, UNKNOWN, NOTHING TO DO).
+By convention, CADP items are represented with ``----'', while sub-items (such as TRAIAN ones) are
+represented with ``####''.
+
+-------------------#3185: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3185
+Date:		Tue Jul 29 15:09:35 CEST 2025
+Authors:	Hubert Garavel and Frederic Lang (INRIA/CONVECS)
+Files:		bin.*/lnt2lotos, lib/scheme_range.lnt,
+		doc/pdf/Champelovier-Clerc-Garavel-et-al-10.pdf
+
+Nature:		The predefined function VAL() on range types was removed:
+		from now on, it is no longer allowed to specify "with VAL"
+		on a range type. Indeed, this function (inspired by the
+		CHR() function of Pascal) was seldom used, as it could be
+		easily obtained by other means:
+
+		- For a type T defined as "type T is range M...N of Nat" or
+		  "type T is range M...N of Int", the value VAL (X) was simply
+		  equal to T (X + M).
+
+		- For a type T defined as "type T is range M...N of Char",
+		  the value VAL (X) was equal to T (Char (X + Nat (M))).
+
+-------------------#3187: UNKNOWN-------------------
+
+IMPROVEMENT
+Number:		3187
+Date:		Thu Jul 31 16:58:53 CEST 2025
+Authors:	Hubert Garavel and Frederic Lang (INRIA/CONVECS)
+Files:		lib/lnt_predefined.lnt, lib/LNT_V1.lib, incl/LNT_V1.h,
+		doc/pdf/Champelovier-Clerc-Garavel-et-al-10.pdf
+
+Nature:		The predefined library of LNT has been enriched with 4 new
+		functions that may raise exceptions:
+
+		   + : [Exit] Nat, Nat -> Nat
+		   - : [Exit] Int -> Int
+		   + : [Exit] Int, Int -> Int
+		   - : [Exit] Int, Int -> Int
+
+		Both TRAIAN and LNT2LOTOS and their manuals have been updated.
+		This change might not be backward compatible. For instance,
+		the following process definition:
+
+		   process MAIN [UNDERFLOW : Exit, PRINT : any] is
+		      PRINT (1 -[UNDERFLOW] 2)
+		   end process
+
+		was formerly accepted, but is now rejected:
+
+		   in behaviour: PRINT (1 -[UNDERFLOW] 2)
+		   offer 1 -[UNDERFLOW] 2 may have several types NAT|INT,
+		   one of which should be chosen using an "of" coercion
+
+		Indeed, one must insert either "of Nat" or "of Int" after
+		constants 1 and/or 2.
+
+		Additionally, the already existing function
+		   - : [Exit] Nat, Nat -> Nat
+		is now implemented by LNT2LOTOS as an external C function
+		(rather than being defined in LOTOS) for symmetry with the
+		above functions.
+
+-------------------#3190: NOTHING TO DO-------------------
+
+IMPROVEMENT
+Number:		3190
+Date:		Tue Aug  5 11:06:43 CEST 2025
+Authors:	Hubert Garavel and Frederic Lang (INRIA/CONVECS)
+Files:		lib/lnt_predefined.lnt, lib/LNT_V1.lib, incl/LNT_V1.h,
+		doc/pdf/Champelovier-Clerc-Garavel-et-al-10.pdf
+
+Nature:		The predefined library of LNT has been simplified by removing
+		two functions recently introduced (see item #3170 above):
+
+		   Real : [Exit] Nat -> Real
+		   Real : [Exit] Int -> Real
+
+		These functions were useless. Indeed, given that Reals are
+		implemented using the "double" type of C, no exception may
+		occur when converting Nats or Ints to Reals.
+
+		Additionally, in the LNT_V1 library of LNT2LOTOS, the
+		implementation of the three functions ADT_TO_CHAR_NAT_EXIT(),
+		ADT_TO_INT_NAT_EXIT(), and ADT_TO_NAT_INT_EXIT() has been
+		enhanced, although the changes are not visible to end users.
